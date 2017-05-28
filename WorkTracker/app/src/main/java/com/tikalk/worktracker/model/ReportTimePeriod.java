@@ -32,6 +32,8 @@
 package com.tikalk.worktracker.model;
 
 /**
+ * Time period for report filter.
+ *
  * @author Moshe Waisberg.
  */
 public enum ReportTimePeriod {

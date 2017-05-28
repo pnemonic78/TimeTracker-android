@@ -31,8 +31,13 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import android.arch.persistence.room.Entity;
+
 /**
+ * Report filter entity.
+ *
  * @author Moshe Waisberg.
  */
+@Entity
 public class ReportFilter {
 }

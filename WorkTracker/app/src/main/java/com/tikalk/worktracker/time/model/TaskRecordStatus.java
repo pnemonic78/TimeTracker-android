@@ -32,6 +32,8 @@
 package com.tikalk.worktracker.time.model;
 
 /**
+ * Status of a task record.
+ *
  * @author Moshe Waisberg.
  */
 public enum TaskRecordStatus {
