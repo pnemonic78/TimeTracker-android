@@ -32,6 +32,8 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Entity;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 
 /**
  * User entity.
@@ -40,4 +42,29 @@ import android.arch.persistence.room.Entity;
  */
 @Entity
 public class User extends TikalEntity {
+    /**
+     * Unique username.
+     */
+    @NonNull
+    public String username;
+    /**
+     * The e-mail address for communications.
+     */
+    public String email;
+    /**
+     * The display name, e.g. full name.
+     */
+    public String displayName;
+    /**
+     * The telephone number for communications.
+     */
+    public String telephone;
+    /**
+     * The photo URI.
+     */
+    public Uri photo;
+    /**
+     * The roles.
+     */
+    public String[] roles;
 }

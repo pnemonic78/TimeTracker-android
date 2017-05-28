@@ -32,8 +32,6 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.PrimaryKey;
-import android.net.Uri;
 
 /**
  * Project entity.
@@ -42,30 +40,4 @@ import android.net.Uri;
  */
 @Entity
 public class Project extends TikalEntity {
-
-    /**
-     * Unique username.
-     */
-    public String username;
-    /**
-     * The e-mail address for communications.
-     */
-    public String email;
-    /**
-     * The display name, e.g. full name.
-     */
-    public String displayName;
-    /**
-     * The telephone number for communications.
-     */
-    public String telephone;
-    /**
-     * The photo URI.
-     */
-    public Uri photo;
-    /**
-     * The roles.
-     */
-    public String[] roles;
-
 }
