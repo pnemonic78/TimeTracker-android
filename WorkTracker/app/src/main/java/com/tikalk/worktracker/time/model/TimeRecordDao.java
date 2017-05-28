@@ -32,7 +32,10 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.TikalDao;
@@ -50,4 +53,22 @@ import io.reactivex.Flowable;
 public interface TimeRecordDao extends TikalDao<TimeRecord> {
     @Query("SELECT * FROM timeRecord")
     Flowable<List<TimeRecord>> getAll();
+
+    @Insert
+    void insert(TimeRecord... entity);
+
+    @Insert
+    void insertAll(TimeRecord... entities);
+
+    @Update
+    void update(TimeRecord... entity);
+
+    @Update
+    void updateAll(TimeRecord... entities);
+
+    @Delete
+    void delete(TimeRecord entity);
+
+    @Delete
+    void deleteAll(TimeRecord... entities);
 }

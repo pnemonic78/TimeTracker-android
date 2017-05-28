@@ -32,7 +32,10 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import java.util.List;
 
@@ -47,4 +50,22 @@ import io.reactivex.Flowable;
 public interface ProjectTaskDao extends TikalDao<ProjectTask> {
     @Query("SELECT * FROM projectTask")
     Flowable<List<ProjectTask>> getAll();
+
+    @Insert
+    void insert(ProjectTask... entity);
+
+    @Insert
+    void insertAll(ProjectTask... entities);
+
+    @Update
+    void update(ProjectTask... entity);
+
+    @Update
+    void updateAll(ProjectTask... entities);
+
+    @Delete
+    void delete(ProjectTask entity);
+
+    @Delete
+    void deleteAll(ProjectTask... entities);
 }

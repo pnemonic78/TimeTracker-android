@@ -33,6 +33,7 @@ package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.TypeConverters;
 
 import com.tikalk.worktracker.time.model.ReportFilter;
 import com.tikalk.worktracker.time.model.ReportFilterDao;
@@ -51,6 +52,7 @@ import com.tikalk.worktracker.time.model.TimeRecordDao;
         TimeRecord.class,
         User.class},
         version = 1)
+@TypeConverters({TikalConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
     public static final String DB_NAME = "tracker";

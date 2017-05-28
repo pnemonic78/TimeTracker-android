@@ -31,43 +31,69 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
+import android.arch.persistence.room.TypeConverter;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import com.tikalk.worktracker.time.model.TaskRecordStatus;
+
+import java.sql.Date;
 
 import static android.arch.persistence.room.util.StringUtil.EMPTY_STRING_ARRAY;
 
 /**
- * User entity.
+ * Tikal data type converter.
  *
  * @author Moshe Waisberg.
  */
-@Entity(indices = {@Index("id")})
-public class User extends TikalEntity {
-    /**
-     * Unique username.
-     */
-    @NonNull
-    public String username;
-    /**
-     * The e-mail address for communications.
-     */
-    public String email;
-    /**
-     * The display name, e.g. full name.
-     */
-    public String displayName;
-    /**
-     * The telephone number for communications.
-     */
-    public String telephone;
-    /**
-     * The photo URI.
-     */
-    public Uri photo;
-    /**
-     * The roles.
-     */
-    public String[] roles = EMPTY_STRING_ARRAY;
+public class TikalConverter {
+    @TypeConverter
+    public static Date timestampToDate(Long value) {
+        return value == null ? null : new Date(value);
+    }
+
+    @TypeConverter
+    public static Long dateToTimestamp(Date date) {
+        return date == null ? null : date.getTime();
+    }
+
+    @TypeConverter
+    public static Uri pathToUri(String value) {
+        return value == null ? null : Uri.parse(value);
+    }
+
+    @TypeConverter
+    public static String uriToPath(Uri uri) {
+        return uri == null ? null : uri.toString();
+    }
+
+    @TypeConverter
+    public static ReportTimePeriod toReportTimePeriod(int value) {
+        return value == -1 ? null : ReportTimePeriod.values()[value];
+    }
+
+    @TypeConverter
+    public static int fromReportTimePeriod(ReportTimePeriod period) {
+        return period == null ? -1 : period.ordinal();
+    }
+
+    @TypeConverter
+    public static TaskRecordStatus toTaskRecordStatus(int value) {
+        return value == -1 ? null : TaskRecordStatus.values()[value];
+    }
+
+    @TypeConverter
+    public static int fromTaskRecordStatus(TaskRecordStatus status) {
+        return status == null ? -1 : status.ordinal();
+    }
+
+    @TypeConverter
+    public static String[] toStringArray(String value) {
+        return value == null ? EMPTY_STRING_ARRAY : TextUtils.split(value, "\n");
+    }
+
+    @TypeConverter
+    public static String fromStringArray(String[] roles) {
+        return roles == null ? null : TextUtils.join("\n", roles);
+    }
 }

@@ -32,7 +32,10 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import java.util.List;
 
@@ -47,4 +50,22 @@ import io.reactivex.Flowable;
 public interface UserDao extends TikalDao<User> {
     @Query("SELECT * FROM user")
     Flowable<List<User>> getAll();
+
+    @Insert
+    void insert(User... entity);
+
+    @Insert
+    void insertAll(User... entities);
+
+    @Update
+    void update(User... entity);
+
+    @Update
+    void updateAll(User... entities);
+
+    @Delete
+    void delete(User entity);
+
+    @Delete
+    void deleteAll(User... entities);
 }

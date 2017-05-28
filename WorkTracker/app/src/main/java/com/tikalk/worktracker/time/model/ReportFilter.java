@@ -32,6 +32,7 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Index;
 import android.support.annotation.Nullable;
 
 import com.tikalk.worktracker.model.Project;
@@ -46,12 +47,12 @@ import java.sql.Date;
  *
  * @author Moshe Waisberg.
  */
-@Entity
+@Entity(indices = {@Index("id")})
 public class ReportFilter extends TikalEntity {
-    @Nullable
-    public Project project;
-    @Nullable
-    public ProjectTask task;
+//    @Nullable
+//    public Project project;
+//    @Nullable
+//    public ProjectTask task;
     public ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
     public Date start;
     public Date finish;
