@@ -39,6 +39,8 @@ import com.tikalk.worktracker.model.TikalDao;
 
 import java.util.List;
 
+import io.reactivex.Flowable;
+
 /**
  * Report filter DAO.
  *
@@ -47,5 +49,5 @@ import java.util.List;
 @Dao
 public interface ReportFilterDao extends TikalDao<ReportFilter> {
     @Query("SELECT * FROM reportFilter")
-    List<ReportFilter> getAll();
+    Flowable<List<ReportFilter>> getAll();
 }

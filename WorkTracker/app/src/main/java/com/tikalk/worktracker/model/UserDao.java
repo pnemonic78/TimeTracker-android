@@ -36,6 +36,8 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
+import io.reactivex.Flowable;
+
 /**
  * User DAO.
  *
@@ -44,5 +46,5 @@ import java.util.List;
 @Dao
 public interface UserDao extends TikalDao<User> {
     @Query("SELECT * FROM user")
-    List<User> getAll();
+    Flowable<List<User>> getAll();
 }

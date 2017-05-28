@@ -39,6 +39,8 @@ import com.tikalk.worktracker.model.TikalDao;
 
 import java.util.List;
 
+import io.reactivex.Flowable;
+
 /**
  * Time record DAO.
  *
@@ -47,5 +49,5 @@ import java.util.List;
 @Dao
 public interface TimeRecordDao extends TikalDao<TimeRecord> {
     @Query("SELECT * FROM timeRecord")
-    List<TimeRecord> getAll();
+    Flowable<List<TimeRecord>> getAll();
 }
