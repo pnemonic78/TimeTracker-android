@@ -37,7 +37,6 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.TikalDao;
 
 import java.util.List;
@@ -53,6 +52,18 @@ import io.reactivex.Flowable;
 public interface ReportFilterDao extends TikalDao<ReportFilter> {
     @Query("SELECT * FROM reportFilter")
     Flowable<List<ReportFilter>> getAll();
+
+    @Query("SELECT * FROM reportFilter WHERE userId = :userId")
+    Flowable<List<ReportFilter>> getAll(long userId);
+
+    @Query("SELECT * FROM reportFilter WHERE userId = :userId AND favorite IS NOT NULL AND favorite <> ''")
+    Flowable<List<ReportFilter>> getFavorites(long userId);
+
+    @Query("SELECT * FROM reportFilter where _id = :id LIMIT 1")
+    Flowable<ReportFilter> get(long id);
+
+    @Query("SELECT * FROM reportFilter where id = :id LIMIT 1")
+    Flowable<ReportFilter> getRemote(long id);
 
     @Insert
     void insert(ReportFilter... entity);

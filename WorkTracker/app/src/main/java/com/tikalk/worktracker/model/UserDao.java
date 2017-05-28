@@ -51,6 +51,12 @@ public interface UserDao extends TikalDao<User> {
     @Query("SELECT * FROM user")
     Flowable<List<User>> getAll();
 
+    @Query("SELECT * FROM user where _id = :id LIMIT 1")
+    Flowable<User> get(long id);
+
+    @Query("SELECT * FROM user where id = :id LIMIT 1")
+    Flowable<User> getRemote(long id);
+
     @Insert
     void insert(User... entity);
 

@@ -37,7 +37,6 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.TikalDao;
 
 import java.util.List;
@@ -53,6 +52,15 @@ import io.reactivex.Flowable;
 public interface TimeRecordDao extends TikalDao<TimeRecord> {
     @Query("SELECT * FROM timeRecord")
     Flowable<List<TimeRecord>> getAll();
+
+    @Query("SELECT * FROM timeRecord WHERE userId = :userId")
+    Flowable<List<TimeRecord>> getAll(long userId);
+
+    @Query("SELECT * FROM timeRecord where _id = :id LIMIT 1")
+    Flowable<TimeRecord> get(long id);
+
+    @Query("SELECT * FROM timeRecord where id = :id LIMIT 1")
+    Flowable<TimeRecord> getRemote(long id);
 
     @Insert
     void insert(TimeRecord... entity);

@@ -40,12 +40,12 @@ import android.arch.persistence.room.PrimaryKey;
  */
 public abstract class TikalEntity {
     /**
-     * Android database's id.
+     * Local ID (Android database).
      */
     @PrimaryKey
     public long _id;
     /**
-     * Server's id.
+     * Remote ID (server).
      */
     public long id;
     /**

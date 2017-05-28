@@ -51,6 +51,15 @@ public interface ProjectTaskDao extends TikalDao<ProjectTask> {
     @Query("SELECT * FROM projectTask")
     Flowable<List<ProjectTask>> getAll();
 
+    @Query("SELECT * FROM projectTask WHERE projectId = :projectId")
+    Flowable<List<ProjectTask>> getAll(long projectId);
+
+    @Query("SELECT * FROM projectTask where _id = :id LIMIT 1")
+    Flowable<ProjectTask> get(long id);
+
+    @Query("SELECT * FROM projectTask where id = :id LIMIT 1")
+    Flowable<ProjectTask> getRemote(long id);
+
     @Insert
     void insert(ProjectTask... entity);
 

@@ -51,6 +51,12 @@ public interface ProjectDao extends TikalDao<Project> {
     @Query("SELECT * FROM project")
     Flowable<List<Project>> getAll();
 
+    @Query("SELECT * FROM project where _id = :id LIMIT 1")
+    Flowable<Project> get(long id);
+
+    @Query("SELECT * FROM project where id = :id LIMIT 1")
+    Flowable<Project> getRemote(long id);
+
     @Insert
     void insert(Project... entity);
 
