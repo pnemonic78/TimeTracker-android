@@ -34,6 +34,7 @@ package com.tikalk.worktracker.model;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.Update;
 
 /**
  * Tikal base DAO.
@@ -48,6 +49,15 @@ public interface TikalDao<E extends TikalEntity> {
     @Insert
     void insertAll(E... entities);
 
+    @Update
+    void update(E... entity);
+
+    @Update
+    void updateAll(E... entities);
+
     @Delete
     void delete(E entity);
+
+    @Delete
+    void deleteAll(E... entities);
 }
