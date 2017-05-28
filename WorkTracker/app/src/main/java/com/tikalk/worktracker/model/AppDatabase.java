@@ -59,7 +59,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProjectDao projectDao();
 
-    public abstract ProjectTaskDao ProjectTaskDao();
+    public abstract ProjectTaskDao projectTaskDao();
 
     public abstract ReportFilterDao reportFilterDao();
 

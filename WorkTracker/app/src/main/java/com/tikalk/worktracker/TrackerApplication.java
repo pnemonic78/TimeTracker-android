@@ -47,8 +47,7 @@ public class TrackerApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, AppDatabase.DB_NAME).build();
-        System.out.println("db=" + db);
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, AppDatabase.DB_NAME)
+                .build();
     }
 }

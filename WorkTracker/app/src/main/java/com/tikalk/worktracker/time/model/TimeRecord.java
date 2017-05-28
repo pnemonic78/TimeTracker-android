@@ -32,13 +32,9 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
 import android.support.annotation.NonNull;
 
-import com.tikalk.worktracker.model.Project;
-import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
-import com.tikalk.worktracker.model.User;
 
 import java.sql.Date;
 
@@ -47,7 +43,7 @@ import java.sql.Date;
  *
  * @author Moshe Waisberg.
  */
-@Entity(indices = {@Index("id")})
+@Entity
 public class TimeRecord extends TikalEntity {
 //    @NonNull
 //    public User user;

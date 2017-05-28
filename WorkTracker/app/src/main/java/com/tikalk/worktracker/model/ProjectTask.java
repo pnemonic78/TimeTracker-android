@@ -34,17 +34,15 @@ package com.tikalk.worktracker.model;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.Index;
 
 /**
  * Task that belongs to a project entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(indices = {@Index("id")}/*,
-        foreignKeys = @ForeignKey(entity = Project.class,
-                parentColumns = "id",
-                childColumns = "projectId")*/)
+@Entity(foreignKeys = @ForeignKey(entity = Project.class,
+                parentColumns = "_id",
+                childColumns = "projectId"))
 public class ProjectTask extends TikalEntity {
 
     public long projectId;

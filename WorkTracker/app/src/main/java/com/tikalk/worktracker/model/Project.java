@@ -32,14 +32,13 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
 
 /**
  * Project entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(indices = {@Index("id")})
+@Entity
 public class Project extends TikalEntity {
     public String name;
     public String description;

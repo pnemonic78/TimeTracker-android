@@ -32,7 +32,6 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
@@ -43,7 +42,7 @@ import static android.arch.persistence.room.util.StringUtil.EMPTY_STRING_ARRAY;
  *
  * @author Moshe Waisberg.
  */
-@Entity(indices = {@Index("id")})
+@Entity
 public class User extends TikalEntity {
     /**
      * Unique username.
