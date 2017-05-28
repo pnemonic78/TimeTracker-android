@@ -32,9 +32,13 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
 
+import com.tikalk.worktracker.model.Project;
+import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ReportTimePeriod;
 import com.tikalk.worktracker.model.TikalEntity;
+import com.tikalk.worktracker.model.User;
 
 import java.sql.Date;
 
@@ -43,12 +47,26 @@ import java.sql.Date;
  *
  * @author Moshe Waisberg.
  */
-@Entity
+@Entity(foreignKeys = {
+        @ForeignKey(entity = Project.class,
+                parentColumns = "_id",
+                childColumns = "projectId"),
+        @ForeignKey(entity = ProjectTask.class,
+                parentColumns = "_id",
+                childColumns = "projectTaskId"),
+        @ForeignKey(entity = User.class,
+                parentColumns = "_id",
+                childColumns = "userId")})
 public class ReportFilter extends TikalEntity {
-//    @Nullable
+    //    @NonNull
+//    public User user;
+    public long userId;
+    //    @Nullable
 //    public Project project;
-//    @Nullable
+    public Long projectId;
+    //    @Nullable
 //    public ProjectTask task;
+    public Long projectTaskId;
     public ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
     public Date start;
     public Date finish;

@@ -32,9 +32,13 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
 import android.support.annotation.NonNull;
 
+import com.tikalk.worktracker.model.Project;
+import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
+import com.tikalk.worktracker.model.User;
 
 import java.sql.Date;
 
@@ -43,14 +47,26 @@ import java.sql.Date;
  *
  * @author Moshe Waisberg.
  */
-@Entity
+@Entity(foreignKeys = {
+        @ForeignKey(entity = Project.class,
+                parentColumns = "_id",
+                childColumns = "projectId"),
+        @ForeignKey(entity = ProjectTask.class,
+                parentColumns = "_id",
+                childColumns = "projectTaskId"),
+        @ForeignKey(entity = User.class,
+                parentColumns = "_id",
+                childColumns = "userId")})
 public class TimeRecord extends TikalEntity {
-//    @NonNull
+    //    @NonNull
 //    public User user;
-//    @NonNull
+    public long userId;
+    //    @NonNull
 //    public Project project;
-//    @NonNull
+    public long projectId;
+    //    @NonNull
 //    public ProjectTask task;
+    public long projectTaskId;
     public Date start;
     public Date finish;
     public String note;
