@@ -39,5 +39,5 @@ import android.arch.persistence.room.Entity;
  * @author Moshe Waisberg.
  */
 @Entity
-public class User {
+public class User extends TikalEntity {
 }

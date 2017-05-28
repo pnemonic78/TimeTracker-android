@@ -31,13 +31,25 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 
 /**
- * Task that belongs to a project entity.
+ * Tikal base entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-public class ProjectTask extends TikalEntity {
+public abstract class TikalEntity {
+    /**
+     * Android database's id.
+     */
+    @PrimaryKey
+    public long _id;
+    /**
+     * Server's id.
+     */
+    public long id;
+    /**
+     * Entity version to resolve conflicts.
+     */
+    public int version;
 }

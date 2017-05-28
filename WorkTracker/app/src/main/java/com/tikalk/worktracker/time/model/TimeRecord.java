@@ -33,11 +33,13 @@ package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
 
+import com.tikalk.worktracker.model.TikalEntity;
+
 /**
  * Time record entity. Represents some work done for a project task.
  *
  * @author Moshe Waisberg.
  */
 @Entity
-public class TimeRecord {
+public class TimeRecord extends TikalEntity {
 }
