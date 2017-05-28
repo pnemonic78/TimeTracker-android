@@ -40,4 +40,6 @@ import android.arch.persistence.room.Entity;
  */
 @Entity
 public class ProjectTask extends TikalEntity {
+    public String name;
+    public String description;
 }

@@ -32,8 +32,14 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
+import android.support.annotation.Nullable;
 
+import com.tikalk.worktracker.model.Project;
+import com.tikalk.worktracker.model.ProjectTask;
+import com.tikalk.worktracker.model.ReportTimePeriod;
 import com.tikalk.worktracker.model.TikalEntity;
+
+import java.sql.Date;
 
 /**
  * Report filter entity.
@@ -42,4 +48,18 @@ import com.tikalk.worktracker.model.TikalEntity;
  */
 @Entity
 public class ReportFilter extends TikalEntity {
+    @Nullable
+    public Project project;
+    @Nullable
+    public ProjectTask task;
+    public ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
+    public Date start;
+    public Date finish;
+    public String favorite;
+    public boolean showProjectField;
+    public boolean showTaskField;
+    public boolean showStartField;
+    public boolean showFinishField;
+    public boolean showDurationField;
+    public boolean showNotesField;
 }

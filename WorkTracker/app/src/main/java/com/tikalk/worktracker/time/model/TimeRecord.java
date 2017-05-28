@@ -32,8 +32,14 @@
 package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
+import android.support.annotation.NonNull;
 
+import com.tikalk.worktracker.model.Project;
+import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
+import com.tikalk.worktracker.model.User;
+
+import java.sql.Date;
 
 /**
  * Time record entity. Represents some work done for a project task.
@@ -42,4 +48,15 @@ import com.tikalk.worktracker.model.TikalEntity;
  */
 @Entity
 public class TimeRecord extends TikalEntity {
+    @NonNull
+    public User user;
+    @NonNull
+    public Project project;
+    @NonNull
+    public ProjectTask task;
+    public Date start;
+    public Date finish;
+    public String note;
+    @NonNull
+    public TaskRecordStatus status = TaskRecordStatus.INSERTED;
 }

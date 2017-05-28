@@ -37,4 +37,22 @@ package com.tikalk.worktracker.time.model;
  * @author Moshe Waisberg.
  */
 public enum TaskRecordStatus {
+
+    /**
+     * Inserted (New)
+     */
+    INSERTED,
+    /**
+     * Current (Synced)
+     */
+    CURRENT,
+    /**
+     * Modified (Changed)
+     */
+    MODIFIED,
+    /**
+     * Deleted
+     */
+    DELETED
+
 }
