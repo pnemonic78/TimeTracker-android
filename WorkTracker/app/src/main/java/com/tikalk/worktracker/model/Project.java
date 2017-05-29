@@ -49,11 +49,11 @@ public class Project implements TikalEntity {
      * Local ID (Android database).
      */
     @Id
-    private Long primaryId;
+    private long primaryId;
     /**
      * Remote ID (server).
      */
-    private Long id;
+    private long id;
     /**
      * Entity version to resolve conflicts.
      */
@@ -69,8 +69,8 @@ public class Project implements TikalEntity {
     private String name;
     private String description;
 
-    @Generated(hash = 1486821323)
-    public Project(Long primaryId, Long id, int version,
+    @Generated(hash = 1035939891)
+    public Project(long primaryId, long id, int version,
             @NotNull EntityStatus entityStatus, @NotNull String name,
             String description) {
         this.primaryId = primaryId;
@@ -86,22 +86,22 @@ public class Project implements TikalEntity {
     }
 
     @Override
-    public Long getPrimaryId() {
+    public long getPrimaryId() {
         return primaryId;
     }
 
     @Override
-    public void setPrimaryId(Long primaryId) {
+    public void setPrimaryId(long primaryId) {
         this.primaryId = primaryId;
     }
 
     @Override
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

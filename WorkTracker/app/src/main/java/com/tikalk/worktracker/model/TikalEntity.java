@@ -42,28 +42,28 @@ public interface TikalEntity {
      *
      * @return the id.
      */
-    Long getPrimaryId();
+    long getPrimaryId();
 
     /**
      * Set the local database ID.
      *
      * @param primaryId the id.
      */
-    void setPrimaryId(Long primaryId);
+    void setPrimaryId(long primaryId);
 
     /**
      * Get the remote server ID.
      *
      * @return the id.
      */
-    Long getId();
+    long getId();
 
     /**
      * Set the remote server ID.
      *
      * @param id the id.
      */
-    void setId(Long id);
+    void setId(long id);
 
     /**
      * Get the entity version to resolve conflicts.

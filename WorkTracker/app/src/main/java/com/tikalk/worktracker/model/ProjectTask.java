@@ -33,10 +33,10 @@ package com.tikalk.worktracker.model;
 
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.Transient;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Task that belongs to a project entity.
@@ -50,11 +50,11 @@ public class ProjectTask implements TikalEntity {
      * Local ID (Android database).
      */
     @Id
-    private Long primaryId;
+    private long primaryId;
     /**
      * Remote ID (server).
      */
-    private Long id;
+    private long id;
     /**
      * Entity version to resolve conflicts.
      */
@@ -74,8 +74,8 @@ public class ProjectTask implements TikalEntity {
     @Transient
     private Project project;
 
-    @Generated(hash = 1871503144)
-    public ProjectTask(Long primaryId, Long id, int version,
+    @Generated(hash = 737664956)
+    public ProjectTask(long primaryId, long id, int version,
             @NotNull EntityStatus entityStatus, @NotNull String name,
             String description) {
         this.primaryId = primaryId;
@@ -91,22 +91,22 @@ public class ProjectTask implements TikalEntity {
     }
 
     @Override
-    public Long getPrimaryId() {
+    public long getPrimaryId() {
         return primaryId;
     }
 
     @Override
-    public void setPrimaryId(Long primaryId) {
+    public void setPrimaryId(long primaryId) {
         this.primaryId = primaryId;
     }
 
     @Override
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
