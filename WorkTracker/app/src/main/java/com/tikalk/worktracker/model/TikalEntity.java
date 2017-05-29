@@ -49,7 +49,7 @@ public abstract class TikalEntity {
     /**
      * Remote ID (server).
      */
-    private long id;
+    private Long id;
     /**
      * Entity version to resolve conflicts.
      */
@@ -61,19 +61,19 @@ public abstract class TikalEntity {
     @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
     private EntityStatus entityStatus;
 
-    public long getPrimaryId() {
+    public Long getPrimaryId() {
         return primaryId;
     }
 
-    public void setPrimaryId(long primaryId) {
+    public void setPrimaryId(Long primaryId) {
         this.primaryId = primaryId;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
