@@ -31,65 +31,65 @@
  */
 package com.tikalk.worktracker.model;
 
-import org.greenrobot.greendao.annotation.Convert;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.NotNull;
-
 /**
  * Tikal base entity.
  *
  * @author Moshe Waisberg.
  */
-public abstract class TikalEntity {
+public interface TikalEntity {
     /**
-     * Local ID (Android database).
+     * Get the local database ID.
+     *
+     * @return the id.
      */
-    @Id
-    private Long primaryId;
+    Long getPrimaryId();
+
     /**
-     * Remote ID (server).
+     * Set the local database ID.
+     *
+     * @param primaryId the id.
      */
-    private Long id;
+    void setPrimaryId(Long primaryId);
+
     /**
-     * Entity version to resolve conflicts.
+     * Get the remote server ID.
+     *
+     * @return the id.
      */
-    private int version;
+    Long getId();
+
     /**
-     * The entity status.
+     * Set the remote server ID.
+     *
+     * @param id the id.
      */
-    @NotNull
-    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
-    private EntityStatus entityStatus;
+    void setId(Long id);
 
-    public Long getPrimaryId() {
-        return primaryId;
-    }
+    /**
+     * Get the entity version to resolve conflicts.
+     *
+     * @return the version.
+     */
+    int getVersion();
 
-    public void setPrimaryId(Long primaryId) {
-        this.primaryId = primaryId;
-    }
+    /**
+     * Set the entity version to resolve conflicts.
+     *
+     * @param version the version.
+     */
+    void setVersion(int version);
 
-    public Long getId() {
-        return id;
-    }
+    /**
+     * Get the entity status.
+     *
+     * @return the status.
+     */
+    EntityStatus getEntityStatus();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    public EntityStatus getEntityStatus() {
-        return entityStatus;
-    }
-
-    public void setEntityStatus(EntityStatus entityStatus) {
-        this.entityStatus = entityStatus;
-    }
+    /**
+     * Set the entity status.
+     *
+     * @param entityStatus the status.
+     */
+    void setEntityStatus(EntityStatus entityStatus);
 }

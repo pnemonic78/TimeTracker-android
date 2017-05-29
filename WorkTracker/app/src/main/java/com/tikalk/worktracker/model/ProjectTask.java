@@ -31,11 +31,12 @@
  */
 package com.tikalk.worktracker.model;
 
+import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.ToOne;
-import org.greenrobot.greendao.annotation.Transient;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.Transient;
 
 /**
  * Task that belongs to a project entity.
@@ -43,25 +44,90 @@ import org.greenrobot.greendao.annotation.Generated;
  * @author Moshe Waisberg.
  */
 @Entity
-public class ProjectTask extends TikalEntity {
+public class ProjectTask implements TikalEntity {
+
+    /**
+     * Local ID (Android database).
+     */
+    @Id
+    private Long primaryId;
+    /**
+     * Remote ID (server).
+     */
+    private Long id;
+    /**
+     * Entity version to resolve conflicts.
+     */
+    private int version;
+    /**
+     * The entity status.
+     */
+    @NotNull
+    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
+    private EntityStatus entityStatus;
 
     @NotNull
     private String name;
     private String description;
-//    private long projectId;
     @NotNull
     //FIXME @ToOne
     @Transient
     private Project project;
 
-    @Generated(hash = 1690534504)
-    public ProjectTask(@NotNull String name, String description) {
+    @Generated(hash = 1871503144)
+    public ProjectTask(Long primaryId, Long id, int version,
+            @NotNull EntityStatus entityStatus, @NotNull String name,
+            String description) {
+        this.primaryId = primaryId;
+        this.id = id;
+        this.version = version;
+        this.entityStatus = entityStatus;
         this.name = name;
         this.description = description;
     }
 
     @Generated(hash = 1341743950)
     public ProjectTask() {
+    }
+
+    @Override
+    public Long getPrimaryId() {
+        return primaryId;
+    }
+
+    @Override
+    public void setPrimaryId(Long primaryId) {
+        this.primaryId = primaryId;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int getVersion() {
+        return version;
+    }
+
+    @Override
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public EntityStatus getEntityStatus() {
+        return entityStatus;
+    }
+
+    @Override
+    public void setEntityStatus(EntityStatus entityStatus) {
+        this.entityStatus = entityStatus;
     }
 
     public String getName() {

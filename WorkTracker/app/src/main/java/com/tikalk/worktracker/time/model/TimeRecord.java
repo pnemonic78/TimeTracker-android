@@ -31,18 +31,21 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import com.tikalk.worktracker.model.EntityStatus;
+import com.tikalk.worktracker.model.EntityStatusConverter;
 import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
 import com.tikalk.worktracker.model.User;
 
+import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.ToOne;
 import org.greenrobot.greendao.annotation.Transient;
 
 import java.util.Date;
-import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Time record entity. Represents some work done for a project task.
@@ -50,7 +53,28 @@ import org.greenrobot.greendao.annotation.Generated;
  * @author Moshe Waisberg.
  */
 @Entity
-public class TimeRecord extends TikalEntity {
+public class TimeRecord implements TikalEntity {
+
+    /**
+     * Local ID (Android database).
+     */
+    @Id
+    private Long primaryId;
+    /**
+     * Remote ID (server).
+     */
+    private Long id;
+    /**
+     * Entity version to resolve conflicts.
+     */
+    private int version;
+    /**
+     * The entity status.
+     */
+    @NotNull
+    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
+    private EntityStatus entityStatus;
+
     @NotNull
     //FIXME @ToOne
     @Transient
@@ -67,8 +91,14 @@ public class TimeRecord extends TikalEntity {
     private Date finish;
     private String note;
 
-    @Generated(hash = 254166738)
-    public TimeRecord(Date start, Date finish, String note) {
+    @Generated(hash = 18613298)
+    public TimeRecord(Long primaryId, Long id, int version,
+            @NotNull EntityStatus entityStatus, Date start, Date finish,
+            String note) {
+        this.primaryId = primaryId;
+        this.id = id;
+        this.version = version;
+        this.entityStatus = entityStatus;
         this.start = start;
         this.finish = finish;
         this.note = note;
@@ -76,6 +106,46 @@ public class TimeRecord extends TikalEntity {
 
     @Generated(hash = 1155170562)
     public TimeRecord() {
+    }
+
+    @Override
+    public Long getPrimaryId() {
+        return primaryId;
+    }
+
+    @Override
+    public void setPrimaryId(Long primaryId) {
+        this.primaryId = primaryId;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int getVersion() {
+        return version;
+    }
+
+    @Override
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public EntityStatus getEntityStatus() {
+        return entityStatus;
+    }
+
+    @Override
+    public void setEntityStatus(EntityStatus entityStatus) {
+        this.entityStatus = entityStatus;
     }
 
     public User getUser() {

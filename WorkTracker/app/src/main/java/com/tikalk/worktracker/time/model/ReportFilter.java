@@ -31,6 +31,8 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import com.tikalk.worktracker.model.EntityStatus;
+import com.tikalk.worktracker.model.EntityStatusConverter;
 import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ReportTimePeriod;
@@ -40,12 +42,12 @@ import com.tikalk.worktracker.model.User;
 
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.ToOne;
 import org.greenrobot.greendao.annotation.Transient;
 
 import java.util.Date;
-import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Report filter entity.
@@ -53,7 +55,27 @@ import org.greenrobot.greendao.annotation.Generated;
  * @author Moshe Waisberg.
  */
 @Entity
-public class ReportFilter extends TikalEntity {
+public class ReportFilter implements TikalEntity {
+
+    /**
+     * Local ID (Android database).
+     */
+    @Id
+    private Long primaryId;
+    /**
+     * Remote ID (server).
+     */
+    private Long id;
+    /**
+     * Entity version to resolve conflicts.
+     */
+    private int version;
+    /**
+     * The entity status.
+     */
+    @NotNull
+    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
+    private EntityStatus entityStatus;
 
     @NotNull
     //FIXME @ToOne
@@ -78,11 +100,15 @@ public class ReportFilter extends TikalEntity {
     private boolean showDurationField;
     private boolean showNotesField;
 
-    @Generated(hash = 1863398193)
-    public ReportFilter(Long projectTaskId, ReportTimePeriod period, Date start, Date finish,
-            String favorite, boolean showProjectField, boolean showTaskField,
-            boolean showStartField, boolean showFinishField, boolean showDurationField,
-            boolean showNotesField) {
+    @Generated(hash = 678184934)
+    public ReportFilter(Long primaryId, Long id, int version, @NotNull EntityStatus entityStatus,
+            Long projectTaskId, ReportTimePeriod period, Date start, Date finish, String favorite,
+            boolean showProjectField, boolean showTaskField, boolean showStartField,
+            boolean showFinishField, boolean showDurationField, boolean showNotesField) {
+        this.primaryId = primaryId;
+        this.id = id;
+        this.version = version;
+        this.entityStatus = entityStatus;
         this.projectTaskId = projectTaskId;
         this.period = period;
         this.start = start;
@@ -98,6 +124,46 @@ public class ReportFilter extends TikalEntity {
 
     @Generated(hash = 422264460)
     public ReportFilter() {
+    }
+
+    @Override
+    public Long getPrimaryId() {
+        return primaryId;
+    }
+
+    @Override
+    public void setPrimaryId(Long primaryId) {
+        this.primaryId = primaryId;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int getVersion() {
+        return version;
+    }
+
+    @Override
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public EntityStatus getEntityStatus() {
+        return entityStatus;
+    }
+
+    @Override
+    public void setEntityStatus(EntityStatus entityStatus) {
+        this.entityStatus = entityStatus;
     }
 
     public User getUser() {

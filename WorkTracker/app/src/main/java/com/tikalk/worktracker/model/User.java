@@ -35,6 +35,7 @@ import android.net.Uri;
 
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.Generated;
 
@@ -44,7 +45,28 @@ import org.greenrobot.greendao.annotation.Generated;
  * @author Moshe Waisberg.
  */
 @Entity
-public class User extends TikalEntity {
+public class User implements TikalEntity {
+
+    /**
+     * Local ID (Android database).
+     */
+    @Id
+    private Long primaryId;
+    /**
+     * Remote ID (server).
+     */
+    private Long id;
+    /**
+     * Entity version to resolve conflicts.
+     */
+    private int version;
+    /**
+     * The entity status.
+     */
+    @NotNull
+    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
+    private EntityStatus entityStatus;
+
     /**
      * Unique username.
      */
@@ -74,9 +96,15 @@ public class User extends TikalEntity {
     @Convert(converter = RoleConverter.class, columnType = Integer.class)
     private Role role;
 
-    @Generated(hash = 1005269695)
-    public User(@NotNull String username, String email, String displayName,
-            String telephone, Uri photo, @NotNull Role role) {
+    @Generated(hash = 1669390434)
+    public User(Long primaryId, Long id, int version,
+            @NotNull EntityStatus entityStatus, @NotNull String username,
+            String email, String displayName, String telephone, Uri photo,
+            @NotNull Role role) {
+        this.primaryId = primaryId;
+        this.id = id;
+        this.version = version;
+        this.entityStatus = entityStatus;
         this.username = username;
         this.email = email;
         this.displayName = displayName;
@@ -87,6 +115,46 @@ public class User extends TikalEntity {
 
     @Generated(hash = 586692638)
     public User() {
+    }
+
+    @Override
+    public Long getPrimaryId() {
+        return primaryId;
+    }
+
+    @Override
+    public void setPrimaryId(Long primaryId) {
+        this.primaryId = primaryId;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int getVersion() {
+        return version;
+    }
+
+    @Override
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public EntityStatus getEntityStatus() {
+        return entityStatus;
+    }
+
+    @Override
+    public void setEntityStatus(EntityStatus entityStatus) {
+        this.entityStatus = entityStatus;
     }
 
     public String getUsername() {
