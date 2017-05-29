@@ -31,36 +31,68 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.arch.persistence.room.Ignore;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.ToOne;
+import org.greenrobot.greendao.annotation.Transient;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Task that belongs to a project entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(foreignKeys = @ForeignKey(entity = Project.class,
-                parentColumns = "_id",
-                childColumns = "projectId"))
+@Entity
 public class ProjectTask extends TikalEntity {
 
-    public long projectId;
-    public String name;
-    public String description;
-
-    @Ignore
+    @NotNull
+    private String name;
+    private String description;
+//    private long projectId;
+    @NotNull
+    //FIXME @ToOne
+    @Transient
     private Project project;
 
+    @Generated(hash = 1690534504)
+    public ProjectTask(@NotNull String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    @Generated(hash = 1341743950)
+    public ProjectTask() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+//    public long getProjectId() {
+//        return projectId;
+//    }
+//
+//    public void setProjectId(long projectId) {
+//        this.projectId = projectId;
+//    }
+
     public Project getProject() {
-        if (project == null) {
-            //TODO fetch from projectDao
-        }
         return project;
     }
 
     public void setProject(Project project) {
         this.project = project;
-        this.projectId = (project != null) ? project.id : 0;
     }
 }

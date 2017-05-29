@@ -31,47 +31,14 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
-
-import java.util.List;
-
-import io.reactivex.Flowable;
-
 /**
- * User DAO.
- *
- * @author Moshe Waisberg.
+ * Role.
+ * @author moshe on 2017/05/29.
  */
-@Dao
-public interface UserDao extends TikalDao<User> {
-    @Query("SELECT * FROM user")
-    Flowable<List<User>> getAll();
+public enum Role {
 
-    @Query("SELECT * FROM user where _id = :id LIMIT 1")
-    Flowable<User> get(long id);
+    DEFAULT,
+    MANAGER,
+    ADMIN
 
-    @Query("SELECT * FROM user where id = :id LIMIT 1")
-    Flowable<User> getRemote(long id);
-
-    @Insert
-    void insert(User... entity);
-
-    @Insert
-    void insertAll(User... entities);
-
-    @Update
-    void update(User... entity);
-
-    @Update
-    void updateAll(User... entities);
-
-    @Delete
-    void delete(User entity);
-
-    @Delete
-    void deleteAll(User... entities);
 }

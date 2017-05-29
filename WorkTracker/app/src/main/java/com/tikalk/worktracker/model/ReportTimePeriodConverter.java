@@ -29,57 +29,23 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time.model;
+package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
-
-import com.tikalk.worktracker.model.TikalDao;
-
-import java.util.List;
-
-import io.reactivex.Flowable;
+import org.greenrobot.greendao.converter.PropertyConverter;
 
 /**
- * Report filter DAO.
+ * Report time period converter.
  *
- * @author Moshe Waisberg.
+ * @author moshe on 2017/05/29.
  */
-@Dao
-public interface ReportFilterDao extends TikalDao<ReportFilter> {
-    @Query("SELECT * FROM reportFilter")
-    Flowable<List<ReportFilter>> getAll();
+public class ReportTimePeriodConverter implements PropertyConverter<ReportTimePeriod, Integer> {
+    @Override
+    public ReportTimePeriod convertToEntityProperty(Integer databaseValue) {
+        return (databaseValue != null) && (databaseValue >= 0) ? ReportTimePeriod.values()[databaseValue] : ReportTimePeriod.CUSTOM;
+    }
 
-    @Query("SELECT * FROM reportFilter WHERE userId = :userId")
-    Flowable<List<ReportFilter>> getAll(long userId);
-
-    @Query("SELECT * FROM reportFilter WHERE userId = :userId AND favorite IS NOT NULL AND favorite <> ''")
-    Flowable<List<ReportFilter>> getFavorites(long userId);
-
-    @Query("SELECT * FROM reportFilter where _id = :id LIMIT 1")
-    Flowable<ReportFilter> get(long id);
-
-    @Query("SELECT * FROM reportFilter where id = :id LIMIT 1")
-    Flowable<ReportFilter> getRemote(long id);
-
-    @Insert
-    void insert(ReportFilter... entity);
-
-    @Insert
-    void insertAll(ReportFilter... entities);
-
-    @Update
-    void update(ReportFilter... entity);
-
-    @Update
-    void updateAll(ReportFilter... entities);
-
-    @Delete
-    void delete(ReportFilter entity);
-
-    @Delete
-    void deleteAll(ReportFilter... entities);
+    @Override
+    public Integer convertToDatabaseValue(ReportTimePeriod entityProperty) {
+        return (entityProperty != null) ? entityProperty.ordinal() : -1;
+    }
 }

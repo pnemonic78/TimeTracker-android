@@ -29,54 +29,23 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time.model;
+package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
-
-import com.tikalk.worktracker.model.TikalDao;
-
-import java.util.List;
-
-import io.reactivex.Flowable;
+import org.greenrobot.greendao.converter.PropertyConverter;
 
 /**
- * Time record DAO.
+ * Report time period converter.
  *
- * @author Moshe Waisberg.
+ * @author moshe on 2017/05/29.
  */
-@Dao
-public interface TimeRecordDao extends TikalDao<TimeRecord> {
-    @Query("SELECT * FROM timeRecord")
-    Flowable<List<TimeRecord>> getAll();
+public class EntityStatusConverter implements PropertyConverter<EntityStatus, Integer> {
+    @Override
+    public EntityStatus convertToEntityProperty(Integer databaseValue) {
+        return (databaseValue != null) && (databaseValue >= 0) ? EntityStatus.values()[databaseValue] : EntityStatus.INSERTED;
+    }
 
-    @Query("SELECT * FROM timeRecord WHERE userId = :userId")
-    Flowable<List<TimeRecord>> getAll(long userId);
-
-    @Query("SELECT * FROM timeRecord where _id = :id LIMIT 1")
-    Flowable<TimeRecord> get(long id);
-
-    @Query("SELECT * FROM timeRecord where id = :id LIMIT 1")
-    Flowable<TimeRecord> getRemote(long id);
-
-    @Insert
-    void insert(TimeRecord... entity);
-
-    @Insert
-    void insertAll(TimeRecord... entities);
-
-    @Update
-    void update(TimeRecord... entity);
-
-    @Update
-    void updateAll(TimeRecord... entities);
-
-    @Delete
-    void delete(TimeRecord entity);
-
-    @Delete
-    void deleteAll(TimeRecord... entities);
+    @Override
+    public Integer convertToDatabaseValue(EntityStatus entityProperty) {
+        return (entityProperty != null) ? entityProperty.ordinal() : -1;
+    }
 }

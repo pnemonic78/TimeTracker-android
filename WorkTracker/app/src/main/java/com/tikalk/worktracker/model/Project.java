@@ -31,7 +31,9 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Entity;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Project entity.
@@ -40,6 +42,34 @@ import android.arch.persistence.room.Entity;
  */
 @Entity
 public class Project extends TikalEntity {
-    public String name;
-    public String description;
+
+    @NotNull
+    private String name;
+    private String description;
+
+    @Generated(hash = 1944496695)
+    public Project(@NotNull String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    @Generated(hash = 1767516619)
+    public Project() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

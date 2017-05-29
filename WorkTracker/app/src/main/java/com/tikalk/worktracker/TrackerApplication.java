@@ -32,9 +32,11 @@
 package com.tikalk.worktracker;
 
 import android.app.Application;
-import android.arch.persistence.room.Room;
 
-import com.tikalk.worktracker.model.AppDatabase;
+import com.tikalk.worktracker.model.DaoMaster;
+import com.tikalk.worktracker.model.DaoSession;
+
+import org.greenrobot.greendao.database.Database;
 
 /**
  * Tikal work tracker application.
@@ -43,11 +45,19 @@ import com.tikalk.worktracker.model.AppDatabase;
  */
 public class TrackerApplication extends Application {
 
+    private DaoSession daoSession;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, AppDatabase.DB_NAME)
-                .build();
+        // Init db.
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this,  "tracker");
+        Database db =  helper.getWritableDb();
+        daoSession = new DaoMaster(db).newSession();
+    }
+
+    public DaoSession getDaoSession() {
+        return daoSession;
     }
 }

@@ -31,39 +31,23 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Database;
-import android.arch.persistence.room.RoomDatabase;
-import android.arch.persistence.room.TypeConverters;
+import android.net.Uri;
 
-import com.tikalk.worktracker.time.model.ReportFilter;
-import com.tikalk.worktracker.time.model.ReportFilterDao;
-import com.tikalk.worktracker.time.model.TimeRecord;
-import com.tikalk.worktracker.time.model.TimeRecordDao;
+import org.greenrobot.greendao.converter.PropertyConverter;
 
 /**
- * Application database.
+ * Uri converter.
  *
  * @author Moshe Waisberg.
  */
-@Database(entities = {
-        Project.class,
-        ProjectTask.class,
-        ReportFilter.class,
-        TimeRecord.class,
-        User.class},
-        version = 1)
-@TypeConverters({TikalConverter.class})
-public abstract class AppDatabase extends RoomDatabase {
+public class UriConverter implements PropertyConverter<Uri, String> {
+    @Override
+    public Uri convertToEntityProperty(String databaseValue) {
+        return (databaseValue != null) ? Uri.parse(databaseValue) : null;
+    }
 
-    public static final String DB_NAME = "tracker";
-
-    public abstract ProjectDao projectDao();
-
-    public abstract ProjectTaskDao projectTaskDao();
-
-    public abstract ReportFilterDao reportFilterDao();
-
-    public abstract TimeRecordDao timeRecordDao();
-
-    public abstract UserDao userDao();
+    @Override
+    public String convertToDatabaseValue(Uri entityProperty) {
+        return (entityProperty != null) ? entityProperty.toString() : null;
+    }
 }

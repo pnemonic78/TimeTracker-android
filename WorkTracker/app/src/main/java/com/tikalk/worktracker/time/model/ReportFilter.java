@@ -31,50 +31,208 @@
  */
 package com.tikalk.worktracker.time.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-
 import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ReportTimePeriod;
+import com.tikalk.worktracker.model.ReportTimePeriodConverter;
 import com.tikalk.worktracker.model.TikalEntity;
 import com.tikalk.worktracker.model.User;
 
-import java.sql.Date;
+import org.greenrobot.greendao.annotation.Convert;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.ToOne;
+import org.greenrobot.greendao.annotation.Transient;
+
+import java.util.Date;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Report filter entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(foreignKeys = {
-        @ForeignKey(entity = Project.class,
-                parentColumns = "_id",
-                childColumns = "projectId"),
-        @ForeignKey(entity = ProjectTask.class,
-                parentColumns = "_id",
-                childColumns = "projectTaskId"),
-        @ForeignKey(entity = User.class,
-                parentColumns = "_id",
-                childColumns = "userId")})
+@Entity
 public class ReportFilter extends TikalEntity {
-    //    @NonNull
-//    public User user;
-    public long userId;
-    //    @Nullable
-//    public Project project;
-    public Long projectId;
-    //    @Nullable
-//    public ProjectTask task;
-    public Long projectTaskId;
-    public ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
-    public Date start;
-    public Date finish;
-    public String favorite;
-    public boolean showProjectField;
-    public boolean showTaskField;
-    public boolean showStartField;
-    public boolean showFinishField;
-    public boolean showDurationField;
-    public boolean showNotesField;
+
+    @NotNull
+    //FIXME @ToOne
+    @Transient
+    private User user;
+    //FIXME @ToOne
+    @Transient
+    private Project project;
+    //FIXME @ToOne
+    @Transient
+    private ProjectTask task;
+    private Long projectTaskId;
+    @Convert(converter = ReportTimePeriodConverter.class, columnType = Integer.class)
+    private ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
+    private Date start;
+    private Date finish;
+    private String favorite;
+    private boolean showProjectField;
+    private boolean showTaskField;
+    private boolean showStartField;
+    private boolean showFinishField;
+    private boolean showDurationField;
+    private boolean showNotesField;
+
+    @Generated(hash = 1863398193)
+    public ReportFilter(Long projectTaskId, ReportTimePeriod period, Date start, Date finish,
+            String favorite, boolean showProjectField, boolean showTaskField,
+            boolean showStartField, boolean showFinishField, boolean showDurationField,
+            boolean showNotesField) {
+        this.projectTaskId = projectTaskId;
+        this.period = period;
+        this.start = start;
+        this.finish = finish;
+        this.favorite = favorite;
+        this.showProjectField = showProjectField;
+        this.showTaskField = showTaskField;
+        this.showStartField = showStartField;
+        this.showFinishField = showFinishField;
+        this.showDurationField = showDurationField;
+        this.showNotesField = showNotesField;
+    }
+
+    @Generated(hash = 422264460)
+    public ReportFilter() {
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public ProjectTask getTask() {
+        return task;
+    }
+
+    public void setTask(ProjectTask task) {
+        this.task = task;
+    }
+
+    public Long getProjectTaskId() {
+        return projectTaskId;
+    }
+
+    public void setProjectTaskId(Long projectTaskId) {
+        this.projectTaskId = projectTaskId;
+    }
+
+    public ReportTimePeriod getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(ReportTimePeriod period) {
+        this.period = period;
+    }
+
+    public Date getStart() {
+        return start;
+    }
+
+    public void setStart(Date start) {
+        this.start = start;
+    }
+
+    public Date getFinish() {
+        return finish;
+    }
+
+    public void setFinish(Date finish) {
+        this.finish = finish;
+    }
+
+    public String getFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(String favorite) {
+        this.favorite = favorite;
+    }
+
+    public boolean isShowProjectField() {
+        return showProjectField;
+    }
+
+    public void setShowProjectField(boolean showProjectField) {
+        this.showProjectField = showProjectField;
+    }
+
+    public boolean isShowTaskField() {
+        return showTaskField;
+    }
+
+    public void setShowTaskField(boolean showTaskField) {
+        this.showTaskField = showTaskField;
+    }
+
+    public boolean isShowStartField() {
+        return showStartField;
+    }
+
+    public void setShowStartField(boolean showStartField) {
+        this.showStartField = showStartField;
+    }
+
+    public boolean isShowFinishField() {
+        return showFinishField;
+    }
+
+    public void setShowFinishField(boolean showFinishField) {
+        this.showFinishField = showFinishField;
+    }
+
+    public boolean isShowDurationField() {
+        return showDurationField;
+    }
+
+    public void setShowDurationField(boolean showDurationField) {
+        this.showDurationField = showDurationField;
+    }
+
+    public boolean isShowNotesField() {
+        return showNotesField;
+    }
+
+    public void setShowNotesField(boolean showNotesField) {
+        this.showNotesField = showNotesField;
+    }
+
+    public boolean getShowProjectField() {
+        return this.showProjectField;
+    }
+
+    public boolean getShowTaskField() {
+        return this.showTaskField;
+    }
+
+    public boolean getShowStartField() {
+        return this.showStartField;
+    }
+
+    public boolean getShowFinishField() {
+        return this.showFinishField;
+    }
+
+    public boolean getShowDurationField() {
+        return this.showDurationField;
+    }
+
+    public boolean getShowNotesField() {
+        return this.showNotesField;
+    }
 }

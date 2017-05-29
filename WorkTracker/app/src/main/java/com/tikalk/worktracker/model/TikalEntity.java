@@ -31,7 +31,9 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.PrimaryKey;
+import org.greenrobot.greendao.annotation.Convert;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.NotNull;
 
 /**
  * Tikal base entity.
@@ -42,14 +44,52 @@ public abstract class TikalEntity {
     /**
      * Local ID (Android database).
      */
-    @PrimaryKey
-    public long _id;
+    @Id
+    private Long primaryId;
     /**
      * Remote ID (server).
      */
-    public long id;
+    private long id;
     /**
      * Entity version to resolve conflicts.
      */
-    public int version;
+    private int version;
+    /**
+     * The entity status.
+     */
+    @NotNull
+    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
+    private EntityStatus entityStatus;
+
+    public long getPrimaryId() {
+        return primaryId;
+    }
+
+    public void setPrimaryId(long primaryId) {
+        this.primaryId = primaryId;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public EntityStatus getEntityStatus() {
+        return entityStatus;
+    }
+
+    public void setEntityStatus(EntityStatus entityStatus) {
+        this.entityStatus = entityStatus;
+    }
 }

@@ -31,11 +31,12 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Entity;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 
-import static android.arch.persistence.room.util.StringUtil.EMPTY_STRING_ARRAY;
+import org.greenrobot.greendao.annotation.Convert;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * User entity.
@@ -47,26 +48,92 @@ public class User extends TikalEntity {
     /**
      * Unique username.
      */
-    @NonNull
-    public String username;
+    @NotNull
+    private String username;
     /**
      * The e-mail address for communications.
      */
-    public String email;
+    private String email;
     /**
      * The display name, e.g. full name.
      */
-    public String displayName;
+    private String displayName;
     /**
      * The telephone number for communications.
      */
-    public String telephone;
+    private String telephone;
     /**
      * The photo URI.
      */
-    public Uri photo;
+    @Convert(converter = UriConverter.class, columnType = String.class)
+    private Uri photo;
     /**
-     * The roles.
+     * The role.
      */
-    public String[] roles = EMPTY_STRING_ARRAY;
+    @NotNull
+    @Convert(converter = RoleConverter.class, columnType = Integer.class)
+    private Role role;
+
+    @Generated(hash = 1005269695)
+    public User(@NotNull String username, String email, String displayName,
+            String telephone, Uri photo, @NotNull Role role) {
+        this.username = username;
+        this.email = email;
+        this.displayName = displayName;
+        this.telephone = telephone;
+        this.photo = photo;
+        this.role = role;
+    }
+
+    @Generated(hash = 586692638)
+    public User() {
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public Uri getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(Uri photo) {
+        this.photo = photo;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
 }

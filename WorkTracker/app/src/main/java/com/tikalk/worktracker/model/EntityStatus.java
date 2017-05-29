@@ -31,33 +31,28 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Update;
-
 /**
- * Tikal base DAO.
+ * Status of a task record.
  *
  * @author Moshe Waisberg.
  */
-@Dao
-public interface TikalDao<E extends TikalEntity> {
-//    @Insert
-//    void insert(E... entity);
-//
-//    @Insert
-//    void insertAll(E... entities);
-//
-//    @Update
-//    void update(E... entity);
-//
-//    @Update
-//    void updateAll(E... entities);
-//
-//    @Delete
-//    void delete(E entity);
-//
-//    @Delete
-//    void deleteAll(E... entities);
+public enum EntityStatus {
+
+    /**
+     * Inserted (New)
+     */
+    INSERTED,
+    /**
+     * Current (Synced)
+     */
+    CURRENT,
+    /**
+     * Modified (Changed)
+     */
+    MODIFIED,
+    /**
+     * Deleted
+     */
+    DELETED
+
 }

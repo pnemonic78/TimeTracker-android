@@ -31,47 +31,21 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
-
-import java.util.List;
-
-import io.reactivex.Flowable;
+import org.greenrobot.greendao.converter.PropertyConverter;
 
 /**
- * Project DAO.
+ * Role converter.
  *
- * @author Moshe Waisberg.
+ * @author moshe on 2017/05/29.
  */
-@Dao
-public interface ProjectDao extends TikalDao<Project> {
-    @Query("SELECT * FROM project")
-    Flowable<List<Project>> getAll();
+public class RoleConverter implements PropertyConverter<Role, Integer> {
+    @Override
+    public Role convertToEntityProperty(Integer databaseValue) {
+        return (databaseValue != null) && (databaseValue >= 0) ? Role.values()[databaseValue] : Role.DEFAULT;
+    }
 
-    @Query("SELECT * FROM project where _id = :id LIMIT 1")
-    Flowable<Project> get(long id);
-
-    @Query("SELECT * FROM project where id = :id LIMIT 1")
-    Flowable<Project> getRemote(long id);
-
-    @Insert
-    void insert(Project... entity);
-
-    @Insert
-    void insertAll(Project... entities);
-
-    @Update
-    void update(Project... entity);
-
-    @Update
-    void updateAll(Project... entities);
-
-    @Delete
-    void delete(Project entity);
-
-    @Delete
-    void deleteAll(Project... entities);
+    @Override
+    public Integer convertToDatabaseValue(Role entityProperty) {
+        return (entityProperty != null) ? entityProperty.ordinal() : -1;
+    }
 }

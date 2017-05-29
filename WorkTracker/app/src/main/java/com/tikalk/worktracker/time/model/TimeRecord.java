@@ -31,45 +31,98 @@
  */
 package com.tikalk.worktracker.time.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.support.annotation.NonNull;
-
 import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
 import com.tikalk.worktracker.model.User;
 
-import java.sql.Date;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.ToOne;
+import org.greenrobot.greendao.annotation.Transient;
+
+import java.util.Date;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * Time record entity. Represents some work done for a project task.
  *
  * @author Moshe Waisberg.
  */
-@Entity(foreignKeys = {
-        @ForeignKey(entity = Project.class,
-                parentColumns = "_id",
-                childColumns = "projectId"),
-        @ForeignKey(entity = ProjectTask.class,
-                parentColumns = "_id",
-                childColumns = "projectTaskId"),
-        @ForeignKey(entity = User.class,
-                parentColumns = "_id",
-                childColumns = "userId")})
+@Entity
 public class TimeRecord extends TikalEntity {
-    //    @NonNull
-//    public User user;
-    public long userId;
-    //    @NonNull
-//    public Project project;
-    public long projectId;
-    //    @NonNull
-//    public ProjectTask task;
-    public long projectTaskId;
-    public Date start;
-    public Date finish;
-    public String note;
-    @NonNull
-    public TaskRecordStatus status = TaskRecordStatus.INSERTED;
+    @NotNull
+    //FIXME @ToOne
+    @Transient
+    private User user;
+    @NotNull
+    //FIXME @ToOne
+    @Transient
+    private Project project;
+    @NotNull
+    //FIXME @ToOne
+    @Transient
+    private ProjectTask task;
+    private Date start;
+    private Date finish;
+    private String note;
+
+    @Generated(hash = 254166738)
+    public TimeRecord(Date start, Date finish, String note) {
+        this.start = start;
+        this.finish = finish;
+        this.note = note;
+    }
+
+    @Generated(hash = 1155170562)
+    public TimeRecord() {
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public ProjectTask getTask() {
+        return task;
+    }
+
+    public void setTask(ProjectTask task) {
+        this.task = task;
+    }
+
+    public Date getStart() {
+        return start;
+    }
+
+    public void setStart(Date start) {
+        this.start = start;
+    }
+
+    public Date getFinish() {
+        return finish;
+    }
+
+    public void setFinish(Date finish) {
+        this.finish = finish;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
 }
