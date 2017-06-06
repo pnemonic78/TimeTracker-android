@@ -35,9 +35,9 @@ import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 
-import com.tikalk.worktracker.time.model.ReportFilter;
+import com.tikalk.worktracker.time.model.ReportFilterEntity;
 import com.tikalk.worktracker.time.model.ReportFilterDao;
-import com.tikalk.worktracker.time.model.TimeRecord;
+import com.tikalk.worktracker.time.model.TimeRecordEntity;
 import com.tikalk.worktracker.time.model.TimeRecordDao;
 
 /**
@@ -46,11 +46,11 @@ import com.tikalk.worktracker.time.model.TimeRecordDao;
  * @author Moshe Waisberg.
  */
 @Database(entities = {
-        Project.class,
-        ProjectTask.class,
-        ReportFilter.class,
-        TimeRecord.class,
-        User.class},
+        ProjectEntity.class,
+        ProjectTaskEntity.class,
+        ReportFilterEntity.class,
+        TimeRecordEntity.class,
+        UserEntity.class},
         version = 1)
 @TypeConverters({TikalConverter.class})
 public abstract class AppDatabase extends RoomDatabase {

@@ -32,41 +32,32 @@
 package com.tikalk.worktracker.model;
 
 import android.arch.persistence.room.Entity;
-import android.net.Uri;
-import android.support.annotation.NonNull;
-
-import static android.arch.persistence.room.util.StringUtil.EMPTY_STRING_ARRAY;
+import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Ignore;
 
 /**
- * User entity.
+ * Task entity that belongs to a project entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-public class User extends TikalEntity {
-    /**
-     * Unique username.
-     */
-    @NonNull
-    public String username;
-    /**
-     * The e-mail address for communications.
-     */
-    public String email;
-    /**
-     * The display name, e.g. full name.
-     */
-    public String displayName;
-    /**
-     * The telephone number for communications.
-     */
-    public String telephone;
-    /**
-     * The photo URI.
-     */
-    public Uri photo;
-    /**
-     * The roles.
-     */
-    public String[] roles = EMPTY_STRING_ARRAY;
+@Entity(foreignKeys = @ForeignKey(entity = ProjectEntity.class,
+                parentColumns = "_id",
+                childColumns = "projectId"))
+public class ProjectTaskEntity extends TikalEntity {
+
+    public long projectId;
+    public String name;
+    public String description;
+
+    @Ignore
+    private ProjectEntity project;
+
+    public ProjectEntity getProject() {
+        return project;
+    }
+
+    public void setProject(ProjectEntity project) {
+        this.project = project;
+        this.projectId = (project != null) ? project.id : 0;
+    }
 }

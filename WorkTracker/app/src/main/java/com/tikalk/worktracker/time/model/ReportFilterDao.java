@@ -49,34 +49,34 @@ import io.reactivex.Flowable;
  * @author Moshe Waisberg.
  */
 @Dao
-public interface ReportFilterDao extends TikalDao<ReportFilter> {
+public interface ReportFilterDao extends TikalDao<ReportFilterEntity> {
     @Query("SELECT * FROM reportFilter")
-    Flowable<List<ReportFilter>> queryAll();
+    Flowable<List<ReportFilterEntity>> queryAll();
 
     @Query("SELECT * FROM reportFilter WHERE userId = :userId")
-    Flowable<List<ReportFilter>> queryAll(long userId);
+    Flowable<List<ReportFilterEntity>> queryAll(long userId);
 
     @Query("SELECT * FROM reportFilter WHERE userId = :userId AND favorite IS NOT NULL AND favorite <> ''")
-    Flowable<List<ReportFilter>> queryFavorites(long userId);
+    Flowable<List<ReportFilterEntity>> queryFavorites(long userId);
 
     @Query("SELECT * FROM reportFilter where _id = :id LIMIT 1")
-    Flowable<ReportFilter> query(long id);
+    Flowable<ReportFilterEntity> query(long id);
 
     @Insert
-    void insert(ReportFilter entity);
+    void insert(ReportFilterEntity entity);
 
     @Insert
-    void insertAll(ReportFilter... entities);
+    void insertAll(ReportFilterEntity... entities);
 
     @Update
-    void update(ReportFilter entity);
+    void update(ReportFilterEntity entity);
 
     @Update
-    void updateAll(ReportFilter... entities);
+    void updateAll(ReportFilterEntity... entities);
 
     @Delete
-    void delete(ReportFilter entity);
+    void delete(ReportFilterEntity entity);
 
     @Delete
-    void deleteAll(ReportFilter... entities);
+    void deleteAll(ReportFilterEntity... entities);
 }

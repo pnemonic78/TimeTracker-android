@@ -29,17 +29,52 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model;
+package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
+
+import com.tikalk.worktracker.model.ProjectEntity;
+import com.tikalk.worktracker.model.ProjectTaskEntity;
+import com.tikalk.worktracker.model.ReportTimePeriod;
+import com.tikalk.worktracker.model.TikalEntity;
+import com.tikalk.worktracker.model.UserEntity;
+
+import java.sql.Date;
 
 /**
- * Project entity.
+ * Report filter entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-public class Project extends TikalEntity {
-    public String name;
-    public String description;
+@Entity(foreignKeys = {
+        @ForeignKey(entity = ProjectEntity.class,
+                parentColumns = "_id",
+                childColumns = "projectId"),
+        @ForeignKey(entity = ProjectTaskEntity.class,
+                parentColumns = "_id",
+                childColumns = "projectTaskId"),
+        @ForeignKey(entity = UserEntity.class,
+                parentColumns = "_id",
+                childColumns = "userId")})
+public class ReportFilterEntity extends TikalEntity {
+    //    @NonNull
+//    public UserEntity user;
+    public long userId;
+    //    @Nullable
+//    public ProjectEntity project;
+    public Long projectId;
+    //    @Nullable
+//    public ProjectTaskEntity task;
+    public Long projectTaskId;
+    public ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
+    public Date start;
+    public Date finish;
+    public String favorite;
+    public boolean showProjectField;
+    public boolean showTaskField;
+    public boolean showStartField;
+    public boolean showFinishField;
+    public boolean showDurationField;
+    public boolean showNotesField;
 }

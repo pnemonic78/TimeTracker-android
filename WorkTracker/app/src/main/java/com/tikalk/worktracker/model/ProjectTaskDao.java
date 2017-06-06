@@ -47,31 +47,31 @@ import io.reactivex.Flowable;
  * @author Moshe Waisberg.
  */
 @Dao
-public interface ProjectTaskDao extends TikalDao<ProjectTask> {
-    @Query("SELECT * FROM projectTask")
-    Flowable<List<ProjectTask>> queryAll();
+public interface ProjectTaskDao extends TikalDao<ProjectTaskEntity> {
+    @Query("SELECT * FROM projectTask AS pt INNER JOIN project AS p ON p.id = pt.projectId")
+    Flowable<List<ProjectTaskEntity>> queryAll();
 
     @Query("SELECT * FROM projectTask WHERE projectId = :projectId")
-    Flowable<List<ProjectTask>> queryAll(long projectId);
+    Flowable<List<ProjectTaskEntity>> queryAll(long projectId);
 
     @Query("SELECT * FROM projectTask where _id = :id LIMIT 1")
-    Flowable<ProjectTask> query(long id);
+    Flowable<ProjectTaskEntity> query(long id);
 
     @Insert
-    void insert(ProjectTask entity);
+    void insert(ProjectTaskEntity entity);
 
     @Insert
-    void insertAll(ProjectTask... entities);
+    void insertAll(ProjectTaskEntity... entities);
 
     @Update
-    void update(ProjectTask entity);
+    void update(ProjectTaskEntity entity);
 
     @Update
-    void updateAll(ProjectTask... entities);
+    void updateAll(ProjectTaskEntity... entities);
 
     @Delete
-    void delete(ProjectTask entity);
+    void delete(ProjectTaskEntity entity);
 
     @Delete
-    void deleteAll(ProjectTask... entities);
+    void deleteAll(ProjectTaskEntity... entities);
 }

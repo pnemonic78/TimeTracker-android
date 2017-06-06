@@ -42,33 +42,33 @@ import java.util.List;
 import io.reactivex.Flowable;
 
 /**
- * User DAO.
+ * UserEntity DAO.
  *
  * @author Moshe Waisberg.
  */
 @Dao
-public interface UserDao extends TikalDao<User> {
+public interface UserDao extends TikalDao<UserEntity> {
     @Query("SELECT * FROM user")
-    Flowable<List<User>> queryAll();
+    Flowable<List<UserEntity>> queryAll();
 
     @Query("SELECT * FROM user where _id = :id LIMIT 1")
-    Flowable<User> query(long id);
+    Flowable<UserEntity> query(long id);
 
     @Insert
-    void insert(User entity);
+    void insert(UserEntity entity);
 
     @Insert
-    void insertAll(User... entities);
+    void insertAll(UserEntity... entities);
 
     @Update
-    void update(User entity);
+    void update(UserEntity entity);
 
     @Update
-    void updateAll(User... entities);
+    void updateAll(UserEntity... entities);
 
     @Delete
-    void delete(User entity);
+    void delete(UserEntity entity);
 
     @Delete
-    void deleteAll(User... entities);
+    void deleteAll(UserEntity... entities);
 }
