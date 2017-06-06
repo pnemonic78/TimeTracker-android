@@ -36,7 +36,7 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
 
 /**
- * Task that belongs to a project entity.
+ * Task entity that belongs to a project entity.
  *
  * @author Moshe Waisberg.
  */
@@ -53,9 +53,6 @@ public class ProjectTask extends TikalEntity {
     private Project project;
 
     public Project getProject() {
-        if (project == null) {
-            //TODO fetch from projectDao
-        }
         return project;
     }
 
