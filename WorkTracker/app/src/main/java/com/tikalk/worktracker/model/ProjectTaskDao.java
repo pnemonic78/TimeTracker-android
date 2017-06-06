@@ -49,25 +49,22 @@ import io.reactivex.Flowable;
 @Dao
 public interface ProjectTaskDao extends TikalDao<ProjectTask> {
     @Query("SELECT * FROM projectTask")
-    Flowable<List<ProjectTask>> getAll();
+    Flowable<List<ProjectTask>> queryAll();
 
     @Query("SELECT * FROM projectTask WHERE projectId = :projectId")
-    Flowable<List<ProjectTask>> getAll(long projectId);
+    Flowable<List<ProjectTask>> queryAll(long projectId);
 
     @Query("SELECT * FROM projectTask where _id = :id LIMIT 1")
-    Flowable<ProjectTask> get(long id);
-
-    @Query("SELECT * FROM projectTask where id = :id LIMIT 1")
-    Flowable<ProjectTask> getRemote(long id);
+    Flowable<ProjectTask> query(long id);
 
     @Insert
-    void insert(ProjectTask... entity);
+    void insert(ProjectTask entity);
 
     @Insert
     void insertAll(ProjectTask... entities);
 
     @Update
-    void update(ProjectTask... entity);
+    void update(ProjectTask entity);
 
     @Update
     void updateAll(ProjectTask... entities);

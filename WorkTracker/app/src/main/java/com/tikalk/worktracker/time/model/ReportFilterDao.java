@@ -51,28 +51,25 @@ import io.reactivex.Flowable;
 @Dao
 public interface ReportFilterDao extends TikalDao<ReportFilter> {
     @Query("SELECT * FROM reportFilter")
-    Flowable<List<ReportFilter>> getAll();
+    Flowable<List<ReportFilter>> queryAll();
 
     @Query("SELECT * FROM reportFilter WHERE userId = :userId")
-    Flowable<List<ReportFilter>> getAll(long userId);
+    Flowable<List<ReportFilter>> queryAll(long userId);
 
     @Query("SELECT * FROM reportFilter WHERE userId = :userId AND favorite IS NOT NULL AND favorite <> ''")
-    Flowable<List<ReportFilter>> getFavorites(long userId);
+    Flowable<List<ReportFilter>> queryFavorites(long userId);
 
     @Query("SELECT * FROM reportFilter where _id = :id LIMIT 1")
-    Flowable<ReportFilter> get(long id);
-
-    @Query("SELECT * FROM reportFilter where id = :id LIMIT 1")
-    Flowable<ReportFilter> getRemote(long id);
+    Flowable<ReportFilter> query(long id);
 
     @Insert
-    void insert(ReportFilter... entity);
+    void insert(ReportFilter entity);
 
     @Insert
     void insertAll(ReportFilter... entities);
 
     @Update
-    void update(ReportFilter... entity);
+    void update(ReportFilter entity);
 
     @Update
     void updateAll(ReportFilter... entities);

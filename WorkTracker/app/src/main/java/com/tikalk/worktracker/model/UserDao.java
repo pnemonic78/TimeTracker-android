@@ -49,22 +49,19 @@ import io.reactivex.Flowable;
 @Dao
 public interface UserDao extends TikalDao<User> {
     @Query("SELECT * FROM user")
-    Flowable<List<User>> getAll();
+    Flowable<List<User>> queryAll();
 
     @Query("SELECT * FROM user where _id = :id LIMIT 1")
-    Flowable<User> get(long id);
-
-    @Query("SELECT * FROM user where id = :id LIMIT 1")
-    Flowable<User> getRemote(long id);
+    Flowable<User> query(long id);
 
     @Insert
-    void insert(User... entity);
+    void insert(User entity);
 
     @Insert
     void insertAll(User... entities);
 
     @Update
-    void update(User... entity);
+    void update(User entity);
 
     @Update
     void updateAll(User... entities);

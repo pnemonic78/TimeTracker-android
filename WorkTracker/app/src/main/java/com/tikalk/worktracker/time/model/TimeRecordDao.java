@@ -51,25 +51,22 @@ import io.reactivex.Flowable;
 @Dao
 public interface TimeRecordDao extends TikalDao<TimeRecord> {
     @Query("SELECT * FROM timeRecord")
-    Flowable<List<TimeRecord>> getAll();
+    Flowable<List<TimeRecord>> queryAll();
 
     @Query("SELECT * FROM timeRecord WHERE userId = :userId")
-    Flowable<List<TimeRecord>> getAll(long userId);
+    Flowable<List<TimeRecord>> queryAll(long userId);
 
     @Query("SELECT * FROM timeRecord where _id = :id LIMIT 1")
-    Flowable<TimeRecord> get(long id);
-
-    @Query("SELECT * FROM timeRecord where id = :id LIMIT 1")
-    Flowable<TimeRecord> getRemote(long id);
+    Flowable<TimeRecord> query(long id);
 
     @Insert
-    void insert(TimeRecord... entity);
+    void insert(TimeRecord entity);
 
     @Insert
     void insertAll(TimeRecord... entities);
 
     @Update
-    void update(TimeRecord... entity);
+    void update(TimeRecord entity);
 
     @Update
     void updateAll(TimeRecord... entities);

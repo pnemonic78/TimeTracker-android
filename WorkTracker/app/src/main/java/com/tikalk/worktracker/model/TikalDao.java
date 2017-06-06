@@ -44,13 +44,13 @@ import android.arch.persistence.room.Update;
 @Dao
 public interface TikalDao<E extends TikalEntity> {
 //    @Insert
-//    void insert(E... entity);
+//    void insert(E entity);
 //
 //    @Insert
 //    void insertAll(E... entities);
 //
 //    @Update
-//    void update(E... entity);
+//    void update(E entity);
 //
 //    @Update
 //    void updateAll(E... entities);
