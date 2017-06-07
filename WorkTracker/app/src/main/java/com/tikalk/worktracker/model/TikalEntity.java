@@ -31,65 +31,70 @@
  */
 package com.tikalk.worktracker.model;
 
+import io.realm.RealmObject;
+
 /**
  * Tikal base entity.
  *
  * @author Moshe Waisberg.
  */
-public interface TikalEntity {
-    /**
-     * Get the local database ID.
-     *
-     * @return the id.
-     */
-    long getPrimaryId();
+public abstract class TikalEntity extends RealmObject {
 
-    /**
-     * Set the local database ID.
-     *
-     * @param primaryId the id.
-     */
-    void setPrimaryId(long primaryId);
+    private long id;
+    private int version;
+    private int entityStatus = EntityStatus.INSERTED.ordinal();
 
     /**
      * Get the remote server ID.
      *
      * @return the id.
      */
-    long getId();
+    public long getId() {
+        return id;
+    }
 
     /**
      * Set the remote server ID.
      *
      * @param id the id.
      */
-    void setId(long id);
+    public void setId(long id) {
+        this.id = id;
+    }
 
     /**
      * Get the entity version to resolve conflicts.
      *
      * @return the version.
      */
-    int getVersion();
+    public int getVersion() {
+        return version;
+    }
 
     /**
      * Set the entity version to resolve conflicts.
      *
      * @param version the version.
      */
-    void setVersion(int version);
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
     /**
      * Get the entity status.
      *
      * @return the status.
      */
-    EntityStatus getEntityStatus();
+    public EntityStatus getEntityStatus() {
+        return EntityStatus.values()[entityStatus];
+    }
 
     /**
      * Set the entity status.
      *
      * @param entityStatus the status.
      */
-    void setEntityStatus(EntityStatus entityStatus);
+    public void setEntityStatus(EntityStatus entityStatus) {
+        this.entityStatus = entityStatus.ordinal();
+    }
 }

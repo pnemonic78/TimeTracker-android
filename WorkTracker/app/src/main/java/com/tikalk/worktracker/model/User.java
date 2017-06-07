@@ -33,44 +33,20 @@ package com.tikalk.worktracker.model;
 
 import android.net.Uri;
 
-import org.greenrobot.greendao.annotation.Convert;
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.Generated;
+import io.realm.RealmModel;
+import io.realm.annotations.Required;
 
 /**
  * User entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-public class User implements TikalEntity {
-
-    /**
-     * Local ID (Android database).
-     */
-    @Id
-    private long primaryId;
-    /**
-     * Remote ID (server).
-     */
-    private long id;
-    /**
-     * Entity version to resolve conflicts.
-     */
-    private int version;
-    /**
-     * The entity status.
-     */
-    @NotNull
-    @Convert(converter = EntityStatusConverter.class, columnType = Integer.class)
-    private EntityStatus entityStatus;
+public class User extends TikalEntity implements RealmModel {
 
     /**
      * Unique username.
      */
-    @NotNull
+    @Required
     private String username;
     /**
      * The e-mail address for communications.
@@ -87,75 +63,12 @@ public class User implements TikalEntity {
     /**
      * The photo URI.
      */
-    @Convert(converter = UriConverter.class, columnType = String.class)
-    private Uri photo;
+    private String photo;
     /**
      * The role.
      */
-    @NotNull
-    @Convert(converter = RoleConverter.class, columnType = Integer.class)
-    private Role role;
-
-    @Generated(hash = 122985499)
-    public User(long primaryId, long id, int version,
-            @NotNull EntityStatus entityStatus, @NotNull String username,
-            String email, String displayName, String telephone, Uri photo,
-            @NotNull Role role) {
-        this.primaryId = primaryId;
-        this.id = id;
-        this.version = version;
-        this.entityStatus = entityStatus;
-        this.username = username;
-        this.email = email;
-        this.displayName = displayName;
-        this.telephone = telephone;
-        this.photo = photo;
-        this.role = role;
-    }
-
-    @Generated(hash = 586692638)
-    public User() {
-    }
-
-    @Override
-    public long getPrimaryId() {
-        return primaryId;
-    }
-
-    @Override
-    public void setPrimaryId(long primaryId) {
-        this.primaryId = primaryId;
-    }
-
-    @Override
-    public long getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    @Override
-    public int getVersion() {
-        return version;
-    }
-
-    @Override
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    @Override
-    public EntityStatus getEntityStatus() {
-        return entityStatus;
-    }
-
-    @Override
-    public void setEntityStatus(EntityStatus entityStatus) {
-        this.entityStatus = entityStatus;
-    }
+    @Required
+    private int role = Role.DEFAULT.ordinal();
 
     public String getUsername() {
         return username;
@@ -190,18 +103,22 @@ public class User implements TikalEntity {
     }
 
     public Uri getPhoto() {
-        return photo;
+        return photo != null ? Uri.parse(photo) : null;
     }
 
     public void setPhoto(Uri photo) {
+        this.photo = photo != null ? photo.toString() : null;
+    }
+
+    public void setPhoto(String photo) {
         this.photo = photo;
     }
 
     public Role getRole() {
-        return role;
+        return Role.values()[role];
     }
 
     public void setRole(Role role) {
-        this.role = role;
+        this.role = role.ordinal();
     }
 }
