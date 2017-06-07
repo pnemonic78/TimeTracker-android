@@ -38,7 +38,7 @@ import android.arch.persistence.room.Entity;
  *
  * @author Moshe Waisberg.
  */
-@Entity
+@Entity(tableName = "project")
 public class ProjectEntity extends TikalEntity {
     public String name;
     public String description;

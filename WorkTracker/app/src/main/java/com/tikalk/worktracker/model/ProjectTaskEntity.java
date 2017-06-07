@@ -40,7 +40,8 @@ import android.arch.persistence.room.Ignore;
  *
  * @author Moshe Waisberg.
  */
-@Entity(foreignKeys = @ForeignKey(entity = ProjectEntity.class,
+@Entity(tableName = "projectTask",
+        foreignKeys = @ForeignKey(entity = ProjectEntity.class,
                 parentColumns = "_id",
                 childColumns = "projectId"))
 public class ProjectTaskEntity extends TikalEntity {

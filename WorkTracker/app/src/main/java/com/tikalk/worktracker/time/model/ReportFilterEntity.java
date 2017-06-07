@@ -47,7 +47,8 @@ import java.sql.Date;
  *
  * @author Moshe Waisberg.
  */
-@Entity(foreignKeys = {
+@Entity(tableName = "reportFilter",
+        foreignKeys = {
         @ForeignKey(entity = ProjectEntity.class,
                 parentColumns = "_id",
                 childColumns = "projectId"),

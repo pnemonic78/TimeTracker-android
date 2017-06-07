@@ -42,7 +42,7 @@ import static android.arch.persistence.room.util.StringUtil.EMPTY_STRING_ARRAY;
  *
  * @author Moshe Waisberg.
  */
-@Entity
+@Entity(tableName = "user")
 public class UserEntity extends TikalEntity {
     /**
      * Unique username.
