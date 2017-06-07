@@ -31,48 +31,46 @@
  */
 package com.tikalk.worktracker.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.arch.persistence.room.Ignore;
-import android.support.annotation.NonNull;
+public class ProjectTask extends ProjectTaskEntity {
 
-/**
- * Task entity that belongs to a project entity.
- *
- * @author Moshe Waisberg.
- */
-@Entity(tableName = "projectTask",
-        foreignKeys = @ForeignKey(entity = ProjectEntity.class,
-                parentColumns = "_id",
-                childColumns = "projectId"))
-public class ProjectTaskEntity extends TikalEntity {
+    // Need this for the Room DAO generator.
+    private long projectRemoteId;
+    // Need this for the Room DAO generator.
+    private int projectVersion;
+    // Need this for the Room DAO generator.
+    private String projectName;
+    // Need this for the Room DAO generator.
+    private String projectDescription;
 
-    private long projectId;
-    public String name;
-    public String description;
-
-    @Ignore
-    private ProjectEntity project;
-
-    public long getProjectId() {
-        return projectId;
+    public long getProjectRemoteId() {
+        return getProject().id;
     }
 
-    public void setProjectId(long projectId) {
-        this.projectId = projectId;
-        getProject()._id = projectId;
+    public void setProjectRemoteId(long projectRemoteId) {
+        getProject().id = projectRemoteId;
     }
 
-    @NonNull
-    public ProjectEntity getProject() {
-        if (project == null) {
-            project = new ProjectEntity();
-        }
-        return project;
+    public int getProjectVersion() {
+        return getProject().version;
     }
 
-    public void setProject(ProjectEntity project) {
-        this.project = project;
-        this.projectId = (project != null) ? project.id : 0;
+    public void setProjectVersion(int projectVersion) {
+        getProject().version = projectVersion;
+    }
+
+    public String getProjectName() {
+        return getProject().name;
+    }
+
+    public void setProjectName(String projectName) {
+        getProject().name = projectName;
+    }
+
+    public String getProjectDescription() {
+        return getProject().description;
+    }
+
+    public void setProjectDescription(String projectDescription) {
+        getProject().description = projectDescription;
     }
 }

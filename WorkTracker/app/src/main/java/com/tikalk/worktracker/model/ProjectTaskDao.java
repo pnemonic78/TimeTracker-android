@@ -48,13 +48,13 @@ import io.reactivex.Flowable;
  */
 @Dao
 public interface ProjectTaskDao extends TikalDao<ProjectTaskEntity> {
-    @Query("SELECT pt.* FROM projectTask AS pt INNER JOIN project AS p ON p.id = pt.projectId")
+    @Query("SELECT pt.*, p.id AS projectRemoteId, p.version AS projectVersion, p.name AS projectName, p.description AS projectDescription FROM projectTask AS pt INNER JOIN project AS p ON p.id = pt.projectId")
     Flowable<List<ProjectTask>> queryAll();
 
-    @Query("SELECT * FROM projectTask WHERE projectId = :projectId")
+    @Query("SELECT pt.*, p.id AS projectRemoteId, p.version AS projectVersion, p.name AS projectName, p.description AS projectDescription FROM projectTask AS pt INNER JOIN project AS p ON p.id = pt.projectId WHERE pt.projectId = :projectId")
     Flowable<List<ProjectTask>> queryAll(long projectId);
 
-    @Query("SELECT * FROM projectTask where _id = :id LIMIT 1")
+    @Query("SELECT pt.*, p.id AS projectRemoteId, p.version AS projectVersion, p.name AS projectName, p.description AS projectDescription FROM projectTask AS pt INNER JOIN project AS p ON p.id = pt.projectId WHERE pt._id = :id LIMIT 1")
     Flowable<ProjectTask> query(long id);
 
     @Insert
