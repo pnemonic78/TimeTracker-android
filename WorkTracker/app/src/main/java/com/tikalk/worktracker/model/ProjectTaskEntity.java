@@ -48,11 +48,10 @@ import android.support.annotation.NonNull;
 public class ProjectTaskEntity extends TikalEntity {
 
     private long projectId;
-    public String name;
-    public String description;
-
     @Ignore
     private ProjectEntity project;
+    public String name;
+    public String description;
 
     public long getProjectId() {
         return projectId;

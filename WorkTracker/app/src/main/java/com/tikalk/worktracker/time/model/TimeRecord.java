@@ -29,10 +29,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model;
+package com.tikalk.worktracker.time.model;
 
-public class ProjectTask extends ProjectTaskEntity {
+/**
+ * Time record entity. Represents some work done for a project task.
+ *
+ * @author Moshe Waisberg.
+ */
+public class TimeRecord extends TimeRecordEntity {
 
+    // Need this for the Room DAO generator.
+    private long projectId;
     // Need this for the Room DAO generator.
     private long projectRemoteId;
     // Need this for the Room DAO generator.
@@ -41,36 +48,84 @@ public class ProjectTask extends ProjectTaskEntity {
     private String projectName;
     // Need this for the Room DAO generator.
     private String projectDescription;
+    // Need this for the Room DAO generator.
+    private long projectTaskRemoteId;
+    // Need this for the Room DAO generator.
+    private int projectTaskVersion;
+    // Need this for the Room DAO generator.
+    private String projectTaskName;
+    // Need this for the Room DAO generator.
+    private String projectTaskDescription;
+
+    public long getProjectId() {
+        return getTask().getProjectId();
+    }
+
+    public void setProjectId(long id) {
+        getTask().setProjectId(id);
+    }
 
     public long getProjectRemoteId() {
-        return getProject().id;
+        return getTask().getProjectRemoteId();
     }
 
     public void setProjectRemoteId(long id) {
-        getProject().id = id;
+        getTask().setProjectRemoteId(id);
     }
 
     public int getProjectVersion() {
-        return getProject().version;
+        return getTask().getProjectVersion();
     }
 
     public void setProjectVersion(int version) {
-        getProject().version = version;
+        getTask().setProjectVersion(version);
     }
 
     public String getProjectName() {
-        return getProject().name;
+        return getTask().getProjectName();
     }
 
     public void setProjectName(String name) {
-        getProject().name = name;
+        getTask().setProjectName(name);
     }
 
     public String getProjectDescription() {
-        return getProject().description;
+        return getTask().getProjectDescription();
     }
 
     public void setProjectDescription(String description) {
-        getProject().description = description;
+        getTask().setProjectDescription(description);
+    }
+
+    public long getProjectTaskRemoteId() {
+        return getTask().id;
+    }
+
+    public void setProjectTaskRemoteId(long id) {
+        getTask().id = id;
+    }
+
+    public int getProjectTaskVersion() {
+        return getTask().version;
+    }
+
+    public void setProjectTaskVersion(int version) {
+        getTask().version = version;
+    }
+
+    public String getProjectTaskName() {
+        return getTask().name;
+    }
+
+    public void setProjectTaskName(String name) {
+        getTask().name = name;
+    }
+
+    public String getProjectTaskDescription() {
+        return getTask().description;
+    }
+
+    public void setProjectTaskDescription(String description) {
+        getTask().description = description;
     }
 }

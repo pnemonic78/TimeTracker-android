@@ -33,9 +33,11 @@ package com.tikalk.worktracker.time.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Ignore;
 import android.support.annotation.NonNull;
 
 import com.tikalk.worktracker.model.ProjectEntity;
+import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ProjectTaskEntity;
 import com.tikalk.worktracker.model.TikalEntity;
 import com.tikalk.worktracker.model.UserEntity;
@@ -49,28 +51,71 @@ import java.sql.Date;
  */
 @Entity(tableName = "timeRecord",
         foreignKeys = {
-        @ForeignKey(entity = ProjectEntity.class,
-                parentColumns = "_id",
-                childColumns = "projectId"),
-        @ForeignKey(entity = ProjectTaskEntity.class,
-                parentColumns = "_id",
-                childColumns = "projectTaskId"),
-        @ForeignKey(entity = UserEntity.class,
-                parentColumns = "_id",
-                childColumns = "userId")})
+                @ForeignKey(entity = ProjectTaskEntity.class,
+                        parentColumns = "_id",
+                        childColumns = "projectTaskId"),
+                @ForeignKey(entity = UserEntity.class,
+                        parentColumns = "_id",
+                        childColumns = "userId")})
 public class TimeRecordEntity extends TikalEntity {
-    //    @NonNull
-//    public UserEntity user;
-    public long userId;
-    //    @NonNull
-//    public ProjectEntity project;
-    public long projectId;
-    //    @NonNull
-//    public ProjectTaskEntity task;
-    public long projectTaskId;
+
+    @Ignore
+    private UserEntity user;
+    private long userId;
+    @Ignore
+    private ProjectTask task;
+    private long projectTaskId;
     public Date start;
     public Date finish;
     public String note;
     @NonNull
     public TaskRecordStatus status = TaskRecordStatus.INSERTED;
+
+    @NonNull
+    public UserEntity getUser() {
+        if (user == null) {
+            user = new UserEntity();
+        }
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+        this.userId = (user != null) ? user._id : 0;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+        getUser()._id = userId;
+    }
+
+    @NonNull
+    public ProjectTask getTask() {
+        if (task == null) {
+            task = new ProjectTask();
+        }
+        return task;
+    }
+
+    public void setTask(ProjectTask task) {
+        this.task = task;
+        this.projectTaskId = (task != null) ? task._id : 0;
+    }
+
+    public long getProjectTaskId() {
+        return projectTaskId;
+    }
+
+    public void setProjectTaskId(long projectTaskId) {
+        this.projectTaskId = projectTaskId;
+        getTask()._id = projectTaskId;
+    }
+
+    public ProjectEntity getProject() {
+        return getTask().getProject();
+    }
 }

@@ -50,14 +50,14 @@ import io.reactivex.Flowable;
  */
 @Dao
 public interface TimeRecordDao extends TikalDao<TimeRecordEntity> {
-    @Query("SELECT * FROM timeRecord")
-    Flowable<List<TimeRecordEntity>> queryAll();
+    @Query("SELECT t.*, p._id as projectId, p.id AS projectRemoteId, p.version AS projectVersion, p.name AS projectName, p.description AS projectDescription, pt._id as projectTaskId, pt.id AS projectTaskRemoteId, pt.version AS projectTaskVersion, pt.name AS projectTaskName, pt.description AS projectTaskDescription FROM timeRecord AS t INNER JOIN projectTask AS pt ON pt._id = t.projectTaskId INNER JOIN project AS p ON p._id = pt.projectId")
+    Flowable<List<TimeRecord>> queryAll();
 
     @Query("SELECT * FROM timeRecord WHERE userId = :userId")
-    Flowable<List<TimeRecordEntity>> queryAll(long userId);
+    Flowable<List<TimeRecord>> queryAll(long userId);
 
     @Query("SELECT * FROM timeRecord where _id = :id LIMIT 1")
-    Flowable<TimeRecordEntity> query(long id);
+    Flowable<TimeRecord> query(long id);
 
     @Insert
     void insert(TimeRecordEntity entity);
