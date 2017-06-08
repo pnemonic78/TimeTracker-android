@@ -37,6 +37,7 @@ import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Configuration;
 import com.tikalk.worktracker.model.Project;
 import com.tikalk.worktracker.model.ProjectTask;
+import com.tikalk.worktracker.model.UriTypeSerializer;
 import com.tikalk.worktracker.model.User;
 import com.tikalk.worktracker.time.model.ReportFilter;
 import com.tikalk.worktracker.time.model.TimeRecord;
@@ -60,7 +61,7 @@ public class TrackerApplication extends Application {
                 .addModelClass(ReportFilter.class)
                 .addModelClass(TimeRecord.class)
                 .addModelClass(User.class)
-                //TODO .addTypeSerializer()
+                .addTypeSerializer(UriTypeSerializer.class)
                 .create();
         ActiveAndroid.initialize(dbConfiguration, BuildConfig.DEBUG);
     }

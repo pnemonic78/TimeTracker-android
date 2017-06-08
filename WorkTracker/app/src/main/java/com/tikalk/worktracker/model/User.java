@@ -68,7 +68,7 @@ public class User extends TikalEntity {
      * The photo URI.
      */
     @Column(name = "photo")
-    private String photo;
+    private Uri photo;
     /**
      * The role.
      */
@@ -108,15 +108,15 @@ public class User extends TikalEntity {
     }
 
     public Uri getPhoto() {
-        return photo != null ? Uri.parse(photo) : null;
+        return photo;
     }
 
     public void setPhoto(Uri photo) {
-        this.photo = photo != null ? photo.toString() : null;
+        this.photo = photo;
     }
 
     public void setPhoto(String photo) {
-        this.photo = photo;
+        setPhoto(photo != null ? Uri.parse(photo) : null);
     }
 
     public Role getRole() {
