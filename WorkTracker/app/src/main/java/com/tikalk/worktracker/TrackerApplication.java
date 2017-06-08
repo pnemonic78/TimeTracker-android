@@ -31,29 +31,38 @@
  */
 package com.tikalk.worktracker;
 
-import android.telecom.Conference;
+import android.app.Application;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Configuration;
 import com.tikalk.worktracker.model.Project;
+import com.tikalk.worktracker.model.ProjectTask;
+import com.tikalk.worktracker.model.User;
+import com.tikalk.worktracker.time.model.ReportFilter;
+import com.tikalk.worktracker.time.model.TimeRecord;
 
 /**
  * Tikal work tracker application.
  *
  * @author Moshe Waisberg.
  */
-public class TrackerApplication extends com.activeandroid.app.Application {
+public class TrackerApplication extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         Configuration dbConfiguration = new Configuration.Builder(this)
-                .setDatabaseName("tracker")
+                .setDatabaseName("tracker.db")
                 .setDatabaseVersion(1)
                 .addModelClass(Project.class)
+                .addModelClass(ProjectTask.class)
+                .addModelClass(ReportFilter.class)
+                .addModelClass(TimeRecord.class)
+                .addModelClass(User.class)
+                //TODO .addTypeSerializer()
                 .create();
-        ActiveAndroid.initialize(dbConfiguration);
+        ActiveAndroid.initialize(dbConfiguration, BuildConfig.DEBUG);
     }
 
     @Override

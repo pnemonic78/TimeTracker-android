@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
@@ -46,10 +47,15 @@ import java.util.Date;
 @Table(name = "TimeRecord")
 public class TimeRecord extends TikalEntity {
 
+    @Column(name = "user")
     private User user;
+    @Column(name = "task")
     private ProjectTask task;
+    @Column(name = "start")
     private Date start;
+    @Column(name = "finish")
     private Date finish;
+    @Column(name = "note")
     private String note;
 
     public User getUser() {

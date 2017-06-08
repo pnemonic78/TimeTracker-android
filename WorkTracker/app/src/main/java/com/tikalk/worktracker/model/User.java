@@ -33,6 +33,7 @@ package com.tikalk.worktracker.model;
 
 import android.net.Uri;
 
+import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
 /**
@@ -46,26 +47,32 @@ public class User extends TikalEntity {
     /**
      * Unique username.
      */
+    @Column(name = "username")
     private String username;
     /**
      * The e-mail address for communications.
      */
+    @Column(name = "email")
     private String email;
     /**
      * The display name, e.g. full name.
      */
+    @Column(name = "displayName")
     private String displayName;
     /**
      * The telephone number for communications.
      */
+    @Column(name = "telephone")
     private String telephone;
     /**
      * The photo URI.
      */
+    @Column(name = "photo")
     private String photo;
     /**
      * The role.
      */
+    @Column(name = "role")
     private Role role = Role.DEFAULT;
 
     public String getUsername() {

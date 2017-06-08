@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ReportTimePeriod;
@@ -47,17 +48,29 @@ import java.util.Date;
 @Table(name = "ReportFilter")
 public class ReportFilter extends TikalEntity {
 
+    @Column(name = "user")
     private User user;
+    @Column(name = "task")
     private ProjectTask task;
+    @Column(name = "period")
     private int period = ReportTimePeriod.THIS_MONTH.ordinal();
+    @Column(name = "start")
     private Date start;
+    @Column(name = "finish")
     private Date finish;
+    @Column(name = "favorite")
     private String favorite;
+    @Column(name = "showProjectField")
     private boolean showProjectField;
+    @Column(name = "showTaskField")
     private boolean showTaskField;
+    @Column(name = "showStartField")
     private boolean showStartField;
+    @Column(name = "showFinishField")
     private boolean showFinishField;
+    @Column(name = "showDurationField")
     private boolean showDurationField;
+    @Column(name = "showNotesField")
     private boolean showNotesField;
 
     public User getUser() {
