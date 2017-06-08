@@ -31,24 +31,22 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import com.activeandroid.annotation.Table;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
 import com.tikalk.worktracker.model.User;
 
 import java.util.Date;
 
-import io.realm.annotations.Required;
-
 /**
  * Time record entity. Represents some work done for a project task.
  *
  * @author Moshe Waisberg.
  */
+@Table(name = "TimeRecord")
 public class TimeRecord extends TikalEntity {
 
-    @Required
     private User user;
-    @Required
     private ProjectTask task;
     private Date start;
     private Date finish;

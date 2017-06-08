@@ -31,17 +31,20 @@
  */
 package com.tikalk.worktracker.model;
 
-import io.realm.annotations.Required;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 
 /**
  * Project entity.
  *
  * @author Moshe Waisberg.
  */
+@Table(name = "Project")
 public class Project extends TikalEntity {
 
-    @Required
+    @Column(name = "name")
     private String name;
+    @Column(name = "description")
     private String description;
 
     public String getName() {

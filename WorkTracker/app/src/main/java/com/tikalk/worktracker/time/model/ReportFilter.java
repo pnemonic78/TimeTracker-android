@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.time.model;
 
+import com.activeandroid.annotation.Table;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ReportTimePeriod;
 import com.tikalk.worktracker.model.TikalEntity;
@@ -38,16 +39,14 @@ import com.tikalk.worktracker.model.User;
 
 import java.util.Date;
 
-import io.realm.annotations.Required;
-
 /**
  * Report filter entity.
  *
  * @author Moshe Waisberg.
  */
+@Table(name = "ReportFilter")
 public class ReportFilter extends TikalEntity {
 
-    @Required
     private User user;
     private ProjectTask task;
     private int period = ReportTimePeriod.THIS_MONTH.ordinal();

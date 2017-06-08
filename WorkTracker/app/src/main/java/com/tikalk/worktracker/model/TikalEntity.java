@@ -31,26 +31,30 @@
  */
 package com.tikalk.worktracker.model;
 
-import io.realm.RealmObject;
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
 
 /**
  * Tikal base entity.
  *
  * @author Moshe Waisberg.
  */
-public abstract class TikalEntity extends RealmObject {
+public abstract class TikalEntity extends Model {
 
-    private long id;
+    @Column(name = "remoteId")
+    private long rid;// Should be UUID
+    @Column(name = "version")
     private int version;
-    private int entityStatus = EntityStatus.INSERTED.ordinal();
+    @Column(name = "entityStatus")
+    private EntityStatus entityStatus = EntityStatus.INSERTED;
 
     /**
      * Get the remote server ID.
      *
      * @return the id.
      */
-    public long getId() {
-        return id;
+    public long getRemoteId() {
+        return rid;
     }
 
     /**
@@ -58,8 +62,8 @@ public abstract class TikalEntity extends RealmObject {
      *
      * @param id the id.
      */
-    public void setId(long id) {
-        this.id = id;
+    public void setRemoteId(long id) {
+        this.rid = id;
     }
 
     /**
@@ -86,7 +90,7 @@ public abstract class TikalEntity extends RealmObject {
      * @return the status.
      */
     public EntityStatus getEntityStatus() {
-        return EntityStatus.values()[entityStatus];
+        return entityStatus;
     }
 
     /**
@@ -95,6 +99,6 @@ public abstract class TikalEntity extends RealmObject {
      * @param entityStatus the status.
      */
     public void setEntityStatus(EntityStatus entityStatus) {
-        this.entityStatus = entityStatus.ordinal();
+        this.entityStatus = entityStatus;
     }
 }

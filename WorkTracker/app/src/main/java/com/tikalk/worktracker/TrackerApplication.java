@@ -31,26 +31,34 @@
  */
 package com.tikalk.worktracker;
 
-import android.app.Application;
+import android.telecom.Conference;
+
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.Configuration;
+import com.tikalk.worktracker.model.Project;
 
 /**
  * Tikal work tracker application.
  *
  * @author Moshe Waisberg.
  */
-public class TrackerApplication extends Application {
+public class TrackerApplication extends com.activeandroid.app.Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // Init db.
-//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this,  "tracker");
-//        Database db =  helper.getWritableDb();
-//        daoSession = new DaoMaster(db).newSession();
+        Configuration dbConfiguration = new Configuration.Builder(this)
+                .setDatabaseName("tracker")
+                .setDatabaseVersion(1)
+                .addModelClass(Project.class)
+                .create();
+        ActiveAndroid.initialize(dbConfiguration);
     }
 
-//    public DaoSession getDaoSession() {
-//        return daoSession;
-//    }
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        ActiveAndroid.dispose();
+    }
 }

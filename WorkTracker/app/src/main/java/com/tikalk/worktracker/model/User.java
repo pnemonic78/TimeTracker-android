@@ -33,20 +33,19 @@ package com.tikalk.worktracker.model;
 
 import android.net.Uri;
 
-import io.realm.RealmModel;
-import io.realm.annotations.Required;
+import com.activeandroid.annotation.Table;
 
 /**
  * User entity.
  *
  * @author Moshe Waisberg.
  */
-public class User extends TikalEntity implements RealmModel {
+@Table(name = "User")
+public class User extends TikalEntity {
 
     /**
      * Unique username.
      */
-    @Required
     private String username;
     /**
      * The e-mail address for communications.
@@ -67,8 +66,7 @@ public class User extends TikalEntity implements RealmModel {
     /**
      * The role.
      */
-    @Required
-    private int role = Role.DEFAULT.ordinal();
+    private Role role = Role.DEFAULT;
 
     public String getUsername() {
         return username;
@@ -115,10 +113,10 @@ public class User extends TikalEntity implements RealmModel {
     }
 
     public Role getRole() {
-        return Role.values()[role];
+        return role;
     }
 
     public void setRole(Role role) {
-        this.role = role.ordinal();
+        this.role = role;
     }
 }

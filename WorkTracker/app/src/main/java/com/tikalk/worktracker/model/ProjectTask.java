@@ -31,19 +31,21 @@
  */
 package com.tikalk.worktracker.model;
 
-import io.realm.annotations.Required;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 
 /**
  * Task that belongs to a project entity.
  *
  * @author Moshe Waisberg.
  */
+@Table(name = "ProjectTask")
 public class ProjectTask extends TikalEntity {
 
-    @Required
     private Project project;
-    @Required
+    @Column(name = "name")
     private String name;
+    @Column(name = "description")
     private String description;
 
     public Project getProject() {
