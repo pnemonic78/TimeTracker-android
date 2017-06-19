@@ -1,4 +1,4 @@
-package com.tikalk.worktracker;
+package com.tikalk.worktracker.model;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -7,15 +7,15 @@ import android.support.test.runner.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertEquals;
 
 /**
- * Instrumentation test, which will execute on an Android device.
+ * Test the data model.
  *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ * @author moshe on 2017/06/19.
  */
 @RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
+public class ModelUnitTest {
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
