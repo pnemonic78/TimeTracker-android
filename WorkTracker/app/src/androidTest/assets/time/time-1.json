@@ -1,0 +1,50 @@
+[
+  {
+    "id": 100,
+    "version": 1,
+    "user": {
+      "id": 10,
+      "version": 1,
+      "username": "test",
+      "email": "test@tikalk.com",
+      "telephone": "0551234567"
+    },
+    "task": {
+      "id": 101,
+      "version": 1,
+      "name": "General",
+      "project": {
+        "id": 1,
+        "version": 1,
+        "name": "Tikal"
+      }
+    },
+    "start": "20170601T0900Z",
+    "finish": "20170601T1800Z"
+  },
+  {
+    "id": 200,
+    "version": 1,
+    "user": {
+      "id": 10,
+      "version": 1,
+      "username": "test",
+      "email": "test@tikalk.com",
+      "telephone": "0551234567"
+    },
+    "task": {
+      "project": {
+        "id": 1,
+        "version": 1,
+        "name": "Tikal"
+      },
+      "id": 102,
+      "version": 1,
+      "name": "Development",
+      "description": "Work at client"
+    },
+    "start": "20170602T0900Z",
+    "finish": "20170602T1800Z",
+    "note": "@client"
+  }
+]
