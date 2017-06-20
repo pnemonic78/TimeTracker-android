@@ -6,6 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.tikalk.worktracker.time.model.TimeRecord;
 
 import org.junit.Test;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Modifier;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -31,7 +33,9 @@ public class ModelUnitTest {
         Reader reader = openReader("time/time-1.json");
         assertNotNull(reader);
 
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder()
+                .excludeFieldsWithModifiers(Modifier.FINAL, Modifier.TRANSIENT, Modifier.STATIC)
+                .create();
         TimeRecord[] records = gson.fromJson(reader, TimeRecord[].class);
         reader.close();
 

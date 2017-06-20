@@ -19,8 +19,8 @@
         "name": "Tikal"
       }
     },
-    "start": "20170601T0900Z",
-    "finish": "20170601T1800Z"
+    "start": "2017-06-01T09:00:00Z",
+    "finish": "2017-06-01T18:00:00Z"
   },
   {
     "id": 200,
@@ -43,8 +43,8 @@
       "name": "Development",
       "description": "Work at client"
     },
-    "start": "20170602T0900Z",
-    "finish": "20170602T1800Z",
+    "start": "2017-06-02T09:00:00Z",
+    "finish": "2017-06-02T18:00:00Z",
     "note": "@client"
   }
 ]

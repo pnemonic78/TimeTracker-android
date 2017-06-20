@@ -43,7 +43,7 @@ import com.google.gson.annotations.SerializedName;
 public abstract class TikalEntity extends Model {
 
     @Column(name = "remoteId")
-    @SerializedName("id")
+    @SerializedName("remoteId")
     private long rid;// Should be UUID
     @Column(name = "version")
     @SerializedName("version")
