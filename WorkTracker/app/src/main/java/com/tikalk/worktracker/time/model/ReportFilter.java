@@ -33,6 +33,7 @@ package com.tikalk.worktracker.time.model;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.google.gson.annotations.SerializedName;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.ReportTimePeriod;
 import com.tikalk.worktracker.model.TikalEntity;
@@ -49,28 +50,40 @@ import java.util.Date;
 public class ReportFilter extends TikalEntity {
 
     @Column(name = "user")
+    @SerializedName("user")
     private User user;
     @Column(name = "task")
+    @SerializedName("task")
     private ProjectTask task;
     @Column(name = "period")
+    @SerializedName("period")
     private int period = ReportTimePeriod.THIS_MONTH.ordinal();
     @Column(name = "start")
+    @SerializedName("start")
     private Date start;
     @Column(name = "finish")
+    @SerializedName("finish")
     private Date finish;
     @Column(name = "favorite")
+    @SerializedName("favorite")
     private String favorite;
     @Column(name = "showProjectField")
+    @SerializedName("showProjectField")
     private boolean showProjectField;
     @Column(name = "showTaskField")
+    @SerializedName("showTaskField")
     private boolean showTaskField;
     @Column(name = "showStartField")
+    @SerializedName("showStartField")
     private boolean showStartField;
     @Column(name = "showFinishField")
+    @SerializedName("showFinishField")
     private boolean showFinishField;
     @Column(name = "showDurationField")
+    @SerializedName("showDurationField")
     private boolean showDurationField;
     @Column(name = "showNotesField")
+    @SerializedName("showNotesField")
     private boolean showNotesField;
 
     public User getUser() {

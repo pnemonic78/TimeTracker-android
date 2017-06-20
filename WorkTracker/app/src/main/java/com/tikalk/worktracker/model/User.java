@@ -35,6 +35,7 @@ import android.net.Uri;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * User entity.
@@ -48,31 +49,37 @@ public class User extends TikalEntity {
      * Unique username.
      */
     @Column(name = "username")
+    @SerializedName("username")
     private String username;
     /**
      * The e-mail address for communications.
      */
     @Column(name = "email")
+    @SerializedName("email")
     private String email;
     /**
      * The display name, e.g. full name.
      */
     @Column(name = "displayName")
+    @SerializedName("displayName")
     private String displayName;
     /**
      * The telephone number for communications.
      */
     @Column(name = "telephone")
+    @SerializedName("telephone")
     private String telephone;
     /**
      * The photo URI.
      */
     @Column(name = "photo")
+    @SerializedName("photo")
     private Uri photo;
     /**
      * The role.
      */
     @Column(name = "role")
+    @SerializedName("role")
     private Role role = Role.DEFAULT;
 
     public String getUsername() {

@@ -33,6 +33,7 @@ package com.tikalk.worktracker.model;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Project entity.
@@ -43,8 +44,10 @@ import com.activeandroid.annotation.Table;
 public class Project extends TikalEntity {
 
     @Column(name = "name")
+    @SerializedName("name")
     private String name;
     @Column(name = "description")
+    @SerializedName("description")
     private String description;
 
     public String getName() {

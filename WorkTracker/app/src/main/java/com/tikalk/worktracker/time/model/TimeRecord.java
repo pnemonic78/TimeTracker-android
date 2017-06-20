@@ -33,6 +33,7 @@ package com.tikalk.worktracker.time.model;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.google.gson.annotations.SerializedName;
 import com.tikalk.worktracker.model.ProjectTask;
 import com.tikalk.worktracker.model.TikalEntity;
 import com.tikalk.worktracker.model.User;
@@ -48,14 +49,19 @@ import java.util.Date;
 public class TimeRecord extends TikalEntity {
 
     @Column(name = "user")
+    @SerializedName("user")
     private User user;
     @Column(name = "task")
+    @SerializedName("task")
     private ProjectTask task;
     @Column(name = "start")
+    @SerializedName("start")
     private Date start;
     @Column(name = "finish")
+    @SerializedName("finish")
     private Date finish;
     @Column(name = "note")
+    @SerializedName("note")
     private String note;
 
     public User getUser() {

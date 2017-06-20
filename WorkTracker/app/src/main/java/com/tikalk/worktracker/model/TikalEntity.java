@@ -33,6 +33,7 @@ package com.tikalk.worktracker.model;
 
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Tikal base entity.
@@ -42,11 +43,13 @@ import com.activeandroid.annotation.Column;
 public abstract class TikalEntity extends Model {
 
     @Column(name = "remoteId")
+    @SerializedName("id")
     private long rid;// Should be UUID
     @Column(name = "version")
+    @SerializedName("version")
     private int version;
     @Column(name = "entityStatus")
-    private EntityStatus entityStatus = EntityStatus.INSERTED;
+    private transient EntityStatus entityStatus = EntityStatus.INSERTED;
 
     /**
      * Get the remote server ID.
