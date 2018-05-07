@@ -29,17 +29,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model.time;
+package com.tikalk.worktracker.model.time
 
-import android.arch.persistence.room.Entity;
-import android.support.annotation.NonNull;
+import android.arch.persistence.room.Entity
 
-import com.tikalk.worktracker.model.Project;
-import com.tikalk.worktracker.model.ProjectTask;
-import com.tikalk.worktracker.model.TikalEntity;
-import com.tikalk.worktracker.model.User;
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
 
-import java.sql.Date;
+import java.sql.Date
 
 /**
  * Time record entity. Represents some work done for a project task.
@@ -47,16 +46,12 @@ import java.sql.Date;
  * @author Moshe Waisberg.
  */
 @Entity
-public class TimeRecord extends TikalEntity {
-    @NonNull
-    public User user;
-    @NonNull
-    public Project project;
-    @NonNull
-    public ProjectTask task;
-    public Date start;
-    public Date finish;
-    public String note;
-    @NonNull
-    public TaskRecordStatus status = TaskRecordStatus.INSERTED;
+class TimeRecord : TikalEntity() {
+    var user: User? = null
+    var project: Project? = null
+    var task: ProjectTask? = null
+    var start: Date? = null
+    var finish: Date? = null
+    var note: String? = null
+    var status = TaskRecordStatus.INSERTED
 }
