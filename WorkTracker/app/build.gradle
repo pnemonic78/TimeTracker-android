@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 27
@@ -34,6 +35,10 @@ android {
     }
 }
 
+kapt {
+    generateStubs = true
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -49,7 +54,7 @@ dependencies {
 
     // Database
     implementation "android.arch.persistence.room:runtime:1.1.0-rc1"
-    annotationProcessor "android.arch.persistence.room:compiler:1.1.0-rc1"
+    kapt "android.arch.persistence.room:compiler:1.1.0-rc1"
     implementation "android.arch.persistence.room:rxjava2:1.1.0-rc1"
 
     // Rx
