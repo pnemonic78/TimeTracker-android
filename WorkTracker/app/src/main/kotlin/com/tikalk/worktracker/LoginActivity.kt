@@ -229,7 +229,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    inner class UserLoginTask internal constructor(private val mEmail: String, private val mPassword: String) : AsyncTask<Void, Void, Boolean>() {
+    inner class UserLoginTask internal constructor(private val email: String, private val password: String) : AsyncTask<Void, Void, Boolean>() {
 
         override fun doInBackground(vararg params: Void): Boolean? {
             // TODO: attempt authentication against a network service.
@@ -243,9 +243,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
             for (credential in DUMMY_CREDENTIALS) {
                 val pieces = credential.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (pieces[0] == mEmail) {
+                if (pieces[0] == email) {
                     // Account exists, return true if the password matches.
-                    return pieces[1] == mPassword
+                    return pieces[1] == password
                 }
             }
 
