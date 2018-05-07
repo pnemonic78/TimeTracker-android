@@ -39,7 +39,7 @@ import android.arch.persistence.room.Entity
  * @author Moshe Waisberg.
  */
 @Entity
-class ProjectTask : TikalEntity() {
-    var name: String? = null
-    var description: String? = null
-}
+data class ProjectTask(
+        var name: String,
+        var description: String? = null
+) : TikalEntity()

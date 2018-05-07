@@ -38,17 +38,17 @@ package com.tikalk.worktracker.model
  */
 enum class ReportTimePeriod {
 
-    /** Custom (start, finish).  */
+    /** Custom (start, finish). */
     CUSTOM,
-    /** Today.  */
+    /** Today. */
     TODAY,
-    /** This month.  */
+    /** This month. */
     THIS_MONTH,
-    /** This week.  */
+    /** This week. */
     THIS_WEEK,
-    /** The previous Month.  */
+    /** The previous Month. */
     PREVIOUS_MONTH,
-    /** The previous Week.  */
+    /** The previous Week. */
     PREVIOUS_WEEK
 
 }

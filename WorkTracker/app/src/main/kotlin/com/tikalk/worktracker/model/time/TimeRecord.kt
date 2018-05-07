@@ -46,12 +46,12 @@ import java.sql.Date
  * @author Moshe Waisberg.
  */
 @Entity
-class TimeRecord : TikalEntity() {
-    var user: User? = null
-    var project: Project? = null
-    var task: ProjectTask? = null
-    var start: Date? = null
-    var finish: Date? = null
-    var note: String? = null
-    var status = TaskRecordStatus.INSERTED
-}
+data class TimeRecord(
+        var user: User,
+        var project: Project,
+        var task: ProjectTask,
+        var start: Date? = null,
+        var finish: Date? = null,
+        var note: String? = null,
+        var status: TaskRecordStatus = TaskRecordStatus.INSERTED
+) : TikalEntity()

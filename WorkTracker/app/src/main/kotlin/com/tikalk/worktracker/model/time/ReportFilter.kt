@@ -46,17 +46,17 @@ import java.sql.Date
  * @author Moshe Waisberg.
  */
 @Entity
-class ReportFilter : TikalEntity() {
-    var project: Project? = null
-    var task: ProjectTask? = null
-    var period = ReportTimePeriod.THIS_MONTH
-    var start: Date? = null
-    var finish: Date? = null
-    var favorite: String? = null
-    var showProjectField: Boolean = false
-    var showTaskField: Boolean = false
-    var showStartField: Boolean = false
-    var showFinishField: Boolean = false
-    var showDurationField: Boolean = false
-    var showNotesField: Boolean = false
-}
+data class ReportFilter(
+        var project: Project? = null,
+        var task: ProjectTask? = null,
+        var period: ReportTimePeriod = ReportTimePeriod.THIS_MONTH,
+        var start: Date? = null,
+        var finish: Date? = null,
+        var favorite: String? = null,
+        var showProjectField: Boolean = false,
+        var showTaskField: Boolean = false,
+        var showStartField: Boolean = false,
+        var showFinishField: Boolean = false,
+        var showDurationField: Boolean = false,
+        var showNotesField: Boolean = false
+) : TikalEntity()

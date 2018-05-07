@@ -40,29 +40,29 @@ import android.net.Uri
  * @author Moshe Waisberg.
  */
 @Entity
-class User : TikalEntity() {
-    /**
-     * Unique username.
-     */
-    var username: String? = null
-    /**
-     * The e-mail address for communications.
-     */
-    var email: String? = null
-    /**
-     * The display name, e.g. full name.
-     */
-    var displayName: String? = null
-    /**
-     * The telephone number for communications.
-     */
-    var telephone: String? = null
-    /**
-     * The photo URI.
-     */
-    var photo: Uri? = null
-    /**
-     * The roles.
-     */
-    var roles: Array<String>? = null
-}
+data class User(
+        /**
+         * Unique username.
+         */
+        var username: String,
+        /**
+         * The e-mail address for communications.
+         */
+        var email: String? = null,
+        /**
+         * The display name, e.g. full name.
+         */
+        var displayName: String? = null,
+        /**
+         * The telephone number for communications.
+         */
+        var telephone: String? = null,
+        /**
+         * The photo URI.
+         */
+        var photo: Uri? = null,
+        /**
+         * The roles.
+         */
+        var roles: Array<String>? = null
+) : TikalEntity()
