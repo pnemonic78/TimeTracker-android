@@ -29,27 +29,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model;
+package com.tikalk.worktracker.model
 
-import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.Entity
 
 /**
- * Tikal base entity.
+ * Project entity.
  *
  * @author Moshe Waisberg.
  */
-public abstract class TikalEntity {
-    /**
-     * Android database's id.
-     */
-    @PrimaryKey
-    public long _id;
-    /**
-     * Server's id.
-     */
-    public long id;
-    /**
-     * Entity version to resolve conflicts.
-     */
-    public int version;
+@Entity
+class Project : TikalEntity() {
+    var name: String? = null
+    var description: String? = null
 }

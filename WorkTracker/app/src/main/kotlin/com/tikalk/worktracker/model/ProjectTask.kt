@@ -29,30 +29,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model.time;
+package com.tikalk.worktracker.model
+
+import android.arch.persistence.room.Entity
 
 /**
- * Status of a task record.
+ * Task that belongs to a project entity.
  *
  * @author Moshe Waisberg.
  */
-public enum TaskRecordStatus {
-
-    /**
-     * Inserted (New)
-     */
-    INSERTED,
-    /**
-     * Current (Synced)
-     */
-    CURRENT,
-    /**
-     * Modified (Changed)
-     */
-    MODIFIED,
-    /**
-     * Deleted
-     */
-    DELETED
-
+@Entity
+class ProjectTask : TikalEntity() {
+    var name: String? = null
+    var description: String? = null
 }

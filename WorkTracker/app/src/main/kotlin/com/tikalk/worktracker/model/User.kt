@@ -29,17 +29,40 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model;
+package com.tikalk.worktracker.model
 
-import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Entity
+import android.net.Uri
 
 /**
- * Project entity.
+ * User entity.
  *
  * @author Moshe Waisberg.
  */
 @Entity
-public class Project extends TikalEntity {
-    public String name;
-    public String description;
+class User : TikalEntity() {
+    /**
+     * Unique username.
+     */
+    var username: String? = null
+    /**
+     * The e-mail address for communications.
+     */
+    var email: String? = null
+    /**
+     * The display name, e.g. full name.
+     */
+    var displayName: String? = null
+    /**
+     * The telephone number for communications.
+     */
+    var telephone: String? = null
+    /**
+     * The photo URI.
+     */
+    var photo: Uri? = null
+    /**
+     * The roles.
+     */
+    var roles: Array<String>? = null
 }

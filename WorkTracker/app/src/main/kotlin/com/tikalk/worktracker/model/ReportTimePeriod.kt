@@ -29,42 +29,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model;
-
-import android.arch.persistence.room.Entity;
-import android.net.Uri;
-import android.support.annotation.NonNull;
+package com.tikalk.worktracker.model
 
 /**
- * User entity.
+ * Time period for report filter.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-public class User extends TikalEntity {
-    /**
-     * Unique username.
-     */
-    @NonNull
-    public String username;
-    /**
-     * The e-mail address for communications.
-     */
-    public String email;
-    /**
-     * The display name, e.g. full name.
-     */
-    public String displayName;
-    /**
-     * The telephone number for communications.
-     */
-    public String telephone;
-    /**
-     * The photo URI.
-     */
-    public Uri photo;
-    /**
-     * The roles.
-     */
-    public String[] roles;
+enum class ReportTimePeriod {
+
+    /** Custom (start, finish).  */
+    CUSTOM,
+    /** Today.  */
+    TODAY,
+    /** This month.  */
+    THIS_MONTH,
+    /** This week.  */
+    THIS_WEEK,
+    /** The previous Month.  */
+    PREVIOUS_MONTH,
+    /** The previous Week.  */
+    PREVIOUS_WEEK
+
 }

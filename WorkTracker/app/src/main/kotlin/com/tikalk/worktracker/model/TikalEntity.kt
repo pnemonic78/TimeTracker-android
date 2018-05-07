@@ -29,26 +29,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model;
+package com.tikalk.worktracker.model
+
+import android.arch.persistence.room.PrimaryKey
 
 /**
- * Time period for report filter.
+ * Tikal base entity.
  *
  * @author Moshe Waisberg.
  */
-public enum ReportTimePeriod {
-
-    /** Custom (start, finish). */
-    CUSTOM,
-    /** Today. */
-    TODAY,
-    /** This month. */
-    THIS_MONTH,
-    /** This week. */
-    THIS_WEEK,
-    /** The previous Month. */
-    PREVIOUS_MONTH,
-    /** The previous Week. */
-    PREVIOUS_WEEK
-
+abstract class TikalEntity {
+    /**
+     * Android database's id.
+     */
+    @PrimaryKey
+    var _id: Long = 0
+    /**
+     * Server's id.
+     */
+    var id: Long = 0
+    /**
+     * Entity version to resolve conflicts.
+     */
+    var version: Int = 0
 }

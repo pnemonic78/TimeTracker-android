@@ -29,17 +29,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model.time;
+package com.tikalk.worktracker.model.time
 
-import android.arch.persistence.room.Entity;
-import android.support.annotation.Nullable;
+import android.arch.persistence.room.Entity
 
-import com.tikalk.worktracker.model.Project;
-import com.tikalk.worktracker.model.ProjectTask;
-import com.tikalk.worktracker.model.ReportTimePeriod;
-import com.tikalk.worktracker.model.TikalEntity;
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.TikalEntity
 
-import java.sql.Date;
+import java.sql.Date
 
 /**
  * Report filter entity.
@@ -47,19 +46,17 @@ import java.sql.Date;
  * @author Moshe Waisberg.
  */
 @Entity
-public class ReportFilter extends TikalEntity {
-    @Nullable
-    public Project project;
-    @Nullable
-    public ProjectTask task;
-    public ReportTimePeriod period = ReportTimePeriod.THIS_MONTH;
-    public Date start;
-    public Date finish;
-    public String favorite;
-    public boolean showProjectField;
-    public boolean showTaskField;
-    public boolean showStartField;
-    public boolean showFinishField;
-    public boolean showDurationField;
-    public boolean showNotesField;
+class ReportFilter : TikalEntity() {
+    var project: Project? = null
+    var task: ProjectTask? = null
+    var period = ReportTimePeriod.THIS_MONTH
+    var start: Date? = null
+    var finish: Date? = null
+    var favorite: String? = null
+    var showProjectField: Boolean = false
+    var showTaskField: Boolean = false
+    var showStartField: Boolean = false
+    var showFinishField: Boolean = false
+    var showDurationField: Boolean = false
+    var showNotesField: Boolean = false
 }
