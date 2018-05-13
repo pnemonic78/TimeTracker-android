@@ -1,41 +1,52 @@
-package com.tikalk.worktracker
+package com.tikalk.worktracker.auth
 
 import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.LoaderManager.LoaderCallbacks
 import android.content.CursorLoader
+import android.content.Intent
 import android.content.Loader
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
+import android.text.format.DateFormat
+import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.auth.model.BasicCredentials
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 /**
  * A login screen that offers login via email/password.
  */
 class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
+    private val TAG = "LoginActivity"
+
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private var authTask: UserLoginTask? = null
+    private var authTask: Disposable? = null
 
     // UI references.
     private lateinit var emailView: AutoCompleteTextView
     private lateinit var passwordView: EditText
     private lateinit var progressView: View
     private lateinit var loginFormView: View
+    private lateinit var emailSignInButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,11 +64,16 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             false
         })
 
-        val emailSignInButton = findViewById<Button>(R.id.email_sign_in_button)
+        emailSignInButton = findViewById(R.id.email_sign_in_button)
         emailSignInButton.setOnClickListener { attemptLogin() }
 
         loginFormView = findViewById(R.id.login_form)
         progressView = findViewById(R.id.login_progress)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        authTask?.dispose()
     }
 
     private fun populateAutoComplete() {
@@ -65,7 +81,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             return
         }
 
-        loaderManager.initLoader(0, null, this)
+        loaderManager.initLoader(0, Bundle(), this)
     }
 
     private fun mayRequestContacts(): Boolean {
@@ -102,7 +118,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * errors are presented and no actual login attempt is made.
      */
     private fun attemptLogin() {
-        if (authTask != null) {
+        if (!emailSignInButton.isEnabled) {
             return
         }
 
@@ -143,8 +159,32 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true)
-            authTask = UserLoginTask(email, password)
-            authTask!!.execute(null as Void?)
+            emailSignInButton.isEnabled = false
+
+            val service = TimeTrackerServiceFactory.create()
+
+            val today = DateFormat.format("yyyy-MM-dd", System.currentTimeMillis())
+            authTask = service.login(email, password, today.toString())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ response ->
+                        showProgress(false)
+                        emailSignInButton.isEnabled = true
+
+                        if (response.isSuccessful && !TextUtils.isEmpty(response.body())) {
+                            finish()
+                            TODO("start main activity")
+                        } else {
+                            passwordView.error = getString(R.string.error_incorrect_password)
+                            passwordView.requestFocus()
+
+                            authenticate(email, password, response.raw())
+                        }
+                    }, { err ->
+                        Log.e(TAG, "Error signing in: ${err.message}", err)
+                        showProgress(false)
+                        emailSignInButton.isEnabled = true
+                    })
         }
     }
 
@@ -160,7 +200,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * Shows the progress UI and hides the login form.
      */
     private fun showProgress(show: Boolean) {
-        val shortAnimTime= resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
+        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
         loginFormView.visibility = if (show) View.GONE else View.VISIBLE
         loginFormView.animate().setDuration(shortAnimTime).alpha(
@@ -225,50 +265,19 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         }
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    inner class UserLoginTask internal constructor(private val email: String, private val password: String) : AsyncTask<Void, Void, Boolean>() {
-
-        override fun doInBackground(vararg params: Void): Boolean? {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000)
-            } catch (e: InterruptedException) {
-                return false
-            }
-
-            for (credential in DUMMY_CREDENTIALS) {
-                val pieces = credential.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (pieces[0] == email) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1] == password
-                }
-            }
-
-            // TODO: register the new account here.
-            return true
-        }
-
-        override fun onPostExecute(success: Boolean?) {
-            authTask = null
-            showProgress(false)
-
-            if (success!!) {
-                finish()
-            } else {
-                passwordView.error = getString(R.string.error_incorrect_password)
-                passwordView.requestFocus()
+    private fun authenticate(email: String, password: String, response: okhttp3.Response): Boolean {
+        val challenges = response.challenges()
+        for (challenge in challenges) {
+            if (challenge.scheme() == BasicCredentials.SCHEME) {
+                val realm = challenge.realm()
+                val intent = Intent(this, BasicRealmActivity::class.java)
+                intent.putExtra(BasicRealmActivity.EXTRA_REALM, realm)
+                intent.putExtra(BasicRealmActivity.EXTRA_USER, email)
+                startActivityForResult(intent, REQUEST_AUTHENTICATE)
+                return true
             }
         }
-
-        override fun onCancelled() {
-            authTask = null
-            showProgress(false)
-        }
+        return false
     }
 
     companion object {
@@ -277,12 +286,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
          * Id to identity READ_CONTACTS permission request.
          */
         private val REQUEST_READ_CONTACTS = 0
-
-        /**
-         * A dummy authentication store containing known user names and passwords.
-         * TODO: remove after connecting to a real authentication system.
-         */
-        private val DUMMY_CREDENTIALS = arrayOf("foo@example.com:hello", "bar@example.com:world")
+        private val REQUEST_AUTHENTICATE = 1
     }
 }
 
