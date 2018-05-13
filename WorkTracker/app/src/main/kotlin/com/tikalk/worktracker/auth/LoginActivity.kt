@@ -174,7 +174,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             prefs.userCredentials = UserCredentials(email, password)
 
             val authToken = prefs.basicCredentials.authToken()
-            val service = TimeTrackerServiceFactory.create(authToken)
+            val service = TimeTrackerServiceFactory.createPlain(authToken)
 
             val today = DateFormat.format("yyyy-MM-dd", System.currentTimeMillis())
             authTask = service.login(email, password, today.toString())
