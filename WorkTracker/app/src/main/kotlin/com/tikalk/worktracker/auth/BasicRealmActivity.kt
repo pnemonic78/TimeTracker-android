@@ -35,11 +35,12 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private lateinit var loginFormView: View
     private lateinit var emailSignInButton: Button
 
-    private val prefs = TimeTrackerPrefs(this)
+    private lateinit var prefs: TimeTrackerPrefs
     private var realmName = "(realm)"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        prefs = TimeTrackerPrefs(this)
 
         val credentials = prefs.basicCredentials
         realmName = credentials.realm
@@ -56,9 +57,9 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
         }
 
+        // Set up the login form.
         setContentView(R.layout.activity_basic_realm)
 
-        // Set up the login form.
         realmView = findViewById(R.id.realm_title)
         realmView.text = getString(R.string.authentication_basic_realm, realmName)
 
@@ -168,6 +169,7 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
             prefs.basicCredentials = BasicCredentials(realmName, email, password)
             setResult(Activity.RESULT_OK)
+            finish()
         }
     }
 

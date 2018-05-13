@@ -25,9 +25,12 @@ import android.widget.*
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.auth.model.BasicCredentials
+import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import okhttp3.Response
 import java.util.*
 
 /**
@@ -35,6 +38,8 @@ import java.util.*
  */
 class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private val TAG = "LoginActivity"
+
+    private lateinit var prefs: TimeTrackerPrefs
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -50,9 +55,13 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        prefs = TimeTrackerPrefs(this)
+
         // Set up the login form.
+        setContentView(R.layout.activity_login)
+
         emailView = findViewById(R.id.email)
+        emailView.setText(prefs.userCredentials.login)
         populateAutoComplete()
 
         passwordView = findViewById(R.id.password)
@@ -63,6 +72,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
             false
         })
+        passwordView.setText(prefs.userCredentials.password)
 
         emailSignInButton = findViewById(R.id.email_sign_in_button)
         emailSignInButton.setOnClickListener { attemptLogin() }
@@ -161,6 +171,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             showProgress(true)
             emailSignInButton.isEnabled = false
 
+            prefs.userCredentials = UserCredentials(email, password)
+
             val service = TimeTrackerServiceFactory.create()
 
             val today = DateFormat.format("yyyy-MM-dd", System.currentTimeMillis())
@@ -178,7 +190,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                             passwordView.error = getString(R.string.error_incorrect_password)
                             passwordView.requestFocus()
 
-                            authenticate(email, password, response.raw())
+                            authenticate(email, response.raw())
                         }
                     }, { err ->
                         Log.e(TAG, "Error signing in: ${err.message}", err)
@@ -265,7 +277,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         }
     }
 
-    private fun authenticate(email: String, password: String, response: okhttp3.Response): Boolean {
+    private fun authenticate(email: String, response: Response): Boolean {
         val challenges = response.challenges()
         for (challenge in challenges) {
             if (challenge.scheme() == BasicCredentials.SCHEME) {
