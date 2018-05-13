@@ -14,4 +14,5 @@
     </string>
     <string name="authentication_basic_realm">Basic Realm Authentication for \"%1$s\"</string>
     <string name="action_authenticate">Authenticate</string>
+    <string name="prompt_username">Username</string>
 </resources>

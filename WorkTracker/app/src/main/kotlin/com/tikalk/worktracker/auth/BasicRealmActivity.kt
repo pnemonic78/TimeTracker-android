@@ -14,7 +14,6 @@ import android.provider.ContactsContract
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
-import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
@@ -30,10 +29,9 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
     // UI references.
     private lateinit var realmView: TextView
-    private lateinit var emailView: AutoCompleteTextView
+    private lateinit var usernameView: AutoCompleteTextView
     private lateinit var passwordView: EditText
-    private lateinit var loginFormView: View
-    private lateinit var emailSignInButton: Button
+    private lateinit var authButton: Button
 
     private lateinit var prefs: TimeTrackerPrefs
     private var realmName = "(realm)"
@@ -63,9 +61,9 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         realmView = findViewById(R.id.realm_title)
         realmView.text = getString(R.string.authentication_basic_realm, realmName)
 
-        emailView = findViewById(R.id.email)
+        usernameView = findViewById(R.id.username)
         populateAutoComplete()
-        emailView.setText(userName)
+        usernameView.setText(userName)
 
         passwordView = findViewById(R.id.password)
         passwordView.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
@@ -77,10 +75,8 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         })
         passwordView.setText(password)
 
-        emailSignInButton = findViewById(R.id.email_sign_in_button)
-        emailSignInButton.setOnClickListener { attemptLogin() }
-
-        loginFormView = findViewById(R.id.login_form)
+        authButton = findViewById(R.id.realm_auth_button)
+        authButton.setOnClickListener { attemptLogin() }
     }
 
     private fun populateAutoComplete() {
@@ -99,7 +95,7 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             return true
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(emailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(usernameView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok) { requestPermissions(arrayOf(READ_CONTACTS), REQUEST_READ_CONTACTS) }
         } else {
             requestPermissions(arrayOf(READ_CONTACTS), REQUEST_READ_CONTACTS)
@@ -125,16 +121,16 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * errors are presented and no actual login attempt is made.
      */
     private fun attemptLogin() {
-        if (!emailSignInButton.isEnabled) {
+        if (!authButton.isEnabled) {
             return
         }
 
         // Reset errors.
-        emailView.error = null
+        usernameView.error = null
         passwordView.error = null
 
         // Store values at the time of the login attempt.
-        val email = emailView.text.toString()
+        val username = usernameView.text.toString()
         val password = passwordView.text.toString()
 
         var cancel = false
@@ -148,13 +144,13 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         }
 
         // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            emailView.error = getString(R.string.error_field_required)
-            focusView = emailView
+        if (TextUtils.isEmpty(username)) {
+            usernameView.error = getString(R.string.error_field_required)
+            focusView = usernameView
             cancel = true
-        } else if (!isEmailValid(email)) {
-            emailView.error = getString(R.string.error_invalid_email)
-            focusView = emailView
+        } else if (!isUsernameValid(username)) {
+            usernameView.error = getString(R.string.error_invalid_email)
+            focusView = usernameView
             cancel = true
         }
 
@@ -165,16 +161,16 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            emailSignInButton.isEnabled = false
+            authButton.isEnabled = false
 
-            prefs.basicCredentials = BasicCredentials(realmName, email, password)
+            prefs.basicCredentials = BasicCredentials(realmName, username, password)
             setResult(Activity.RESULT_OK)
             finish()
         }
     }
 
-    private fun isEmailValid(email: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    private fun isUsernameValid(username: String): Boolean {
+        return username.length > 1
     }
 
     private fun isPasswordValid(password: String): Boolean {
@@ -215,7 +211,7 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         val adapter = ArrayAdapter(this@BasicRealmActivity,
                 android.R.layout.simple_dropdown_item_1line, emailAddressCollection)
 
-        emailView.setAdapter(adapter)
+        usernameView.setAdapter(adapter)
     }
 
     private interface ProfileQuery {

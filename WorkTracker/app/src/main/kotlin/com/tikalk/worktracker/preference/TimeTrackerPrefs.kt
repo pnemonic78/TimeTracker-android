@@ -35,8 +35,8 @@ class TimeTrackerPrefs(context: Context) {
             field.password = value.password
             prefs.edit()
                     .putString(BASIC_CREDENTIALS_REALM, value.realm)
-                    .putString(BASIC_CREDENTIALS_REALM, value.username)
-                    .putString(BASIC_CREDENTIALS_REALM, value.password)
+                    .putString(BASIC_CREDENTIALS_USER, value.username)
+                    .putString(BASIC_CREDENTIALS_PASSWORD, value.password)
                     .apply()
         }
 

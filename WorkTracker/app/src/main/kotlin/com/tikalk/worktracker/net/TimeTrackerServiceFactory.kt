@@ -1,6 +1,8 @@
 package com.tikalk.worktracker.net
 
+import android.text.TextUtils
 import com.google.gson.GsonBuilder
+import com.tikalk.worktracker.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -17,18 +19,27 @@ class TimeTrackerServiceFactory {
     companion object {
         const val BASE_URL = "https://planet.tikalk.com/timetracker/"
 
-        fun create(): TimeTrackerService {
+        fun create(authToken: String? = null): TimeTrackerService {
             val gson = GsonBuilder().create()
 
-            val interceptor = HttpLoggingInterceptor()
-            interceptor.level = HttpLoggingInterceptor.Level.BODY
+            val httpClientBuilder = OkHttpClient.Builder()
 
-            val client = OkHttpClient.Builder()
-                    .addInterceptor(interceptor)
-                    .build()
+            if (BuildConfig.DEBUG) {
+                val interceptorLogging = HttpLoggingInterceptor()
+                interceptorLogging.level = HttpLoggingInterceptor.Level.BODY
+                httpClientBuilder.addInterceptor(interceptorLogging)
+            }
+
+            if (!TextUtils.isEmpty(authToken)) {
+                val interceptorAuth = AuthenticationInterceptor(authToken!!)
+                httpClientBuilder.addInterceptor(interceptorAuth)
+            }
+
+            val httpClient = httpClientBuilder.build()
+
             val retrofit = Retrofit.Builder()
                     .baseUrl(BASE_URL)
-                    .client(client)
+                    .client(httpClient)
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build()
