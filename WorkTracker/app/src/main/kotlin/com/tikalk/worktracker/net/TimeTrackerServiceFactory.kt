@@ -18,7 +18,7 @@ class TimeTrackerServiceFactory {
     companion object {
         private const val BASE_URL = "https://planet.tikalk.com/timetracker/"
 
-        fun createPlain(authToken: String? = null): TimeTrackerService {
+        private fun createHttpClient(authToken: String? = null): OkHttpClient {
             val httpClientBuilder = OkHttpClient.Builder()
 
             if (BuildConfig.DEBUG) {
@@ -32,7 +32,11 @@ class TimeTrackerServiceFactory {
                 httpClientBuilder.addInterceptor(interceptorAuth)
             }
 
-            val httpClient = httpClientBuilder.build()
+            return httpClientBuilder.build()
+        }
+
+        fun createPlain(authToken: String? = null): TimeTrackerService {
+            val httpClient = createHttpClient(authToken)
 
             val retrofit = Retrofit.Builder()
                     .baseUrl(BASE_URL)

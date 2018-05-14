@@ -31,7 +31,7 @@
  */
 package com.tikalk.worktracker.net
 
-import io.reactivex.Observable
+import io.reactivex.Single
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -49,5 +49,5 @@ interface TimeTrackerService {
     fun login(@Field("login") email: String,
               @Field("password") password: String,
               @Field("browser_today") date: String,
-              @Field("btn_login") button: String = "Login"): Observable<Response<String>>
+              @Field("btn_login") button: String = "Login"): Single<Response<String>>
 }
