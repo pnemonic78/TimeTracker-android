@@ -70,4 +70,5 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
     implementation 'com.google.code.gson:gson:2.8.2'
+    implementation "org.jsoup:jsoup:$jsoup_version"
 }

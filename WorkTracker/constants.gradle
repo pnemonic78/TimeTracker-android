@@ -15,6 +15,8 @@ project.ext {
     exoplayer_version = '2.6.1'
     glide_version = '4.1.1'
     guava_version = '18.0'
+    jspoon_version = '1.0.0'
+    jsoup_version = '1.11.3'
     junit_version = '4.12'
     okhttp_version = '3.8.1'
     retrofit2_version = '2.3.0'
