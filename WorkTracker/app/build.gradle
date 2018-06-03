@@ -1,6 +1,7 @@
 apply from: '../constants.gradle'
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
@@ -47,6 +48,7 @@ dependencies {
     // Google Support
     implementation 'androidx.appcompat:appcompat:1.0.0-alpha1'
     implementation 'com.google.android.material:material:1.0.0-alpha1'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.0'
 
     // Testing
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha3'
