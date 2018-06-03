@@ -31,7 +31,7 @@
  */
 package com.tikalk.worktracker.model
 
-import android.arch.persistence.room.Entity
+import androidx.room.Entity
 
 /**
  * Task that belongs to a project entity.

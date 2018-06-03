@@ -31,8 +31,7 @@
  */
 package com.tikalk.worktracker.model.time
 
-import android.arch.persistence.room.Entity
-
+import androidx.room.Entity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity

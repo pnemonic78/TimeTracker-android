@@ -31,8 +31,8 @@
  */
 package com.tikalk.worktracker.model
 
-import android.arch.persistence.room.Entity
 import android.net.Uri
+import androidx.room.Entity
 
 /**
  * User entity.

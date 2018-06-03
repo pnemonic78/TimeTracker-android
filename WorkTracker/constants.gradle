@@ -4,9 +4,8 @@ project.ext {
     // However, please note that the core media playback functionality provided
     // by the library requires API level 16 or greater.
     minSdkVersion = 19
-    compileSdkVersion = 27
+    compileSdkVersion = 'android-P'
     targetSdkVersion = 27
-    buildToolsVersion = '27.0.3'
 
     // App dependencies
     constraint_layout_version = '1.1.0'
@@ -20,7 +19,7 @@ project.ext {
     junit_version = '4.12'
     okhttp_version = '3.8.1'
     retrofit2_version = '2.3.0'
-    room_version = '1.1.0'
+    room_version = '2.0.0-alpha1'
     rxandroid2_version = '2.0.2'
     rxkbinding2_version = '2.0.0'
     rxkotlin2_version = '2.1.0'

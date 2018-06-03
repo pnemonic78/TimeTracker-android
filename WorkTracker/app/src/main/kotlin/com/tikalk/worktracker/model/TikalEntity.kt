@@ -31,7 +31,7 @@
  */
 package com.tikalk.worktracker.model
 
-import android.arch.persistence.room.PrimaryKey
+import androidx.room.PrimaryKey
 
 /**
  * Tikal base entity.
