@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.time.TimeEditActivity
 
 class SplashActivity : AppCompatActivity() {
 
@@ -16,8 +16,8 @@ class SplashActivity : AppCompatActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
 
-        if (hasFocus){
-            startActivity(Intent(this, LoginActivity::class.java))
+        if (hasFocus) {
+            startActivity(Intent(this, TimeEditActivity::class.java))
             finish()
         }
     }

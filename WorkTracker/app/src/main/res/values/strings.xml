@@ -15,4 +15,12 @@
     <string name="authentication_basic_realm">Basic Realm Authentication for \"%1$s\"</string>
     <string name="action_authenticate">Authenticate</string>
     <string name="prompt_username">Username</string>
+    <string name="project_label">Project:</string>
+    <string name="task_label">Task:</string>
+    <string name="date_label">Date:</string>
+    <string name="start_label">Start:</string>
+    <string name="finish_label">Finish:</string>
+    <string name="cancel">@android:string/cancel</string>
+    <string name="submit">@android:string/ok</string>
+    <string name="note_hint">Note</string>
 </resources>

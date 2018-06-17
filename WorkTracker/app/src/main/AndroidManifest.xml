@@ -28,6 +28,7 @@
         </activity>
         <activity android:name=".auth.LoginActivity" />
         <activity android:name=".auth.BasicRealmActivity" />
+        <activity android:name=".time.TimeEditActivity" />
     </application>
 
 </manifest>
