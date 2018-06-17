@@ -33,9 +33,7 @@ package com.tikalk.worktracker.net
 
 import io.reactivex.Single
 import retrofit2.Response
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.POST
+import retrofit2.http.*
 
 /**
  * Time Tracker web service.
@@ -50,4 +48,7 @@ interface TimeTrackerService {
               @Field("password") password: String,
               @Field("browser_today") date: String,
               @Field("btn_login") button: String = "Login"): Single<Response<String>>
+
+    @GET("time.php")
+    fun timeEditor(@Query("date") date: String): Single<Response<String>>
 }

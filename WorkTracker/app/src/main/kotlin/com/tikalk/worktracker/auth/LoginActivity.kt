@@ -27,6 +27,7 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import com.tikalk.worktracker.time.DATE_PATTERN
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -37,7 +38,16 @@ import java.util.*
  * A login screen that offers login via email/password.
  */
 class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
-    private val TAG = "LoginActivity"
+
+    companion object {
+        private const val TAG = "LoginActivity"
+
+        /**
+         * Id to identity READ_CONTACTS permission request.
+         */
+        private const val REQUEST_READ_CONTACTS = 0
+        private const val REQUEST_AUTHENTICATE = 1
+    }
 
     private lateinit var prefs: TimeTrackerPrefs
 
@@ -144,14 +154,14 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         var focusView: View? = null
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (!password.isEmpty() && !isPasswordValid(password)) {
             passwordView.error = getString(R.string.error_invalid_password)
             focusView = passwordView
             cancel = true
         }
 
         // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
+        if (email.isEmpty()) {
             emailView.error = getString(R.string.error_field_required)
             focusView = emailView
             cancel = true
@@ -176,7 +186,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             val authToken = prefs.basicCredentials.authToken()
             val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-            val today = DateFormat.format("yyyy-MM-dd", System.currentTimeMillis()).toString()
+            val today = DateFormat.format(DATE_PATTERN, System.currentTimeMillis()).toString()
             authTask = service.login(email, password, today)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -291,15 +301,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
         }
         return false
-    }
-
-    companion object {
-
-        /**
-         * Id to identity READ_CONTACTS permission request.
-         */
-        private val REQUEST_READ_CONTACTS = 0
-        private val REQUEST_AUTHENTICATE = 1
     }
 }
 
