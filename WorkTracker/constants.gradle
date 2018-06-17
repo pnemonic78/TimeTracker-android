@@ -8,7 +8,7 @@ project.ext {
     targetSdkVersion = 27
 
     // App dependencies
-    constraint_layout_version = '1.1.0'
+    constraint_layout_version = '1.1.1'
     dagger2_version = '2.11'
     espresso_version = '3.0.1'
     exoplayer_version = '2.6.1'
@@ -24,6 +24,6 @@ project.ext {
     rxkbinding2_version = '2.0.0'
     rxkotlin2_version = '2.1.0'
     sqlbrite2_version = '2.0.0'
-    support_version = '27.1.1'
+    support_version = '1.0.0-alpha3'
     timber_version = '4.7.0'
 }
