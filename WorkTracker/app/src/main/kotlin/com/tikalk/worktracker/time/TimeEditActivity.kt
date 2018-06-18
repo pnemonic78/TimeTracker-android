@@ -100,7 +100,7 @@ class TimeEditActivity : AppCompatActivity() {
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         val dateFormatted = formatDate(date)
-        fetchTask = service.timeEditor(dateFormatted)
+        fetchTask = service.fetchTimes(dateFormatted)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->

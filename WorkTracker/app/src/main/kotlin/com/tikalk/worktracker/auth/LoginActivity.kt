@@ -185,7 +185,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             val authToken = prefs.basicCredentials.authToken()
             val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-            val today = formatDate(System.currentTimeMillis())
+            val today = formatDate()
             authTask = service.login(email, password, today)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
