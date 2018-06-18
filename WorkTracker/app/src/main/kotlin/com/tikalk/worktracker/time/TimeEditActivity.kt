@@ -99,7 +99,7 @@ class TimeEditActivity : AppCompatActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        val dateFormatted = DateFormat.format(DATE_PATTERN, date).toString()
+        val dateFormatted = formatDate(date)
         fetchTask = service.timeEditor(dateFormatted)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -122,7 +122,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun populatePage(body: String) {
         println("±!@ [$body]")
-        val dateFormatted = DateFormat.format(DATE_PATTERN, date).toString()
+        val dateFormatted = formatDate(date)
         dateText.text = dateFormatted
     }
 

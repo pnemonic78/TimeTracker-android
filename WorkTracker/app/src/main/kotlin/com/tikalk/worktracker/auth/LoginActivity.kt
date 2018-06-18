@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.text.TextUtils
-import android.text.format.DateFormat
 import android.util.Log
 import android.util.Patterns
 import android.view.View
@@ -27,7 +26,7 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import com.tikalk.worktracker.time.DATE_PATTERN
+import com.tikalk.worktracker.time.formatDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -186,7 +185,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             val authToken = prefs.basicCredentials.authToken()
             val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-            val today = DateFormat.format(DATE_PATTERN, System.currentTimeMillis()).toString()
+            val today = formatDate(System.currentTimeMillis())
             authTask = service.login(email, password, today)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
