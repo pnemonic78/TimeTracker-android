@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.net
 
+import com.tikalk.worktracker.time.formatDate
 import io.reactivex.Single
 import retrofit2.Response
 import retrofit2.http.*
@@ -50,5 +51,38 @@ interface TimeTrackerService {
               @Field("btn_login") button: String = "Login"): Single<Response<String>>
 
     @GET("time.php")
-    fun timeEditor(@Query("date") date: String): Single<Response<String>>
+    fun fetchTimes(@Query("date") date: String): Single<Response<String>>
+
+    @FormUrlEncoded
+    @POST("time.php")
+    fun addTime(@Field("project") projectId: Long,
+                @Field("task") taskId: Long,
+                @Field("start") start: String,
+                @Field("finish") finish: String,
+                @Field("duration") duration: String,
+                @Field("date") date: String,
+                @Field("note") note: String,
+                @Field("btn_submit") submit: String = "Submit"): Single<Response<String>>
+
+    @GET("time_edit.php")
+    fun fetchTime(@Query("id") id: Long): Single<Response<String>>
+
+    @FormUrlEncoded
+    @POST("time_edit.php")
+    fun editTime(@Query("id") @Field("id") id: Long,
+                 @Field("project") projectId: Long,
+                 @Field("task") taskId: Long,
+                 @Field("start") start: String,
+                 @Field("finish") finish: String,
+                 @Field("duration") duration: String,
+                 @Field("date") date: String,
+                 @Field("note") note: String,
+                 @Field("browser_today") browserToday: String = formatDate(),
+                 @Field("btn_save") submit: String = "Save"): Single<Response<String>>
+
+    @FormUrlEncoded
+    @POST("time_delete.php")
+    fun deleteTime(@Query("id") @Field("id") id: Long,
+                   @Field("browser_today") browserToday: String = formatDate(),
+                   @Field("delete_button") submit: String = "Delete"): Single<Response<String>>
 }
