@@ -36,8 +36,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
-
-import java.sql.Date
+import java.util.Date
 
 /**
  * Time record entity. Represents some work done for a project task.

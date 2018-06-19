@@ -1,6 +1,7 @@
 package com.tikalk.worktracker.time
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -23,7 +24,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import retrofit2.Response
-import java.sql.Date
+import java.util.*
 
 class TimeEditActivity : AppCompatActivity() {
 
@@ -191,7 +192,21 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun pickDate() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val context = this
+        val cal = Calendar.getInstance()
+        cal.time = record.start
+        val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH)
+        val day = cal.get(Calendar.DAY_OF_MONTH)
+        val listener = DatePickerDialog.OnDateSetListener { view, year, month, day ->
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, month)
+            cal.set(Calendar.DAY_OF_MONTH, day)
+            val date = cal.time
+            record.start = date
+            dateText.text = DateUtils.formatDateTime(context, date.time, DateUtils.FORMAT_SHOW_DATE)
+        }
+        DatePickerDialog(context, listener, year, month, day).show()
     }
 
     private fun pickStartTime() {
