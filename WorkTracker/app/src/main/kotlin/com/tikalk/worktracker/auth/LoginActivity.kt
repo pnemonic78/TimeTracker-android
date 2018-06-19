@@ -3,6 +3,7 @@ package com.tikalk.worktracker.auth
 import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import android.app.LoaderManager.LoaderCallbacks
 import android.content.CursorLoader
 import android.content.Intent
@@ -13,7 +14,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.text.TextUtils
 import android.util.Log
 import android.util.Patterns
 import android.view.View
@@ -193,9 +193,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         showProgress(false)
                         emailSignInButton.isEnabled = true
 
-                        if (response.isSuccessful && !TextUtils.isEmpty(response.body())) {
+                        val body = response.body()
+                        if (response.isSuccessful && (body != null)) {
+                            setResult(Activity.RESULT_OK)
                             finish()
-                            TODO("start main activity")
                         } else {
                             passwordView.error = getString(R.string.error_incorrect_password)
                             passwordView.requestFocus()

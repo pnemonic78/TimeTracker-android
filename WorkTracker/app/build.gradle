@@ -72,6 +72,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-scalars:$retrofit2_version"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttp_version"
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation "org.jsoup:jsoup:$jsoup_version"
 }

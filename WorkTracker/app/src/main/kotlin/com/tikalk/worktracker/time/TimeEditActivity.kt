@@ -3,8 +3,6 @@ package com.tikalk.worktracker.time
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
-import android.text.format.DateFormat
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -19,6 +17,7 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import retrofit2.Response
 
 class TimeEditActivity : AppCompatActivity() {
 
@@ -107,8 +106,8 @@ class TimeEditActivity : AppCompatActivity() {
                     //TODO showProgress(false)
                     //TODO enable menu items
 
-                    if (response.isSuccessful && !TextUtils.isEmpty(response.body())) {
-                        this.date = date
+                    this.date = date
+                    if (validResponse(response)) {
                         populatePage(response.body()!!)
                     } else {
                         authenticate()
@@ -118,6 +117,22 @@ class TimeEditActivity : AppCompatActivity() {
                     //TODO showProgress(false)
                     //TODO enable menu items
                 })
+    }
+
+    private fun validResponse(response: Response<String>): Boolean {
+        val body = response.body()
+        if (response.isSuccessful && (body != null)) {
+            val networkResponse = response.raw().networkResponse()
+            val priorResponse = response.raw().priorResponse()
+            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
+                //val redirectUrl = networkResponse.request().url()
+                //val paths = redirectUrl.pathSegments()
+                //return paths.last() != "login.php"
+                return false
+            }
+            return true
+        }
+        return false
     }
 
     private fun populatePage(body: String) {

@@ -59,10 +59,10 @@ interface TimeTrackerService {
                 @Field("task") taskId: Long,
                 @Field("start") start: String,
                 @Field("finish") finish: String,
-                @Field("duration") duration: String,
                 @Field("date") date: String,
                 @Field("note") note: String,
-                @Field("btn_submit") submit: String = "Submit"): Single<Response<String>>
+                @Field("btn_submit") submit: String = "Submit",
+                @Field("browser_today") browserToday: String = formatDate()): Single<Response<String>>
 
     @GET("time_edit.php")
     fun fetchTime(@Query("id") id: Long): Single<Response<String>>
@@ -77,12 +77,12 @@ interface TimeTrackerService {
                  @Field("duration") duration: String,
                  @Field("date") date: String,
                  @Field("note") note: String,
-                 @Field("browser_today") browserToday: String = formatDate(),
-                 @Field("btn_save") submit: String = "Save"): Single<Response<String>>
+                 @Field("btn_save") submit: String = "Save",
+                 @Field("browser_today") browserToday: String = formatDate()): Single<Response<String>>
 
     @FormUrlEncoded
     @POST("time_delete.php")
     fun deleteTime(@Query("id") @Field("id") id: Long,
-                   @Field("browser_today") browserToday: String = formatDate(),
-                   @Field("delete_button") submit: String = "Delete"): Single<Response<String>>
+                   @Field("delete_button") submit: String = "Delete",
+                   @Field("browser_today") browserToday: String = formatDate()): Single<Response<String>>
 }
