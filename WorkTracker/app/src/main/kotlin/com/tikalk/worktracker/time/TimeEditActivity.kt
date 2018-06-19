@@ -3,6 +3,7 @@ package com.tikalk.worktracker.time
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -12,12 +13,17 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import retrofit2.Response
+import java.sql.Date
 
 class TimeEditActivity : AppCompatActivity() {
 
@@ -32,8 +38,8 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var prefs: TimeTrackerPrefs
 
     // UI references
-    private lateinit var project: Spinner
-    private lateinit var task: Spinner
+    private lateinit var projectSpinner: Spinner
+    private lateinit var taskSpinner: Spinner
     private lateinit var dateText: TextView
     private lateinit var startTimeText: TextView
     private lateinit var finishTimeText: TextView
@@ -44,14 +50,21 @@ class TimeEditActivity : AppCompatActivity() {
      */
     private var fetchTask: Disposable? = null
     private var date: Long = 0L
+    private var user = User("")
+    private var project = Project("")
+    private var task = ProjectTask("")
+    private var record = TimeRecord(user, project, task)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = TimeTrackerPrefs(this)
         setContentView(R.layout.activity_time_edit)
 
-        project = findViewById(R.id.project)
-        task = findViewById(R.id.task)
+        user.username = prefs.userCredentials.login
+        user.email = user.username
+
+        projectSpinner = findViewById(R.id.project)
+        taskSpinner = findViewById(R.id.task)
         dateText = findViewById(R.id.date)
         startTimeText = findViewById(R.id.start)
         finishTimeText = findViewById(R.id.finish)
@@ -98,7 +111,7 @@ class TimeEditActivity : AppCompatActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        val dateFormatted = formatDate(date)
+        val dateFormatted = formatSystemDate(date)
         fetchTask = service.fetchTimes(dateFormatted)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -108,7 +121,7 @@ class TimeEditActivity : AppCompatActivity() {
 
                     this.date = date
                     if (validResponse(response)) {
-                        populatePage(response.body()!!)
+                        populateRecord(response.body()!!, date)
                     } else {
                         authenticate()
                     }
@@ -135,10 +148,18 @@ class TimeEditActivity : AppCompatActivity() {
         return false
     }
 
-    private fun populatePage(body: String) {
-        println("±!@ [$body]")
-        val dateFormatted = formatDate(date)
-        dateText.text = dateFormatted
+    private fun populateRecord(body: String, date: Long) {
+        //TODO populate the record and then bind the form.
+        record.start = Date(date)
+        record.finish = record.start
+        bindForm(record)
+    }
+
+    private fun bindForm(record: TimeRecord) {
+        val context = this
+        dateText.text = DateUtils.formatDateTime(context, record.start!!.time, DateUtils.FORMAT_SHOW_DATE)
+        startTimeText.text = DateUtils.formatDateTime(context, record.start!!.time, DateUtils.FORMAT_SHOW_TIME)
+        finishTimeText.text = DateUtils.formatDateTime(context, record.finish!!.time, DateUtils.FORMAT_SHOW_TIME)
     }
 
     private fun authenticate() {

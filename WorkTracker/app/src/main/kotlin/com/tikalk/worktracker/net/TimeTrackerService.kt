@@ -31,7 +31,7 @@
  */
 package com.tikalk.worktracker.net
 
-import com.tikalk.worktracker.time.formatDate
+import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Single
 import retrofit2.Response
 import retrofit2.http.*
@@ -62,7 +62,7 @@ interface TimeTrackerService {
                 @Field("date") date: String,
                 @Field("note") note: String,
                 @Field("btn_submit") submit: String = "Submit",
-                @Field("browser_today") browserToday: String = formatDate()): Single<Response<String>>
+                @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 
     @GET("time_edit.php")
     fun fetchTime(@Query("id") id: Long): Single<Response<String>>
@@ -78,11 +78,11 @@ interface TimeTrackerService {
                  @Field("date") date: String,
                  @Field("note") note: String,
                  @Field("btn_save") submit: String = "Save",
-                 @Field("browser_today") browserToday: String = formatDate()): Single<Response<String>>
+                 @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 
     @FormUrlEncoded
     @POST("time_delete.php")
     fun deleteTime(@Query("id") @Field("id") id: Long,
                    @Field("delete_button") submit: String = "Delete",
-                   @Field("browser_today") browserToday: String = formatDate()): Single<Response<String>>
+                   @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 }

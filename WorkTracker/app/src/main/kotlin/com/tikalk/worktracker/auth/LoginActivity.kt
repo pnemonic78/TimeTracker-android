@@ -26,7 +26,7 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import com.tikalk.worktracker.time.formatDate
+import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -185,7 +185,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             val authToken = prefs.basicCredentials.authToken()
             val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-            val today = formatDate()
+            val today = formatSystemDate()
             authTask = service.login(email, password, today)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
