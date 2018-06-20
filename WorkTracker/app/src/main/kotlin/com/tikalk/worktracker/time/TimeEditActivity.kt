@@ -25,7 +25,10 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import retrofit2.Response
+import java.io.InputStreamReader
 import java.util.*
 
 class TimeEditActivity : AppCompatActivity() {
@@ -47,7 +50,7 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var startTimeText: TextView
     private lateinit var finishTimeText: TextView
     private lateinit var noteText: EditText
-    private lateinit var submitMenuItem: MenuItem
+    private var submitMenuItem: MenuItem? = null
 
     /** Keep track of the task to ensure we can cancel it if requested. */
     private var fetchTask: Disposable? = null
@@ -114,29 +117,36 @@ class TimeEditActivity : AppCompatActivity() {
         //TODO showProgress(true)
         //TODO disable menu items
 
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+//        val authToken = prefs.basicCredentials.authToken()
+//        val service = TimeTrackerServiceFactory.createPlain(authToken)
+//
+//        val dateFormatted = formatSystemDate(date)
+//        fetchTask = service.fetchTimes(dateFormatted)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({ response ->
+//                    //TODO showProgress(false)
+//                    //TODO enable menu items
+//
+//                    this.date = date
+//                    if (validResponse(response)) {
+//                        this.record = TimeRecord(user, project, task)
+//                        bindForm(record)
+//                    } else {
+//                        authenticate()
+//                    }
+//                }, { err ->
+//                    Log.e(TAG, "Error fetching page: ${err.message}", err)
+//                    //TODO showProgress(false)
+//                    //TODO enable menu items
+//                })
 
-        val dateFormatted = formatSystemDate(date)
-        fetchTask = service.fetchTimes(dateFormatted)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    //TODO showProgress(false)
-                    //TODO enable menu items
-
-                    this.date = date
-                    if (validResponse(response)) {
-                        this.record = TimeRecord(user, project, task)
-                        bindForm(record)
-                    } else {
-                        authenticate()
-                    }
-                }, { err ->
-                    Log.e(TAG, "Error fetching page: ${err.message}", err)
-                    //TODO showProgress(false)
-                    //TODO enable menu items
-                })
+        resources.openRawResource(R.raw.time).use { raw ->
+            this.date = date
+            val reader = InputStreamReader(raw)
+            val html = reader.readText()
+            populateRecord(html, date)
+        }
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -156,9 +166,23 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     /** Populate the record and then bind the form. */
-    private fun populateRecord(body: String, date: Long) {
-//        record.start = Date(date)
-//        record.finish = record.start
+    private fun populateRecord(html: String, date: Long) {
+        val doc: Document = Jsoup.parse(html)
+        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val inputProject = form.selectFirst("select[name='project']")
+        val inputTask = form.selectFirst("select[name='task']")
+        val inputStart = form.selectFirst("input[name='start']")
+        val inputFinish = form.selectFirst("input[name='finish']")
+        val inputNote = form.selectFirst("textarea[name='note']")
+
+        val startValue = inputStart.attr("value")
+        record.start = parseSystemTime(date, startValue)
+
+        val finishValue = inputFinish.attr("value")
+        record.finish = parseSystemTime(date, finishValue)
+
+        record.note = inputNote.text()
+
         bindForm(record)
     }
 
@@ -239,9 +263,6 @@ class TimeEditActivity : AppCompatActivity() {
         val context = this
         val cal = Calendar.getInstance()
         cal.timeInMillis = date
-        val year = cal.get(Calendar.YEAR)
-        val month = cal.get(Calendar.MONTH)
-        val day = cal.get(Calendar.DAY_OF_MONTH)
         val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
@@ -262,14 +283,15 @@ class TimeEditActivity : AppCompatActivity() {
             dateText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
             validateForm()
         }
+        val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH)
+        val day = cal.get(Calendar.DAY_OF_MONTH)
         DatePickerDialog(context, listener, year, month, day).show()
     }
 
     private fun pickStartTime() {
         val context = this
         val cal = getCalendar(record.start)
-        val hour = cal.get(Calendar.HOUR_OF_DAY)
-        val minute = cal.get(Calendar.MINUTE)
         val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
             cal.set(Calendar.HOUR_OF_DAY, hour)
             cal.set(Calendar.MINUTE, minute)
@@ -277,6 +299,23 @@ class TimeEditActivity : AppCompatActivity() {
             startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
             validateForm()
         }
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val minute = cal.get(Calendar.MINUTE)
+        TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
+    }
+
+    private fun pickFinishTime() {
+        val context = this
+        val cal = getCalendar(record.finish)
+        val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+            cal.set(Calendar.HOUR_OF_DAY, hour)
+            cal.set(Calendar.MINUTE, minute)
+            record.finish = cal
+            finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+            validateForm()
+        }
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val minute = cal.get(Calendar.MINUTE)
         TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
     }
 
@@ -287,21 +326,6 @@ class TimeEditActivity : AppCompatActivity() {
             return calDate
         }
         return cal
-    }
-
-    private fun pickFinishTime() {
-        val context = this
-        val cal = getCalendar(record.finish)
-        val hour = cal.get(Calendar.HOUR_OF_DAY)
-        val minute = cal.get(Calendar.MINUTE)
-        val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
-            cal.set(Calendar.HOUR_OF_DAY, hour)
-            cal.set(Calendar.MINUTE, minute)
-            record.finish = cal
-            finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-            validateForm()
-        }
-        TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
     }
 
     private fun validateForm(): Boolean {
@@ -320,7 +344,7 @@ class TimeEditActivity : AppCompatActivity() {
             //TODO mark the field as invalid, e.g. red background
         }
 
-        submitMenuItem.isEnabled = valid
+        submitMenuItem?.isEnabled = valid
         return valid
     }
 }

@@ -1,6 +1,8 @@
 package com.tikalk.worktracker.time
 
+import android.text.TextUtils.isEmpty
 import android.text.format.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 const val SYSTEM_DATE_PATTERN = "yyyy-MM-dd"
@@ -17,3 +19,33 @@ fun formatSystemTime(time: Long = System.currentTimeMillis()): String = DateForm
 fun formatSystemTime(time: Date?): String = if (time == null) "" else formatSystemDate(time.time)
 
 fun formatSystemTime(time: Calendar?): String = if (time == null) "" else formatSystemDate(time.timeInMillis)
+
+fun parseSystemTime(date: Long, time: String?): Calendar? {
+    if (isEmpty(time)) {
+        return null
+    }
+    val cal = Calendar.getInstance()
+    cal.timeInMillis = date
+    return parseSystemTime(cal, time)
+}
+
+fun parseSystemTime(date: Date, time: String?): Calendar? {
+    if (isEmpty(time)) {
+        return null
+    }
+    val cal = Calendar.getInstance()
+    cal.time = date
+    return parseSystemTime(cal, time)
+}
+
+fun parseSystemTime(date: Calendar, time: String?): Calendar? {
+    if (isEmpty(time)) {
+        return null
+    }
+    val cal = date.clone() as Calendar
+    val parsed = SimpleDateFormat(SYSTEM_TIME_PATTERN, Locale.US).parse(time)
+    cal.set(Calendar.HOUR_OF_DAY, parsed.hours)
+    cal.set(Calendar.MINUTE, parsed.minutes)
+    cal.set(Calendar.SECOND, parsed.seconds)
+    return cal
+}
