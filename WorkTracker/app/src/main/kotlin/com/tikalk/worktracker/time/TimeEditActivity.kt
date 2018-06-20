@@ -2,8 +2,10 @@ package com.tikalk.worktracker.time
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.Menu
@@ -198,7 +200,7 @@ class TimeEditActivity : AppCompatActivity() {
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH)
         val day = cal.get(Calendar.DAY_OF_MONTH)
-        val listener = DatePickerDialog.OnDateSetListener { view, year, month, day ->
+        val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
             cal.set(Calendar.DAY_OF_MONTH, day)
@@ -210,10 +212,34 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun pickStartTime() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val context = this
+        val cal = Calendar.getInstance()
+        cal.time = record.start
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val minute = cal.get(Calendar.MINUTE)
+        val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+            cal.set(Calendar.HOUR_OF_DAY, hour)
+            cal.set(Calendar.MINUTE, minute)
+            val date = cal.time
+            record.start = date
+            startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+        }
+        TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
     }
 
     private fun pickFinishTime() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val context = this
+        val cal = Calendar.getInstance()
+        cal.time = record.finish
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val minute = cal.get(Calendar.MINUTE)
+        val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+            cal.set(Calendar.HOUR_OF_DAY, hour)
+            cal.set(Calendar.MINUTE, minute)
+            val date = cal.time
+            record.finish = date
+            finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+        }
+        TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
     }
 }
