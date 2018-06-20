@@ -47,11 +47,12 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var startTimeText: TextView
     private lateinit var finishTimeText: TextView
     private lateinit var noteText: EditText
+    private lateinit var submitMenuItem: MenuItem
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
+    /** Keep track of the task to ensure we can cancel it if requested. */
     private var fetchTask: Disposable? = null
+    /** Keep track of the task to ensure we can cancel it if requested. */
+    private var submitTask: Disposable? = null
     private var date: Long = 0L
     private var user = User("")
     private var project = Project("")
@@ -89,11 +90,13 @@ class TimeEditActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         fetchTask?.dispose()
+        submitTask?.dispose()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         menuInflater.inflate(R.menu.time_edit, menu)
+        submitMenuItem = menu.findItem(R.id.menu_submit)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -124,7 +127,8 @@ class TimeEditActivity : AppCompatActivity() {
 
                     this.date = date
                     if (validResponse(response)) {
-                        populateRecord(response.body()!!, date)
+                        this.record = TimeRecord(user, project, task)
+                        bindForm(record)
                     } else {
                         authenticate()
                     }
@@ -151,18 +155,24 @@ class TimeEditActivity : AppCompatActivity() {
         return false
     }
 
+    /** Populate the record and then bind the form. */
     private fun populateRecord(body: String, date: Long) {
-        //TODO populate the record and then bind the form.
-        record.start = Date(date)
-        record.finish = record.start
+//        record.start = Date(date)
+//        record.finish = record.start
         bindForm(record)
     }
 
     private fun bindForm(record: TimeRecord) {
         val context = this
-        dateText.text = DateUtils.formatDateTime(context, record.start!!.time, DateUtils.FORMAT_SHOW_DATE)
-        startTimeText.text = DateUtils.formatDateTime(context, record.start!!.time, DateUtils.FORMAT_SHOW_TIME)
-        finishTimeText.text = DateUtils.formatDateTime(context, record.finish!!.time, DateUtils.FORMAT_SHOW_TIME)
+        dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
+        startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        noteText.setText(record.note)
+        validateForm()
+    }
+
+    private fun bindRecord(record: TimeRecord) {
+        record.note = noteText.text.toString()
     }
 
     private fun authenticate() {
@@ -190,13 +200,45 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun submit() {
-        TODO("submit the form to time.php")
+        val record = this.record
+        bindRecord(record)
+
+        // Show a progress spinner, and kick off a background task to
+        // perform the user login attempt.
+        //TODO showProgress(true)
+        //TODO disable menu items
+
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(authToken)
+
+        submitTask = service.addTime(record.project.id,
+                record.task.id,
+                formatSystemDate(date),
+                formatSystemTime(record.start),
+                formatSystemTime(record.finish),
+                record.note)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    //TODO showProgress(false)
+                    //TODO enable menu items
+
+                    if (validResponse(response)) {
+                        populateRecord(response.body()!!, date)
+                    } else {
+                        authenticate()
+                    }
+                }, { err ->
+                    Log.e(TAG, "Error saving page: ${err.message}", err)
+                    //TODO showProgress(false)
+                    //TODO enable menu items
+                })
     }
 
     private fun pickDate() {
         val context = this
         val cal = Calendar.getInstance()
-        cal.time = record.start
+        cal.timeInMillis = date
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH)
         val day = cal.get(Calendar.DAY_OF_MONTH)
@@ -204,42 +246,81 @@ class TimeEditActivity : AppCompatActivity() {
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
             cal.set(Calendar.DAY_OF_MONTH, day)
-            val date = cal.time
-            record.start = date
-            dateText.text = DateUtils.formatDateTime(context, date.time, DateUtils.FORMAT_SHOW_DATE)
+            this@TimeEditActivity.date = cal.timeInMillis
+            val start = record.start
+            if (start != null) {
+                start.set(Calendar.YEAR, year)
+                start.set(Calendar.MONTH, month)
+                start.set(Calendar.DAY_OF_MONTH, day)
+            }
+            val finish = record.finish
+            if (finish != null) {
+                finish.set(Calendar.YEAR, year)
+                finish.set(Calendar.MONTH, month)
+                finish.set(Calendar.DAY_OF_MONTH, day)
+            }
+            dateText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+            validateForm()
         }
         DatePickerDialog(context, listener, year, month, day).show()
     }
 
     private fun pickStartTime() {
         val context = this
-        val cal = Calendar.getInstance()
-        cal.time = record.start
+        val cal = getCalendar(record.start)
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
         val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
             cal.set(Calendar.HOUR_OF_DAY, hour)
             cal.set(Calendar.MINUTE, minute)
-            val date = cal.time
-            record.start = date
+            record.start = cal
             startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+            validateForm()
         }
         TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
     }
 
+    private inline fun getCalendar(cal: Calendar?): Calendar {
+        if (cal == null) {
+            val calDate = Calendar.getInstance()
+            calDate.timeInMillis = date
+            return calDate
+        }
+        return cal
+    }
+
     private fun pickFinishTime() {
         val context = this
-        val cal = Calendar.getInstance()
-        cal.time = record.finish
+        val cal = getCalendar(record.finish)
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
         val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
             cal.set(Calendar.HOUR_OF_DAY, hour)
             cal.set(Calendar.MINUTE, minute)
-            val date = cal.time
-            record.finish = date
+            record.finish = cal
             finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+            validateForm()
         }
         TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
+    }
+
+    private fun validateForm(): Boolean {
+        var valid = true
+
+        if (record.project.id <= 0) {
+            valid = false
+            //TODO mark the field as invalid, e.g. red background
+        }
+        if (record.task.id <= 0) {
+            valid = false
+            //TODO mark the field as invalid, e.g. red background
+        }
+        if ((record.start == null) || (record.finish == null) || (record.start!! >= record.finish!!)) {
+            valid = false
+            //TODO mark the field as invalid, e.g. red background
+        }
+
+        submitMenuItem.isEnabled = valid
+        return valid
     }
 }

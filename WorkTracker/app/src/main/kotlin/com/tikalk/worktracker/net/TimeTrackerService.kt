@@ -57,9 +57,9 @@ interface TimeTrackerService {
     @POST("time.php")
     fun addTime(@Field("project") projectId: Long,
                 @Field("task") taskId: Long,
+                @Field("date") date: String,
                 @Field("start") start: String,
                 @Field("finish") finish: String,
-                @Field("date") date: String,
                 @Field("note") note: String,
                 @Field("btn_submit") submit: String = "Submit",
                 @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
@@ -72,10 +72,9 @@ interface TimeTrackerService {
     fun editTime(@Query("id") @Field("id") id: Long,
                  @Field("project") projectId: Long,
                  @Field("task") taskId: Long,
+                 @Field("date") date: String,
                  @Field("start") start: String,
                  @Field("finish") finish: String,
-                 @Field("duration") duration: String,
-                 @Field("date") date: String,
                  @Field("note") note: String,
                  @Field("btn_save") submit: String = "Save",
                  @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>

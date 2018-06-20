@@ -36,7 +36,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
-import java.util.Date
+import java.util.*
 
 /**
  * Time record entity. Represents some work done for a project task.
@@ -48,8 +48,8 @@ data class TimeRecord(
         var user: User,
         var project: Project,
         var task: ProjectTask,
-        var start: Date? = null,
-        var finish: Date? = null,
-        var note: String? = null,
+        var start: Calendar? = null,
+        var finish: Calendar? = null,
+        var note: String = "",
         var status: TaskRecordStatus = TaskRecordStatus.INSERTED
 ) : TikalEntity()
