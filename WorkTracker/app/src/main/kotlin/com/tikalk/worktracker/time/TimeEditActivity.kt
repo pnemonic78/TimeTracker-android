@@ -55,6 +55,7 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var finishTimeText: TextView
     private lateinit var noteText: EditText
     private lateinit var progressView: ProgressBar
+    private lateinit var errorText: TextView
     private var submitMenuItem: MenuItem? = null
 
     /** Keep track of the task to ensure we can cancel it if requested. */
@@ -66,6 +67,7 @@ class TimeEditActivity : AppCompatActivity() {
     private var record = TimeRecord(user, Project(""), ProjectTask(""))
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
+    private var errorMessage: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,6 +85,7 @@ class TimeEditActivity : AppCompatActivity() {
         finishTimeText = findViewById(R.id.finish)
         noteText = findViewById(R.id.note)
         progressView = findViewById(R.id.progress)
+        errorText = findViewById(R.id.error)
 
         projectSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -181,6 +184,10 @@ class TimeEditActivity : AppCompatActivity() {
     /** Populate the record and then bind the form. */
     private fun populateForm(html: String, date: Long) {
         val doc: Document = Jsoup.parse(html)
+
+        val errorNode = doc.selectFirst("td[class='error']")
+        errorMessage = errorNode?.text()?.trim() ?: ""
+
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
         populateProjects(doc, projects)
@@ -297,6 +304,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun bindForm(record: TimeRecord) {
         val context = this
+        errorText.text = errorMessage
         projectSpinner.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)

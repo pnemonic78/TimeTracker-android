@@ -16,6 +16,14 @@
         tools:context="com.tikalk.worktracker.time.TimeEditActivity">
 
         <TextView
+            android:id="@+id/error"
+            style="@style/Widget.TextView.Error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            tools:text="@tools:sample/lorem" />
+
+        <TextView
             android:id="@+id/project_label"
             style="@style/Widget.TextView.Label"
             android:layout_width="match_parent"
