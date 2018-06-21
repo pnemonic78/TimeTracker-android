@@ -42,4 +42,8 @@ import androidx.room.Entity
 data class ProjectTask(
         var name: String,
         var description: String? = null
-) : TikalEntity()
+) : TikalEntity(){
+    override fun toString(): String {
+        return name
+    }
+}

@@ -10,6 +10,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
@@ -30,6 +31,8 @@ import org.jsoup.nodes.Document
 import retrofit2.Response
 import java.io.InputStreamReader
 import java.util.*
+import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 class TimeEditActivity : AppCompatActivity() {
 
@@ -61,6 +64,8 @@ class TimeEditActivity : AppCompatActivity() {
     private var project = Project("")
     private var task = ProjectTask("")
     private var record = TimeRecord(user, project, task)
+    private val projects = ArrayList<Project>()
+    private val tasks = ArrayList<ProjectTask>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -169,25 +174,106 @@ class TimeEditActivity : AppCompatActivity() {
     private fun populateRecord(html: String, date: Long) {
         val doc: Document = Jsoup.parse(html)
         val form = doc.selectFirst("form[name='timeRecordForm']")
-        val inputProject = form.selectFirst("select[name='project']")
-        val inputTask = form.selectFirst("select[name='task']")
-        val inputStart = form.selectFirst("input[name='start']")
-        val inputFinish = form.selectFirst("input[name='finish']")
-        val inputNote = form.selectFirst("textarea[name='note']")
 
+        populateProjects(doc, projects)
+        populateTasks(doc, tasks)
+
+        val inputStart = form.selectFirst("input[name='start']")
         val startValue = inputStart.attr("value")
         record.start = parseSystemTime(date, startValue)
 
+        val inputFinish = form.selectFirst("input[name='finish']")
         val finishValue = inputFinish.attr("value")
         record.finish = parseSystemTime(date, finishValue)
 
+        val inputNote = form.selectFirst("textarea[name='note']")
         record.note = inputNote.text()
 
         bindForm(record)
     }
 
+    private fun populateProjects(doc: Document, projects: MutableList<Project>) {
+        projects.clear()
+
+        val scripts = doc.select("script")
+        var scriptText = ""
+        var indexStart = -1
+        var indexEnd = -1
+        val tokenStart = "var project_names = new Array();"
+        val tokenEnd = "populate project dropdown"
+
+        for (script in scripts) {
+            scriptText = script.html()
+            indexStart = scriptText.indexOf(tokenStart)
+            if (indexStart >= 0) {
+                indexStart += tokenStart.length
+                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
+                if (indexEnd < 0) {
+                    indexEnd = scriptText.length
+                }
+                break
+            }
+        }
+
+        if ((indexStart >= 0) && (indexStart < indexEnd)) {
+            scriptText = scriptText.substring(indexStart, indexEnd)
+            val pattern = Pattern.compile("project_names\\[(\\d+)\\] = \"(.+)\"")
+            val lines = scriptText.split(";")
+            for (line in lines) {
+                val matcher = pattern.matcher(line)
+                if (matcher.find()) {
+                    val project = Project(matcher.group(2))
+                    project.id = matcher.group(1).toLong()
+                    projects.add(project)
+                }
+            }
+        }
+    }
+
+    private fun populateTasks(doc: Document, tasks: MutableList<ProjectTask>) {
+        tasks.clear()
+
+        val scripts = doc.select("script")
+        var scriptText = ""
+        var indexStart = -1
+        var indexEnd = -1
+        val tokenStart = "var task_names = new Array();"
+        val tokenEnd = "// Mandatory top options for project and task dropdowns."
+
+        for (script in scripts) {
+            scriptText = script.html()
+            indexStart = scriptText.indexOf(tokenStart)
+            if (indexStart >= 0) {
+                indexStart += tokenStart.length
+                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
+                if (indexEnd < 0) {
+                    indexEnd = scriptText.length
+                }
+                break
+            }
+        }
+
+        if ((indexStart >= 0) && (indexStart < indexEnd)) {
+            scriptText = scriptText.substring(indexStart, indexEnd)
+            val pattern = Pattern.compile("task_names\\[(\\d+)\\] = \"(.+)\"")
+            val lines = scriptText.split(";")
+            for (line in lines) {
+                val matcher = pattern.matcher(line)
+                if (matcher.find()) {
+                    val task = ProjectTask(matcher.group(2))
+                    task.id = matcher.group(1).toLong()
+                    tasks.add(task)
+                }
+            }
+        }
+    }
+
     private fun bindForm(record: TimeRecord) {
         val context = this
+        val projectsArray = projects.toArray(Array(projects.size) { projects[it] })
+        val tasksArray = tasks.toArray(Array(tasks.size) { tasks[it] })
+        projectSpinner.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projectsArray)
+        taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasksArray)
         dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
         startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
