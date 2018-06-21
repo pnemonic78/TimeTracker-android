@@ -90,9 +90,18 @@ class TimeEditActivity : AppCompatActivity() {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
             }
 
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val project = projects[position]
                 filterTasks(project)
+                record.project = project
+            }
+        }
+        taskSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+               record.task = tasks[position]
             }
         }
         dateText.setOnClickListener { pickDate() }
@@ -133,7 +142,6 @@ class TimeEditActivity : AppCompatActivity() {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
-        //TODO disable menu items
 
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
@@ -144,7 +152,6 @@ class TimeEditActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
                     showProgress(false)
-                    //TODO enable menu items
 
                     this.date = date
                     if (validResponse(response)) {
@@ -296,6 +303,7 @@ class TimeEditActivity : AppCompatActivity() {
         startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         noteText.setText(record.note)
+        projectSpinner.requestFocus()
         validateForm()
     }
 
@@ -334,7 +342,6 @@ class TimeEditActivity : AppCompatActivity() {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
-        //TODO disable menu items
 
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
@@ -349,7 +356,6 @@ class TimeEditActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
                     showProgress(false)
-                    //TODO enable menu items
 
                     if (validResponse(response)) {
                         populateForm(response.body()!!, date)
@@ -359,7 +365,6 @@ class TimeEditActivity : AppCompatActivity() {
                 }, { err ->
                     Log.e(TAG, "Error saving page: ${err.message}", err)
                     showProgress(false)
-                    //TODO enable menu items
                 })
     }
 
@@ -479,5 +484,7 @@ class TimeEditActivity : AppCompatActivity() {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
+
+        submitMenuItem?.isEnabled = !show
     }
 }
