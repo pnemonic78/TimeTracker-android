@@ -1,6 +1,8 @@
 package com.tikalk.worktracker.auth
 
 import android.Manifest.permission.READ_CONTACTS
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.app.LoaderManager.LoaderCallbacks
 import android.content.CursorLoader
@@ -31,6 +33,8 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private lateinit var realmView: TextView
     private lateinit var usernameView: AutoCompleteTextView
     private lateinit var passwordView: EditText
+    private lateinit var progressView: View
+    private lateinit var loginFormView: View
     private lateinit var authButton: Button
 
     private lateinit var prefs: TimeTrackerPrefs
@@ -77,6 +81,9 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         authButton = findViewById(R.id.realm_auth_button)
         authButton.setOnClickListener { attemptLogin() }
+
+        loginFormView = findViewById(R.id.auth_form)
+        progressView = findViewById(R.id.progress)
     }
 
     private fun populateAutoComplete() {
@@ -161,10 +168,12 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
+            showProgress(true)
             authButton.isEnabled = false
 
             prefs.basicCredentials = BasicCredentials(realmName, username, password)
             setResult(Activity.RESULT_OK)
+            showProgress(false)
             finish()
         }
     }
@@ -175,6 +184,29 @@ class BasicRealmActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    private fun showProgress(show: Boolean) {
+        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
+
+        loginFormView.visibility = if (show) View.GONE else View.VISIBLE
+        loginFormView.animate().setDuration(shortAnimTime).alpha(
+                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                loginFormView.visibility = if (show) View.GONE else View.VISIBLE
+            }
+        })
+
+        progressView.visibility = if (show) View.VISIBLE else View.GONE
+        progressView.animate().setDuration(shortAnimTime).alpha(
+                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                progressView.visibility = if (show) View.VISIBLE else View.GONE
+            }
+        })
     }
 
     override fun onCreateLoader(i: Int, bundle: Bundle): Loader<Cursor> {
