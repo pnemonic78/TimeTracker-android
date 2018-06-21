@@ -46,4 +46,6 @@ data class Project(
     override fun toString(): String {
         return name
     }
+
+    val taskIds: MutableList<Long> = ArrayList()
 }

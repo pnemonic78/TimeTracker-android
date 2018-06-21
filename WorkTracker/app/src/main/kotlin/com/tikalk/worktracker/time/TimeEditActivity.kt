@@ -10,10 +10,8 @@ import android.text.format.DateUtils
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -82,6 +80,15 @@ class TimeEditActivity : AppCompatActivity() {
         finishTimeText = findViewById(R.id.finish)
         noteText = findViewById(R.id.note)
 
+        projectSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
+                val project = projects[position]
+                filterTasks(project)
+            }
+        }
         dateText.setOnClickListener { pickDate() }
         startTimeText.setOnClickListener { pickStartTime() }
         finishTimeText.setOnClickListener { pickFinishTime() }
@@ -192,15 +199,11 @@ class TimeEditActivity : AppCompatActivity() {
         bindForm(record)
     }
 
-    private fun populateProjects(doc: Document, projects: MutableList<Project>) {
-        projects.clear()
-
+    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
-        var scriptText = ""
-        var indexStart = -1
-        var indexEnd = -1
-        val tokenStart = "var project_names = new Array();"
-        val tokenEnd = "populate project dropdown"
+        var scriptText: String
+        var indexStart: Int
+        var indexEnd: Int
 
         for (script in scripts) {
             scriptText = script.html()
@@ -211,12 +214,21 @@ class TimeEditActivity : AppCompatActivity() {
                 if (indexEnd < 0) {
                     indexEnd = scriptText.length
                 }
-                break
+                return scriptText.substring(indexStart, indexEnd)
             }
         }
 
-        if ((indexStart >= 0) && (indexStart < indexEnd)) {
-            scriptText = scriptText.substring(indexStart, indexEnd)
+        return ""
+    }
+
+    private fun populateProjects(doc: Document, projects: MutableList<Project>) {
+        projects.clear()
+
+        val tokenStart = "var project_names = new Array();"
+        val tokenEnd = "populate project dropdown"
+        val scriptText = findScript(doc, tokenStart, tokenEnd)
+
+        if (scriptText.isNotEmpty()) {
             val pattern = Pattern.compile("project_names\\[(\\d+)\\] = \"(.+)\"")
             val lines = scriptText.split(";")
             for (line in lines) {
@@ -228,33 +240,18 @@ class TimeEditActivity : AppCompatActivity() {
                 }
             }
         }
+
+        populateTaskIds(doc, projects)
     }
 
     private fun populateTasks(doc: Document, tasks: MutableList<ProjectTask>) {
         tasks.clear()
 
-        val scripts = doc.select("script")
-        var scriptText = ""
-        var indexStart = -1
-        var indexEnd = -1
         val tokenStart = "var task_names = new Array();"
         val tokenEnd = "// Mandatory top options for project and task dropdowns."
+        val scriptText = findScript(doc, tokenStart, tokenEnd)
 
-        for (script in scripts) {
-            scriptText = script.html()
-            indexStart = scriptText.indexOf(tokenStart)
-            if (indexStart >= 0) {
-                indexStart += tokenStart.length
-                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
-                if (indexEnd < 0) {
-                    indexEnd = scriptText.length
-                }
-                break
-            }
-        }
-
-        if ((indexStart >= 0) && (indexStart < indexEnd)) {
-            scriptText = scriptText.substring(indexStart, indexEnd)
+        if (scriptText.isNotEmpty()) {
             val pattern = Pattern.compile("task_names\\[(\\d+)\\] = \"(.+)\"")
             val lines = scriptText.split(";")
             for (line in lines) {
@@ -268,12 +265,36 @@ class TimeEditActivity : AppCompatActivity() {
         }
     }
 
+    private fun populateTaskIds(doc: Document, projects: List<Project>) {
+        val tokenStart = "var task_ids = new Array();"
+        val tokenEnd = "// Prepare an array of task names."
+        val scriptText = findScript(doc, tokenStart, tokenEnd)
+
+        for (project in projects) {
+            project.taskIds.clear()
+        }
+
+        if (scriptText.isNotEmpty()) {
+            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
+            val lines = scriptText.split(";")
+            for (line in lines) {
+                val matcher = pattern.matcher(line)
+                if (matcher.find()) {
+                    val projectId = matcher.group(1).toLong()
+                    val taskIds: List<Long> = matcher.group(2)
+                            .split(",")
+                            .map { it.toLong() }
+                    projects.find { it.id == projectId }!!
+                            .taskIds.addAll(taskIds)
+                }
+            }
+        }
+    }
+
     private fun bindForm(record: TimeRecord) {
         val context = this
-        val projectsArray = projects.toArray(Array(projects.size) { projects[it] })
-        val tasksArray = tasks.toArray(Array(tasks.size) { tasks[it] })
-        projectSpinner.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projectsArray)
-        taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasksArray)
+        projectSpinner.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
         startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
@@ -432,5 +453,11 @@ class TimeEditActivity : AppCompatActivity() {
 
         submitMenuItem?.isEnabled = valid
         return valid
+    }
+
+
+    private fun filterTasks(project: Project) {
+        val context =  this
+        taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray().filter { it.id in project.taskIds })
     }
 }
