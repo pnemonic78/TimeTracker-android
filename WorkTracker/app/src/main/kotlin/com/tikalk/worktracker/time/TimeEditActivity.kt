@@ -63,9 +63,7 @@ class TimeEditActivity : AppCompatActivity() {
     private var submitTask: Disposable? = null
     private var date: Long = 0L
     private var user = User("")
-    private var project = Project("")
-    private var task = ProjectTask("")
-    private var record = TimeRecord(user, project, task)
+    private var record = TimeRecord(user, Project(""), ProjectTask(""))
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
 
@@ -91,7 +89,7 @@ class TimeEditActivity : AppCompatActivity() {
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val project = projects[position]
+                val project = projectSpinner.adapter.getItem(position) as Project
                 filterTasks(project)
                 record.project = project
             }
@@ -101,7 +99,8 @@ class TimeEditActivity : AppCompatActivity() {
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-               record.task = tasks[position]
+                val task = taskSpinner.adapter.getItem(position) as ProjectTask
+                record.task = task!!
             }
         }
         dateText.setOnClickListener { pickDate() }
@@ -155,7 +154,6 @@ class TimeEditActivity : AppCompatActivity() {
 
                     this.date = date
                     if (validResponse(response)) {
-                        this.record = TimeRecord(user, project, task)
                         populateForm(response.body()!!, date)
                     } else {
                         authenticate()
@@ -171,10 +169,9 @@ class TimeEditActivity : AppCompatActivity() {
             val networkResponse = response.raw().networkResponse()
             val priorResponse = response.raw().priorResponse()
             if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                //val redirectUrl = networkResponse.request().url()
-                //val paths = redirectUrl.pathSegments()
-                //return paths.last() != "login.php"
-                return false
+                val networkUrl = networkResponse.request().url()
+                val priorUrl = priorResponse.request().url()
+                return networkUrl == priorUrl
             }
             return true
         }
@@ -187,7 +184,10 @@ class TimeEditActivity : AppCompatActivity() {
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
         populateProjects(doc, projects)
+        record.project = projects[0]
+
         populateTasks(doc, tasks)
+        record.task = tasks[0]
 
         val inputStart = form.selectFirst("input[name='start']")
         val startValue = inputStart.attr("value")
@@ -304,7 +304,6 @@ class TimeEditActivity : AppCompatActivity() {
         finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         noteText.setText(record.note)
         projectSpinner.requestFocus()
-        validateForm()
     }
 
     private fun bindRecord(record: TimeRecord) {
@@ -337,6 +336,10 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun submit() {
         val record = this.record
+
+        if (!validateForm()) {
+            return
+        }
         bindRecord(record)
 
         // Show a progress spinner, and kick off a background task to
@@ -390,7 +393,6 @@ class TimeEditActivity : AppCompatActivity() {
                 finish.set(Calendar.DAY_OF_MONTH, day)
             }
             dateText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
-            validateForm()
         }
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH)
@@ -406,7 +408,6 @@ class TimeEditActivity : AppCompatActivity() {
             cal.set(Calendar.MINUTE, minute)
             record.start = cal
             startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-            validateForm()
         }
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
@@ -421,7 +422,6 @@ class TimeEditActivity : AppCompatActivity() {
             cal.set(Calendar.MINUTE, minute)
             record.finish = cal
             finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-            validateForm()
         }
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
@@ -453,7 +453,6 @@ class TimeEditActivity : AppCompatActivity() {
             //TODO mark the field as invalid, e.g. red background
         }
 
-        submitMenuItem?.isEnabled = valid
         return valid
     }
 
