@@ -16,9 +16,9 @@ fun formatSystemDate(date: Calendar?): String = if (date == null) "" else format
 
 fun formatSystemTime(time: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Date?): String = if (time == null) "" else formatSystemDate(time.time)
+fun formatSystemTime(time: Date?): String = if (time == null) "" else formatSystemTime(time.time)
 
-fun formatSystemTime(time: Calendar?): String = if (time == null) "" else formatSystemDate(time.timeInMillis)
+fun formatSystemTime(time: Calendar?): String = if (time == null) "" else formatSystemTime(time.timeInMillis)
 
 fun parseSystemTime(date: Long, time: String?): Calendar? {
     if (isEmpty(time)) {
