@@ -1,5 +1,7 @@
 package com.tikalk.worktracker.time
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -11,6 +13,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
@@ -27,7 +30,6 @@ import io.reactivex.schedulers.Schedulers
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import retrofit2.Response
-import java.io.InputStreamReader
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -45,12 +47,14 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var prefs: TimeTrackerPrefs
 
     // UI references
+    private lateinit var timeForm: ViewGroup
     private lateinit var projectSpinner: Spinner
     private lateinit var taskSpinner: Spinner
     private lateinit var dateText: TextView
     private lateinit var startTimeText: TextView
     private lateinit var finishTimeText: TextView
     private lateinit var noteText: EditText
+    private lateinit var progressView: ProgressBar
     private var submitMenuItem: MenuItem? = null
 
     /** Keep track of the task to ensure we can cancel it if requested. */
@@ -73,12 +77,14 @@ class TimeEditActivity : AppCompatActivity() {
         user.username = prefs.userCredentials.login
         user.email = user.username
 
+        timeForm = findViewById(R.id.time_form)
         projectSpinner = findViewById(R.id.project)
         taskSpinner = findViewById(R.id.task)
         dateText = findViewById(R.id.date)
         startTimeText = findViewById(R.id.start)
         finishTimeText = findViewById(R.id.finish)
         noteText = findViewById(R.id.note)
+        progressView = findViewById(R.id.progress)
 
         projectSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -126,39 +132,30 @@ class TimeEditActivity : AppCompatActivity() {
     private fun fetchPage(date: Long) {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
-        //TODO showProgress(true)
+        showProgress(true)
         //TODO disable menu items
 
-//        val authToken = prefs.basicCredentials.authToken()
-//        val service = TimeTrackerServiceFactory.createPlain(authToken)
-//
-//        val dateFormatted = formatSystemDate(date)
-//        fetchTask = service.fetchTimes(dateFormatted)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({ response ->
-//                    //TODO showProgress(false)
-//                    //TODO enable menu items
-//
-//                    this.date = date
-//                    if (validResponse(response)) {
-//                        this.record = TimeRecord(user, project, task)
-//                        bindForm(record)
-//                    } else {
-//                        authenticate()
-//                    }
-//                }, { err ->
-//                    Log.e(TAG, "Error fetching page: ${err.message}", err)
-//                    //TODO showProgress(false)
-//                    //TODO enable menu items
-//                })
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        resources.openRawResource(R.raw.time).use { raw ->
-            this.date = date
-            val reader = InputStreamReader(raw)
-            val html = reader.readText()
-            populateRecord(html, date)
-        }
+        val dateFormatted = formatSystemDate(date)
+        fetchTask = service.fetchTimes(dateFormatted)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+                    //TODO enable menu items
+
+                    this.date = date
+                    if (validResponse(response)) {
+                        this.record = TimeRecord(user, project, task)
+                        bindForm(record)
+                    } else {
+                        authenticate()
+                    }
+                }, { err ->
+                    Log.e(TAG, "Error fetching page: ${err.message}", err)
+                })
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -336,7 +333,7 @@ class TimeEditActivity : AppCompatActivity() {
 
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
-        //TODO showProgress(true)
+        showProgress(true)
         //TODO disable menu items
 
         val authToken = prefs.basicCredentials.authToken()
@@ -351,7 +348,7 @@ class TimeEditActivity : AppCompatActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
-                    //TODO showProgress(false)
+                    showProgress(false)
                     //TODO enable menu items
 
                     if (validResponse(response)) {
@@ -361,7 +358,7 @@ class TimeEditActivity : AppCompatActivity() {
                     }
                 }, { err ->
                     Log.e(TAG, "Error saving page: ${err.message}", err)
-                    //TODO showProgress(false)
+                    showProgress(false)
                     //TODO enable menu items
                 })
     }
@@ -457,7 +454,30 @@ class TimeEditActivity : AppCompatActivity() {
 
 
     private fun filterTasks(project: Project) {
-        val context =  this
+        val context = this
         taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray().filter { it.id in project.taskIds })
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    private fun showProgress(show: Boolean) {
+        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
+
+        timeForm.visibility = if (show) View.GONE else View.VISIBLE
+        timeForm.animate().setDuration(shortAnimTime).alpha(
+                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                timeForm.visibility = if (show) View.GONE else View.VISIBLE
+            }
+        })
+
+        progressView.visibility = if (show) View.VISIBLE else View.GONE
+        progressView.animate().setDuration(shortAnimTime).alpha(
+                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                progressView.visibility = if (show) View.VISIBLE else View.GONE
+            }
+        })
     }
 }
