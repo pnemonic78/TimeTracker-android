@@ -149,7 +149,7 @@ class TimeEditActivity : AppCompatActivity() {
                     this.date = date
                     if (validResponse(response)) {
                         this.record = TimeRecord(user, project, task)
-                        bindForm(record)
+                        populateForm(response.body()!!, date)
                     } else {
                         authenticate()
                     }
@@ -175,7 +175,7 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     /** Populate the record and then bind the form. */
-    private fun populateRecord(html: String, date: Long) {
+    private fun populateForm(html: String, date: Long) {
         val doc: Document = Jsoup.parse(html)
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
@@ -352,7 +352,7 @@ class TimeEditActivity : AppCompatActivity() {
                     //TODO enable menu items
 
                     if (validResponse(response)) {
-                        populateRecord(response.body()!!, date)
+                        populateForm(response.body()!!, date)
                     } else {
                         authenticate()
                     }
