@@ -321,6 +321,7 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun authenticate() {
+        showProgress(true)
         startActivityForResult(Intent(this, LoginActivity::class.java), REQUEST_AUTHENTICATE)
     }
 
