@@ -23,4 +23,8 @@
     <string name="cancel">@android:string/cancel</string>
     <string name="submit">@android:string/ok</string>
     <string name="note_hint">Note</string>
+
+    <string name="error_start_time_required">Start time required.</string>
+    <string name="error_finish_time_required">Finish time required.</string>
+    <string name="error_finish_time_before_start_time">Start time must be before finish time.</string>
 </resources>

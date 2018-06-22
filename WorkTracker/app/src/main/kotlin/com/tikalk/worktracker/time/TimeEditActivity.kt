@@ -309,7 +309,9 @@ class TimeEditActivity : AppCompatActivity() {
         taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
         startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        startTimeText.error = null
         finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        finishTimeText.error = null
         noteText.setText(record.note)
         projectSpinner.requestFocus()
     }
@@ -416,6 +418,7 @@ class TimeEditActivity : AppCompatActivity() {
             cal.set(Calendar.MINUTE, minute)
             record.start = cal
             startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+            startTimeText.error = null
         }
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
@@ -430,6 +433,7 @@ class TimeEditActivity : AppCompatActivity() {
             cal.set(Calendar.MINUTE, minute)
             record.finish = cal
             finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+            finishTimeText.error = null
         }
         val hour = cal.get(Calendar.HOUR_OF_DAY)
         val minute = cal.get(Calendar.MINUTE)
@@ -450,15 +454,20 @@ class TimeEditActivity : AppCompatActivity() {
 
         if (record.project.id <= 0) {
             valid = false
-            //TODO mark the field as invalid, e.g. red background
         }
         if (record.task.id <= 0) {
             valid = false
-            //TODO mark the field as invalid, e.g. red background
         }
-        if ((record.start == null) || (record.finish == null) || (record.start!! >= record.finish!!)) {
+        if (record.start == null) {
             valid = false
-            //TODO mark the field as invalid, e.g. red background
+            startTimeText.error = getString(R.string.error_start_time_required)
+        }
+        if (record.finish == null) {
+            valid = false
+            finishTimeText.error = getString(R.string.error_finish_time_required)
+        } else if (record.start!! >= record.finish!!) {
+            valid = false
+            finishTimeText.error = getString(R.string.error_finish_time_before_start_time)
         }
 
         return valid
