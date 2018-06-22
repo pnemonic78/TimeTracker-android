@@ -8,7 +8,7 @@ project.ext {
     targetSdkVersion = 27
 
     // App dependencies
-    constraint_layout_version = '1.1.1'
+    constraint_layout_version = '1.1.2'
     dagger2_version = '2.11'
     espresso_version = '3.0.1'
     exoplayer_version = '2.6.1'
