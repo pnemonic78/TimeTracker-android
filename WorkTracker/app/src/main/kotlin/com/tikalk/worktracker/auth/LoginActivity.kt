@@ -293,9 +293,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         for (challenge in challenges) {
             if (challenge.scheme() == BasicCredentials.SCHEME) {
                 val realm = challenge.realm()
+                val indexAt = email.indexOf('@')
+                val username = if (indexAt < 0) email else email.substring(0, indexAt)
                 val intent = Intent(this, BasicRealmActivity::class.java)
                 intent.putExtra(BasicRealmActivity.EXTRA_REALM, realm)
-                intent.putExtra(BasicRealmActivity.EXTRA_USER, email)
+                intent.putExtra(BasicRealmActivity.EXTRA_USER, username)
                 startActivityForResult(intent, REQUEST_AUTHENTICATE)
                 return true
             }
