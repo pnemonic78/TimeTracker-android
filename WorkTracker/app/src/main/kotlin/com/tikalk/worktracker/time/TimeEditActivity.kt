@@ -13,8 +13,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -27,8 +27,10 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_time_edit.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import retrofit2.Response
 import java.util.*
 import java.util.regex.Pattern
@@ -47,15 +49,6 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var prefs: TimeTrackerPrefs
 
     // UI references
-    private lateinit var timeForm: ViewGroup
-    private lateinit var projectSpinner: Spinner
-    private lateinit var taskSpinner: Spinner
-    private lateinit var dateText: TextView
-    private lateinit var startTimeText: TextView
-    private lateinit var finishTimeText: TextView
-    private lateinit var noteText: EditText
-    private lateinit var progressView: ProgressBar
-    private lateinit var errorText: TextView
     private var submitMenuItem: MenuItem? = null
     private var datePickerDialog: DatePickerDialog? = null
     private var startPickerDialog: TimePickerDialog? = null
@@ -80,38 +73,28 @@ class TimeEditActivity : AppCompatActivity() {
         user.username = prefs.userCredentials.login
         user.email = user.username
 
-        timeForm = findViewById(R.id.time_form)
-        projectSpinner = findViewById(R.id.project)
-        taskSpinner = findViewById(R.id.task)
-        dateText = findViewById(R.id.date)
-        startTimeText = findViewById(R.id.start)
-        finishTimeText = findViewById(R.id.finish)
-        noteText = findViewById(R.id.note)
-        progressView = findViewById(R.id.progress)
-        errorText = findViewById(R.id.error)
-
-        projectSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val project = projectSpinner.adapter.getItem(position) as Project
+                val project = project_input.adapter.getItem(position) as Project
                 filterTasks(project)
                 record.project = project
             }
         }
-        taskSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = taskSpinner.adapter.getItem(position) as ProjectTask
+                val task = task_input.adapter.getItem(position) as ProjectTask
                 record.task = task!!
             }
         }
-        dateText.setOnClickListener { pickDate() }
-        startTimeText.setOnClickListener { pickStartTime() }
-        finishTimeText.setOnClickListener { pickFinishTime() }
+        date_input.setOnClickListener { pickDate() }
+        start_input.setOnClickListener { pickStartTime() }
+        finish_input.setOnClickListener { pickFinishTime() }
 
         var date: Long
         if (savedInstanceState == null) {
@@ -193,7 +176,8 @@ class TimeEditActivity : AppCompatActivity() {
 
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
-        populateProjects(doc, projects)
+        val inputProjects = form.selectFirst("select[name='project']")
+        populateProjects(doc, inputProjects, projects)
         record.project = projects[0]
 
         populateTasks(doc, tasks)
@@ -235,24 +219,18 @@ class TimeEditActivity : AppCompatActivity() {
         return ""
     }
 
-    private fun populateProjects(doc: Document, projects: MutableList<Project>) {
+    private fun populateProjects(doc: Document, select: Element, projects: MutableList<Project>) {
         projects.clear()
 
-        val tokenStart = "var project_names = new Array();"
-        val tokenEnd = "populate project dropdown"
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
-
-        if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("project_names\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val project = Project(matcher.group(2))
-                    project.id = matcher.group(1).toLong()
-                    projects.add(project)
-                }
-            }
+        val options = select.select("option")
+        var value: String
+        var name: String
+        for (option in options) {
+            name = option.ownText()
+            value = option.attr("value")
+            val project = Project(name)
+            project.id = if (value.isNotEmpty()) value.toLong() else 0L
+            projects.add(project)
         }
 
         populateTaskIds(doc, projects)
@@ -307,23 +285,23 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun bindForm(record: TimeRecord) {
         val context = this
-        errorText.text = errorMessage
-        projectSpinner.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
-        dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
+        error_label.text = errorMessage
+        project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
         datePickerDialog = null
-        startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
-        startTimeText.error = null
+        start_input.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        start_input.error = null
         startPickerDialog = null
-        finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
-        finishTimeText.error = null
+        finish_input.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        finish_input.error = null
         finishPickerDialog = null
-        noteText.setText(record.note)
-        projectSpinner.requestFocus()
+        note_input.setText(record.note)
+        project_input.requestFocus()
     }
 
     private fun bindRecord(record: TimeRecord) {
-        record.note = noteText.text.toString()
+        record.note = note_input.text.toString()
     }
 
     private fun authenticate() {
@@ -410,7 +388,7 @@ class TimeEditActivity : AppCompatActivity() {
                     finish.set(Calendar.MONTH, month)
                     finish.set(Calendar.DAY_OF_MONTH, day)
                 }
-                dateText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+                date_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
             }
             val year = cal.get(Calendar.YEAR)
             val month = cal.get(Calendar.MONTH)
@@ -428,8 +406,8 @@ class TimeEditActivity : AppCompatActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.start = cal
-                startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-                startTimeText.error = null
+                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+                start_input.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
             val minute = cal.get(Calendar.MINUTE)
@@ -446,8 +424,8 @@ class TimeEditActivity : AppCompatActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.finish = cal
-                finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-                finishTimeText.error = null
+                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+                finish_input.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
             val minute = cal.get(Calendar.MINUTE)
@@ -470,20 +448,30 @@ class TimeEditActivity : AppCompatActivity() {
 
         if (record.project.id <= 0) {
             valid = false
+            project_label.error = getString(R.string.error_field_required)
+        } else {
+            project_label.error = null
         }
         if (record.task.id <= 0) {
             valid = false
+            task_label.error = getString(R.string.error_field_required)
+        } else {
+            task_label.error = null
         }
         if (record.start == null) {
             valid = false
-            startTimeText.error = getString(R.string.error_start_time_required)
+            start_input.error = getString(R.string.error_field_required)
+        } else {
+            start_input.error = null
         }
         if (record.finish == null) {
             valid = false
-            finishTimeText.error = getString(R.string.error_finish_time_required)
+            finish_input.error = getString(R.string.error_field_required)
         } else if (record.start!! >= record.finish!!) {
             valid = false
-            finishTimeText.error = getString(R.string.error_finish_time_before_start_time)
+            finish_input.error = getString(R.string.error_finish_time_before_start_time)
+        } else {
+            finish_input.error = null
         }
 
         return valid
@@ -492,7 +480,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun filterTasks(project: Project) {
         val context = this
-        taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray().filter { it.id in project.taskIds })
+        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray().filter { it.id in project.taskIds })
     }
 
     /**
@@ -501,19 +489,19 @@ class TimeEditActivity : AppCompatActivity() {
     private fun showProgress(show: Boolean) {
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
-        timeForm.visibility = if (show) View.GONE else View.VISIBLE
-        timeForm.animate().setDuration(shortAnimTime).alpha(
+        time_form.visibility = if (show) View.GONE else View.VISIBLE
+        time_form.animate().setDuration(shortAnimTime).alpha(
                 (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                timeForm.visibility = if (show) View.GONE else View.VISIBLE
+                time_form.visibility = if (show) View.GONE else View.VISIBLE
             }
         })
 
-        progressView.visibility = if (show) View.VISIBLE else View.GONE
-        progressView.animate().setDuration(shortAnimTime).alpha(
+        progress.visibility = if (show) View.VISIBLE else View.GONE
+        progress.animate().setDuration(shortAnimTime).alpha(
                 (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                progressView.visibility = if (show) View.VISIBLE else View.GONE
+                progress.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
 
