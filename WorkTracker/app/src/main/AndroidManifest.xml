@@ -18,7 +18,7 @@
         android:theme="@style/Theme.WorkTracker">
         <activity
             android:name=".start.SplashActivity"
-            android:label="@string/app_name"
+            android:label="@string/activity_splash"
             android:theme="@style/Theme.WorkTracker.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,9 +26,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".auth.LoginActivity" />
-        <activity android:name=".auth.BasicRealmActivity" />
-        <activity android:name=".time.TimeEditActivity" />
+        <activity
+            android:name=".auth.LoginActivity"
+            android:label="@string/activity_login" />
+        <activity
+            android:name=".auth.BasicRealmActivity"
+            android:label="@string/activity_basic_realm" />
+        <activity
+            android:name=".time.TimeEditActivity"
+            android:label="@string/activity_time" />
     </application>
 
 </manifest>
