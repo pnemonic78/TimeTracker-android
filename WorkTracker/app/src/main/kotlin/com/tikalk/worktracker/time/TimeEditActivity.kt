@@ -57,6 +57,9 @@ class TimeEditActivity : AppCompatActivity() {
     private lateinit var progressView: ProgressBar
     private lateinit var errorText: TextView
     private var submitMenuItem: MenuItem? = null
+    private var datePickerDialog: DatePickerDialog? = null
+    private var startPickerDialog: TimePickerDialog? = null
+    private var finishPickerDialog: TimePickerDialog? = null
 
     /** Keep track of the task to ensure we can cancel it if requested. */
     private var fetchTask: Disposable? = null
@@ -308,10 +311,13 @@ class TimeEditActivity : AppCompatActivity() {
         projectSpinner.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         taskSpinner.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         dateText.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
+        datePickerDialog = null
         startTimeText.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         startTimeText.error = null
+        startPickerDialog = null
         finishTimeText.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         finishTimeText.error = null
+        finishPickerDialog = null
         noteText.setText(record.note)
         projectSpinner.requestFocus()
     }
@@ -383,65 +389,74 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun pickDate() {
-        val context = this
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = date
-        val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
-            cal.set(Calendar.YEAR, year)
-            cal.set(Calendar.MONTH, month)
-            cal.set(Calendar.DAY_OF_MONTH, day)
-            this@TimeEditActivity.date = cal.timeInMillis
-            val start = record.start
-            if (start != null) {
-                start.set(Calendar.YEAR, year)
-                start.set(Calendar.MONTH, month)
-                start.set(Calendar.DAY_OF_MONTH, day)
+        if (datePickerDialog == null) {
+            val context = this
+            val cal = Calendar.getInstance()
+            cal.timeInMillis = date
+            val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, month)
+                cal.set(Calendar.DAY_OF_MONTH, day)
+                this@TimeEditActivity.date = cal.timeInMillis
+                val start = record.start
+                if (start != null) {
+                    start.set(Calendar.YEAR, year)
+                    start.set(Calendar.MONTH, month)
+                    start.set(Calendar.DAY_OF_MONTH, day)
+                }
+                val finish = record.finish
+                if (finish != null) {
+                    finish.set(Calendar.YEAR, year)
+                    finish.set(Calendar.MONTH, month)
+                    finish.set(Calendar.DAY_OF_MONTH, day)
+                }
+                dateText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
             }
-            val finish = record.finish
-            if (finish != null) {
-                finish.set(Calendar.YEAR, year)
-                finish.set(Calendar.MONTH, month)
-                finish.set(Calendar.DAY_OF_MONTH, day)
-            }
-            dateText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+            val year = cal.get(Calendar.YEAR)
+            val month = cal.get(Calendar.MONTH)
+            val day = cal.get(Calendar.DAY_OF_MONTH)
+            datePickerDialog = DatePickerDialog(context, listener, year, month, day)
         }
-        val year = cal.get(Calendar.YEAR)
-        val month = cal.get(Calendar.MONTH)
-        val day = cal.get(Calendar.DAY_OF_MONTH)
-        DatePickerDialog(context, listener, year, month, day).show()
+        datePickerDialog!!.show()
     }
 
     private fun pickStartTime() {
-        val context = this
-        val cal = getCalendar(record.start)
-        val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
-            cal.set(Calendar.HOUR_OF_DAY, hour)
-            cal.set(Calendar.MINUTE, minute)
-            record.start = cal
-            startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-            startTimeText.error = null
+        if (startPickerDialog == null) {
+            val context = this
+            val cal = getCalendar(record.start)
+            val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+                cal.set(Calendar.HOUR_OF_DAY, hour)
+                cal.set(Calendar.MINUTE, minute)
+                record.start = cal
+                startTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+                startTimeText.error = null
+            }
+            val hour = cal.get(Calendar.HOUR_OF_DAY)
+            val minute = cal.get(Calendar.MINUTE)
+            startPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
         }
-        val hour = cal.get(Calendar.HOUR_OF_DAY)
-        val minute = cal.get(Calendar.MINUTE)
-        TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
+        startPickerDialog!!.show()
     }
 
     private fun pickFinishTime() {
-        val context = this
-        val cal = getCalendar(record.finish)
-        val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
-            cal.set(Calendar.HOUR_OF_DAY, hour)
-            cal.set(Calendar.MINUTE, minute)
-            record.finish = cal
-            finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
-            finishTimeText.error = null
+        if (finishPickerDialog == null) {
+            val context = this
+            val cal = getCalendar(record.finish)
+            val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+                cal.set(Calendar.HOUR_OF_DAY, hour)
+                cal.set(Calendar.MINUTE, minute)
+                record.finish = cal
+                finishTimeText.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+                finishTimeText.error = null
+            }
+            val hour = cal.get(Calendar.HOUR_OF_DAY)
+            val minute = cal.get(Calendar.MINUTE)
+            finishPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
         }
-        val hour = cal.get(Calendar.HOUR_OF_DAY)
-        val minute = cal.get(Calendar.MINUTE)
-        TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context)).show()
+        finishPickerDialog!!.show()
     }
 
-    private inline fun getCalendar(cal: Calendar?): Calendar {
+    private fun getCalendar(cal: Calendar?): Calendar {
         if (cal == null) {
             val calDate = Calendar.getInstance()
             calDate.timeInMillis = date
