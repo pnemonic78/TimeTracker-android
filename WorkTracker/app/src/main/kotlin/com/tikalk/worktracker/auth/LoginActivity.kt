@@ -153,7 +153,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         var focusView: View? = null
 
         // Check for a valid password, if the user entered one.
-        if (!password.isEmpty() && !isPasswordValid(password)) {
+        if (password.isEmpty()) {
+            passwordView.error = getString(R.string.error_field_required)
+            focusView = passwordView
+            cancel = true
+        } else if (!isPasswordValid(password)) {
             passwordView.error = getString(R.string.error_invalid_password)
             focusView = passwordView
             cancel = true
@@ -198,9 +202,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                             setResult(Activity.RESULT_OK)
                             finish()
                         } else {
-                            passwordView.error = getString(R.string.error_incorrect_password)
-                            passwordView.requestFocus()
-
                             authenticate(email, response.raw())
                         }
                     }, { err ->

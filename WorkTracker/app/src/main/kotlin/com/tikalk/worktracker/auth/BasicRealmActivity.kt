@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.AutoCompleteTextView
@@ -98,21 +97,25 @@ class BasicRealmActivity : AppCompatActivity() {
         var cancel = false
         var focusView: View? = null
 
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            passwordView.error = getString(R.string.error_invalid_password)
-            focusView = passwordView
-            cancel = true
-        }
-
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(username)) {
+        // Check for a valid name.
+        if (username.isEmpty()) {
             usernameView.error = getString(R.string.error_field_required)
             focusView = usernameView
             cancel = true
         } else if (!isUsernameValid(username)) {
             usernameView.error = getString(R.string.error_invalid_email)
             focusView = usernameView
+            cancel = true
+        }
+
+        // Check for a valid password, if the user entered one.
+        if (password.isEmpty()) {
+            passwordView.error = getString(R.string.error_field_required)
+            focusView = passwordView
+            cancel = true
+        } else if (!isPasswordValid(password)) {
+            passwordView.error = getString(R.string.error_invalid_password)
+            focusView = passwordView
             cancel = true
         }
 
