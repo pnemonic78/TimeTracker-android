@@ -64,6 +64,8 @@ class TimeEditActivity : AppCompatActivity() {
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
     private var errorMessage: String = ""
+    private var projectEmpty: Project? = null
+    private var taskEmpty: ProjectTask? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +77,7 @@ class TimeEditActivity : AppCompatActivity() {
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.project = Project.EMPTY
+                record.project = projectEmpty ?: Project.EMPTY
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -86,7 +88,7 @@ class TimeEditActivity : AppCompatActivity() {
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.task = ProjectTask.EMPTY
+                record.task = taskEmpty ?: ProjectTask.EMPTY
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -182,8 +184,8 @@ class TimeEditActivity : AppCompatActivity() {
         populateProjects(doc, inputProjects, projects)
         record.project = projects[0]
 
-        populateTasks(doc, tasks)
-        record.task = tasks[0]
+        val inputTasks = form.selectFirst("select[name='task']")
+        populateTasks(doc, inputTasks, tasks)
 
         val inputStart = form.selectFirst("input[name='start']")
         val startValue = inputStart.attr("value")
@@ -230,32 +232,34 @@ class TimeEditActivity : AppCompatActivity() {
         for (option in options) {
             name = option.ownText()
             value = option.attr("value")
-            val project = Project(name)
-            project.id = if (value.isNotEmpty()) value.toLong() else 0L
-            projects.add(project)
+            val item = Project(name)
+            if (value.isEmpty()) {
+                projectEmpty = item
+            } else {
+                item.id = value.toLong()
+            }
+            projects.add(item)
         }
 
         populateTaskIds(doc, projects)
     }
 
-    private fun populateTasks(doc: Document, tasks: MutableList<ProjectTask>) {
+    private fun populateTasks(doc: Document, select: Element, tasks: MutableList<ProjectTask>) {
         tasks.clear()
 
-        val tokenStart = "var task_names = new Array();"
-        val tokenEnd = "// Mandatory top options for project and task dropdowns."
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
-
-        if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_names\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val task = ProjectTask(matcher.group(2))
-                    task.id = matcher.group(1).toLong()
-                    tasks.add(task)
-                }
+        val options = select.select("option")
+        var value: String
+        var name: String
+        for (option in options) {
+            name = option.ownText()
+            value = option.attr("value")
+            val item = ProjectTask(name)
+            if (value.isEmpty()) {
+                taskEmpty = item
+            } else {
+                item.id = value.toLong()
             }
+            tasks.add(item)
         }
     }
 
@@ -482,7 +486,11 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun filterTasks(project: Project) {
         val context = this
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray().filter { it.id in project.taskIds })
+        var objects = tasks.toTypedArray().filter { it.id in project.taskIds }
+        if (objects.isEmpty()) {
+            objects = arrayListOf(taskEmpty ?: ProjectTask.EMPTY)
+        }
+        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, objects)
     }
 
     /**
