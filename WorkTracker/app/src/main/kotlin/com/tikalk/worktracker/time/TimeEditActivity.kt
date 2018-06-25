@@ -75,6 +75,7 @@ class TimeEditActivity : AppCompatActivity() {
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
+                record.project = Project.EMPTY
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -85,11 +86,12 @@ class TimeEditActivity : AppCompatActivity() {
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
+                record.task = ProjectTask.EMPTY
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val task = task_input.adapter.getItem(position) as ProjectTask
-                record.task = task!!
+                record.task = task
             }
         }
         date_input.setOnClickListener { pickDate() }

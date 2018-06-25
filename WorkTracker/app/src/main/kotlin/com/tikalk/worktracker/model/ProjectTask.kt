@@ -46,4 +46,8 @@ data class ProjectTask(
     override fun toString(): String {
         return name
     }
+
+    companion object {
+        val EMPTY = ProjectTask("")
+    }
 }

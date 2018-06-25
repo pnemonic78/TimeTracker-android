@@ -48,4 +48,9 @@ data class Project(
     }
 
     val taskIds: MutableList<Long> = ArrayList()
+
+
+    companion object {
+        val EMPTY = Project("")
+    }
 }
