@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
 import android.util.Patterns
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
@@ -72,6 +73,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         // Set up the login form.
         setContentView(R.layout.activity_login)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         emailView = findViewById(R.id.email)
         emailView.setText(prefs.userCredentials.login)
@@ -331,6 +333,13 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
         }
         return false
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> onBackPressed()
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
 

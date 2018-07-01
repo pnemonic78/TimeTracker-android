@@ -70,6 +70,8 @@ class TimeEditActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = TimeTrackerPrefs(this)
+
+        // Set up the form.
         setContentView(R.layout.activity_time_edit)
 
         user.username = prefs.userCredentials.login
@@ -101,10 +103,11 @@ class TimeEditActivity : AppCompatActivity() {
         finish_input.setOnClickListener { pickFinishTime() }
 
         var date: Long
+        val now = System.currentTimeMillis()
         if (savedInstanceState == null) {
-            date = System.currentTimeMillis()
+            date = now
         } else {
-            date = savedInstanceState.getLong(STATE_DATE, System.currentTimeMillis())
+            date = savedInstanceState.getLong(STATE_DATE, now)
         }
         fetchPage(date)
     }
@@ -149,7 +152,7 @@ class TimeEditActivity : AppCompatActivity() {
                     if (validResponse(response)) {
                         populateForm(response.body()!!, date)
                     } else {
-                        authenticate()
+                        authenticate(true)
                     }
                 }, { err ->
                     Log.e(TAG, "Error fetching page: ${err.message}", err)
@@ -310,10 +313,10 @@ class TimeEditActivity : AppCompatActivity() {
         record.note = note_input.text.toString()
     }
 
-    private fun authenticate() {
+    private fun authenticate(immediate: Boolean = false) {
         showProgress(true)
         val intent = Intent(this, LoginActivity::class.java)
-        intent.putExtra(LoginActivity.EXTRA_SUBMIT, true)
+        intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
     }
 
@@ -366,7 +369,7 @@ class TimeEditActivity : AppCompatActivity() {
                     if (validResponse(response)) {
                         populateForm(response.body()!!, date)
                     } else {
-                        authenticate()
+                        authenticate(true)
                     }
                 }, { err ->
                     Log.e(TAG, "Error saving page: ${err.message}", err)

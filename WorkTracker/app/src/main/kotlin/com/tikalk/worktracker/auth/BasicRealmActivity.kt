@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.AutoCompleteTextView
@@ -60,6 +61,7 @@ class BasicRealmActivity : AppCompatActivity() {
 
         // Set up the login form.
         setContentView(R.layout.activity_basic_realm)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         realmView = findViewById(R.id.realm_title)
         realmView.text = getString(R.string.authentication_basic_realm, realmName)
@@ -201,6 +203,13 @@ class BasicRealmActivity : AppCompatActivity() {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> onBackPressed()
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
 
