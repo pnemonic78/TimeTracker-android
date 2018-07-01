@@ -3,6 +3,7 @@ package com.tikalk.worktracker.auth
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -19,6 +20,13 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
  * An authentication screen for Basic Realm via email/password.
  */
 class BasicRealmActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_REALM = "realm"
+        const val EXTRA_USER = "user"
+        const val EXTRA_PASSWORD = "password"
+        const val EXTRA_SUBMIT = "submit"
+    }
 
     // UI references.
     private lateinit var realmView: TextView
@@ -74,6 +82,34 @@ class BasicRealmActivity : AppCompatActivity() {
 
         loginFormView = findViewById(R.id.auth_form)
         progressView = findViewById(R.id.progress)
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        this.intent = intent
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        val extras = intent.extras
+
+        if (extras.containsKey(EXTRA_REALM)) {
+            realmName = extras.getString(EXTRA_REALM)
+            realmView.text = getString(R.string.authentication_basic_realm, realmName)
+        }
+        if (extras.containsKey(EXTRA_USER)) {
+            usernameView.setText(extras.getString(EXTRA_USER))
+        }
+        if (extras.containsKey(EXTRA_PASSWORD)) {
+            passwordView.setText(extras.getString(EXTRA_PASSWORD))
+        }
+        if (extras.containsKey(EXTRA_SUBMIT)) {
+            if (extras.getBoolean(EXTRA_SUBMIT)) {
+                attemptLogin()
+            }
+        }
     }
 
     /**
@@ -165,16 +201,6 @@ class BasicRealmActivity : AppCompatActivity() {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
-    }
-
-    companion object {
-        const val EXTRA_REALM = "realm"
-        const val EXTRA_USER = "user"
-
-        /**
-         * Id to identity READ_CONTACTS permission request.
-         */
-        private const val REQUEST_READ_CONTACTS = 0
     }
 }
 
