@@ -46,6 +46,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
          */
         private const val REQUEST_READ_CONTACTS = 0
         private const val REQUEST_AUTHENTICATE = 1
+
+        const val EXTRA_EMAIL = "email"
+        const val EXTRA_PASSWORD = "password"
+        const val EXTRA_SUBMIT = "submit"
     }
 
     private lateinit var prefs: TimeTrackerPrefs
@@ -88,6 +92,29 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         loginFormView = findViewById(R.id.login_form)
         progressView = findViewById(R.id.login_progress)
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        this.intent = intent
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        val extras = intent.extras
+        if (extras.containsKey(EXTRA_EMAIL)) {
+            emailView.setText(extras.getString(EXTRA_EMAIL))
+        }
+        if (extras.containsKey(EXTRA_PASSWORD)) {
+            passwordView.setText(extras.getString(EXTRA_PASSWORD))
+        }
+        if (extras.containsKey(EXTRA_SUBMIT)) {
+            if (extras.getBoolean(EXTRA_SUBMIT)) {
+                attemptLogin()
+            }
+        }
     }
 
     override fun onDestroy() {

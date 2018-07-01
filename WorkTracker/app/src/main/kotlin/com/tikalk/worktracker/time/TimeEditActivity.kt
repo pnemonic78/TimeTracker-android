@@ -312,7 +312,9 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun authenticate() {
         showProgress(true)
-        startActivityForResult(Intent(this, LoginActivity::class.java), REQUEST_AUTHENTICATE)
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.putExtra(LoginActivity.EXTRA_SUBMIT, true)
+        startActivityForResult(intent, REQUEST_AUTHENTICATE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
