@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
-import java.util.*
 
 /**
  * Secured preferences that encrypt/decrypt the keys and values.
@@ -19,7 +18,7 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
     }
 
     override fun edit(): SharedPreferences.Editor {
-        return delegate.edit()
+        return Editor()
     }
 
     override fun getAll(): Map<String, *> {
@@ -71,34 +70,34 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
         return key
     }
 
-    private fun encrypt(clear: String): String {
+    private fun encrypt(clear: String?): String {
         //TODO implement me!
-        return clear
+        return clear ?: ""
     }
 
-    private fun decrypt(cipher: String): String {
+    private fun decrypt(cryptic: String): String {
         //TODO implement me!
-        return cipher
+        return cryptic
     }
 
-    private fun decryptBoolean(cipher: String?, defValue: Boolean): Boolean {
-        return if (cipher == null) defValue else decrypt(cipher).toBoolean()
+    private fun decryptBoolean(cryptic: String?, defValue: Boolean): Boolean {
+        return if (cryptic == null) defValue else decrypt(cryptic).toBoolean()
     }
 
-    private fun decryptFloat(cipher: String?, defValue: Float): Float {
-        return if (cipher == null) defValue else decrypt(cipher).toFloat()
+    private fun decryptFloat(cryptic: String?, defValue: Float): Float {
+        return if (cryptic == null) defValue else decrypt(cryptic).toFloat()
     }
 
-    private fun decryptInt(cipher: String?, defValue: Int): Int {
-        return if (cipher == null) defValue else decrypt(cipher).toInt()
+    private fun decryptInt(cryptic: String?, defValue: Int): Int {
+        return if (cryptic == null) defValue else decrypt(cryptic).toInt()
     }
 
-    private fun decryptLong(cipher: String?, defValue: Long): Long {
-        return if (cipher == null) defValue else decrypt(cipher).toLong()
+    private fun decryptLong(cryptic: String?, defValue: Long): Long {
+        return if (cryptic == null) defValue else decrypt(cryptic).toLong()
     }
 
-    private fun decryptString(cipher: String?, defValue: String?): String? {
-        return if (cipher == null) defValue else decrypt(cipher)
+    private fun decryptString(cryptic: String?, defValue: String?): String? {
+        return if (cryptic == null) defValue else decrypt(cryptic)
     }
 
     private fun decryptStringSet(ciphers: Set<String>?, defValue: Set<String>?): Set<String>? {
@@ -106,8 +105,8 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
             defValue
         } else {
             val result = LinkedHashSet<String>()
-            for (cipher in ciphers) {
-                result.add(decrypt(cipher))
+            for (cryptic in ciphers) {
+                result.add(decrypt(cryptic))
             }
             return result
         }
@@ -149,6 +148,63 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
 
         fun getDefaultSharedPreferencesMode(): Int {
             return Context.MODE_PRIVATE
+        }
+    }
+
+    private inner class Editor : SharedPreferences.Editor {
+
+        private val delegate: SharedPreferences.Editor = this@SecurePreferences.delegate.edit()
+
+        override fun apply() {
+            delegate.apply()
+        }
+
+        override fun clear(): SharedPreferences.Editor {
+            delegate.clear()
+            return this
+        }
+
+        override fun commit(): Boolean {
+            return delegate.commit()
+        }
+
+        override fun putBoolean(key: String, value: Boolean): SharedPreferences.Editor {
+            delegate.putString(hashKey(key), encrypt(value.toString()))
+            return this
+        }
+
+        override fun putFloat(key: String, value: Float): SharedPreferences.Editor {
+            delegate.putString(hashKey(key), encrypt(value.toString()))
+            return this
+        }
+
+        override fun putInt(key: String, value: Int): SharedPreferences.Editor {
+            delegate.putString(hashKey(key), encrypt(value.toString()))
+            return this
+        }
+
+        override fun putLong(key: String, value: Long): SharedPreferences.Editor {
+            delegate.putString(hashKey(key), encrypt(value.toString()))
+            return this
+        }
+
+        override fun putString(key: String, value: String?): SharedPreferences.Editor {
+            delegate.putString(hashKey(key), encrypt(value))
+            return this
+        }
+
+        override fun putStringSet(key: String, value: Set<String>): SharedPreferences.Editor {
+            val items = LinkedHashSet<String>()
+            for (item in value) {
+                items.add(encrypt(item))
+            }
+            delegate.putStringSet(hashKey(key), items)
+            return this
+        }
+
+        override fun remove(key: String): SharedPreferences.Editor {
+            delegate.remove(hashKey(key))
+            return this
         }
     }
 }
