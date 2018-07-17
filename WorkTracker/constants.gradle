@@ -4,7 +4,7 @@ project.ext {
     // However, please note that the core media playback functionality provided
     // by the library requires API level 16 or greater.
     minSdkVersion = 19
-    compileSdkVersion = 'android-P'
+    compileSdkVersion = 28
     targetSdkVersion = 27
 
     // App dependencies
