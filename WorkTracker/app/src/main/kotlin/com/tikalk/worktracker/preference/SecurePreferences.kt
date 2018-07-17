@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
+import java.util.*
 
 /**
  * Secured preferences that encrypt/decrypt the keys and values.
@@ -14,39 +15,39 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
     private val delegate: SharedPreferences = context.getSharedPreferences(name, mode)
 
     override fun contains(key: String): Boolean {
-        return delegate.contains(key)
+        return delegate.contains(hashKey(key))
     }
 
     override fun edit(): SharedPreferences.Editor {
         return delegate.edit()
     }
 
-    override fun getAll(): MutableMap<String, *> {
+    override fun getAll(): Map<String, *> {
         return delegate.all
     }
 
     override fun getBoolean(key: String, defValue: Boolean): Boolean {
-        return delegate.getBoolean(key, defValue)
+        return decryptBoolean(getEncryptedString(key), defValue)
     }
 
     override fun getFloat(key: String, defValue: Float): Float {
-        return delegate.getFloat(key, defValue)
+        return decryptFloat(getEncryptedString(key), defValue)
     }
 
     override fun getInt(key: String, defValue: Int): Int {
-        return delegate.getInt(key, defValue)
+        return decryptInt(getEncryptedString(key), defValue)
     }
 
     override fun getLong(key: String, defValue: Long): Long {
-        return delegate.getLong(key, defValue)
+        return decryptLong(getEncryptedString(key), defValue)
     }
 
-    override fun getString(key: String, defValue: String?): String {
-        return delegate.getString(key, defValue)
+    override fun getString(key: String, defValue: String?): String? {
+        return decryptString(getEncryptedString(key), defValue)
     }
 
-    override fun getStringSet(key: String, defValue: Set<String>?): Set<String> {
-        return delegate.getStringSet(key, defValue)
+    override fun getStringSet(key: String, defValue: Set<String>?): Set<String>? {
+        return decryptStringSet(getEncryptedStringSet(key), defValue)
     }
 
     override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
@@ -55,6 +56,61 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
 
     override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
         return delegate.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
+    private fun getEncryptedString(key: String): String? {
+        return delegate.getString(hashKey(key), null)
+    }
+
+    private fun getEncryptedStringSet(key: String): Set<String>? {
+        return delegate.getStringSet(hashKey(key), null)
+    }
+
+    private fun hashKey(key: String): String {
+        //TODO implement me!
+        return key
+    }
+
+    private fun encrypt(clear: String): String {
+        //TODO implement me!
+        return clear
+    }
+
+    private fun decrypt(cipher: String): String {
+        //TODO implement me!
+        return cipher
+    }
+
+    private fun decryptBoolean(cipher: String?, defValue: Boolean): Boolean {
+        return if (cipher == null) defValue else decrypt(cipher).toBoolean()
+    }
+
+    private fun decryptFloat(cipher: String?, defValue: Float): Float {
+        return if (cipher == null) defValue else decrypt(cipher).toFloat()
+    }
+
+    private fun decryptInt(cipher: String?, defValue: Int): Int {
+        return if (cipher == null) defValue else decrypt(cipher).toInt()
+    }
+
+    private fun decryptLong(cipher: String?, defValue: Long): Long {
+        return if (cipher == null) defValue else decrypt(cipher).toLong()
+    }
+
+    private fun decryptString(cipher: String?, defValue: String?): String? {
+        return if (cipher == null) defValue else decrypt(cipher)
+    }
+
+    private fun decryptStringSet(ciphers: Set<String>?, defValue: Set<String>?): Set<String>? {
+        return if (ciphers == null) {
+            defValue
+        } else {
+            val result = LinkedHashSet<String>()
+            for (cipher in ciphers) {
+                result.add(decrypt(cipher))
+            }
+            return result
+        }
     }
 
     companion object {

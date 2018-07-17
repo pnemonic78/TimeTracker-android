@@ -1,7 +1,6 @@
 package com.tikalk.worktracker.preference
 
 import android.content.Context
-import android.preference.PreferenceManager
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 
@@ -11,7 +10,7 @@ import com.tikalk.worktracker.auth.model.UserCredentials
  */
 class TimeTrackerPrefs(context: Context) {
 
-    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    private val prefs = SecurePreferences.getDefaultSharedPreferences(context)
 
     companion object {
         private const val BASIC_CREDENTIALS_REALM = "credentials.basic.realm"
@@ -24,9 +23,9 @@ class TimeTrackerPrefs(context: Context) {
 
     var basicCredentials: BasicCredentials = BasicCredentials("", "", "")
         get() {
-            field.realm = prefs.getString(BASIC_CREDENTIALS_REALM, "")
-            field.username = prefs.getString(BASIC_CREDENTIALS_USER, "")
-            field.password = prefs.getString(BASIC_CREDENTIALS_PASSWORD, "")
+            field.realm = prefs.getString(BASIC_CREDENTIALS_REALM, null) ?: ""
+            field.username = prefs.getString(BASIC_CREDENTIALS_USER, null) ?: ""
+            field.password = prefs.getString(BASIC_CREDENTIALS_PASSWORD, null) ?: ""
             return field
         }
         set(value) {
@@ -42,8 +41,8 @@ class TimeTrackerPrefs(context: Context) {
 
     var userCredentials: UserCredentials = UserCredentials("", "")
         get() {
-            field.login = prefs.getString(USER_CREDENTIALS_LOGIN, "")
-            field.password = prefs.getString(USER_CREDENTIALS_PASSWORD, "")
+            field.login = prefs.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
+            field.password = prefs.getString(USER_CREDENTIALS_PASSWORD, null) ?: ""
             return field
         }
         set(value) {
