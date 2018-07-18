@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
+import com.tikalk.security.EncryptionProvider
+import com.tikalk.security.SimpleEncryptionProvider
 
 /**
  * Secured preferences that encrypt/decrypt the keys and values.
@@ -12,6 +14,7 @@ import android.preference.PreferenceManager
 class SecurePreferences(context: Context, name: String, mode: Int) : SharedPreferences {
 
     private val delegate: SharedPreferences = context.getSharedPreferences(name, mode)
+    private val provider: EncryptionProvider = SimpleEncryptionProvider()
 
     override fun contains(key: String): Boolean {
         return delegate.contains(hashKey(key))
@@ -66,18 +69,15 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
     }
 
     private fun hashKey(key: String): String {
-        //TODO implement me!
-        return key
+        return provider.hash(key)
     }
 
     private fun encrypt(clear: String?): String {
-        //TODO implement me!
-        return clear ?: ""
+        return provider.encrypt(clear)
     }
 
     private fun decrypt(cryptic: String): String {
-        //TODO implement me!
-        return cryptic
+        return provider.decrypt(cryptic)
     }
 
     private fun decryptBoolean(cryptic: String?, defValue: Boolean): Boolean {
