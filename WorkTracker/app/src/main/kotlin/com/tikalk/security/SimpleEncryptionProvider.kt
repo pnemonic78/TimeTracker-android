@@ -4,6 +4,7 @@ import android.util.Base64
 import android.util.Base64.NO_WRAP
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
 /**
  * Simple encryption provider implementation.
@@ -11,7 +12,11 @@ import java.security.MessageDigest
  */
 class SimpleEncryptionProvider : EncryptionProvider {
 
-    private val digest: MessageDigest = MessageDigest.getInstance("SHA-256")
+    private val digest: MessageDigest = try {
+        MessageDigest.getInstance("SHA-256")
+    } catch (e: NoSuchAlgorithmException) {
+        MessageDigest.getInstance("SHA-1")
+    }
 
     override fun hash(value: String): String {
         val bytes = value.toByteArray(StandardCharsets.UTF_8)
