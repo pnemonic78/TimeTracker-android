@@ -13,18 +13,18 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class EncryptionTest {
     @Test
-    fun defaultProvider() {
-        val provider: EncryptionProvider = DefaultEncryptionProvider()
-        assertEquals("abc", provider.hash("abc"))
-        assertEquals("def", provider.encrypt("def"))
-        assertEquals("ghi", provider.decrypt("ghi"))
+    fun defaultCipher() {
+        val cipher: CipherHelper = DefaultCipherHelper()
+        assertEquals("abc", cipher.hash("abc"))
+        assertEquals("def", cipher.encrypt("def"))
+        assertEquals("ghi", cipher.decrypt("ghi"))
     }
 
     @Test
-    fun simpleProvider() {
-        val provider: EncryptionProvider = SimpleEncryptionProvider()
-        assertEquals("ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", provider.hash("abc"))
-        assertEquals("def", provider.encrypt("def"))
-        assertEquals("ghi", provider.decrypt("ghi"))
+    fun simpleCipher() {
+        val cipher: CipherHelper = SimpleCipherHelper()
+        assertEquals("ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", cipher.hash("abc"))
+        assertEquals("def", cipher.encrypt("def"))
+        assertEquals("ghi", cipher.decrypt("ghi"))
     }
 }

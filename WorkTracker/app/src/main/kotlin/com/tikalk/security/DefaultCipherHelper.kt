@@ -4,7 +4,7 @@ package com.tikalk.security
  * Default encryption provider implementation that does nothing.
  * @author moshe on 2018/07/18.
  */
-class DefaultEncryptionProvider : EncryptionProvider {
+class DefaultCipherHelper : CipherHelper {
     override fun hash(value: String): String {
         return value
     }

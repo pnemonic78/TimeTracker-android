@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
-import com.tikalk.security.EncryptionProvider
-import com.tikalk.security.DefaultEncryptionProvider
+import com.tikalk.security.CipherHelper
+import com.tikalk.security.DefaultCipherHelper
 
 /**
  * Secured preferences that encrypt/decrypt the keys and values.
@@ -14,7 +14,7 @@ import com.tikalk.security.DefaultEncryptionProvider
 class SecurePreferences(context: Context, name: String, mode: Int) : SharedPreferences {
 
     private val delegate: SharedPreferences = context.getSharedPreferences(name, mode)
-    private val provider: EncryptionProvider = DefaultEncryptionProvider()
+    private val cipher: CipherHelper = DefaultCipherHelper()
 
     override fun contains(key: String): Boolean {
         return delegate.contains(hashKey(key))
@@ -69,15 +69,15 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
     }
 
     private fun hashKey(key: String): String {
-        return provider.hash(key)
+        return cipher.hash(key)
     }
 
     private fun encrypt(clear: String?): String {
-        return provider.encrypt(clear)
+        return cipher.encrypt(clear)
     }
 
     private fun decrypt(cryptic: String): String {
-        return provider.decrypt(cryptic)
+        return cipher.decrypt(cryptic)
     }
 
     private fun decryptBoolean(cryptic: String?, defValue: Boolean): Boolean {
@@ -100,12 +100,12 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
         return if (cryptic == null) defValue else decrypt(cryptic)
     }
 
-    private fun decryptStringSet(ciphers: Set<String>?, defValue: Set<String>?): Set<String>? {
-        return if (ciphers == null) {
+    private fun decryptStringSet(cryptics: Set<String>?, defValue: Set<String>?): Set<String>? {
+        return if (cryptics == null) {
             defValue
         } else {
             val result = LinkedHashSet<String>()
-            for (cryptic in ciphers) {
+            for (cryptic in cryptics) {
                 result.add(decrypt(cryptic))
             }
             return result

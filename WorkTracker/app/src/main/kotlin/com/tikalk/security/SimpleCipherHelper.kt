@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException
  * Simple encryption provider implementation.
  * @author moshe on 2018/07/18.
  */
-class SimpleEncryptionProvider : EncryptionProvider {
+class SimpleCipherHelper : CipherHelper {
 
     private val digest: MessageDigest = try {
         MessageDigest.getInstance("SHA-256")
