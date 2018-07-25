@@ -14,13 +14,16 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
         setContentView(R.layout.activity_splash)
     }
 
-    override fun onResume() {
-        super.onResume()
-        maybeShowEditor()
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+
+        if (hasFocus) {
+            prefs = TimeTrackerPrefs(this)
+            maybeShowEditor()
+        }
     }
 
     private fun maybeShowEditor() {
