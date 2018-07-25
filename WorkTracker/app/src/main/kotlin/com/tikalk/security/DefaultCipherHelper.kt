@@ -9,11 +9,19 @@ class DefaultCipherHelper : CipherHelper {
         return value
     }
 
-    override fun encrypt(clear: String?): String {
-        return clear ?: ""
+    override fun encrypt(clear: ByteArray, key: String): String {
+        return String(clear)
     }
 
-    override fun decrypt(cryptic: String): String {
+    override fun encrypt(clear: String, key: String): String {
+        return clear
+    }
+
+    override fun decrypt(cryptic: ByteArray, key: String): String {
+        return String(cryptic)
+    }
+
+    override fun decrypt(cryptic: String, key: String): String {
         return cryptic
     }
 }

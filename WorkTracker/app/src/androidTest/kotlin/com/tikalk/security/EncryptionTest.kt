@@ -22,9 +22,19 @@ class EncryptionTest {
 
     @Test
     fun simpleCipher() {
-        val cipher: CipherHelper = SimpleCipherHelper()
+        val key = "key"
+        val cipher: CipherHelper = SimpleCipherHelper(key, "salt")
+
         assertEquals("ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", cipher.hash("abc"))
-        assertEquals("def", cipher.encrypt("def"))
-        assertEquals("ghi", cipher.decrypt("ghi"))
+
+        var cryptic = cipher.encrypt("def", key)
+        assertEquals("5AVlK2kXvqW7AZ4L+Xay5Q==", cryptic)
+        var clear = cipher.decrypt(cryptic, key)
+        assertEquals("def", clear)
+
+        cryptic = cipher.encrypt("ghi", key)
+        assertEquals("dhyU6qOE0jpMH6a3fhUb7A==", cryptic)
+        clear = cipher.decrypt(cryptic, key)
+        assertEquals("ghi", clear)
     }
 }

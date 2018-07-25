@@ -73,7 +73,7 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
     }
 
     private fun encrypt(clear: String?): String {
-        return cipher.encrypt(clear)
+        return cipher.encrypt(clear ?: "")
     }
 
     private fun decrypt(cryptic: String): String {
