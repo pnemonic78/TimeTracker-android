@@ -95,7 +95,7 @@ class BasicRealmActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
-        val extras = intent.extras
+        val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_REALM)) {
             realmName = extras.getString(EXTRA_REALM)

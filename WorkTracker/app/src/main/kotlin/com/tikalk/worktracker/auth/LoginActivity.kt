@@ -105,7 +105,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     }
 
     private fun handleIntent(intent: Intent) {
-        val extras = intent.extras
+        val extras = intent.extras ?: return
+
         if (extras.containsKey(EXTRA_EMAIL)) {
             emailView.setText(extras.getString(EXTRA_EMAIL))
         }
