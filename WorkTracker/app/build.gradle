@@ -19,6 +19,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            storeFile file("../release.keystore")
+            storePassword project.STORE_PASSWORD_RELEASE
+            keyAlias "release"
+            keyPassword project.KEY_PASSWORD_RELEASE
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
@@ -26,6 +35,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -38,15 +48,6 @@ android {
         }
         test {
             java.srcDirs += 'src/test/kotlin'
-        }
-    }
-
-    signingConfigs {
-        release {
-            storeFile file("../release.keystore")
-            storePassword project.STORE_PASSWORD_RELEASE
-            keyAlias "release"
-            keyPassword project.KEY_PASSWORD_RELEASE
         }
     }
 }
