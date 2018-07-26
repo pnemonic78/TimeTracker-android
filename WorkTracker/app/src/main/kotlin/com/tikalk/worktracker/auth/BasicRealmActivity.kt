@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -31,7 +30,7 @@ class BasicRealmActivity : AppCompatActivity() {
 
     // UI references.
     private lateinit var realmView: TextView
-    private lateinit var usernameView: AutoCompleteTextView
+    private lateinit var usernameView: EditText
     private lateinit var passwordView: EditText
     private lateinit var progressView: View
     private lateinit var loginFormView: View
