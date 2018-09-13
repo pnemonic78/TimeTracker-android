@@ -29,8 +29,18 @@
             android:name=".auth.BasicRealmActivity"
             android:label="@string/activity_basic_realm" />
         <activity
-            android:name=".time.TimeEditActivity"
+            android:name=".time.TimeListActivity"
             android:label="@string/activity_time" />
+        <activity
+            android:name=".time.TimeEditActivity"
+            android:label="@string/activity_time"
+            android:parentActivityName=".time.TimeListActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".time.TimeListActivity" />
+        </activity>
+
     </application>
 
 </manifest>

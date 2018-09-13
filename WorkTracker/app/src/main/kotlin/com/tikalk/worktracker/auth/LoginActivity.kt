@@ -3,6 +3,7 @@ package com.tikalk.worktracker.auth
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -230,7 +231,8 @@ class LoginActivity : AppCompatActivity() {
                 val realm = challenge.realm()
                 val indexAt = email.indexOf('@')
                 val username = if (indexAt < 0) email else email.substring(0, indexAt)
-                val intent = Intent(this, BasicRealmActivity::class.java)
+                val context: Context = this
+                val intent = Intent(context, BasicRealmActivity::class.java)
                 intent.putExtra(BasicRealmActivity.EXTRA_REALM, realm)
                 intent.putExtra(BasicRealmActivity.EXTRA_USER, username)
                 startActivityForResult(intent, REQUEST_AUTHENTICATE)

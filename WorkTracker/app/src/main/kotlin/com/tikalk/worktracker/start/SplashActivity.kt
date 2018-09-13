@@ -1,12 +1,13 @@
 package com.tikalk.worktracker.start
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import com.tikalk.worktracker.time.TimeEditActivity
+import com.tikalk.worktracker.time.TimeListActivity
 
 class SplashActivity : AppCompatActivity() {
 
@@ -22,15 +23,16 @@ class SplashActivity : AppCompatActivity() {
 
         if (hasFocus) {
             prefs = TimeTrackerPrefs(this)
-            maybeShowEditor()
+            maybeShowList()
         }
     }
 
-    private fun maybeShowEditor() {
+    private fun maybeShowList() {
+        val context: Context = this
         if (prefs.userCredentials.isEmpty() || prefs.basicCredentials.isEmpty()) {
-            startActivity(Intent(this, LoginActivity::class.java))
+            startActivity(Intent(context, LoginActivity::class.java))
         } else {
-            startActivity(Intent(this, TimeEditActivity::class.java))
+            startActivity(Intent(context, TimeListActivity::class.java))
             finish()
         }
     }

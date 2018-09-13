@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -39,7 +40,7 @@ import kotlin.collections.ArrayList
 class TimeEditActivity : AppCompatActivity() {
 
     companion object {
-        private val TAG = "TimeEditActivity"
+        private const val TAG = "TimeEditActivity"
 
         private const val REQUEST_AUTHENTICATE = 1
 
@@ -293,7 +294,7 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun bindForm(record: TimeRecord) {
-        val context = this
+        val context: Context = this
         error_label.text = errorMessage
         project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
@@ -315,7 +316,8 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun authenticate(immediate: Boolean = false) {
         showProgress(true)
-        val intent = Intent(this, LoginActivity::class.java)
+        val context: Context = this
+        val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
     }
@@ -379,14 +381,15 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun pickDate() {
         if (datePickerDialog == null) {
-            val context = this
+            val context: Context = this
             val cal = Calendar.getInstance()
             cal.timeInMillis = date
             val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, month)
                 cal.set(Calendar.DAY_OF_MONTH, day)
-                this@TimeEditActivity.date = cal.timeInMillis
+                val date = cal.timeInMillis
+                this@TimeEditActivity.date = date
                 val start = record.start
                 if (start != null) {
                     start.set(Calendar.YEAR, year)
@@ -399,7 +402,7 @@ class TimeEditActivity : AppCompatActivity() {
                     finish.set(Calendar.MONTH, month)
                     finish.set(Calendar.DAY_OF_MONTH, day)
                 }
-                date_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+                date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
             }
             val year = cal.get(Calendar.YEAR)
             val month = cal.get(Calendar.MONTH)
@@ -411,7 +414,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun pickStartTime() {
         if (startPickerDialog == null) {
-            val context = this
+            val context: Context = this
             val cal = getCalendar(record.start)
             val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
@@ -429,7 +432,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun pickFinishTime() {
         if (finishPickerDialog == null) {
-            val context = this
+            val context: Context = this
             val cal = getCalendar(record.finish)
             val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
@@ -488,9 +491,8 @@ class TimeEditActivity : AppCompatActivity() {
         return valid
     }
 
-
     private fun filterTasks(project: Project) {
-        val context = this
+        val context: Context = this
         var objects = tasks.toTypedArray().filter { it.id in project.taskIds }
         if (objects.isEmpty()) {
             objects = arrayListOf(taskEmpty ?: ProjectTask.EMPTY)

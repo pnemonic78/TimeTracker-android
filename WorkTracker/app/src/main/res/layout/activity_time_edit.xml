@@ -1,7 +1,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context="com.tikalk.worktracker.time.TimeEditActivity">
 
     <LinearLayout
         android:id="@+id/time_form"
@@ -9,11 +10,10 @@
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
-        tools:context="com.tikalk.worktracker.time.TimeEditActivity">
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin">
 
         <TextView
             android:id="@+id/error_label"
@@ -107,5 +107,6 @@
         android:layout_gravity="center"
         android:indeterminate="true"
         android:indeterminateOnly="true"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 </FrameLayout>
