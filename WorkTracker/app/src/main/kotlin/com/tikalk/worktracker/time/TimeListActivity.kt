@@ -53,15 +53,11 @@ class TimeListActivity : AppCompatActivity() {
         // Set up the form.
         setContentView(R.layout.activity_time_list)
 
+        date_input.setOnClickListener { pickDate() }
         fab_add.setOnClickListener { addTime() }
 
-        var date: Long
         val now = System.currentTimeMillis()
-        if (savedInstanceState == null) {
-            date = now
-        } else {
-            date = savedInstanceState.getLong(STATE_DATE, now)
-        }
+        val date: Long = savedInstanceState?.getLong(STATE_DATE, now) ?: now
         fetchPage(date)
     }
 
@@ -220,7 +216,7 @@ class TimeListActivity : AppCompatActivity() {
     private fun addTime() {
         val context: Context = this
         val intent = Intent(context, TimeEditActivity::class.java)
-        //TODO add "date" extra
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
         startActivityForResult(intent, REQUEST_ADD)
     }
 }

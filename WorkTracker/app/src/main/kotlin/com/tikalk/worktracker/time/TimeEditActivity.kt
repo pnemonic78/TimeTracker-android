@@ -3,7 +3,6 @@ package com.tikalk.worktracker.time
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
-import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -45,13 +44,14 @@ class TimeEditActivity : AppCompatActivity() {
         private const val REQUEST_AUTHENTICATE = 1
 
         private const val STATE_DATE = "date"
+
+        const val EXTRA_DATE = "date"
     }
 
     private lateinit var prefs: TimeTrackerPrefs
 
     // UI references
     private var submitMenuItem: MenuItem? = null
-    private var datePickerDialog: DatePickerDialog? = null
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
 
@@ -99,17 +99,12 @@ class TimeEditActivity : AppCompatActivity() {
                 record.task = task
             }
         }
-        date_input.setOnClickListener { pickDate() }
         start_input.setOnClickListener { pickStartTime() }
         finish_input.setOnClickListener { pickFinishTime() }
 
-        var date: Long
         val now = System.currentTimeMillis()
-        if (savedInstanceState == null) {
-            date = now
-        } else {
-            date = savedInstanceState.getLong(STATE_DATE, now)
-        }
+        val dateExtra = intent.getLongExtra(EXTRA_DATE, now)
+        val date: Long = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
         fetchPage(date)
     }
 
@@ -299,7 +294,6 @@ class TimeEditActivity : AppCompatActivity() {
         project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
-        datePickerDialog = null
         start_input.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         start_input.error = null
         startPickerDialog = null
@@ -369,7 +363,8 @@ class TimeEditActivity : AppCompatActivity() {
                     showProgress(false)
 
                     if (validResponse(response)) {
-                        populateForm(response.body()!!, date)
+                        setResult(Activity.RESULT_OK)
+                        finish()
                     } else {
                         authenticate(true)
                     }
@@ -377,39 +372,6 @@ class TimeEditActivity : AppCompatActivity() {
                     Log.e(TAG, "Error saving page: ${err.message}", err)
                     showProgress(false)
                 })
-    }
-
-    private fun pickDate() {
-        if (datePickerDialog == null) {
-            val context: Context = this
-            val cal = Calendar.getInstance()
-            cal.timeInMillis = date
-            val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
-                cal.set(Calendar.YEAR, year)
-                cal.set(Calendar.MONTH, month)
-                cal.set(Calendar.DAY_OF_MONTH, day)
-                val date = cal.timeInMillis
-                this@TimeEditActivity.date = date
-                val start = record.start
-                if (start != null) {
-                    start.set(Calendar.YEAR, year)
-                    start.set(Calendar.MONTH, month)
-                    start.set(Calendar.DAY_OF_MONTH, day)
-                }
-                val finish = record.finish
-                if (finish != null) {
-                    finish.set(Calendar.YEAR, year)
-                    finish.set(Calendar.MONTH, month)
-                    finish.set(Calendar.DAY_OF_MONTH, day)
-                }
-                date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
-            }
-            val year = cal.get(Calendar.YEAR)
-            val month = cal.get(Calendar.MONTH)
-            val day = cal.get(Calendar.DAY_OF_MONTH)
-            datePickerDialog = DatePickerDialog(context, listener, year, month, day)
-        }
-        datePickerDialog!!.show()
     }
 
     private fun pickStartTime() {

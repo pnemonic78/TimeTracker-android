@@ -54,12 +54,14 @@
             style="@style/Widget.TextView.Label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/date_label" />
 
-        <Button
+        <TextView
             android:id="@+id/date_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             tools:text="@tools:sample/date/ddmmyy" />
 
         <TextView
@@ -94,6 +96,7 @@
             android:id="@+id/note_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:hint="@string/note_hint"
             android:maxLines="4" />
     </LinearLayout>
