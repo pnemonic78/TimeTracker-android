@@ -38,16 +38,17 @@ import androidx.room.PrimaryKey
  *
  * @author Moshe Waisberg.
  */
-abstract class TikalEntity {
+abstract class TikalEntity(
+        /**
+         * Server's id.
+         */
+        open var id: Long = 0
+) {
     /**
      * Android database's id.
      */
     @PrimaryKey
     var _id: Long = 0
-    /**
-     * Server's id.
-     */
-    var id: Long = 0
     /**
      * Entity version to resolve conflicts.
      */

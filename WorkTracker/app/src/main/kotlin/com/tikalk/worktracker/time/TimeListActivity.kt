@@ -6,25 +6,32 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.TaskRecordStatus
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import retrofit2.Response
+import java.io.InputStreamReader
 import java.util.*
+import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 class TimeListActivity : AppCompatActivity() {
 
@@ -45,6 +52,10 @@ class TimeListActivity : AppCompatActivity() {
     /** Keep track of the task to ensure we can cancel it if requested. */
     private var fetchTask: Disposable? = null
     private var date: Long = 0L
+    private var user = User("")
+    private val projects = ArrayList<Project>()
+    private val tasks = ArrayList<ProjectTask>()
+    private val listAdapter = TimeListAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,8 +64,13 @@ class TimeListActivity : AppCompatActivity() {
         // Set up the form.
         setContentView(R.layout.activity_time_list)
 
+        user.username = prefs.userCredentials.login
+        user.email = user.username
+
         date_input.setOnClickListener { pickDate() }
         fab_add.setOnClickListener { addTime() }
+
+        list.adapter = listAdapter
 
         val now = System.currentTimeMillis()
         val date: Long = savedInstanceState?.getLong(STATE_DATE, now) ?: now
@@ -84,25 +100,39 @@ class TimeListActivity : AppCompatActivity() {
         // perform the user login attempt.
         showProgress(true)
 
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        fetchResPage(date)
 
-        val dateFormatted = formatSystemDate(date)
-        fetchTask = service.fetchTimes(dateFormatted)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
+//        val authToken = prefs.basicCredentials.authToken()
+//        val service = TimeTrackerServiceFactory.createPlain(authToken)
+//
+//        val dateFormatted = formatSystemDate(date)
+//        fetchTask = service.fetchTimes(dateFormatted)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({ response ->
+//                    showProgress(false)
+//
+//                    this.date = date
+//                    if (validResponse(response)) {
+//                        populateList(response.body()!!, date)
+//                    } else {
+//                        authenticate(true)
+//                    }
+//                }, { err ->
+//                    Log.e(TAG, "Error fetching page: ${err.message}", err)
+//                })
+    }
 
-                    this.date = date
-                    if (validResponse(response)) {
-                        populateList(response.body()!!, date)
-                    } else {
-                        authenticate(true)
-                    }
-                }, { err ->
-                    Log.e(TAG, "Error fetching page: ${err.message}", err)
-                })
+    private fun fetchResPage(date: Long) {
+        val context: Context = this
+        val res = context.resources
+        res.openRawResource(R.raw.time_sep).use { raw ->
+            val reader = InputStreamReader(raw)
+            val html = reader.readText()
+            showProgress(false)
+            this.date = date
+            populateList(html, date)
+        }
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -125,14 +155,36 @@ class TimeListActivity : AppCompatActivity() {
         val context: Context = this
         date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
 
+        val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
+        val table = findTable(doc)
+        var record: TimeRecord?
 
-        //TODO bindList()
+        val form = doc.selectFirst("form[name='timeRecordForm']")
+
+        val inputProjects = form.selectFirst("select[name='project']")
+        populateProjects(doc, inputProjects, projects)
+
+        val inputTasks = form.selectFirst("select[name='task']")
+        populateTasks(doc, inputTasks, tasks)
+
+        // The first row of the table is the header
+        if (table != null) {
+            // loop through all the rows and parse each record
+            val rows = table.getElementsByTag("tr")
+            for (tr in rows) {
+                val record = parseRecord(tr)
+                if (record != null) {
+                    records.add(record)
+                }
+            }
+        }
+
+        bindList(records)
     }
 
-    private fun bindList() {
-        val context: Context = this
-        //TODO implement me!
+    private fun bindList(records: List<TimeRecord>) {
+        listAdapter.set(records)
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -192,6 +244,7 @@ class TimeListActivity : AppCompatActivity() {
      * Shows the progress UI and hides the list.
      */
     private fun showProgress(show: Boolean) {
+        println("±!@ showProgress $show")
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
         list.visibility = if (show) View.GONE else View.VISIBLE
@@ -218,5 +271,188 @@ class TimeListActivity : AppCompatActivity() {
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
         startActivityForResult(intent, REQUEST_ADD)
+    }
+
+    /**
+     * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
+     */
+    private fun findTable(doc: Document): Element? {
+        val body = doc.body()
+        val tables = body.select("table")
+        var rows: Elements
+        var tr: Element
+        var cols: Elements
+        var td: Element
+        var classAttr: String
+        var label: String
+
+        for (table in tables) {
+            rows = table.getElementsByTag("tr")
+            tr = rows.first()
+            if (tr.childNodeSize() < 6) {
+                continue
+            }
+            cols = tr.getElementsByTag("td")
+            td = cols[0]
+            classAttr = td.attr("class")
+            label = td.ownText()
+            if ((classAttr != "tableHeader") || (label != "Project")) {
+                continue
+            }
+            td = cols[1]
+            classAttr = td.attr("class")
+            label = td.ownText()
+            if ((classAttr != "tableHeader") || (label != "Task")) {
+                continue
+            }
+            td = cols[2]
+            classAttr = td.attr("class")
+            label = td.ownText()
+            if ((classAttr != "tableHeader") || (label != "Start")) {
+                continue
+            }
+            return table
+        }
+
+        return null
+    }
+
+    private fun parseRecord(row: Element): TimeRecord? {
+        val cols = row.getElementsByTag("td")
+
+        val tdProject = cols[0]
+        if (tdProject.attr("class") == "tableHeader") {
+            return null
+        }
+        val projectName = tdProject.ownText()
+        val project = parseRecordProject(projectName) ?: return null
+
+        val tdTask = cols[1]
+        val taskName = tdTask.ownText()
+        val task = parseRecordTask(project, taskName) ?: return null
+
+        val tdStart = cols[2]
+        val startText = tdStart.ownText()
+        val start = parseRecordTime(startText)
+
+        val tdFinish = cols[3]
+        val finishText = tdFinish.ownText()
+        val finish = parseRecordTime(finishText)
+
+        val tdNote = cols[5]
+        val noteText = tdNote.text()
+        val note = parseRecordNote(noteText)
+
+        val tdEdit = cols[6]
+        val editLink = tdEdit.child(0).attr("href")
+        val id = parseRecordId(editLink)
+
+        return TimeRecord(user, project, task, start, finish, note, TaskRecordStatus.CURRENT, id)
+    }
+
+    private fun parseRecordProject(name: String): Project? {
+        return projects.find { name == it.name }
+    }
+
+    private fun parseRecordTask(project: Project, name: String): ProjectTask? {
+        return tasks.find { (it.id in project.taskIds) && (name == it.name) }
+    }
+
+    private fun parseRecordTime(text: String): Calendar? {
+        return parseSystemTime(date, text)
+    }
+
+    private fun parseRecordNote(text: String): String {
+        return text.trim()
+    }
+
+    private fun parseRecordId(link: String): Long {
+        val uri = Uri.parse(link)
+        val id = uri.getQueryParameter("id")
+        return id.toLong()
+    }
+
+    private fun populateProjects(doc: Document, select: Element, projects: MutableList<Project>) {
+        projects.clear()
+
+        val options = select.select("option")
+        var value: String
+        var name: String
+        for (option in options) {
+            name = option.ownText()
+            value = option.attr("value")
+            val item = Project(name)
+            if (!value.isEmpty()) {
+                item.id = value.toLong()
+            }
+            projects.add(item)
+        }
+
+        populateTaskIds(doc, projects)
+    }
+
+    private fun populateTasks(doc: Document, select: Element, tasks: MutableList<ProjectTask>) {
+        tasks.clear()
+
+        val options = select.select("option")
+        var value: String
+        var name: String
+        for (option in options) {
+            name = option.ownText()
+            value = option.attr("value")
+            val item = ProjectTask(name)
+            if (!value.isEmpty()) {
+                item.id = value.toLong()
+            }
+            tasks.add(item)
+        }
+    }
+
+    private fun populateTaskIds(doc: Document, projects: List<Project>) {
+        val tokenStart = "var task_ids = new Array();"
+        val tokenEnd = "// Prepare an array of task names."
+        val scriptText = findScript(doc, tokenStart, tokenEnd)
+
+        for (project in projects) {
+            project.taskIds.clear()
+        }
+
+        if (scriptText.isNotEmpty()) {
+            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
+            val lines = scriptText.split(";")
+            for (line in lines) {
+                val matcher = pattern.matcher(line)
+                if (matcher.find()) {
+                    val projectId = matcher.group(1).toLong()
+                    val taskIds: List<Long> = matcher.group(2)
+                            .split(",")
+                            .map { it.toLong() }
+                    projects.find { it.id == projectId }!!
+                            .taskIds.addAll(taskIds)
+                }
+            }
+        }
+    }
+
+    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
+        val scripts = doc.select("script")
+        var scriptText: String
+        var indexStart: Int
+        var indexEnd: Int
+
+        for (script in scripts) {
+            scriptText = script.html()
+            indexStart = scriptText.indexOf(tokenStart)
+            if (indexStart >= 0) {
+                indexStart += tokenStart.length
+                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
+                if (indexEnd < 0) {
+                    indexEnd = scriptText.length
+                }
+                return scriptText.substring(indexStart, indexEnd)
+            }
+        }
+
+        return ""
     }
 }

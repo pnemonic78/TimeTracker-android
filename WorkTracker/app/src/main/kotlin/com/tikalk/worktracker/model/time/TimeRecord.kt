@@ -51,5 +51,6 @@ data class TimeRecord(
         var start: Calendar? = null,
         var finish: Calendar? = null,
         var note: String = "",
-        var status: TaskRecordStatus = TaskRecordStatus.INSERTED
-) : TikalEntity()
+        var status: TaskRecordStatus = TaskRecordStatus.INSERTED,
+        override var id: Long = 0
+) : TikalEntity(id)
