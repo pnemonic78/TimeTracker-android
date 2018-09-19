@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
+import java.util.concurrent.TimeUnit
 
 class TimeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -27,7 +28,7 @@ class TimeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val endTime = record.finish!!.timeInMillis
         startTimeView.text = DateUtils.formatDateTime(context, startTime, DateUtils.FORMAT_SHOW_TIME)
         endTimeView.text = DateUtils.formatDateTime(context, endTime, DateUtils.FORMAT_SHOW_TIME)
-        durationView.text = DateUtils.formatElapsedTime(recycle, endTime - startTime)
+        durationView.text = DateUtils.formatElapsedTime(recycle, TimeUnit.MILLISECONDS.toSeconds(endTime - startTime))
         noteView.text = record.note
     }
 }

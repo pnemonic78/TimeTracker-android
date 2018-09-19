@@ -158,7 +158,6 @@ class TimeListActivity : AppCompatActivity() {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
         val table = findTable(doc)
-        var record: TimeRecord?
 
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
