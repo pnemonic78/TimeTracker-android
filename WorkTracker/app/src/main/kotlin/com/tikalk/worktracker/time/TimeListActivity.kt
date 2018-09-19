@@ -9,6 +9,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -20,8 +21,11 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -100,27 +104,25 @@ class TimeListActivity : AppCompatActivity() {
         // perform the user login attempt.
         showProgress(true)
 
-        fetchResPage(date)
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-//        val authToken = prefs.basicCredentials.authToken()
-//        val service = TimeTrackerServiceFactory.createPlain(authToken)
-//
-//        val dateFormatted = formatSystemDate(date)
-//        fetchTask = service.fetchTimes(dateFormatted)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({ response ->
-//                    showProgress(false)
-//
-//                    this.date = date
-//                    if (validResponse(response)) {
-//                        populateList(response.body()!!, date)
-//                    } else {
-//                        authenticate(true)
-//                    }
-//                }, { err ->
-//                    Log.e(TAG, "Error fetching page: ${err.message}", err)
-//                })
+        val dateFormatted = formatSystemDate(date)
+        fetchTask = service.fetchTimes(dateFormatted)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+
+                    this.date = date
+                    if (validResponse(response)) {
+                        populateList(response.body()!!, date)
+                    } else {
+                        authenticate(true)
+                    }
+                }, { err ->
+                    Log.e(TAG, "Error fetching page: ${err.message}", err)
+                })
     }
 
     private fun fetchResPage(date: Long) {
@@ -243,7 +245,6 @@ class TimeListActivity : AppCompatActivity() {
      * Shows the progress UI and hides the list.
      */
     private fun showProgress(show: Boolean) {
-        println("±!@ showProgress $show")
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
         list.visibility = if (show) View.GONE else View.VISIBLE
