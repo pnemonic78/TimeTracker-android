@@ -3,13 +3,15 @@ package com.tikalk.worktracker.time
 import android.content.Context
 import android.text.format.DateUtils
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.concurrent.TimeUnit
 
-class TimeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
 
     private val projectView: TextView = itemView.findViewById(R.id.project)
     private val taskView: TextView = itemView.findViewById(R.id.task)
@@ -20,7 +22,16 @@ class TimeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private val recycle = StringBuilder()
 
+    private var record: TimeRecord? = null
+
+    init {
+        itemView.setOnClickListener(this)
+        // CardView does not handle clicks.
+        (itemView as ViewGroup).getChildAt(0).setOnClickListener(this)
+    }
+
     fun bind(record: TimeRecord) {
+        this.record = record
         val context: Context = itemView.context
         projectView.text = record.project.name
         taskView.text = record.task.name
@@ -30,5 +41,9 @@ class TimeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         endTimeView.text = DateUtils.formatDateTime(context, endTime, DateUtils.FORMAT_SHOW_TIME)
         durationView.text = DateUtils.formatElapsedTime(recycle, TimeUnit.MILLISECONDS.toSeconds(endTime - startTime))
         noteView.text = record.note
+    }
+
+    override fun onClick(v: View) {
+        clickListener?.onTimeItemClicked(record!!)
     }
 }

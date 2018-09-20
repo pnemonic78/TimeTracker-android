@@ -24,6 +24,7 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -46,6 +47,7 @@ class TimeEditActivity : AppCompatActivity() {
         private const val STATE_DATE = "date"
 
         const val EXTRA_DATE = "date"
+        const val EXTRA_RECORD = "record_id"
     }
 
     private lateinit var prefs: TimeTrackerPrefs
@@ -85,8 +87,8 @@ class TimeEditActivity : AppCompatActivity() {
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val project = project_input.adapter.getItem(position) as Project
-                filterTasks(project)
                 record.project = project
+                filterTasks(project)
             }
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -102,16 +104,27 @@ class TimeEditActivity : AppCompatActivity() {
         start_input.setOnClickListener { pickStartTime() }
         finish_input.setOnClickListener { pickFinishTime() }
 
-        val now = System.currentTimeMillis()
-        val dateExtra = intent.getLongExtra(EXTRA_DATE, now)
-        val date: Long = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
-        fetchPage(date)
+        handleIntent(intent, savedInstanceState)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         fetchTask?.dispose()
         submitTask?.dispose()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        this.intent = intent
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
+        val now = System.currentTimeMillis()
+        val dateExtra = intent.getLongExtra(EXTRA_DATE, now)
+        val date: Long = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
+        record.id = intent.getLongExtra(EXTRA_RECORD, record.id)
+        fetchPage(date, record.id)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -129,7 +142,7 @@ class TimeEditActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun fetchPage(date: Long) {
+    private fun fetchPage(date: Long, id: Long) {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
@@ -137,8 +150,13 @@ class TimeEditActivity : AppCompatActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        val dateFormatted = formatSystemDate(date)
-        fetchTask = service.fetchTimes(dateFormatted)
+        val fetcher: Single<Response<String>> = if (id == 0L) {
+            val dateFormatted = formatSystemDate(date)
+            service.fetchTimes(dateFormatted)
+        } else {
+            service.fetchTimes(id)
+        }
+        fetchTask = fetcher
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -181,10 +199,11 @@ class TimeEditActivity : AppCompatActivity() {
 
         val inputProjects = form.selectFirst("select[name='project']")
         populateProjects(doc, inputProjects, projects)
-        record.project = projects[0]
+        record.project = findSelectedProject(inputProjects, projects)
 
         val inputTasks = form.selectFirst("select[name='task']")
         populateTasks(doc, inputTasks, tasks)
+        record.task = findSelectedTask(inputTasks, tasks)
 
         val inputStart = form.selectFirst("input[name='start']")
         val startValue = inputStart.attr("value")
@@ -292,7 +311,9 @@ class TimeEditActivity : AppCompatActivity() {
         val context: Context = this
         error_label.text = errorMessage
         project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        project_input.setSelection(projects.indexOf(record.project))
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        task_input.setSelection(tasks.indexOf(record.task))
         date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
         start_input.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
         start_input.error = null
@@ -321,7 +342,7 @@ class TimeEditActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_AUTHENTICATE) {
             if (resultCode == Activity.RESULT_OK) {
-                fetchPage(date)
+                fetchPage(date, record.id)
             }
         }
     }
@@ -351,12 +372,23 @@ class TimeEditActivity : AppCompatActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        submitTask = service.addTime(record.project.id,
-                record.task.id,
-                formatSystemDate(date),
-                formatSystemTime(record.start),
-                formatSystemTime(record.finish),
-                record.note)
+        val submitter: Single<Response<String>> = if (record.id == 0L) {
+            service.addTime(record.project.id,
+                    record.task.id,
+                    formatSystemDate(date),
+                    formatSystemTime(record.start),
+                    formatSystemTime(record.finish),
+                    record.note)
+        } else {
+            service.editTime(record.id,
+                    record.project.id,
+                    record.task.id,
+                    formatSystemDate(date),
+                    formatSystemTime(record.start),
+                    formatSystemTime(record.finish),
+                    record.note)
+        }
+        submitTask = submitter
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -455,11 +487,12 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun filterTasks(project: Project) {
         val context: Context = this
-        var objects = tasks.toTypedArray().filter { it.id in project.taskIds }
-        if (objects.isEmpty()) {
-            objects = arrayListOf(taskEmpty ?: ProjectTask.EMPTY)
+        var options = tasks.filter { it.id in project.taskIds }
+        if (options.isEmpty()) {
+            options = arrayListOf(taskEmpty ?: ProjectTask.EMPTY)
         }
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, objects)
+        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
+        task_input.setSelection(options.indexOf(record.task))
     }
 
     /**
@@ -485,5 +518,33 @@ class TimeEditActivity : AppCompatActivity() {
         })
 
         submitMenuItem?.isEnabled = !show
+    }
+
+    private fun findSelectedProject(project: Element, projects: List<Project>): Project {
+        for (option in project.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.attr("value")
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return projects.find { id == it.id }!!
+                }
+                break
+            }
+        }
+        return projects[0]
+    }
+
+    private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
+        for (option in task.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.attr("value")
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return tasks.find { id == it.id }!!
+                }
+                break
+            }
+        }
+        return tasks[0]
     }
 }

@@ -37,13 +37,14 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
-class TimeListActivity : AppCompatActivity() {
+class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener {
 
     companion object {
         private const val TAG = "TimeListActivity"
 
         private const val REQUEST_AUTHENTICATE = 1
         private const val REQUEST_ADD = 2
+        private const val REQUEST_EDIT = 3
 
         private const val STATE_DATE = "date"
     }
@@ -59,7 +60,7 @@ class TimeListActivity : AppCompatActivity() {
     private var user = User("")
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
-    private val listAdapter = TimeListAdapter()
+    private val listAdapter = TimeListAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -219,6 +220,14 @@ class TimeListActivity : AppCompatActivity() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date = savedInstanceState.getLong(STATE_DATE)
+    }
+
+    override fun onTimeItemClicked(record: TimeRecord) {
+        val context: Context = this
+        val intent = Intent(context, TimeEditActivity::class.java)
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
+        intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
+        startActivityForResult(intent, REQUEST_EDIT)
     }
 
     private fun pickDate() {

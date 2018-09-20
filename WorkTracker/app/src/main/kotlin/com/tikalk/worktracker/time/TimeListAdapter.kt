@@ -7,7 +7,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 
-class TimeListAdapter : RecyclerView.Adapter<TimeListViewHolder>() {
+class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : RecyclerView.Adapter<TimeListViewHolder>() {
+
+    interface OnTimeListListener {
+        fun onTimeItemClicked(record: TimeRecord)
+    }
 
     private val records: MutableList<TimeRecord> = ArrayList()
 
@@ -18,7 +22,7 @@ class TimeListAdapter : RecyclerView.Adapter<TimeListViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeListViewHolder {
         val context: Context = parent.context
         val view = LayoutInflater.from(context).inflate(R.layout.time_item, parent, false)
-        return TimeListViewHolder(view)
+        return TimeListViewHolder(view, clickListener)
     }
 
     override fun onBindViewHolder(holder: TimeListViewHolder, position: Int) {
