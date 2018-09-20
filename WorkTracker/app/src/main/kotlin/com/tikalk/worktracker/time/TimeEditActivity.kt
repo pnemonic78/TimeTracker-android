@@ -22,6 +22,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Single
@@ -181,7 +182,13 @@ class TimeEditActivity : AppCompatActivity() {
             if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
                 val networkUrl = networkResponse.request().url()
                 val priorUrl = priorResponse.request().url()
-                return networkUrl == priorUrl
+                if (networkUrl == priorUrl) {
+                    return true
+                }
+                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
+                    return true
+                }
+                return false
             }
             return true
         }
@@ -341,7 +348,7 @@ class TimeEditActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_AUTHENTICATE) {
-            if (resultCode == Activity.RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 fetchPage(date, record.id)
             }
         }
@@ -381,6 +388,7 @@ class TimeEditActivity : AppCompatActivity() {
                     record.note)
         } else {
             service.editTime(record.id,
+                    record.id,
                     record.project.id,
                     record.task.id,
                     formatSystemDate(date),
@@ -395,7 +403,7 @@ class TimeEditActivity : AppCompatActivity() {
                     showProgress(false)
 
                     if (validResponse(response)) {
-                        setResult(Activity.RESULT_OK)
+                        setResult(RESULT_OK)
                         finish()
                     } else {
                         authenticate(true)

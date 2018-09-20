@@ -2,7 +2,6 @@ package com.tikalk.worktracker.time
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -201,12 +200,16 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
-            REQUEST_AUTHENTICATE -> if (resultCode == Activity.RESULT_OK) {
+            REQUEST_AUTHENTICATE -> if (resultCode == RESULT_OK) {
                 // Fetch the list for the user.
                 fetchPage(date)
             }
-            REQUEST_ADD -> if (resultCode == Activity.RESULT_OK) {
+            REQUEST_ADD -> if (resultCode == RESULT_OK) {
                 // Refresh the list with the newly added item.
+                fetchPage(date)
+            }
+            REQUEST_EDIT -> if (resultCode == RESULT_OK) {
+                // Refresh the list with the edited item.
                 fetchPage(date)
             }
         }

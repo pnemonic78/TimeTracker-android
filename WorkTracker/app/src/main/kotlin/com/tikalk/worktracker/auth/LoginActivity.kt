@@ -2,7 +2,6 @@ package com.tikalk.worktracker.auth
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -180,7 +179,7 @@ class LoginActivity : AppCompatActivity() {
 
                         val body = response.body()
                         if (response.isSuccessful && (body != null)) {
-                            setResult(Activity.RESULT_OK)
+                            setResult(RESULT_OK)
                             finish()
                         } else {
                             authenticate(email, response.raw())

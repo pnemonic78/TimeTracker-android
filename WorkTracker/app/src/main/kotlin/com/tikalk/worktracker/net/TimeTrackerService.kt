@@ -43,18 +43,25 @@ import retrofit2.http.*
  */
 interface TimeTrackerService {
 
+    companion object {
+        const val PHP_LOGIN = "login.php"
+        const val PHP_TIME = "time.php"
+        const val PHP_EDIT = "time_edit.php"
+        const val PHP_DELETE = "time_delete.php"
+    }
+
     @FormUrlEncoded
-    @POST("login.php")
+    @POST(PHP_LOGIN)
     fun login(@Field("login") email: String,
               @Field("password") password: String,
               @Field("browser_today") date: String,
               @Field("btn_login") button: String = "Login"): Single<Response<String>>
 
-    @GET("time.php")
+    @GET(PHP_TIME)
     fun fetchTimes(@Query("date") date: String): Single<Response<String>>
 
     @FormUrlEncoded
-    @POST("time.php")
+    @POST(PHP_TIME)
     fun addTime(@Field("project") projectId: Long,
                 @Field("task") taskId: Long,
                 @Field("date") date: String,
@@ -64,12 +71,13 @@ interface TimeTrackerService {
                 @Field("btn_submit") submit: String = "Submit",
                 @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 
-    @GET("time_edit.php")
+    @GET(PHP_EDIT)
     fun fetchTimes(@Query("id") id: Long): Single<Response<String>>
 
     @FormUrlEncoded
-    @POST("time_edit.php")
-    fun editTime(@Query("id") @Field("id") id: Long,
+    @POST(PHP_EDIT)
+    fun editTime(@Query("id") id: Long,
+                 @Field("id") id2: Long,
                  @Field("project") projectId: Long,
                  @Field("task") taskId: Long,
                  @Field("date") date: String,
@@ -80,7 +88,7 @@ interface TimeTrackerService {
                  @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 
     @FormUrlEncoded
-    @POST("time_delete.php")
+    @POST(PHP_DELETE)
     fun deleteTime(@Query("id") @Field("id") id: Long,
                    @Field("delete_button") submit: String = "Delete",
                    @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>

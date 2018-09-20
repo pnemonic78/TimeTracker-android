@@ -2,7 +2,6 @@ package com.tikalk.worktracker.auth
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -167,8 +166,8 @@ class BasicRealmActivity : AppCompatActivity() {
             authButton.isEnabled = false
 
             prefs.basicCredentials = BasicCredentials(realmName, username, password)
-            setResult(Activity.RESULT_OK)
             showProgress(false)
+            setResult(RESULT_OK)
             finish()
         }
     }
