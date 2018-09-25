@@ -3,15 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_cancel"
-        android:icon="@android:drawable/ic_menu_close_clear_cancel"
-        android:showAsAction="always"
-        android:title="@string/cancel"
-        app:showAsAction="always" />
+        android:id="@+id/menu_delete"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/delete"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_submit"
         android:icon="@android:drawable/ic_menu_save"
-        android:showAsAction="always"
         android:title="@string/submit"
         app:showAsAction="always" />
 </menu>

@@ -27,9 +27,10 @@
     <string name="date_label">Date:</string>
     <string name="start_label">Start:</string>
     <string name="finish_label">Finish:</string>
-    <string name="cancel">@android:string/cancel</string>
-    <string name="submit">@android:string/ok</string>
+    <string name="cancel" translatable="false">@android:string/cancel</string>
+    <string name="submit" translatable="false">@android:string/ok</string>
     <string name="note_hint">Note</string>
     <string name="error_finish_time_before_start_time">Start time must be before finish time.</string>
     <string name="pick_date">Go to date</string>
+    <string name="delete">Delete</string>
 </resources>

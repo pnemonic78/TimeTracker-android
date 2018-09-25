@@ -133,7 +133,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_cancel -> finish()
+            R.id.menu_delete -> deleteRecord()
             R.id.menu_submit -> submit()
         }
         return super.onOptionsItemSelected(item)
@@ -552,5 +552,39 @@ class TimeEditActivity : AppCompatActivity() {
             }
         }
         return tasks[0]
+    }
+
+    private fun deleteRecord() {
+        if (record.id == 0L) {
+            finish()
+        } else {
+            deleteRecord(record)
+        }
+    }
+
+    private fun deleteRecord(record: TimeRecord) {
+        // Show a progress spinner, and kick off a background task to
+        // perform the user login attempt.
+        showProgress(true)
+
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(authToken)
+
+        service.deleteTime(record.id, record.id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+
+                    if (validResponse(response)) {
+                        setResult(RESULT_OK)
+                        finish()
+                    } else {
+                        authenticate(true)
+                    }
+                }, { err ->
+                    Log.e(TAG, "Error deleting record: ${err.message}", err)
+                })
+                .addTo(disposables)
     }
 }
