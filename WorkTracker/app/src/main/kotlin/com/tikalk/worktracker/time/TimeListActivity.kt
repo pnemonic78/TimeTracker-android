@@ -34,6 +34,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import retrofit2.Response
+import timber.log.Timber
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -41,8 +42,6 @@ import kotlin.collections.ArrayList
 class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener {
 
     companion object {
-        private const val TAG = "TimeListActivity"
-
         private const val REQUEST_AUTHENTICATE = 1
         private const val REQUEST_ADD = 2
         private const val REQUEST_EDIT = 3
@@ -125,7 +124,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
                         authenticate(true)
                     }
                 }, { err ->
-                    Log.e(TAG, "Error fetching page: ${err.message}", err)
+                    Timber.e(err, "Error fetching page: ${err.message}")
                 })
                 .addTo(disposables)
     }
@@ -495,7 +494,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
                         authenticate(true)
                     }
                 }, { err ->
-                    Log.e(TAG, "Error deleting record: ${err.message}", err)
+                    Timber.e(err, "Error deleting record: ${err.message}")
                 })
                 .addTo(disposables)
     }

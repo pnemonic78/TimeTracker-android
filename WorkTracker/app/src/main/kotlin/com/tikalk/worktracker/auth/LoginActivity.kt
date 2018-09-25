@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.util.Patterns
 import android.view.MenuItem
 import android.view.View
@@ -24,6 +23,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import okhttp3.Response
+import timber.log.Timber
 
 /**
  * A login screen that offers login via email/password.
@@ -31,8 +31,6 @@ import okhttp3.Response
 class LoginActivity : AppCompatActivity() {
 
     companion object {
-        private const val TAG = "LoginActivity"
-
         private const val REQUEST_AUTHENTICATE = 1
 
         const val EXTRA_EMAIL = "email"
@@ -185,7 +183,7 @@ class LoginActivity : AppCompatActivity() {
                             authenticate(email, response.raw())
                         }
                     }, { err ->
-                        Log.e(TAG, "Error signing in: ${err.message}", err)
+                        Timber.e(err, "Error signing in: ${err.message}")
                         showProgress(false)
                         emailSignInButton.isEnabled = true
                     })

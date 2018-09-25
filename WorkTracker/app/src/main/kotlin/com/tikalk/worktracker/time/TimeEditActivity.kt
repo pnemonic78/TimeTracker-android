@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -34,6 +33,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import retrofit2.Response
+import timber.log.Timber
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -41,8 +41,6 @@ import kotlin.collections.ArrayList
 class TimeEditActivity : AppCompatActivity() {
 
     companion object {
-        private const val TAG = "TimeEditActivity"
-
         private const val REQUEST_AUTHENTICATE = 1
 
         private const val STATE_DATE = "date"
@@ -166,7 +164,7 @@ class TimeEditActivity : AppCompatActivity() {
                         authenticate(true)
                     }
                 }, { err ->
-                    Log.e(TAG, "Error fetching page: ${err.message}", err)
+                    Timber.e(err, "Error fetching page: ${err.message}")
                 })
                 .addTo(disposables)
     }
@@ -406,7 +404,7 @@ class TimeEditActivity : AppCompatActivity() {
                         authenticate(true)
                     }
                 }, { err ->
-                    Log.e(TAG, "Error saving page: ${err.message}", err)
+                    Timber.e(err, "Error saving record: ${err.message}")
                     showProgress(false)
                 })
                 .addTo(disposables)
@@ -583,7 +581,7 @@ class TimeEditActivity : AppCompatActivity() {
                         authenticate(true)
                     }
                 }, { err ->
-                    Log.e(TAG, "Error deleting record: ${err.message}", err)
+                    Timber.e(err, "Error deleting record: ${err.message}")
                 })
                 .addTo(disposables)
     }
