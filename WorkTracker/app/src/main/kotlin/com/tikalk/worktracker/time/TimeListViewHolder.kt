@@ -8,21 +8,24 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.concurrent.TimeUnit
+import java.util.*
 
 class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
         View.OnClickListener {
 
     private val projectView: TextView = itemView.findViewById(R.id.project)
     private val taskView: TextView = itemView.findViewById(R.id.task)
-    private val startTimeView: TextView = itemView.findViewById(R.id.start_time)
-    private val endTimeView: TextView = itemView.findViewById(R.id.end_time)
-    private val durationView: TextView = itemView.findViewById(R.id.duration)
+    private val timeRangeView: TextView = itemView.findViewById(R.id.time_range)
     private val noteView: TextView = itemView.findViewById(R.id.note)
 
-    private val recycle = StringBuilder()
+    private val timeBuffer = StringBuilder(20)
+    private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
 
-    private var record: TimeRecord? = null
+    var record: TimeRecord? = null
+        set(value) {
+            field = value
+            bind(value)
+        }
 
     init {
         itemView.setOnClickListener(this)
@@ -30,20 +33,26 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         (itemView as ViewGroup).getChildAt(0).setOnClickListener(this)
     }
 
-    fun bind(record: TimeRecord) {
-        this.record = record
-        val context: Context = itemView.context
-        projectView.text = record.project.name
-        taskView.text = record.task.name
-        val startTime = record.start!!.timeInMillis
-        val endTime = record.finish!!.timeInMillis
-        startTimeView.text = DateUtils.formatDateTime(context, startTime, DateUtils.FORMAT_SHOW_TIME)
-        endTimeView.text = DateUtils.formatDateTime(context, endTime, DateUtils.FORMAT_SHOW_TIME)
-        durationView.text = DateUtils.formatElapsedTime(recycle, TimeUnit.MILLISECONDS.toSeconds(endTime - startTime))
-        noteView.text = record.note
+    private fun bind(record: TimeRecord?) {
+        if (record != null) {
+            val context: Context = itemView.context
+            projectView.text = record.project.name
+            taskView.text = record.task.name
+            val startTime = record.start!!.timeInMillis
+            val endTime = record.finish!!.timeInMillis
+            timeBuffer.delete(0, timeBuffer.length)
+            val formatter = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
+            timeRangeView.text = formatter.out() as CharSequence
+            noteView.text = record.note
+        } else {
+            projectView.text = ""
+            taskView.text = ""
+            timeRangeView.text = ""
+            noteView.text = ""
+        }
     }
 
     override fun onClick(v: View) {
-        clickListener?.onTimeItemClicked(record!!)
+        clickListener?.onRecordClick(record!!)
     }
 }

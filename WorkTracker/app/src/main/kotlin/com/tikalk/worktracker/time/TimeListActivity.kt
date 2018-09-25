@@ -13,6 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
@@ -20,10 +21,12 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
 import org.jsoup.Jsoup
@@ -31,7 +34,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import retrofit2.Response
-import java.io.InputStreamReader
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -53,8 +55,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     private lateinit var prefs: TimeTrackerPrefs
 
-    /** Keep track of the task to ensure we can cancel it if requested. */
-    private var fetchTask: Disposable? = null
+    private val disposables = CompositeDisposable()
     private var date: Long = 0L
     private var user = User("")
     private val projects = ArrayList<Project>()
@@ -75,6 +76,9 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         fab_add.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
+        var swipeHandler = TimeListSwipeHandler(this)
+        var itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(list)
 
         val now = System.currentTimeMillis()
         val date: Long = savedInstanceState?.getLong(STATE_DATE, now) ?: now
@@ -83,7 +87,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     override fun onDestroy() {
         super.onDestroy()
-        fetchTask?.dispose()
+        disposables.dispose()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -108,7 +112,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         val dateFormatted = formatSystemDate(date)
-        fetchTask = service.fetchTimes(dateFormatted)
+        service.fetchTimes(dateFormatted)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -123,18 +127,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
                 }, { err ->
                     Log.e(TAG, "Error fetching page: ${err.message}", err)
                 })
-    }
-
-    private fun fetchResPage(date: Long) {
-        val context: Context = this
-        val res = context.resources
-        res.openRawResource(R.raw.time_sep).use { raw ->
-            val reader = InputStreamReader(raw)
-            val html = reader.readText()
-            showProgress(false)
-            this.date = date
-            populateList(html, date)
-        }
+                .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -145,7 +138,13 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
             if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
                 val networkUrl = networkResponse.request().url()
                 val priorUrl = priorResponse.request().url()
-                return networkUrl == priorUrl
+                if (networkUrl == priorUrl) {
+                    return true
+                }
+                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
+                    return true
+                }
+                return false
             }
             return true
         }
@@ -225,12 +224,12 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         date = savedInstanceState.getLong(STATE_DATE)
     }
 
-    override fun onTimeItemClicked(record: TimeRecord) {
-        val context: Context = this
-        val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
-        intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
-        startActivityForResult(intent, REQUEST_EDIT)
+    override fun onRecordClick(record: TimeRecord) {
+        editRecord(record)
+    }
+
+    override fun onRecordSwipe(record: TimeRecord) {
+        deleteRecord(record)
     }
 
     private fun pickDate() {
@@ -380,7 +379,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     private fun parseRecordId(link: String): Long {
         val uri = Uri.parse(link)
-        val id = uri.getQueryParameter("id")
+        val id = uri.getQueryParameter("id")!!
         return id.toLong()
     }
 
@@ -466,5 +465,38 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         }
 
         return ""
+    }
+
+    private fun editRecord(record: TimeRecord) {
+        val context: Context = this
+        val intent = Intent(context, TimeEditActivity::class.java)
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
+        intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
+        startActivityForResult(intent, REQUEST_EDIT)
+    }
+
+    private fun deleteRecord(record: TimeRecord) {
+        // Show a progress spinner, and kick off a background task to
+        // perform the user login attempt.
+        showProgress(true)
+
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(authToken)
+
+        service.deleteTime(record.id, record.id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+
+                    if (validResponse(response)) {
+                        populateList(response.body()!!, date)
+                    } else {
+                        authenticate(true)
+                    }
+                }, { err ->
+                    Log.e(TAG, "Error deleting record: ${err.message}", err)
+                })
+                .addTo(disposables)
     }
 }

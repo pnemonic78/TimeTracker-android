@@ -2,7 +2,6 @@ package com.tikalk.worktracker.time
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -27,7 +26,8 @@ import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_edit.*
 import org.jsoup.Jsoup
@@ -58,10 +58,7 @@ class TimeEditActivity : AppCompatActivity() {
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
 
-    /** Keep track of the task to ensure we can cancel it if requested. */
-    private var fetchTask: Disposable? = null
-    /** Keep track of the task to ensure we can cancel it if requested. */
-    private var submitTask: Disposable? = null
+    private val disposables = CompositeDisposable()
     private var date: Long = 0L
     private var user = User("")
     private var record = TimeRecord(user, Project(""), ProjectTask(""))
@@ -110,8 +107,7 @@ class TimeEditActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        fetchTask?.dispose()
-        submitTask?.dispose()
+        disposables.dispose()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -157,7 +153,7 @@ class TimeEditActivity : AppCompatActivity() {
         } else {
             service.fetchTimes(id)
         }
-        fetchTask = fetcher
+        fetcher
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -172,6 +168,7 @@ class TimeEditActivity : AppCompatActivity() {
                 }, { err ->
                     Log.e(TAG, "Error fetching page: ${err.message}", err)
                 })
+                .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -396,7 +393,7 @@ class TimeEditActivity : AppCompatActivity() {
                     formatSystemTime(record.finish),
                     record.note)
         }
-        submitTask = submitter
+        submitter
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -412,6 +409,7 @@ class TimeEditActivity : AppCompatActivity() {
                     Log.e(TAG, "Error saving page: ${err.message}", err)
                     showProgress(false)
                 })
+                .addTo(disposables)
     }
 
     private fun pickStartTime() {

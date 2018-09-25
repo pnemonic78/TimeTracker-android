@@ -10,7 +10,15 @@ import com.tikalk.worktracker.model.time.TimeRecord
 class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : RecyclerView.Adapter<TimeListViewHolder>() {
 
     interface OnTimeListListener {
-        fun onTimeItemClicked(record: TimeRecord)
+        /**
+         * Callback to be invoked when an item in this list has been clicked.
+         */
+        fun onRecordClick(record: TimeRecord)
+
+        /**
+         * Callback to be invoked when an item in this list has been swiped.
+         */
+        fun onRecordSwipe(record: TimeRecord)
     }
 
     private val records: MutableList<TimeRecord> = ArrayList()
@@ -26,13 +34,21 @@ class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : R
     }
 
     override fun onBindViewHolder(holder: TimeListViewHolder, position: Int) {
-        val item = records[position]
-        holder.bind(item)
+        val record = records[position]
+        holder.record = record
     }
 
     fun set(data: Collection<TimeRecord>) {
         records.clear()
         records.addAll(data)
         notifyDataSetChanged()
+    }
+
+    fun delete(record: TimeRecord) {
+        val index = records.indexOf(record)
+        if (index >= 0) {
+            records.removeAt(index)
+            notifyItemRemoved(index)
+        }
     }
 }
