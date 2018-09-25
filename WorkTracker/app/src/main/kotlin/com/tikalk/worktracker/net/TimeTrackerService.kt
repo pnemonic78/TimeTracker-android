@@ -76,8 +76,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_EDIT)
-    fun editTime(@Query("id") id: Long,
-                 @Field("id") id2: Long,
+    fun editTime(@Field("id") id: Long,
                  @Field("project") projectId: Long,
                  @Field("task") taskId: Long,
                  @Field("date") date: String,
@@ -89,8 +88,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_DELETE)
-    fun deleteTime(@Query("id") id: Long,
-                   @Field("id") id2: Long,
+    fun deleteTime(@Field("id") id: Long,
                    @Field("delete_button") submit: String = "Delete",
                    @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 }

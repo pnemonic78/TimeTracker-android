@@ -482,7 +482,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        service.deleteTime(record.id, record.id)
+        service.deleteTime(record.id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->

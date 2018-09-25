@@ -383,7 +383,6 @@ class TimeEditActivity : AppCompatActivity() {
                     record.note)
         } else {
             service.editTime(record.id,
-                    record.id,
                     record.project.id,
                     record.task.id,
                     formatSystemDate(date),
@@ -568,7 +567,7 @@ class TimeEditActivity : AppCompatActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        service.deleteTime(record.id, record.id)
+        service.deleteTime(record.id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
