@@ -75,8 +75,8 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         fab_add.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
-        var swipeHandler = TimeListSwipeHandler(this)
-        var itemTouchHelper = ItemTouchHelper(swipeHandler)
+        val swipeHandler = TimeListSwipeHandler(this)
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
         itemTouchHelper.attachToRecyclerView(list)
 
         val now = System.currentTimeMillis()
@@ -97,7 +97,10 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_date -> pickDate()
+            R.id.menu_date -> {
+                pickDate()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }

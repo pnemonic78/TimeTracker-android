@@ -131,8 +131,18 @@ class TimeEditActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_delete -> deleteRecord()
-            R.id.menu_submit -> submit()
+            android.R.id.home -> {
+                onBackPressed()
+                return true
+            }
+            R.id.menu_delete -> {
+                deleteRecord()
+                return true
+            }
+            R.id.menu_submit -> {
+                submit()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
