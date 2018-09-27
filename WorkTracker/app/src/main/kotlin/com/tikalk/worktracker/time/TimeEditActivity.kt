@@ -49,6 +49,8 @@ class TimeEditActivity : AppCompatActivity() {
         const val EXTRA_RECORD = "record_id"
     }
 
+    private val context: Context = this
+
     private lateinit var prefs: TimeTrackerPrefs
 
     // UI references
@@ -320,7 +322,6 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun bindForm(record: TimeRecord) {
-        val context: Context = this
         error_label.text = errorMessage
         project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         project_input.setSelection(projects.indexOf(record.project))
@@ -343,7 +344,6 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun authenticate(immediate: Boolean = false) {
         showProgress(true)
-        val context: Context = this
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
@@ -421,7 +421,6 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun pickStartTime() {
         if (startPickerDialog == null) {
-            val context: Context = this
             val cal = getCalendar(record.start)
             val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
@@ -439,7 +438,6 @@ class TimeEditActivity : AppCompatActivity() {
 
     private fun pickFinishTime() {
         if (finishPickerDialog == null) {
-            val context: Context = this
             val cal = getCalendar(record.finish)
             val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
@@ -499,7 +497,6 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun filterTasks(project: Project) {
-        val context: Context = this
         var options = tasks.filter { it.id in project.taskIds }
         if (options.isEmpty()) {
             options = arrayListOf(taskEmpty ?: ProjectTask.EMPTY)

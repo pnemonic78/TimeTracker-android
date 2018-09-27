@@ -11,6 +11,8 @@ import com.tikalk.worktracker.time.TimeListActivity
 
 class SplashActivity : AppCompatActivity() {
 
+    private val context: Context = this
+
     private lateinit var prefs: TimeTrackerPrefs
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +30,6 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun maybeShowList() {
-        val context: Context = this
         if (prefs.userCredentials.isEmpty() || prefs.basicCredentials.isEmpty()) {
             startActivity(Intent(context, LoginActivity::class.java))
         } else {

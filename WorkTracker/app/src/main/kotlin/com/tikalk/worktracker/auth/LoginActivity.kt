@@ -38,6 +38,8 @@ class LoginActivity : AppCompatActivity() {
         const val EXTRA_SUBMIT = "submit"
     }
 
+    private val context: Context = this
+
     private lateinit var prefs: TimeTrackerPrefs
 
     /**
@@ -228,7 +230,6 @@ class LoginActivity : AppCompatActivity() {
                 val realm = challenge.realm()
                 val indexAt = email.indexOf('@')
                 val username = if (indexAt < 0) email else email.substring(0, indexAt)
-                val context: Context = this
                 val intent = Intent(context, BasicRealmActivity::class.java)
                 intent.putExtra(BasicRealmActivity.EXTRA_REALM, realm)
                 intent.putExtra(BasicRealmActivity.EXTRA_USER, username)
