@@ -76,6 +76,7 @@
             android:id="@+id/start_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_timer_black"
             tools:text="@tools:sample/date/hhmm" />
 
         <TextView
@@ -90,6 +91,7 @@
             android:id="@+id/finish_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_timer_off_black"
             tools:text="@tools:sample/date/hhmm" />
 
         <EditText
