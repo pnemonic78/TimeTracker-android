@@ -327,11 +327,10 @@ class TimeEditActivity : AppCompatActivity() {
         project_input.setSelection(projects.indexOf(record.project))
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         task_input.setSelection(tasks.indexOf(record.task))
-        date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
-        start_input.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        start_input.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME) else ""
         start_input.error = null
         startPickerDialog = null
-        finish_input.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_TIME) else ""
+        finish_input.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME) else ""
         finish_input.error = null
         finishPickerDialog = null
         note_input.setText(record.note)
@@ -426,7 +425,7 @@ class TimeEditActivity : AppCompatActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.start = cal
-                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
                 start_input.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -443,7 +442,7 @@ class TimeEditActivity : AppCompatActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.finish = cal
-                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_TIME)
+                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
                 finish_input.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)

@@ -50,21 +50,6 @@
             android:layout_height="wrap_content" />
 
         <TextView
-            android:id="@+id/date_label"
-            style="@style/Widget.TextView.Label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/date_label" />
-
-        <TextView
-            android:id="@+id/date_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            tools:text="@tools:sample/date/ddmmyy" />
-
-        <TextView
             android:id="@+id/start_label"
             style="@style/Widget.TextView.Label"
             android:layout_width="match_parent"
