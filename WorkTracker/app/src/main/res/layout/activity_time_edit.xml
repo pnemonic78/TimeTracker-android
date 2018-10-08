@@ -86,6 +86,14 @@
             android:layout_marginTop="8dp"
             android:hint="@string/note_hint"
             android:maxLines="4" />
+
+        <Button
+            android:id="@+id/action_submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@android:drawable/ic_menu_save"
+            android:text="@string/action_submit" />
     </LinearLayout>
 
     <!-- Progress -->
