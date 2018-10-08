@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -467,15 +468,15 @@ class TimeEditActivity : AppCompatActivity() {
 
         if (record.project.id <= 0) {
             valid = false
-            project_label.error = getString(R.string.error_field_required)
+            (project_input.selectedView as TextView).error = getString(R.string.error_field_required)
         } else {
-            project_label.error = null
+            (project_input.selectedView as TextView).error = null
         }
         if (record.task.id <= 0) {
             valid = false
-            task_label.error = getString(R.string.error_field_required)
+            (task_input.selectedView as TextView).error = getString(R.string.error_field_required)
         } else {
-            task_label.error = null
+            (task_input.selectedView as TextView).error = null
         }
         if (record.start == null) {
             valid = false
