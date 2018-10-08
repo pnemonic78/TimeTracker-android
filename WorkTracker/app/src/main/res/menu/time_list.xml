@@ -4,8 +4,7 @@
 
     <item
         android:id="@+id/menu_date"
-        android:icon="@android:drawable/ic_menu_day"
-        android:showAsAction="always"
+        android:icon="@drawable/ic_menu_day"
         android:title="@string/pick_date"
         app:showAsAction="always" />
 </menu>
