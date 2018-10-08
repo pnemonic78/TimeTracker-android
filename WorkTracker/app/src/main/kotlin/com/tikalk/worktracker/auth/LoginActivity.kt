@@ -15,7 +15,6 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.R.string.submit
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
