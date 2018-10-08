@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -92,11 +93,25 @@ class BasicRealmActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menu.clear()
+        menuInflater.inflate(R.menu.authenticate, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> onBackPressed()
+            R.id.menu_authenticate -> attemptLogin()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun handleIntent(intent: Intent) {
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_REALM)) {
-            realmName = extras.getString(EXTRA_REALM)
+            realmName = extras.getString(EXTRA_REALM)!!
             realmView.text = getString(R.string.authentication_basic_realm, realmName)
         }
         if (extras.containsKey(EXTRA_USER)) {
@@ -201,13 +216,6 @@ class BasicRealmActivity : AppCompatActivity() {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> onBackPressed()
-        }
-        return super.onOptionsItemSelected(item)
     }
 }
 

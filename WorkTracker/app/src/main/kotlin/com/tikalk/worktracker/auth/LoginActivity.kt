@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -14,6 +15,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.R.string.submit
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
@@ -90,6 +92,25 @@ class LoginActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        authTask?.dispose()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menu.clear()
+        menuInflater.inflate(R.menu.authenticate, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> onBackPressed()
+            R.id.menu_authenticate -> attemptLogin()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun handleIntent(intent: Intent) {
         val extras = intent.extras ?: return
 
@@ -104,11 +125,6 @@ class LoginActivity : AppCompatActivity() {
                 attemptLogin()
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        authTask?.dispose()
     }
 
     /**
@@ -238,13 +254,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
         return false
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> onBackPressed()
-        }
-        return super.onOptionsItemSelected(item)
     }
 }
 

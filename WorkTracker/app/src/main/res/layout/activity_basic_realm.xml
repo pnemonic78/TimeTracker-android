@@ -35,7 +35,7 @@
                     android:id="@+id/username"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableStart="@drawable/ic_person_black"
+                    android:drawableEnd="@drawable/ic_person_black"
                     android:hint="@string/prompt_username"
                     android:inputType="text"
                     android:maxLines="1"
@@ -51,7 +51,7 @@
                     android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableStart="@drawable/ic_vpn_key_black"
+                    android:drawableEnd="@drawable/ic_vpn_key_black"
                     android:hint="@string/prompt_password"
                     android:imeActionId="@+id/login"
                     android:imeActionLabel="@string/action_sign_in"
@@ -67,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:drawableStart="@drawable/ic_lock_open_black"
+                android:drawableEnd="@drawable/ic_lock_open_black"
                 android:text="@string/action_authenticate" />
 
         </LinearLayout>
