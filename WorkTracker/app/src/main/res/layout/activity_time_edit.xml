@@ -33,6 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="4dp"
+            android:prompt="@string/project_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/project_icon"
             app:layout_constraintTop_toTopOf="parent" />
@@ -53,6 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
+            android:prompt="@string/task_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/task_icon"
             app:layout_constraintTop_toBottomOf="@+id/project_input" />
@@ -73,10 +75,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
+            android:text="@string/start_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/start_icon"
-            app:layout_constraintTop_toBottomOf="@+id/task_input"
-            tools:text="@tools:sample/date/hhmm" />
+            app:layout_constraintTop_toBottomOf="@+id/task_input" />
 
         <ImageView
             android:id="@+id/finish_icon"
@@ -94,10 +96,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
+            android:text="@string/finish_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/finish_icon"
-            app:layout_constraintTop_toBottomOf="@+id/start_input"
-            tools:text="@tools:sample/date/hhmm" />
+            app:layout_constraintTop_toBottomOf="@+id/start_input" />
 
         <ImageView
             android:id="@+id/note_icon"
