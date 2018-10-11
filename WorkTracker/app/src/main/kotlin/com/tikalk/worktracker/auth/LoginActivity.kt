@@ -80,7 +80,7 @@ class LoginActivity : AppCompatActivity() {
         emailSignInButton.setOnClickListener { attemptLogin() }
 
         loginFormView = findViewById(R.id.login_form)
-        progressView = findViewById(R.id.login_progress)
+        progressView = findViewById(R.id.progress)
 
         handleIntent(intent)
     }

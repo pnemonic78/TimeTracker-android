@@ -7,6 +7,10 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorButtonNormal">@color/colorButtonNormal</item>
+
+        <item name="android:progressBarStyle">@style/Widget.ProgressBar</item>
+        <item name="android:progressBarStyleLarge">@style/Widget.ProgressBar.Large</item>
+        <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar</item>
     </style>
 
     <style name="Theme.WorkTracker.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
@@ -15,6 +19,10 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorButtonNormal">@color/colorButtonNormal</item>
+
+        <item name="android:progressBarStyle">@style/Widget.ProgressBar</item>
+        <item name="android:progressBarStyleLarge">@style/Widget.ProgressBar.Large</item>
+        <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar.Large</item>
     </style>
 
 </resources>
