@@ -329,10 +329,16 @@ class TimeEditActivity : AppCompatActivity() {
         project_input.setSelection(projects.indexOf(record.project))
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         task_input.setSelection(tasks.indexOf(record.task))
-        start_input.text = if (record.start != null) DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME) else ""
+        start_input.text = if (record.start != null)
+            DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+        else
+            getString(R.string.start_label)
         start_input.error = null
         startPickerDialog = null
-        finish_input.text = if (record.finish != null) DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME) else ""
+        finish_input.text = if (record.finish != null)
+            DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+        else
+            getString(R.string.finish_label)
         finish_input.error = null
         finishPickerDialog = null
         note_input.setText(record.note)
