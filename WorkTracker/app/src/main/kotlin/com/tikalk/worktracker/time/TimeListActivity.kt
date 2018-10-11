@@ -49,6 +49,8 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         private const val STATE_DATE = "date"
     }
 
+    private val context: Context = this
+
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
 
@@ -155,7 +157,6 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     /** Populate the list. */
     private fun populateList(html: String, date: Long) {
-        val context: Context = this
         date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
 
         val records = ArrayList<TimeRecord>()
@@ -190,7 +191,6 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        val context: Context = this
         showProgress(true)
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
@@ -236,7 +236,6 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     private fun pickDate() {
         if (datePickerDialog == null) {
-            val context: Context = this
             val cal = Calendar.getInstance()
             cal.timeInMillis = date
             val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
@@ -280,7 +279,6 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
     }
 
     private fun addTime() {
-        val context: Context = this
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
         startActivityForResult(intent, REQUEST_ADD)
@@ -470,7 +468,6 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
     }
 
     private fun editRecord(record: TimeRecord) {
-        val context: Context = this
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
         intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
