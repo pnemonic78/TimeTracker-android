@@ -332,13 +332,13 @@ class TimeEditActivity : AppCompatActivity() {
         start_input.text = if (record.start != null)
             DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
         else
-            getString(R.string.start_label)
+            ""
         start_input.error = null
         startPickerDialog = null
         finish_input.text = if (record.finish != null)
             DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
         else
-            getString(R.string.finish_label)
+            ""
         finish_input.error = null
         finishPickerDialog = null
         note_input.setText(record.note)

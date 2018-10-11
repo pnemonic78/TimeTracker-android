@@ -75,7 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:text="@string/start_label"
+            android:hint="@string/start_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/start_icon"
             app:layout_constraintTop_toBottomOf="@+id/task_input" />
@@ -96,7 +96,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:text="@string/finish_label"
+            android:hint="@string/finish_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/finish_icon"
             app:layout_constraintTop_toBottomOf="@+id/start_input" />
