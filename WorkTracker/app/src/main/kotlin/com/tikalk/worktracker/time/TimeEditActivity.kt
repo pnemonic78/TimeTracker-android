@@ -61,7 +61,7 @@ class TimeEditActivity : AppCompatActivity() {
     private var finishPickerDialog: TimePickerDialog? = null
 
     private val disposables = CompositeDisposable()
-    private var date: Long = 0L
+    private var date = Calendar.getInstance()
     private var user = User("")
     private var record = TimeRecord(user, Project(""), ProjectTask(""))
     private val projects = ArrayList<Project>()
@@ -120,9 +120,9 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        val now = System.currentTimeMillis()
+        val now = date.timeInMillis
         val dateExtra = intent.getLongExtra(EXTRA_DATE, now)
-        val date: Long = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
+        date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
         record.id = intent.getLongExtra(EXTRA_RECORD, record.id)
         fetchPage(date, record.id)
     }
@@ -152,7 +152,7 @@ class TimeEditActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun fetchPage(date: Long, id: Long) {
+    private fun fetchPage(date: Calendar, id: Long) {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
@@ -167,21 +167,21 @@ class TimeEditActivity : AppCompatActivity() {
             service.fetchTimes(id)
         }
         fetcher
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                showProgress(false)
 
-                    this.date = date
-                    if (validResponse(response)) {
-                        populateForm(response.body()!!, date)
-                    } else {
-                        authenticate(true)
-                    }
-                }, { err ->
-                    Timber.e(err, "Error fetching page: ${err.message}")
-                })
-                .addTo(disposables)
+                this.date = date
+                if (validResponse(response)) {
+                    populateForm(response.body()!!, date)
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error fetching page: ${err.message}")
+            })
+            .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -206,7 +206,7 @@ class TimeEditActivity : AppCompatActivity() {
     }
 
     /** Populate the record and then bind the form. */
-    private fun populateForm(html: String, date: Long) {
+    private fun populateForm(html: String, date: Calendar) {
         val doc: Document = Jsoup.parse(html)
 
         val errorNode = doc.selectFirst("td[class='error']")
@@ -315,10 +315,10 @@ class TimeEditActivity : AppCompatActivity() {
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
                     val taskIds: List<Long> = matcher.group(2)
-                            .split(",")
-                            .map { it.toLong() }
+                        .split(",")
+                        .map { it.toLong() }
                     projects.find { it.id == projectId }!!
-                            .taskIds.addAll(taskIds)
+                        .taskIds.addAll(taskIds)
                 }
             }
         }
@@ -369,12 +369,12 @@ class TimeEditActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(STATE_DATE, date)
+        outState.putLong(STATE_DATE, date.timeInMillis)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        date = savedInstanceState.getLong(STATE_DATE)
+        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
     }
 
     private fun submit() {
@@ -394,37 +394,37 @@ class TimeEditActivity : AppCompatActivity() {
 
         val submitter: Single<Response<String>> = if (record.id == 0L) {
             service.addTime(record.project.id,
-                    record.task.id,
-                    formatSystemDate(date),
-                    formatSystemTime(record.start),
-                    formatSystemTime(record.finish),
-                    record.note)
+                record.task.id,
+                formatSystemDate(date),
+                formatSystemTime(record.start),
+                formatSystemTime(record.finish),
+                record.note)
         } else {
             service.editTime(record.id,
-                    record.project.id,
-                    record.task.id,
-                    formatSystemDate(date),
-                    formatSystemTime(record.start),
-                    formatSystemTime(record.finish),
-                    record.note)
+                record.project.id,
+                record.task.id,
+                formatSystemDate(date),
+                formatSystemTime(record.start),
+                formatSystemTime(record.finish),
+                record.note)
         }
         submitter
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                showProgress(false)
 
-                    if (validResponse(response)) {
-                        setResult(RESULT_OK)
-                        finish()
-                    } else {
-                        authenticate(true)
-                    }
-                }, { err ->
-                    Timber.e(err, "Error saving record: ${err.message}")
-                    showProgress(false)
-                })
-                .addTo(disposables)
+                if (validResponse(response)) {
+                    setResult(RESULT_OK)
+                    finish()
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error saving record: ${err.message}")
+                showProgress(false)
+            })
+            .addTo(disposables)
     }
 
     private fun pickStartTime() {
@@ -464,7 +464,7 @@ class TimeEditActivity : AppCompatActivity() {
     private fun getCalendar(cal: Calendar?): Calendar {
         if (cal == null) {
             val calDate = Calendar.getInstance()
-            calDate.timeInMillis = date
+            calDate.timeInMillis = date.timeInMillis
             return calDate
         }
         return cal
@@ -521,7 +521,7 @@ class TimeEditActivity : AppCompatActivity() {
 
         time_form.visibility = if (show) View.GONE else View.VISIBLE
         time_form.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 time_form.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -529,7 +529,7 @@ class TimeEditActivity : AppCompatActivity() {
 
         progress.visibility = if (show) View.VISIBLE else View.GONE
         progress.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progress.visibility = if (show) View.VISIBLE else View.GONE
             }
@@ -583,20 +583,20 @@ class TimeEditActivity : AppCompatActivity() {
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         service.deleteTime(record.id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                showProgress(false)
 
-                    if (validResponse(response)) {
-                        setResult(RESULT_OK)
-                        finish()
-                    } else {
-                        authenticate(true)
-                    }
-                }, { err ->
-                    Timber.e(err, "Error deleting record: ${err.message}")
-                })
-                .addTo(disposables)
+                if (validResponse(response)) {
+                    setResult(RESULT_OK)
+                    finish()
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error deleting record: ${err.message}")
+            })
+            .addTo(disposables)
     }
 }

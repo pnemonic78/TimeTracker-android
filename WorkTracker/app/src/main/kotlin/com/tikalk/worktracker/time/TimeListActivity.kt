@@ -39,7 +39,8 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
-class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener {
+class TimeListActivity : AppCompatActivity(),
+    TimeListAdapter.OnTimeListListener {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 1
@@ -57,7 +58,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
     private lateinit var prefs: TimeTrackerPrefs
 
     private val disposables = CompositeDisposable()
-    private var date: Long = 0L
+    private val date = Calendar.getInstance()
     private var user = User("")
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
@@ -81,8 +82,8 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
         itemTouchHelper.attachToRecyclerView(list)
 
-        val now = System.currentTimeMillis()
-        val date: Long = savedInstanceState?.getLong(STATE_DATE, now) ?: now
+        val now = date.timeInMillis
+        date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, now) ?: now
         fetchPage(date)
     }
 
@@ -107,7 +108,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         return super.onOptionsItemSelected(item)
     }
 
-    private fun fetchPage(date: Long) {
+    private fun fetchPage(date: Calendar) {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
@@ -117,21 +118,23 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
         val dateFormatted = formatSystemDate(date)
         service.fetchTimes(dateFormatted)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                showProgress(false)
 
-                    this.date = date
-                    if (validResponse(response)) {
-                        populateList(response.body()!!, date)
-                    } else {
-                        authenticate(true)
-                    }
-                }, { err ->
-                    Timber.e(err, "Error fetching page: ${err.message}")
-                })
-                .addTo(disposables)
+                if (this.date != date) {
+                    this.date.timeInMillis = date.timeInMillis
+                }
+                if (validResponse(response)) {
+                    populateList(response.body()!!, date)
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error fetching page: ${err.message}")
+            })
+            .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -156,8 +159,8 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
     }
 
     /** Populate the list. */
-    private fun populateList(html: String, date: Long) {
-        date_input.text = DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE)
+    private fun populateList(html: String, date: Calendar) {
+        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
 
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
@@ -218,12 +221,12 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(STATE_DATE, date)
+        outState.putLong(STATE_DATE, date.timeInMillis)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        date = savedInstanceState.getLong(STATE_DATE)
+        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
     }
 
     override fun onRecordClick(record: TimeRecord) {
@@ -236,14 +239,12 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     private fun pickDate() {
         if (datePickerDialog == null) {
-            val cal = Calendar.getInstance()
-            cal.timeInMillis = date
+            val cal = date
             val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, month)
                 cal.set(Calendar.DAY_OF_MONTH, day)
-                val date = cal.timeInMillis
-                fetchPage(date)
+                fetchPage(cal)
             }
             val year = cal.get(Calendar.YEAR)
             val month = cal.get(Calendar.MONTH)
@@ -261,7 +262,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
         list.visibility = if (show) View.GONE else View.VISIBLE
         list.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 list.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -269,7 +270,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
         progress.visibility = if (show) View.VISIBLE else View.GONE
         progress.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progress.visibility = if (show) View.VISIBLE else View.GONE
             }
@@ -280,7 +281,7 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
 
     private fun addTime() {
         val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
         startActivityForResult(intent, REQUEST_ADD)
     }
 
@@ -436,10 +437,10 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
                     val taskIds: List<Long> = matcher.group(2)
-                            .split(",")
-                            .map { it.toLong() }
+                        .split(",")
+                        .map { it.toLong() }
                     projects.find { it.id == projectId }!!
-                            .taskIds.addAll(taskIds)
+                        .taskIds.addAll(taskIds)
                 }
             }
         }
@@ -483,9 +484,10 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         service.deleteTime(record.id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { response ->
                     showProgress(false)
 
                     if (validResponse(response)) {
@@ -493,9 +495,11 @@ class TimeListActivity : AppCompatActivity(), TimeListAdapter.OnTimeListListener
                     } else {
                         authenticate(true)
                     }
-                }, { err ->
+                },
+                { err ->
                     Timber.e(err, "Error deleting record: ${err.message}")
-                })
-                .addTo(disposables)
+                }
+            )
+            .addTo(disposables)
     }
 }
