@@ -7,4 +7,7 @@
     <dimen name="progress_bar_size_small">16dip</dimen>
     <dimen name="progress_bar_size_medium">48dp</dimen>
     <dimen name="progress_bar_size_large">76dp</dimen>
+
+    <!-- Constraint layout -->
+    <string name="constraint_ratio_1_1" translatable="false">H,1:1</string>
 </resources>
