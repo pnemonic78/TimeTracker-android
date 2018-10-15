@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Work Tracker</string>
+    <string name="app_name">Tikal Tracker</string>
 
     <string name="activity_splash" translatable="false">@string/app_name</string>
 
