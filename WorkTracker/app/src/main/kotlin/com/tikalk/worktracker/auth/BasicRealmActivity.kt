@@ -11,15 +11,15 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
+import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
 /**
  * An authentication screen for Basic Realm via email/password.
  */
-class BasicRealmActivity : AppCompatActivity() {
+class BasicRealmActivity : InternetActivity() {
 
     companion object {
         const val EXTRA_REALM = "realm"

@@ -14,13 +14,13 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -40,7 +40,7 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
-class TimeEditActivity : AppCompatActivity() {
+class TimeEditActivity : InternetActivity() {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 1
