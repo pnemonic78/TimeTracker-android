@@ -13,8 +13,6 @@ class SplashActivity : AppCompatActivity() {
 
     private val context: Context = this
 
-    private lateinit var prefs: TimeTrackerPrefs
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
@@ -24,17 +22,12 @@ class SplashActivity : AppCompatActivity() {
         super.onWindowFocusChanged(hasFocus)
 
         if (hasFocus) {
-            prefs = TimeTrackerPrefs(this)
-            maybeShowList()
+            showList()
         }
     }
 
-    private fun maybeShowList() {
-        if (prefs.userCredentials.isEmpty() || prefs.basicCredentials.isEmpty()) {
-            startActivity(Intent(context, LoginActivity::class.java))
-        } else {
-            startActivity(Intent(context, TimeListActivity::class.java))
-            finish()
-        }
+    private fun showList() {
+        startActivity(Intent(context, TimeListActivity::class.java))
+        finish()
     }
 }
