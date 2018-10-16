@@ -8,8 +8,6 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginActivity
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
 import kotlinx.android.synthetic.main.activity_splash.*
 
