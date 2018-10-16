@@ -62,14 +62,14 @@
         android:fillType="nonZero"
         android:pathData="m62.671,15.52 l0.454,-0c15.524,-0 25.755,4.702 25.755,4.702 0,-0 6.47,11.622 4.787,25.484 -1.398,11.52 -5.564,15.691 -7.23,19.342C78.833,65.829 70.87,66.247 62.671,66.262L62.671,15.52Z" />
     <path
-        android:pathData="m62,43c25,-13 25,-13 25,-13z"
-        android:strokeWidth="4"
+        android:pathData="m62,43c-42,-25 3,0 0,0z"
+        android:strokeWidth="5"
         android:strokeColor="#522242"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="m62,43c-40,-25 0,0 0,0z"
-        android:strokeWidth="5"
+        android:pathData="m62,43c50,-35 3,0 0,0z"
+        android:strokeWidth="4"
         android:strokeColor="#522242"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
