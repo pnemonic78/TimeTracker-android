@@ -37,7 +37,7 @@ abstract class InternetActivity : AppCompatActivity() {
     protected open fun onInternetDisconnected() {
     }
 
-    private val receiver = object : BroadcastReceiver() {
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
 
