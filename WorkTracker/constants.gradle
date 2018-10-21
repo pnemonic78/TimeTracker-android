@@ -24,6 +24,6 @@ project.ext {
     rxkbinding2_version = '2.0.0'
     rxkotlin2_version = '2.1.0'
     sqlbrite2_version = '2.0.0'
-    support_version = '1.0.0-rc02'
-    timber_version = '4.7.0'
+    support_version = '1.0.0'
+    timber_version = '4.7.1'
 }
