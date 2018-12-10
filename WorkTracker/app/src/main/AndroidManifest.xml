@@ -36,12 +36,15 @@
             android:name=".time.TimeEditActivity"
             android:label="@string/activity_time"
             android:parentActivityName=".time.TimeListActivity">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".time.TimeListActivity" />
         </activity>
 
+        <service
+            android:name=".time.TimerService"
+            android:enabled="true"
+            android:exported="false"/>
     </application>
 
 </manifest>

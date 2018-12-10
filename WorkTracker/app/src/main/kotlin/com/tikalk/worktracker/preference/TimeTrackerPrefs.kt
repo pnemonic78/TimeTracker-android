@@ -19,6 +19,10 @@ class TimeTrackerPrefs(context: Context) {
 
         private const val USER_CREDENTIALS_LOGIN = "user.login"
         private const val USER_CREDENTIALS_PASSWORD = "user.password"
+
+        private const val PROJECT_ID = "project.id"
+        private const val TASK_ID = "task.id"
+        private const val START_TIME = "start.time"
     }
 
     var basicCredentials: BasicCredentials = BasicCredentials("", "", "")
@@ -33,10 +37,10 @@ class TimeTrackerPrefs(context: Context) {
             field.username = value.username
             field.password = value.password
             prefs.edit()
-                    .putString(BASIC_CREDENTIALS_REALM, value.realm)
-                    .putString(BASIC_CREDENTIALS_USER, value.username)
-                    .putString(BASIC_CREDENTIALS_PASSWORD, value.password)
-                    .apply()
+                .putString(BASIC_CREDENTIALS_REALM, value.realm)
+                .putString(BASIC_CREDENTIALS_USER, value.username)
+                .putString(BASIC_CREDENTIALS_PASSWORD, value.password)
+                .apply()
         }
 
     var userCredentials: UserCredentials = UserCredentials("", "")
@@ -49,8 +53,16 @@ class TimeTrackerPrefs(context: Context) {
             field.login = value.login
             field.password = value.password
             prefs.edit()
-                    .putString(USER_CREDENTIALS_LOGIN, value.login)
-                    .putString(USER_CREDENTIALS_PASSWORD, value.password)
-                    .apply()
+                .putString(USER_CREDENTIALS_LOGIN, value.login)
+                .putString(USER_CREDENTIALS_PASSWORD, value.password)
+                .apply()
         }
+
+    fun start(projectId: Long, taskId: Long, startTime: Long) {
+        prefs.edit()
+            .putLong(PROJECT_ID, projectId)
+            .putLong(TASK_ID, taskId)
+            .putLong(START_TIME, startTime)
+            .apply()
+    }
 }

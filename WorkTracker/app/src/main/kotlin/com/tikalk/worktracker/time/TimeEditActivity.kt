@@ -506,10 +506,10 @@ class TimeEditActivity : InternetActivity() {
     }
 
     private fun filterTasks(project: Project) {
-        var options = tasks.filter { it.id in project.taskIds }
-        if (options.isEmpty()) {
-            options = arrayListOf(taskEmpty ?: ProjectTask.EMPTY)
-        }
+        val filtered = tasks.filter { it.id in project.taskIds }
+        val options = ArrayList<ProjectTask>(filtered.size + 1)
+        options.add(taskEmpty ?: ProjectTask.EMPTY)
+        options.addAll(filtered)
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         task_input.setSelection(options.indexOf(record.task))
     }

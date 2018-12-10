@@ -35,4 +35,8 @@
     <string name="delete">Delete</string>
     <string name="action_delete" translatable="false">@string/delete</string>
     <string name="action_submit" translatable="false">@string/submit</string>
+
+    <!-- Time recorder -->
+    <string name="action_start">Start</string>
+    <string name="action_stop">Stop</string>
 </resources>

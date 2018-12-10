@@ -11,6 +11,8 @@ import android.text.format.DateUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -60,9 +62,12 @@ class TimeListActivity : InternetActivity(),
     private val disposables = CompositeDisposable()
     private val date = Calendar.getInstance()
     private var user = User("")
+    private var record = TimeRecord(user, Project(""), ProjectTask(""))
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
     private val listAdapter = TimeListAdapter(this)
+    private var projectEmpty: Project? = null
+    private var taskEmpty: ProjectTask? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +79,31 @@ class TimeListActivity : InternetActivity(),
         user.username = prefs.userCredentials.login
         user.email = user.username
 
+        project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                record.project = projectEmpty ?: Project.EMPTY
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val project = project_input.adapter.getItem(position) as Project
+                record.project = project
+                filterTasks(project)
+                action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+            }
+        }
+        task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                record.task = taskEmpty ?: ProjectTask.EMPTY
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val task = task_input.adapter.getItem(position) as ProjectTask
+                record.task = task
+                action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+            }
+        }
         date_input.setOnClickListener { pickDate() }
+        action_start.setOnClickListener { startTimer() }
         fab_add.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
@@ -127,6 +156,7 @@ class TimeListActivity : InternetActivity(),
                     this.date.timeInMillis = date.timeInMillis
                 }
                 if (validResponse(response)) {
+                    populateForm(response.body()!!, date)
                     populateList(response.body()!!, date)
                 } else {
                     authenticate(true)
@@ -394,7 +424,9 @@ class TimeListActivity : InternetActivity(),
             name = option.ownText()
             value = option.attr("value")
             val item = Project(name)
-            if (!value.isEmpty()) {
+            if (value.isEmpty()) {
+                projectEmpty = item
+            } else {
                 item.id = value.toLong()
             }
             projects.add(item)
@@ -413,7 +445,9 @@ class TimeListActivity : InternetActivity(),
             name = option.ownText()
             value = option.attr("value")
             val item = ProjectTask(name)
-            if (!value.isEmpty()) {
+            if (value.isEmpty()) {
+                taskEmpty = item
+            } else {
                 item.id = value.toLong()
             }
             tasks.add(item)
@@ -491,6 +525,7 @@ class TimeListActivity : InternetActivity(),
                     showProgress(false)
 
                     if (validResponse(response)) {
+                        populateForm(response.body()!!, date)
                         populateList(response.body()!!, date)
                     } else {
                         authenticate(true)
@@ -501,5 +536,99 @@ class TimeListActivity : InternetActivity(),
                 }
             )
             .addTo(disposables)
+    }
+
+    /** Populate the record and then bind the form. */
+    private fun populateForm(html: String, date: Calendar) {
+        val doc: Document = Jsoup.parse(html)
+
+        val form = doc.selectFirst("form[name='timeRecordForm']")
+
+        val inputProjects = form.selectFirst("select[name='project']")
+        populateProjects(doc, inputProjects, projects)
+        record.project = findSelectedProject(inputProjects, projects)
+
+        val inputTasks = form.selectFirst("select[name='task']")
+        populateTasks(doc, inputTasks, tasks)
+        record.task = findSelectedTask(inputTasks, tasks)
+
+        showForm(DateUtils.isToday(date.timeInMillis) or isTimerRunning())
+        bindForm(record)
+    }
+
+    private fun showForm(visible: Boolean) {
+        val visibility = if (visible) View.VISIBLE else View.GONE
+        time_form_group.visibility = visibility
+    }
+
+    private fun bindForm(record: TimeRecord) {
+        project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        project_input.setSelection(projects.indexOf(record.project))
+        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        task_input.setSelection(tasks.indexOf(record.task))
+        project_input.requestFocus()
+    }
+
+    private fun findSelectedProject(project: Element, projects: List<Project>): Project {
+        for (option in project.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.attr("value")
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return projects.find { id == it.id }!!
+                }
+                break
+            }
+        }
+        return projects[0]
+    }
+
+    private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
+        for (option in task.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.attr("value")
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return tasks.find { id == it.id }!!
+                }
+                break
+            }
+        }
+        return tasks[0]
+    }
+
+    private fun startTimer() {
+        val service = Intent(this, TimerService::class.java).apply {
+            action = TimerService.ACTION_START
+            putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
+            putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
+            putExtra(TimerService.EXTRA_START_TIME, System.currentTimeMillis())
+        }
+        startService(service)
+        //TODO("switch to STOP button")
+    }
+
+    private fun stopTimer() {
+        val service = Intent(this, TimerService::class.java).apply {
+            action = TimerService.ACTION_STOP
+            putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
+            putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
+            putExtra(TimerService.EXTRA_FINISH_TIME, System.currentTimeMillis())
+        }
+        startService(service)
+        //TODO("switch to START button")
+    }
+
+    private fun isTimerRunning(): Boolean {
+        return false
+    }
+
+    private fun filterTasks(project: Project) {
+        val filtered = tasks.filter { it.id in project.taskIds }
+        val options = ArrayList<ProjectTask>(filtered.size + 1)
+        options.add(taskEmpty ?: ProjectTask.EMPTY)
+        options.addAll(filtered)
+        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
+        task_input.setSelection(options.indexOf(record.task))
     }
 }

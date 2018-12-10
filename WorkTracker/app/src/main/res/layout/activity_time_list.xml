@@ -6,14 +6,90 @@
     android:layout_height="match_parent"
     tools:context=".time.TimeListActivity">
 
+    <ImageView
+        android:id="@+id/project_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:contentDescription="@string/project_label"
+        android:src="@drawable/ic_business"
+        app:layout_constraintBottom_toBottomOf="@+id/project_input"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/project_input" />
+
+    <Spinner
+        android:id="@+id/project_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:prompt="@string/project_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/project_icon"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/task_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:contentDescription="@string/task_label"
+        android:src="@drawable/ic_folder"
+        app:layout_constraintBottom_toBottomOf="@+id/task_input"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/task_input" />
+
+    <Spinner
+        android:id="@+id/task_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:prompt="@string/task_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/task_icon"
+        app:layout_constraintTop_toBottomOf="@+id/project_input" />
+
+    <Button
+        android:id="@+id/action_start"
+        style="@style/Widget.Button.Start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:enabled="false"
+        android:text="@string/action_start"
+        android:theme="@style/Widget.Button.Start"
+        app:layout_constraintTop_toBottomOf="@+id/task_input" />
+
+    <View
+        android:id="@+id/time_form_divider"
+        android:background="@drawable/divider_horizontal_dark"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/action_start" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/time_form_group"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:constraint_referenced_ids="project_icon,project_input,task_icon,task_input,action_start,time_form_divider"
+        tools:visibility="visible" />
+
     <Button
         android:id="@+id/date_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:drawableEnd="@drawable/ic_today_black"
         android:hint="@string/date_label"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/time_form_divider" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@android:id/list"
