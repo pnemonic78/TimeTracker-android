@@ -39,4 +39,5 @@
     <!-- Time recorder -->
     <string name="action_start">Start</string>
     <string name="action_stop">Stop</string>
+    <string name="title_service" translatable="false">@string/activity_time</string>
 </resources>

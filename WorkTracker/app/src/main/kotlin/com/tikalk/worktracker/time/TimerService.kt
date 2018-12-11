@@ -1,16 +1,18 @@
 package com.tikalk.worktracker.time
 
-import android.app.IntentService
-import android.app.NotificationManager
+import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.*
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import androidx.core.app.NotificationCompat
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
-class TimerService : IntentService("TimerService") {
+class TimerService : Service() {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
@@ -21,10 +23,17 @@ class TimerService : IntentService("TimerService") {
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
         const val EXTRA_EDIT = BuildConfig.APPLICATION_ID + ".EDIT"
+
+        private const val CHANNEL_ID = "timer"
+        private const val ID_NOTIFY = R.string.action_start
+        private const val ID_ACTIVITY = 0
+        private const val ID_ACTION_STOP = 1
     }
 
     private lateinit var prefs: TimeTrackerPrefs
     private lateinit var notificationManager: NotificationManager
+    private var notification: Notification? = null
+    private var notificationBuilder: NotificationCompat.Builder? = null
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -38,7 +47,12 @@ class TimerService : IntentService("TimerService") {
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onHandleIntent(intent: Intent) {
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        onHandleIntent(intent)
+        return START_STICKY
+    }
+
+    private fun onHandleIntent(intent: Intent) {
         when (intent.action) {
             ACTION_START -> startTimer(intent.extras ?: return)
             ACTION_STOP -> stopTimer(intent.extras ?: return)
@@ -54,6 +68,8 @@ class TimerService : IntentService("TimerService") {
         if (startTime <= 0L) return
 
         prefs.startRecord(projectId, taskId, startTime)
+
+        startForeground(ID_NOTIFY, createNotification(projectId, taskId, startTime))
     }
 
     private fun stopTimer(extras: Bundle) {
@@ -71,6 +87,8 @@ class TimerService : IntentService("TimerService") {
         }
 
         prefs.stopRecord()
+
+        stopForeground(true)
     }
 
     private fun editRecord(projectId: Long, taskId: Long, startTime: Long, finishTime: Long) {
@@ -81,11 +99,86 @@ class TimerService : IntentService("TimerService") {
 
         val context: Context = this
         val intent = Intent(context, TimeEditActivity::class.java)
-        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
         intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, projectId)
         intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, taskId)
         intent.putExtra(TimeEditActivity.EXTRA_START_TIME, startTime)
         intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, finishTime)
         startActivity(intent)
+    }
+
+    /**
+     * Create a notification while this service is running.
+     * @return the notification.
+     */
+    private fun createNotification(projectId: Long, taskId: Long, startTime: Long): Notification {
+        // Are we already showing the notification?
+        // Updating with same notification info causes flashing.
+        var notification = this.notification
+
+        val context: Context = this
+        val res = context.resources
+        val text = res.getText(R.string.app_name)
+
+        var builder = notificationBuilder
+        if (builder == null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                var channel: NotificationChannel? = notificationManager.getNotificationChannel(CHANNEL_ID)
+                if (channel == null) {
+                    channel = NotificationChannel(
+                        CHANNEL_ID,
+                        getText(R.string.app_name),
+                        NotificationManager.IMPORTANCE_DEFAULT)
+                    notificationManager.createNotificationChannel(channel)
+                }
+            }
+
+            val title = res.getText(R.string.title_service)
+            // The PendingIntent to launch our activity if the user selects this notification.
+            val contentIntent = createActivityIntent(context)
+
+            val stopActionIntent = createActionIntent(context, ACTION_STOP, projectId, taskId, startTime)
+            val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
+
+            builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setSmallIcon(R.drawable.stat_launcher)  // the status icon
+                .setContentTitle(title)  // the label of the entry
+                .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
+                .addAction(stopAction)
+
+            notificationBuilder = builder
+        }
+
+        // Set the info for the views that show in the notification panel.
+        notification = builder!!
+            .setWhen(System.currentTimeMillis())  // the time stamp
+            .setContentText(text)  // the contents of the entry
+            .setTicker(text)  // the status text
+            .build()
+
+        // Send the notification.
+        this.notification = notification
+        notificationManager.notify(ID_NOTIFY, notification)
+        return notification!!
+    }
+
+    private fun createActivityIntent(context: Context): PendingIntent {
+        val pm = context.packageManager
+        val intent = pm.getLaunchIntentForPackage(context.packageName)
+        intent?.addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
+        return PendingIntent.getActivity(context, ID_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun createActionIntent(context: Context, action: String, projectId: Long, taskId: Long, startTime: Long): PendingIntent {
+        val intent = Intent(context, this.javaClass)
+        intent.action = action
+        intent.putExtra(EXTRA_PROJECT_ID, projectId)
+        intent.putExtra(EXTRA_TASK_ID, taskId)
+        intent.putExtra(EXTRA_START_TIME, startTime)
+        intent.putExtra(EXTRA_EDIT, true)
+        return PendingIntent.getService(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 }
