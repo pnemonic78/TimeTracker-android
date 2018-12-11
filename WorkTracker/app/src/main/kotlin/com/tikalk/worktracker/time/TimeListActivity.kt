@@ -104,6 +104,7 @@ class TimeListActivity : InternetActivity(),
         }
         date_input.setOnClickListener { pickDate() }
         action_start.setOnClickListener { startTimer() }
+        action_stop.setOnClickListener { stopTimer() }
         fab_add.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
@@ -552,7 +553,16 @@ class TimeListActivity : InternetActivity(),
         populateTasks(doc, inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
 
-        showForm(DateUtils.isToday(date.timeInMillis) or isTimerRunning())
+        val recordStarted = prefs.getStartedRecord()
+        if ((recordStarted == null) || recordStarted.isEmpty()) {
+            showForm(DateUtils.isToday(date.timeInMillis))
+        } else {
+            record.project = projects.firstOrNull { it.id == recordStarted.project.id } ?: projectEmpty ?: Project.EMPTY
+            record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty ?: ProjectTask.EMPTY
+            record.start = recordStarted.start
+            showForm(!record.isEmpty())
+        }
+
         bindForm(record)
     }
 
@@ -567,6 +577,17 @@ class TimeListActivity : InternetActivity(),
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         task_input.setSelection(tasks.indexOf(record.task))
         project_input.requestFocus()
+
+        val startTime = record.start
+        if ((startTime == null) || (startTime.timeInMillis <= 0L)) {
+            project_input.isEnabled = true
+            task_input.isEnabled = true
+            action_switcher.displayedChild = 0
+        } else {
+            project_input.isEnabled = false
+            task_input.isEnabled = false
+            action_switcher.displayedChild = 1
+        }
     }
 
     private fun findSelectedProject(project: Element, projects: List<Project>): Project {
@@ -598,29 +619,34 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun startTimer() {
+        record.start = Calendar.getInstance()
+
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_START
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-            putExtra(TimerService.EXTRA_START_TIME, System.currentTimeMillis())
+            putExtra(TimerService.EXTRA_START_TIME, record.start!!.timeInMillis)
         }
         startService(service)
-        //TODO("switch to STOP button")
+
+        bindForm(record)
     }
 
     private fun stopTimer() {
+        record.finish = Calendar.getInstance()
+
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_STOP
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-            putExtra(TimerService.EXTRA_FINISH_TIME, System.currentTimeMillis())
+            putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
+            putExtra(TimerService.EXTRA_FINISH_TIME, record.finish!!.timeInMillis)
         }
         startService(service)
-        //TODO("switch to START button")
-    }
 
-    private fun isTimerRunning(): Boolean {
-        return false
+        record.start = null
+        record.finish = null
+        bindForm(record)
     }
 
     private fun filterTasks(project: Project) {

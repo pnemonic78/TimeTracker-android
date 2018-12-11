@@ -45,12 +45,19 @@ import java.util.*
  */
 @Entity
 data class TimeRecord(
-        var user: User,
-        var project: Project,
-        var task: ProjectTask,
-        var start: Calendar? = null,
-        var finish: Calendar? = null,
-        var note: String = "",
-        var status: TaskRecordStatus = TaskRecordStatus.INSERTED,
-        override var id: Long = 0
-) : TikalEntity(id)
+    var user: User,
+    var project: Project,
+    var task: ProjectTask,
+    var start: Calendar? = null,
+    var finish: Calendar? = null,
+    var note: String = "",
+    var status: TaskRecordStatus = TaskRecordStatus.INSERTED,
+    override var id: Long = 0
+) : TikalEntity(id) {
+    fun isEmpty(): Boolean {
+        return user.username.isEmpty()
+            || (project.id <= 0L)
+            || (task.id <= 0L)
+            || (start == null) || (start?.timeInMillis ?: 0L <= 0L)
+    }
+}

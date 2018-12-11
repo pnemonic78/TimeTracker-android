@@ -45,16 +45,27 @@ class TimerService : IntentService("TimerService") {
 
     private fun startTimer(extras: Bundle) {
         val projectId = extras.getLong(EXTRA_PROJECT_ID)
-        val taskId = extras.getLong(EXTRA_TASK_ID)
-        val startTime = extras.getLong(EXTRA_START_TIME)
         if (projectId <= 0L) return
+        val taskId = extras.getLong(EXTRA_TASK_ID)
         if (taskId <= 0L) return
+        val startTime = extras.getLong(EXTRA_START_TIME)
         if (startTime <= 0L) return
 
-        prefs.start(projectId, taskId, startTime)
+        prefs.startRecord(projectId, taskId, startTime)
     }
 
     private fun stopTimer(extras: Bundle) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val projectId = extras.getLong(EXTRA_PROJECT_ID)
+        if (projectId <= 0L) return
+        val taskId = extras.getLong(EXTRA_TASK_ID)
+        if (taskId <= 0L) return
+        val startTime = extras.getLong(EXTRA_START_TIME)
+        if (startTime <= 0L) return
+        val finishTime = extras.getLong(EXTRA_FINISH_TIME)
+        if (finishTime <= startTime) return
+
+        prefs.stopRecord()
+
+        //TODO update the server via TimeEditActivity.
     }
 }

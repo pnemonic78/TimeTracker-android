@@ -3,6 +3,11 @@ package com.tikalk.worktracker.preference
 import android.content.Context
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.TimeRecord
+import java.util.*
 
 /**
  * Time Tracker preferences.
@@ -58,11 +63,47 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun start(projectId: Long, taskId: Long, startTime: Long) {
+    fun startRecord(projectId: Long, taskId: Long, startTime: Long) {
         prefs.edit()
             .putLong(PROJECT_ID, projectId)
             .putLong(TASK_ID, taskId)
             .putLong(START_TIME, startTime)
+            .apply()
+    }
+
+    fun startRecord(record: TimeRecord) {
+        startRecord(record.project.id,
+            record.task.id,
+            record.start?.timeInMillis ?: System.currentTimeMillis())
+    }
+
+    fun getStartedRecord(): TimeRecord? {
+        val projectId = prefs.getLong(PROJECT_ID, 0L)
+        if (projectId <= 0L) return null
+
+        val taskId = prefs.getLong(TASK_ID, 0L)
+        if (taskId <= 0L) return null
+
+        val startTime = prefs.getLong(START_TIME, 0L)
+        if (startTime <= 0L) return null
+
+        val user = User(userCredentials.login)
+        val project = Project("")
+        project.id = projectId
+        project.taskIds += taskId
+        val task = ProjectTask("")
+        task.id = taskId
+        val start = Calendar.getInstance()
+        start.timeInMillis = startTime
+
+        return TimeRecord(user, project, task, start)
+    }
+
+    fun stopRecord() {
+        prefs.edit()
+            .remove(PROJECT_ID)
+            .remove(TASK_ID)
+            .remove(START_TIME)
             .apply()
     }
 }
