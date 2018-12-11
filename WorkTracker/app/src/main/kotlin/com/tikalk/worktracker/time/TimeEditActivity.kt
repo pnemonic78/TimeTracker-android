@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
@@ -48,8 +49,13 @@ class TimeEditActivity : InternetActivity() {
 
         private const val STATE_DATE = "date"
 
-        const val EXTRA_DATE = "date"
-        const val EXTRA_RECORD = "record_id"
+        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
+        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
+
+        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
+        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
+        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
+        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
     }
 
     private val context: Context = this
@@ -122,10 +128,16 @@ class TimeEditActivity : InternetActivity() {
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
         val now = date.timeInMillis
-        val dateExtra = intent.getLongExtra(EXTRA_DATE, now)
-        date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
-        record.id = intent.getLongExtra(EXTRA_RECORD, record.id)
-        fetchPage(date, record.id)
+        val extras = intent.extras
+        if (extras != null) {
+            val dateExtra = extras.getLong(EXTRA_DATE, now)
+            date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
+            val recordId = extras.getLong(EXTRA_RECORD, record.id)
+            fetchPage(date, recordId)
+        } else {
+            date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, now) ?: now
+            fetchPage(date, 0L)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -175,7 +187,7 @@ class TimeEditActivity : InternetActivity() {
 
                 this.date = date
                 if (validResponse(response)) {
-                    populateForm(response.body()!!, date)
+                    populateForm(response.body()!!, date, id)
                 } else {
                     authenticate(true)
                 }
@@ -207,8 +219,10 @@ class TimeEditActivity : InternetActivity() {
     }
 
     /** Populate the record and then bind the form. */
-    private fun populateForm(html: String, date: Calendar) {
+    private fun populateForm(html: String, date: Calendar, id: Long) {
         val doc: Document = Jsoup.parse(html)
+
+        record.id = id
 
         val errorNode = doc.selectFirst("td[class='error']")
         errorMessage = errorNode?.text()?.trim() ?: ""
@@ -233,6 +247,24 @@ class TimeEditActivity : InternetActivity() {
 
         val inputNote = form.selectFirst("textarea[name='note']")
         record.note = inputNote.text()
+
+        if (id == 0L) {
+            val extras = intent.extras
+            if (extras != null) {
+                val projectId = extras.getLong(EXTRA_PROJECT_ID)
+                val taskId = extras.getLong(EXTRA_TASK_ID)
+                val startTime = extras.getLong(EXTRA_START_TIME)
+                val finishTime = extras.getLong(EXTRA_FINISH_TIME)
+
+                val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
+                ?: Project.EMPTY
+                val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty ?: ProjectTask.EMPTY
+
+                record = TimeRecord(user, project, task)
+                record.startTime = startTime
+                record.finishTime = finishTime
+            }
+        }
 
         bindForm(record)
     }

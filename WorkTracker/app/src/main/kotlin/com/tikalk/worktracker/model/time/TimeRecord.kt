@@ -54,6 +54,22 @@ data class TimeRecord(
     var status: TaskRecordStatus = TaskRecordStatus.INSERTED,
     override var id: Long = 0
 ) : TikalEntity(id) {
+
+    var startTime: Long
+        get() = start?.timeInMillis ?: 0L
+        set(value) {
+            val cal = start ?: Calendar.getInstance()
+            cal.timeInMillis = value
+            start = cal
+        }
+    var finishTime: Long
+        get() = finish?.timeInMillis ?: 0L
+        set(value) {
+            val cal = finish ?: Calendar.getInstance()
+            cal.timeInMillis = value
+            finish = cal
+        }
+
     fun isEmpty(): Boolean {
         return user.username.isEmpty()
             || (project.id <= 0L)

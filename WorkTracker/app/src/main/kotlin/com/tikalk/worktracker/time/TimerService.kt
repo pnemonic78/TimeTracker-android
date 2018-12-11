@@ -4,6 +4,7 @@ import android.app.IntentService
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
 import android.os.IBinder
 import com.tikalk.worktracker.BuildConfig
@@ -64,8 +65,24 @@ class TimerService : IntentService("TimerService") {
         val finishTime = extras.getLong(EXTRA_FINISH_TIME)
         if (finishTime <= startTime) return
 
-        prefs.stopRecord()
+        editRecord(projectId, taskId, startTime, finishTime)
 
-        //TODO update the server via TimeEditActivity.
+        prefs.stopRecord()
+    }
+
+    private fun editRecord(projectId: Long, taskId: Long, startTime: Long, finishTime: Long) {
+        if (projectId <= 0L) return
+        if (taskId <= 0L) return
+        if (startTime <= 0L) return
+        if (finishTime <= startTime) return
+
+        val context: Context = this
+        val intent = Intent(context, TimeEditActivity::class.java)
+        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+        intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, projectId)
+        intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, taskId)
+        intent.putExtra(TimeEditActivity.EXTRA_START_TIME, startTime)
+        intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, finishTime)
+        startActivity(intent)
     }
 }

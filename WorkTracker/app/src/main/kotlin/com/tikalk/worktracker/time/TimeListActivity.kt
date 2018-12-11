@@ -619,13 +619,14 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun startTimer() {
-        record.start = Calendar.getInstance()
+        val now = System.currentTimeMillis()
+        record.startTime = now
 
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_START
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-            putExtra(TimerService.EXTRA_START_TIME, record.start!!.timeInMillis)
+            putExtra(TimerService.EXTRA_START_TIME, now)
         }
         startService(service)
 
@@ -633,14 +634,15 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun stopTimer() {
-        record.finish = Calendar.getInstance()
+        val now = System.currentTimeMillis()
+        record.finishTime = now
 
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_STOP
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
             putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
-            putExtra(TimerService.EXTRA_FINISH_TIME, record.finish!!.timeInMillis)
+            putExtra(TimerService.EXTRA_FINISH_TIME, now)
         }
         startService(service)
 
