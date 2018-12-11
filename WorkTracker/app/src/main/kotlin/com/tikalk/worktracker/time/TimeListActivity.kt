@@ -505,8 +505,16 @@ class TimeListActivity : InternetActivity(),
 
     private fun editRecord(record: TimeRecord) {
         val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
-        intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
+        if ((record.id == 0L) && !record.isEmpty()) {
+            intent.putExtra(TimeEditActivity.EXTRA_DATE, record.start)
+            intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, record.project.id)
+            intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, record.task.id)
+            intent.putExtra(TimeEditActivity.EXTRA_START_TIME, record.startTime)
+            intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, record.finishTime)
+        } else {
+            intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
+            intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
+        }
         startActivityForResult(intent, REQUEST_EDIT)
     }
 
@@ -645,6 +653,8 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_FINISH_TIME, now)
         }
         startService(service)
+
+        editRecord(record)
 
         record.start = null
         record.finish = null

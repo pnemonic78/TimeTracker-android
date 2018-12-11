@@ -20,6 +20,7 @@ class TimerService : IntentService("TimerService") {
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
+        const val EXTRA_EDIT = BuildConfig.APPLICATION_ID + ".EDIT"
     }
 
     private lateinit var prefs: TimeTrackerPrefs
@@ -56,16 +57,18 @@ class TimerService : IntentService("TimerService") {
     }
 
     private fun stopTimer(extras: Bundle) {
-        val projectId = extras.getLong(EXTRA_PROJECT_ID)
-        if (projectId <= 0L) return
-        val taskId = extras.getLong(EXTRA_TASK_ID)
-        if (taskId <= 0L) return
-        val startTime = extras.getLong(EXTRA_START_TIME)
-        if (startTime <= 0L) return
-        val finishTime = extras.getLong(EXTRA_FINISH_TIME)
-        if (finishTime <= startTime) return
+        if (extras.getBoolean(EXTRA_EDIT)) {
+            val projectId = extras.getLong(EXTRA_PROJECT_ID)
+            if (projectId <= 0L) return
+            val taskId = extras.getLong(EXTRA_TASK_ID)
+            if (taskId <= 0L) return
+            val startTime = extras.getLong(EXTRA_START_TIME)
+            if (startTime <= 0L) return
+            val finishTime = extras.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
+            if (finishTime <= startTime) return
 
-        editRecord(projectId, taskId, startTime, finishTime)
+            editRecord(projectId, taskId, startTime, finishTime)
+        }
 
         prefs.stopRecord()
     }

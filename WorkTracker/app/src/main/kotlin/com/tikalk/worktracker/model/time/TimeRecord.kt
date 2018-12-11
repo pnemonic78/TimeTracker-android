@@ -74,6 +74,6 @@ data class TimeRecord(
         return user.username.isEmpty()
             || (project.id <= 0L)
             || (task.id <= 0L)
-            || (start == null) || (start?.timeInMillis ?: 0L <= 0L)
+            || (startTime <= 0L)
     }
 }
