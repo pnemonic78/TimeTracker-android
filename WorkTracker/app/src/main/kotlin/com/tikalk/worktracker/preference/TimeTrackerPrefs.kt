@@ -26,7 +26,9 @@ class TimeTrackerPrefs(context: Context) {
         private const val USER_CREDENTIALS_PASSWORD = "user.password"
 
         private const val PROJECT_ID = "project.id"
+        private const val PROJECT_NAME = "project.name"
         private const val TASK_ID = "task.id"
+        private const val TASK_NAME = "task.name"
         private const val START_TIME = "start.time"
     }
 
@@ -63,26 +65,34 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun startRecord(projectId: Long, taskId: Long, startTime: Long) {
+    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long) {
         prefs.edit()
             .putLong(PROJECT_ID, projectId)
+            .putString(PROJECT_NAME, projectName)
             .putLong(TASK_ID, taskId)
+            .putString(TASK_NAME, taskName)
             .putLong(START_TIME, startTime)
             .apply()
     }
 
     fun startRecord(record: TimeRecord) {
         startRecord(record.project.id,
+            record.project.name,
             record.task.id,
-            record.start?.timeInMillis ?: System.currentTimeMillis())
+            record.task.name,
+            record.startTime)
     }
 
     fun getStartedRecord(): TimeRecord? {
         val projectId = prefs.getLong(PROJECT_ID, 0L)
         if (projectId <= 0L) return null
 
+        val projectName = prefs.getString(PROJECT_NAME, null) ?: return null
+
         val taskId = prefs.getLong(TASK_ID, 0L)
         if (taskId <= 0L) return null
+
+        val taskName = prefs.getString(TASK_NAME, null) ?: return null
 
         val startTime = prefs.getLong(START_TIME, 0L)
         if (startTime <= 0L) return null
@@ -90,9 +100,11 @@ class TimeTrackerPrefs(context: Context) {
         val user = User(userCredentials.login)
         val project = Project("")
         project.id = projectId
+        project.name = projectName
         project.taskIds += taskId
         val task = ProjectTask("")
         task.id = taskId
+        task.name = taskName
         val start = Calendar.getInstance()
         start.timeInMillis = startTime
 
@@ -102,7 +114,9 @@ class TimeTrackerPrefs(context: Context) {
     fun stopRecord() {
         prefs.edit()
             .remove(PROJECT_ID)
+            .remove(PROJECT_NAME)
             .remove(TASK_ID)
+            .remove(TASK_NAME)
             .remove(START_TIME)
             .apply()
     }

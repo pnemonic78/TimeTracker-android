@@ -20,7 +20,9 @@ class TimerService : Service() {
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
+        const val EXTRA_PROJECT_NAME = BuildConfig.APPLICATION_ID + ".PROJECT_NAME"
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
+        const val EXTRA_TASK_NAME = BuildConfig.APPLICATION_ID + ".TASK_NAME"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
         const val EXTRA_EDIT = BuildConfig.APPLICATION_ID + ".EDIT"
@@ -61,14 +63,18 @@ class TimerService : Service() {
     private fun startTimer(extras: Bundle) {
         val projectId = extras.getLong(EXTRA_PROJECT_ID)
         if (projectId <= 0L) return
+        val projectName = extras.getString(EXTRA_PROJECT_NAME)
+        if (projectName.isNullOrEmpty()) return
         val taskId = extras.getLong(EXTRA_TASK_ID)
         if (taskId <= 0L) return
+        val taskName = extras.getString(EXTRA_TASK_NAME)
+        if (taskName.isNullOrEmpty()) return
         val startTime = extras.getLong(EXTRA_START_TIME)
         if (startTime <= 0L) return
 
-        prefs.startRecord(projectId, taskId, startTime)
+        prefs.startRecord(projectId, projectName, taskId, taskName, startTime)
 
-        startForeground(ID_NOTIFY, createNotification(projectId, "PROJECT", taskId, "TASK", startTime))
+        startForeground(ID_NOTIFY, createNotification(projectId, projectName, taskId, taskName, startTime))
     }
 
     private fun stopTimer(extras: Bundle) {
