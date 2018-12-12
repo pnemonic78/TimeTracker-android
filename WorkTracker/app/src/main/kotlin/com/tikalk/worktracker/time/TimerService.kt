@@ -4,6 +4,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -32,8 +33,6 @@ class TimerService : Service() {
 
     private lateinit var prefs: TimeTrackerPrefs
     private lateinit var notificationManager: NotificationManager
-    private var notification: Notification? = null
-    private var notificationBuilder: NotificationCompat.Builder? = null
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -69,7 +68,7 @@ class TimerService : Service() {
 
         prefs.startRecord(projectId, taskId, startTime)
 
-        startForeground(ID_NOTIFY, createNotification(projectId, taskId, startTime))
+        startForeground(ID_NOTIFY, createNotification(projectId, "PROJECT", taskId, "TASK", startTime))
     }
 
     private fun stopTimer(extras: Bundle) {
@@ -100,6 +99,7 @@ class TimerService : Service() {
         val context: Context = this
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
+        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
         intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, projectId)
         intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, taskId)
         intent.putExtra(TimeEditActivity.EXTRA_START_TIME, startTime)
@@ -111,58 +111,44 @@ class TimerService : Service() {
      * Create a notification while this service is running.
      * @return the notification.
      */
-    private fun createNotification(projectId: Long, taskId: Long, startTime: Long): Notification {
-        // Are we already showing the notification?
-        // Updating with same notification info causes flashing.
-        var notification = this.notification
-
+    private fun createNotification(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long): Notification {
         val context: Context = this
         val res = context.resources
-        val text = res.getText(R.string.app_name)
 
-        var builder = notificationBuilder
-        if (builder == null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                var channel: NotificationChannel? = notificationManager.getNotificationChannel(CHANNEL_ID)
-                if (channel == null) {
-                    channel = NotificationChannel(
-                        CHANNEL_ID,
-                        getText(R.string.app_name),
-                        NotificationManager.IMPORTANCE_DEFAULT)
-                    notificationManager.createNotificationChannel(channel)
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            var channel: NotificationChannel? = notificationManager.getNotificationChannel(CHANNEL_ID)
+            if (channel == null) {
+                channel = NotificationChannel(
+                    CHANNEL_ID,
+                    getText(R.string.app_name),
+                    NotificationManager.IMPORTANCE_DEFAULT)
+                notificationManager.createNotificationChannel(channel)
             }
-
-            val title = res.getText(R.string.title_service)
-            // The PendingIntent to launch our activity if the user selects this notification.
-            val contentIntent = createActivityIntent(context)
-
-            val stopActionIntent = createActionIntent(context, ACTION_STOP, projectId, taskId, startTime)
-            val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
-
-            builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setOngoing(true)
-                .setOnlyAlertOnce(true)
-                .setCategory(NotificationCompat.CATEGORY_STATUS)
-                .setSmallIcon(R.drawable.stat_launcher)  // the status icon
-                .setContentTitle(title)  // the label of the entry
-                .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
-                .addAction(stopAction)
-
-            notificationBuilder = builder
         }
 
-        // Set the info for the views that show in the notification panel.
-        notification = builder!!
-            .setWhen(System.currentTimeMillis())  // the time stamp
+        val title = res.getText(R.string.title_service)
+        val text = res.getString(R.string.notification_description, projectName, taskName)
+        // The PendingIntent to launch our activity if the user selects this notification.
+        val contentIntent = createActivityIntent(context)
+
+        val stopActionIntent = createActionIntent(context, ACTION_STOP, projectId, taskId, startTime)
+        val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
+
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setLargeIcon(BitmapFactory.decodeResource(res, R.mipmap.ic_launcher))
+            .setSmallIcon(R.drawable.stat_launcher)  // the status icon
+            .setContentTitle(title)  // the label of the entry
+            .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
+            .setUsesChronometer(true)
+            .setShowWhen(true)
             .setContentText(text)  // the contents of the entry
             .setTicker(text)  // the status text
+            .setWhen(startTime)  // the time stamp
+            .addAction(stopAction)
             .build()
-
-        // Send the notification.
-        this.notification = notification
-        notificationManager.notify(ID_NOTIFY, notification)
-        return notification!!
     }
 
     private fun createActivityIntent(context: Context): PendingIntent {
