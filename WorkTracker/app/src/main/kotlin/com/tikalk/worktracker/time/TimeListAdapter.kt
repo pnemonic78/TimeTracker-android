@@ -3,11 +3,12 @@ package com.tikalk.worktracker.time
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil.ItemCallback
+import androidx.recyclerview.widget.ListAdapter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 
-class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : RecyclerView.Adapter<TimeListViewHolder>() {
+class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : ListAdapter<TimeRecord, TimeListViewHolder>(TimeDiffer()) {
 
     interface OnTimeListListener {
         /**
@@ -21,12 +22,6 @@ class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : R
         fun onRecordSwipe(record: TimeRecord)
     }
 
-    private val records: MutableList<TimeRecord> = ArrayList()
-
-    override fun getItemCount(): Int {
-        return records.size
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeListViewHolder {
         val context: Context = parent.context
         val view = LayoutInflater.from(context).inflate(R.layout.time_item, parent, false)
@@ -34,21 +29,17 @@ class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : R
     }
 
     override fun onBindViewHolder(holder: TimeListViewHolder, position: Int) {
-        val record = records[position]
+        val record = getItem(position)
         holder.record = record
     }
 
-    fun set(data: Collection<TimeRecord>) {
-        records.clear()
-        records.addAll(data)
-        notifyDataSetChanged()
-    }
+    private class TimeDiffer : ItemCallback<TimeRecord>() {
+        override fun areItemsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
+            return oldItem.id == newItem.id
+        }
 
-    fun delete(record: TimeRecord) {
-        val index = records.indexOf(record)
-        if (index >= 0) {
-            records.removeAt(index)
-            notifyItemRemoved(index)
+        override fun areContentsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
+           return oldItem == newItem
         }
     }
 }

@@ -190,7 +190,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun bindList(records: List<TimeRecord>) {
-        listAdapter.set(records)
+        listAdapter.submitList(records)
     }
 
     private fun authenticate(immediate: Boolean = false) {
