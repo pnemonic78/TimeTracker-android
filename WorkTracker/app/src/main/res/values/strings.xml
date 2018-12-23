@@ -41,4 +41,5 @@
     <string name="action_stop">Stop</string>
     <string name="title_service" translatable="false">@string/activity_time</string>
     <string name="notification_description" translatable="false">%1$s (%2$s)</string>
+    <string name="timer_0">0:00</string>
 </resources>

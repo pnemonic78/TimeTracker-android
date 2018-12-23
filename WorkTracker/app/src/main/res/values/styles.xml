@@ -36,4 +36,9 @@
         <item name="android:drawableEnd">@drawable/ic_stop_black</item>
     </style>
 
+    <style name="Widget.TextView.Timer" parent="TextAppearance.AppCompat.Headline">
+        <item name="android:gravity">right</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

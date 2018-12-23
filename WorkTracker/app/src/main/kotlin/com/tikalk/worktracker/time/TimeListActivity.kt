@@ -25,8 +25,10 @@ import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
@@ -38,6 +40,7 @@ import org.jsoup.select.Elements
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
@@ -68,6 +71,7 @@ class TimeListActivity : InternetActivity(),
     private val listAdapter = TimeListAdapter(this)
     private var projectEmpty: Project? = null
     private var taskEmpty: ProjectTask? = null
+    private var timer: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -595,6 +599,8 @@ class TimeListActivity : InternetActivity(),
             project_input.isEnabled = false
             task_input.isEnabled = false
             action_switcher.displayedChild = 1
+
+            maybeStartTimer()
         }
     }
 
@@ -670,5 +676,22 @@ class TimeListActivity : InternetActivity(),
         options.addAll(filtered)
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         task_input.setSelection(options.indexOf(record.task))
+    }
+
+    private fun maybeStartTimer() {
+        val timer = this.timer
+        if ((timer == null) || timer.isDisposed) {
+            this.timer = Observable.interval(1L, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { updateTimer() }
+                .addTo(disposables)
+        }
+        updateTimer()
+    }
+
+    private fun updateTimer() {
+        val now = System.currentTimeMillis()
+        val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
+        timer_text.text = DateUtils.formatElapsedTime(elapsedSeconds)
     }
 }
