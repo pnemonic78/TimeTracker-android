@@ -12,13 +12,14 @@ import androidx.core.app.NotificationCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import timber.log.Timber
 
 class TimerService : Service() {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
-        const val ACTION_DISMISS = BuildConfig.APPLICATION_ID + ".DISMISS"
+        const val ACTION_NOTIFY = BuildConfig.APPLICATION_ID + ".NOTIFY"
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
         const val EXTRA_PROJECT_NAME = BuildConfig.APPLICATION_ID + ".PROJECT_NAME"
@@ -56,10 +57,11 @@ class TimerService : Service() {
     }
 
     private fun onHandleIntent(intent: Intent) {
+        Timber.v("onHandleIntent $intent")
         when (intent.action) {
             ACTION_START -> startTimer(intent.extras ?: return)
             ACTION_STOP -> stopTimer(intent.extras ?: return)
-            ACTION_DISMISS -> dismissNotification()
+            ACTION_NOTIFY -> showNotification(intent.extras ?: return)
         }
     }
 
@@ -177,6 +179,27 @@ class TimerService : Service() {
         intent.putExtra(EXTRA_START_TIME, startTime)
         intent.putExtra(EXTRA_EDIT, true)
         return PendingIntent.getService(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun showNotification(extras: Bundle) {
+        val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
+        if (visible) {
+            val record = prefs.getStartedRecord() ?: return
+            val projectId = record.project.id
+            if (projectId <= 0L) return
+            val projectName = record.project.name
+            if (projectName.isEmpty()) return
+            val taskId = record.task.id
+            if (taskId <= 0L) return
+            val taskName = record.task.name
+            if (taskName.isEmpty()) return
+            val startTime = record.startTime
+            if (startTime <= 0L) return
+
+            startForeground(ID_NOTIFY, createNotification(projectId, projectName, taskId, taskName, startTime))
+        } else {
+            dismissNotification()
+        }
     }
 
     private fun dismissNotification() {

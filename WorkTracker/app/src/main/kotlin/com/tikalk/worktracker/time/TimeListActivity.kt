@@ -128,10 +128,7 @@ class TimeListActivity : InternetActivity(),
 
     override fun onStop() {
         super.onStop()
-
-        if (record.start != null) {
-            showNotification(true)
-        }
+        maybeShowNotification()
     }
 
     override fun onStart() {
@@ -523,13 +520,13 @@ class TimeListActivity : InternetActivity(),
     private fun editRecord(record: TimeRecord) {
         val intent = Intent(context, TimeEditActivity::class.java)
         if ((record.id == 0L) && !record.isEmpty()) {
-            intent.putExtra(TimeEditActivity.EXTRA_DATE, record.start)
+            intent.putExtra(TimeEditActivity.EXTRA_DATE, record.startTime)
             intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, record.project.id)
             intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, record.task.id)
             intent.putExtra(TimeEditActivity.EXTRA_START_TIME, record.startTime)
             intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, record.finishTime)
         } else {
-            intent.putExtra(TimeEditActivity.EXTRA_DATE, date)
+            intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
             intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
         }
         startActivityForResult(intent, REQUEST_EDIT)
@@ -687,9 +684,16 @@ class TimeListActivity : InternetActivity(),
         bindForm(record)
     }
 
+    private fun maybeShowNotification() {
+        if ((record.project.id > 0L) && (record.task.id > 0L) && (record.start != null)) {
+            showNotification(true)
+        }
+    }
+
     private fun hideNotification() {
         val service = Intent(this, TimerService::class.java).apply {
-            action = TimerService.ACTION_DISMISS
+            action = TimerService.ACTION_NOTIFY
+            putExtra(TimerService.EXTRA_NOTIFICATION, false)
         }
         startService(service)
     }
