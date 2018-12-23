@@ -18,6 +18,7 @@ class TimerService : Service() {
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
+        const val ACTION_DISMISS = BuildConfig.APPLICATION_ID + ".DISMISS"
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
         const val EXTRA_PROJECT_NAME = BuildConfig.APPLICATION_ID + ".PROJECT_NAME"
@@ -58,6 +59,7 @@ class TimerService : Service() {
         when (intent.action) {
             ACTION_START -> startTimer(intent.extras ?: return)
             ACTION_STOP -> stopTimer(intent.extras ?: return)
+            ACTION_DISMISS -> dismissNotification()
         }
     }
 
@@ -96,7 +98,7 @@ class TimerService : Service() {
 
         prefs.stopRecord()
 
-        stopForeground(true)
+        dismissNotification()
     }
 
     private fun editRecord(projectId: Long, taskId: Long, startTime: Long, finishTime: Long) {
@@ -175,5 +177,9 @@ class TimerService : Service() {
         intent.putExtra(EXTRA_START_TIME, startTime)
         intent.putExtra(EXTRA_EDIT, true)
         return PendingIntent.getService(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun dismissNotification() {
+        stopForeground(true)
     }
 }

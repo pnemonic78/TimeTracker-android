@@ -130,8 +130,13 @@ class TimeListActivity : InternetActivity(),
         super.onStop()
 
         if (record.start != null) {
-            showTimer(true)
+            showNotification(true)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        hideNotification()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -644,10 +649,10 @@ class TimeListActivity : InternetActivity(),
         val now = System.currentTimeMillis()
         record.startTime = now
 
-        showTimer(false)
+        showNotification(false)
     }
 
-    private fun showTimer(notify: Boolean = false) {
+    private fun showNotification(notify: Boolean = false) {
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_START
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
@@ -675,12 +680,18 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_FINISH_TIME, now)
         }
         startService(service)
-
         editRecord(record)
 
         record.start = null
         record.finish = null
         bindForm(record)
+    }
+
+    private fun hideNotification() {
+        val service = Intent(this, TimerService::class.java).apply {
+            action = TimerService.ACTION_DISMISS
+        }
+        startService(service)
     }
 
     private fun filterTasks(project: Project) {
