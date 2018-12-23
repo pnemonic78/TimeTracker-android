@@ -126,6 +126,14 @@ class TimeListActivity : InternetActivity(),
         disposables.dispose()
     }
 
+    override fun onStop() {
+        super.onStop()
+
+        if (record.start != null) {
+            showTimer(true)
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         menuInflater.inflate(R.menu.time_list, menu)
@@ -636,13 +644,18 @@ class TimeListActivity : InternetActivity(),
         val now = System.currentTimeMillis()
         record.startTime = now
 
+        showTimer(false)
+    }
+
+    private fun showTimer(notify: Boolean = false) {
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_START
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
             putExtra(TimerService.EXTRA_PROJECT_NAME, record.project.name)
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
             putExtra(TimerService.EXTRA_TASK_NAME, record.task.name)
-            putExtra(TimerService.EXTRA_START_TIME, now)
+            putExtra(TimerService.EXTRA_START_TIME, record.startTime)
+            putExtra(TimerService.EXTRA_NOTIFICATION, notify)
         }
         startService(service)
 
@@ -652,6 +665,7 @@ class TimeListActivity : InternetActivity(),
     private fun stopTimer() {
         val now = System.currentTimeMillis()
         record.finishTime = now
+        timer?.dispose()
 
         val service = Intent(this, TimerService::class.java).apply {
             action = TimerService.ACTION_STOP

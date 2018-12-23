@@ -26,6 +26,7 @@ class TimerService : Service() {
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
         const val EXTRA_EDIT = BuildConfig.APPLICATION_ID + ".EDIT"
+        const val EXTRA_NOTIFICATION = BuildConfig.APPLICATION_ID + ".NOTIFICATION"
 
         private const val CHANNEL_ID = "timer"
         private const val ID_NOTIFY = R.string.action_start
@@ -74,7 +75,9 @@ class TimerService : Service() {
 
         prefs.startRecord(projectId, projectName, taskId, taskName, startTime)
 
-        startForeground(ID_NOTIFY, createNotification(projectId, projectName, taskId, taskName, startTime))
+        if (extras.getBoolean(EXTRA_NOTIFICATION, true)) {
+            startForeground(ID_NOTIFY, createNotification(projectId, projectName, taskId, taskName, startTime))
+        }
     }
 
     private fun stopTimer(extras: Bundle) {
