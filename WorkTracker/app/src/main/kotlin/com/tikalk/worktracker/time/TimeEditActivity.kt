@@ -262,8 +262,16 @@ class TimeEditActivity : InternetActivity() {
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty ?: ProjectTask.EMPTY
 
                 record = TimeRecord(user, project, task)
-                record.startTime = startTime
-                record.finishTime = finishTime
+                if (startTime > 0L) {
+                    record.startTime = startTime
+                } else {
+                    record.start = null
+                }
+                if (finishTime > 0L) {
+                    record.finishTime = finishTime
+                } else {
+                    record.finish = null
+                }
             }
         }
 
@@ -365,13 +373,13 @@ class TimeEditActivity : InternetActivity() {
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         task_input.setSelection(tasks.indexOf(record.task))
         start_input.text = if (record.start != null)
-            DateUtils.formatDateTime(context, record.start!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+            DateUtils.formatDateTime(context, record.startTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
         else
             ""
         start_input.error = null
         startPickerDialog = null
         finish_input.text = if (record.finish != null)
-            DateUtils.formatDateTime(context, record.finish!!.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+            DateUtils.formatDateTime(context, record.finishTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
         else
             ""
         finish_input.error = null
