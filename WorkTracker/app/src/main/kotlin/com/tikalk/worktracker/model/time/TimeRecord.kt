@@ -31,11 +31,13 @@
  */
 package com.tikalk.worktracker.model.time
 
+import android.text.format.DateUtils
 import androidx.room.Entity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.time.*
 import java.util.*
 
 /**
@@ -76,4 +78,59 @@ data class TimeRecord(
             || (task.id <= 0L)
             || (startTime <= 0L)
     }
+}
+
+fun TimeRecord.split(): List<TimeRecord> {
+    val results = ArrayList<TimeRecord>()
+
+    if (isEmpty()) return results
+    val start = start ?: return results
+    val startMillis = start.timeInMillis
+    val finish = finish ?: return results
+    var diffMillis = finish.timeInMillis - startMillis
+    if (diffMillis < DateUtils.MINUTE_IN_MILLIS) return results
+
+    if (start.isSameDay(finish)) {
+        results.add(this)
+    } else {
+        // The first day.
+        val startFirst = start
+        val finishFirst = startFirst.clone() as Calendar
+        finishFirst.hourOfDay = 23
+        finishFirst.minute = 59
+        finishFirst.second = 59
+        finishFirst.millis = 999
+        results.add(this.copy(start = startFirst, finish = finishFirst))
+        diffMillis -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
+
+        // Intermediate days.
+        var startDay = startFirst
+        var finishDay: Calendar
+        while (diffMillis >= DateUtils.DAY_IN_MILLIS) {
+            startDay = startDay.clone() as Calendar
+            startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
+            startDay.hourOfDay = 0
+            startDay.minute = 0
+            startDay.second = 0
+            startDay.millis = 0
+            finishDay = startDay.clone() as Calendar
+            finishDay.hourOfDay = 23
+            finishDay.minute = 59
+            finishDay.second = 59
+            finishDay.millis = 999
+            results.add(this.copy(start = startDay, finish = finishDay))
+            diffMillis -= DateUtils.DAY_IN_MILLIS
+        }
+
+        // The last day.
+        val startLast = finish.clone() as Calendar
+        val finishLast = finish
+        startLast.hourOfDay = 0
+        startLast.minute = 0
+        startLast.second = 0
+        startLast.millis = 0
+        results.add(this.copy(start = startLast, finish = finishLast))
+    }
+
+    return results
 }
