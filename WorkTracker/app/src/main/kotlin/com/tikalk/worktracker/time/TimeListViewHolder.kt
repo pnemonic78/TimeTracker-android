@@ -68,9 +68,9 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         val redBits = mappedId.and(7)
         val greenBits = mappedId.shr(3).and(7)
         val blueBits = mappedId.shr(6).and(7)
-        val r = redBits * 32
-        val g = greenBits * 32
-        val b = blueBits * 32
+        val r = redBits * 24 //*32 => some colors too bright
+        val g = greenBits * 24 //*32 => some colors too bright
+        val b = blueBits * 24 //*32 => some colors too bright
         val color = Color.rgb(r, g, b)
 
         projectView.setTextColor(color)
