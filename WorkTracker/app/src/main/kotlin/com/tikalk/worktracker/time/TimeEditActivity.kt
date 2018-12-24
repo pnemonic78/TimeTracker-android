@@ -21,6 +21,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
@@ -413,14 +414,29 @@ class TimeEditActivity : InternetActivity() {
     private fun submit() {
         val record = this.record
 
-        if (!validateForm()) {
+        if (!validateForm(record)) {
             return
         }
         bindRecord(record)
 
+        if (record.id == 0L) {
+            val splits = record.split()
+            val size = splits.size
+            val lastIndex = size - 1
+            for (i in 0 until size) {
+                submit(splits[i], i == 0, i == lastIndex)
+            }
+        } else {
+            submit(record, true, true)
+        }
+    }
+
+    private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
-        showProgress(true)
+        if (first) {
+            showProgress(true)
+        }
 
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
@@ -428,7 +444,7 @@ class TimeEditActivity : InternetActivity() {
         val submitter: Single<Response<String>> = if (record.id == 0L) {
             service.addTime(record.project.id,
                 record.task.id,
-                formatSystemDate(date),
+                formatSystemDate(record.start),
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note)
@@ -436,7 +452,7 @@ class TimeEditActivity : InternetActivity() {
             service.editTime(record.id,
                 record.project.id,
                 record.task.id,
-                formatSystemDate(date),
+                formatSystemDate(record.start),
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note)
@@ -445,11 +461,15 @@ class TimeEditActivity : InternetActivity() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
-                showProgress(false)
+                if (last) {
+                    showProgress(false)
+                }
 
                 if (validResponse(response)) {
-                    setResult(RESULT_OK)
-                    finish()
+                    if (last) {
+                        setResult(RESULT_OK)
+                        finish()
+                    }
                 } else {
                     authenticate(true)
                 }
@@ -503,7 +523,7 @@ class TimeEditActivity : InternetActivity() {
         return cal
     }
 
-    private fun validateForm(): Boolean {
+    private fun validateForm(record: TimeRecord): Boolean {
         var valid = true
 
         if (record.project.id <= 0) {
@@ -527,7 +547,7 @@ class TimeEditActivity : InternetActivity() {
         if (record.finish == null) {
             valid = false
             finish_input.error = getString(R.string.error_field_required)
-        } else if (record.start!! >= record.finish!!) {
+        } else if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
             valid = false
             finish_input.error = getString(R.string.error_finish_time_before_start_time)
         } else {
