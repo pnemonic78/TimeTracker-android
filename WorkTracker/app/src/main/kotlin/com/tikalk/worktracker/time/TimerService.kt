@@ -51,8 +51,10 @@ class TimerService : Service() {
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        onHandleIntent(intent)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent != null) {
+            onHandleIntent(intent)
+        }
         return START_STICKY
     }
 
