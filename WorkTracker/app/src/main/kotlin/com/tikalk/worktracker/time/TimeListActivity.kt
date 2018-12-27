@@ -87,6 +87,7 @@ class TimeListActivity : InternetActivity(),
         private const val STATE_PROJECTS = "projects"
         private const val STATE_TASKS = "tasks"
         private const val STATE_RECORD = "record"
+        private const val STATE_LIST = "records"
     }
 
     private val context: Context = this
@@ -103,6 +104,7 @@ class TimeListActivity : InternetActivity(),
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
     private val listAdapter = TimeListAdapter(this)
+    private val listItems = ArrayList<TimeRecord>()
     private var projectEmpty: Project = Project.EMPTY
     private var taskEmpty: ProjectTask = ProjectTask.EMPTY
     private var timer: Disposable? = null
@@ -268,6 +270,8 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun bindList(records: List<TimeRecord>) {
+        listItems.clear()
+        listItems.addAll(records)
         listAdapter.submitList(records)
     }
 
@@ -303,6 +307,7 @@ class TimeListActivity : InternetActivity(),
         outState.putParcelableArrayList(STATE_PROJECTS, projects)
         outState.putParcelableArrayList(STATE_TASKS, tasks)
         outState.putParcelable(STATE_RECORD, record)
+        outState.putParcelableArrayList(STATE_LIST, listItems)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -310,6 +315,8 @@ class TimeListActivity : InternetActivity(),
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val projectsList = savedInstanceState.getParcelableArrayList<Project>(STATE_PROJECTS)
         val tasksList = savedInstanceState.getParcelableArrayList<ProjectTask>(STATE_TASKS)
+        val recordStated = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val list = savedInstanceState.getParcelableArrayList<TimeRecord>(STATE_LIST)
 
         projects.clear()
         if (projectsList != null) {
@@ -321,12 +328,14 @@ class TimeListActivity : InternetActivity(),
             tasks.addAll(tasksList)
             taskEmpty = tasksList.first { it.isEmpty() }
         }
-        val recordStated = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
         if (recordStated != null) {
             record.project = recordStated.project
             record.task = recordStated.task
             record.start = recordStated.start
             populateForm(record)
+        }
+        if (list != null) {
+            bindList(list)
         }
     }
 
