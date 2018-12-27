@@ -31,6 +31,8 @@
  */
 package com.tikalk.worktracker.model
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.Entity
 
 /**
@@ -40,17 +42,54 @@ import androidx.room.Entity
  */
 @Entity
 data class Project(
-        var name: String,
-        var description: String? = null
-) : TikalEntity() {
+    var name: String,
+    var description: String? = null
+) : TikalEntity(), Parcelable {
     override fun toString(): String {
         return name
     }
 
     val taskIds: MutableList<Long> = ArrayList()
 
+    constructor(parcel: Parcel) : this("") {
+        id = parcel.readLong()
+        _id = parcel.readLong()
+        version = parcel.readInt()
+        name = parcel.readString()!!
+        description = parcel.readString()
+        val ids = parcel.createLongArray()!!
+        for (id in ids) taskIds.add(id)
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeLong(id)
+        parcel.writeLong(_id)
+        parcel.writeInt(version)
+        parcel.writeString(name)
+        parcel.writeString(description)
+        parcel.writeLongArray(taskIds.toLongArray())
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    fun isEmpty(): Boolean {
+        return (id == 0L) || name.isEmpty()
+    }
 
     companion object {
         val EMPTY = Project("")
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Project> {
+            override fun createFromParcel(parcel: Parcel): Project {
+                return Project(parcel)
+            }
+
+            override fun newArray(size: Int): Array<Project?> {
+                return arrayOfNulls(size)
+            }
+        }
     }
 }

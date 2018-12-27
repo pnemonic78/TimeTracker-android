@@ -95,8 +95,7 @@ class TimeEditActivity : InternetActivity() {
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val project = adapterView.adapter.getItem(position) as Project
-                record.project = project
-                filterTasks(project)
+                projectItemSelected(project)
             }
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -106,7 +105,7 @@ class TimeEditActivity : InternetActivity() {
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val task = adapterView.adapter.getItem(position) as ProjectTask
-                record.task = task
+                taskItemSelected(task)
             }
         }
         start_input.setOnClickListener { pickStartTime() }
@@ -658,5 +657,14 @@ class TimeEditActivity : InternetActivity() {
                 Timber.e(err, "Error deleting record: ${err.message}")
             })
             .addTo(disposables)
+    }
+
+    private fun projectItemSelected(project: Project) {
+        record.project = project
+        filterTasks(project)
+    }
+
+    private fun taskItemSelected(task: ProjectTask) {
+        record.task = task
     }
 }

@@ -53,6 +53,10 @@ class TimeListActivity : InternetActivity(),
         private const val REQUEST_EDIT = 3
 
         private const val STATE_DATE = "date"
+        private const val STATE_PROJECTS = "projects"
+        private const val STATE_TASKS = "tasks"
+        private const val STATE_PROJECT_ID = "project_id"
+        private const val STATE_TASK_ID = "task_id"
     }
 
     private val context: Context = this
@@ -90,9 +94,7 @@ class TimeListActivity : InternetActivity(),
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val project = adapterView.adapter.getItem(position) as Project
-                record.project = project
-                filterTasks(project)
-                action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+                projectItemSelected(project)
             }
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -102,8 +104,7 @@ class TimeListActivity : InternetActivity(),
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val task = adapterView.adapter.getItem(position) as ProjectTask
-                record.task = task
-                action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+                taskItemSelected(task)
             }
         }
         date_input.setOnClickListener { pickDate() }
@@ -118,7 +119,9 @@ class TimeListActivity : InternetActivity(),
 
         val now = date.timeInMillis
         date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, now) ?: now
-        fetchPage(date)
+        if (savedInstanceState == null) {
+            fetchPage(date)
+        }
     }
 
     override fun onDestroy() {
@@ -267,11 +270,40 @@ class TimeListActivity : InternetActivity(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
+        outState.putParcelableArrayList(STATE_PROJECTS, projects)
+        outState.putParcelableArrayList(STATE_TASKS, tasks)
+        outState.putLong(STATE_PROJECT_ID, record.project.id)
+        outState.putLong(STATE_TASK_ID, record.task.id)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
+        val projectsList = savedInstanceState.getParcelableArrayList<Project>(STATE_PROJECTS)
+        val tasksList = savedInstanceState.getParcelableArrayList<ProjectTask>(STATE_TASKS)
+
+        projects.clear()
+        if (projectsList != null)  {
+            projects.addAll(projectsList)
+            projectEmpty = projectsList.first { it.isEmpty() }
+        }
+        tasks.clear()
+        if (tasksList != null) {
+            tasks.addAll(tasksList)
+            taskEmpty = tasksList.first { it.isEmpty() }
+        }
+        val recordStarted = prefs.getStartedRecord()
+        if ((recordStarted == null) || recordStarted.isEmpty()) {
+            val projectId = savedInstanceState.getLong(STATE_PROJECT_ID)
+            val taskId = savedInstanceState.getLong(STATE_TASK_ID)
+            val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
+            val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
+            record.project = project
+            record.task = task
+            populateForm(record)
+        } else {
+            populateForm(recordStarted)
+        }
     }
 
     override fun onRecordClick(record: TimeRecord) {
@@ -576,6 +608,10 @@ class TimeListActivity : InternetActivity(),
         record.task = findSelectedTask(inputTasks, tasks)
 
         val recordStarted = prefs.getStartedRecord()
+        populateForm(recordStarted)
+    }
+
+    private fun populateForm(recordStarted: TimeRecord?) {
         if ((recordStarted == null) || recordStarted.isEmpty()) {
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
@@ -722,5 +758,16 @@ class TimeListActivity : InternetActivity(),
         val now = System.currentTimeMillis()
         val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
         timer_text.text = DateUtils.formatElapsedTime(elapsedSeconds)
+    }
+
+    private fun projectItemSelected(project: Project) {
+        record.project = project
+        filterTasks(project)
+        action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+    }
+
+    private fun taskItemSelected(task: ProjectTask) {
+        record.task = task
+        action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
     }
 }
