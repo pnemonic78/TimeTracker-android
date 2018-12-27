@@ -22,7 +22,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:prompt="@string/project_label"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,7 +45,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:prompt="@string/task_label"
         app:layout_constraintEnd_toEndOf="parent"
@@ -57,7 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         app:layout_constraintTop_toBottomOf="@+id/task_input">
 
@@ -99,7 +99,7 @@
         android:id="@+id/time_form_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintTop_toBottomOf="@+id/action_switcher" />
 
@@ -114,7 +114,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:drawableEnd="@drawable/ic_today_black"
         android:hint="@string/date_label"
@@ -139,5 +139,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Progress indicator -->
-    <include layout="@layout/progress" />
+    <include
+        layout="@layout/progress"
+        tools:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>
