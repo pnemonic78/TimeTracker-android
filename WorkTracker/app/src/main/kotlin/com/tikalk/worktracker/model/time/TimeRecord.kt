@@ -31,6 +31,8 @@
  */
 package com.tikalk.worktracker.model.time
 
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.format.DateUtils
 import androidx.room.Entity
 import com.tikalk.worktracker.model.Project
@@ -55,7 +57,7 @@ data class TimeRecord(
     var note: String = "",
     var status: TaskRecordStatus = TaskRecordStatus.INSERTED,
     override var id: Long = 0
-) : TikalEntity(id) {
+) : TikalEntity(id), Parcelable {
 
     var startTime: Long
         get() = start?.timeInMillis ?: 0L
@@ -77,6 +79,48 @@ data class TimeRecord(
             || (project.id <= 0L)
             || (task.id <= 0L)
             || (startTime <= 0L)
+    }
+
+    constructor(parcel: Parcel) : this(User("", ""), Project.EMPTY, ProjectTask.EMPTY) {
+        id = parcel.readLong()
+        _id = parcel.readLong()
+        version = parcel.readInt()
+
+        user = User.CREATOR.createFromParcel(parcel)
+        project = Project.CREATOR.createFromParcel(parcel)
+        task = ProjectTask.CREATOR.createFromParcel(parcel)
+        startTime = parcel.readLong()
+        finishTime = parcel.readLong()
+        note = parcel.readString() ?: ""
+        status = TaskRecordStatus.values()[parcel.readInt()]
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeLong(id)
+        parcel.writeLong(_id)
+        parcel.writeInt(version)
+
+        parcel.writeParcelable(user, flags)
+        parcel.writeParcelable(project, flags)
+        parcel.writeParcelable(task, flags)
+        parcel.writeLong(startTime)
+        parcel.writeLong(finishTime)
+        parcel.writeString(note)
+        parcel.writeInt(status.ordinal)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<TimeRecord> {
+        override fun createFromParcel(parcel: Parcel): TimeRecord {
+            return TimeRecord(parcel)
+        }
+
+        override fun newArray(size: Int): Array<TimeRecord?> {
+            return arrayOfNulls(size)
+        }
     }
 }
 

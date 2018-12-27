@@ -32,6 +32,8 @@
 package com.tikalk.worktracker.model
 
 import android.net.Uri
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.Entity
 
 /**
@@ -65,4 +67,35 @@ data class User(
      * The roles.
      */
     var roles: Array<String>? = null
-) : TikalEntity()
+) : TikalEntity(), Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        Uri.CREATOR.createFromParcel(parcel),
+        parcel.createStringArray())
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(username)
+        parcel.writeString(email)
+        parcel.writeString(displayName)
+        parcel.writeString(telephone)
+        parcel.writeParcelable(photo, flags)
+        parcel.writeStringArray(roles)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<User> {
+        override fun createFromParcel(parcel: Parcel): User {
+            return User(parcel)
+        }
+
+        override fun newArray(size: Int): Array<User?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

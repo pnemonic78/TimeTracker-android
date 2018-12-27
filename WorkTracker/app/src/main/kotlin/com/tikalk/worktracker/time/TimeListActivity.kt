@@ -55,8 +55,7 @@ class TimeListActivity : InternetActivity(),
         private const val STATE_DATE = "date"
         private const val STATE_PROJECTS = "projects"
         private const val STATE_TASKS = "tasks"
-        private const val STATE_PROJECT_ID = "project_id"
-        private const val STATE_TASK_ID = "task_id"
+        private const val STATE_RECORD = "record"
     }
 
     private val context: Context = this
@@ -272,8 +271,7 @@ class TimeListActivity : InternetActivity(),
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelableArrayList(STATE_PROJECTS, projects)
         outState.putParcelableArrayList(STATE_TASKS, tasks)
-        outState.putLong(STATE_PROJECT_ID, record.project.id)
-        outState.putLong(STATE_TASK_ID, record.task.id)
+        outState.putParcelable(STATE_RECORD, record)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -283,7 +281,7 @@ class TimeListActivity : InternetActivity(),
         val tasksList = savedInstanceState.getParcelableArrayList<ProjectTask>(STATE_TASKS)
 
         projects.clear()
-        if (projectsList != null)  {
+        if (projectsList != null) {
             projects.addAll(projectsList)
             projectEmpty = projectsList.first { it.isEmpty() }
         }
@@ -292,17 +290,12 @@ class TimeListActivity : InternetActivity(),
             tasks.addAll(tasksList)
             taskEmpty = tasksList.first { it.isEmpty() }
         }
-        val recordStarted = prefs.getStartedRecord()
-        if ((recordStarted == null) || recordStarted.isEmpty()) {
-            val projectId = savedInstanceState.getLong(STATE_PROJECT_ID)
-            val taskId = savedInstanceState.getLong(STATE_TASK_ID)
-            val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
-            val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
-            record.project = project
-            record.task = task
+        val recordStated = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        if (recordStated != null) {
+            record.project = recordStated.project
+            record.task = recordStated.task
+            record.start = recordStated.start
             populateForm(record)
-        } else {
-            populateForm(recordStarted)
         }
     }
 
