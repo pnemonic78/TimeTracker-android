@@ -75,8 +75,8 @@ class TimeEditActivity : InternetActivity() {
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
     private var errorMessage: String = ""
-    private var projectEmpty: Project? = null
-    private var taskEmpty: ProjectTask? = null
+    private var projectEmpty: Project = Project.EMPTY
+    private var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,22 +90,22 @@ class TimeEditActivity : InternetActivity() {
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.project = projectEmpty ?: Project.EMPTY
+                record.project = projectEmpty
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val project = project_input.adapter.getItem(position) as Project
+                val project = adapterView.adapter.getItem(position) as Project
                 record.project = project
                 filterTasks(project)
             }
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.task = taskEmpty ?: ProjectTask.EMPTY
+                record.task = taskEmpty
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = task_input.adapter.getItem(position) as ProjectTask
+                val task = adapterView.adapter.getItem(position) as ProjectTask
                 record.task = task
             }
         }
@@ -258,8 +258,7 @@ class TimeEditActivity : InternetActivity() {
                 val finishTime = extras.getLong(EXTRA_FINISH_TIME)
 
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
-                ?: Project.EMPTY
-                val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty ?: ProjectTask.EMPTY
+                val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
                 record = TimeRecord(user, project, task)
                 if (startTime > 0L) {
@@ -568,7 +567,7 @@ class TimeEditActivity : InternetActivity() {
     private fun filterTasks(project: Project) {
         val filtered = tasks.filter { it.id in project.taskIds }
         val options = ArrayList<ProjectTask>(filtered.size + 1)
-        options.add(taskEmpty ?: ProjectTask.EMPTY)
+        options.add(taskEmpty)
         options.addAll(filtered)
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         task_input.setSelection(options.indexOf(record.task))

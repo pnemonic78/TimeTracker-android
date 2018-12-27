@@ -69,8 +69,8 @@ class TimeListActivity : InternetActivity(),
     private val projects = ArrayList<Project>()
     private val tasks = ArrayList<ProjectTask>()
     private val listAdapter = TimeListAdapter(this)
-    private var projectEmpty: Project? = null
-    private var taskEmpty: ProjectTask? = null
+    private var projectEmpty: Project = Project.EMPTY
+    private var taskEmpty: ProjectTask = ProjectTask.EMPTY
     private var timer: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,11 +85,11 @@ class TimeListActivity : InternetActivity(),
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.project = projectEmpty ?: Project.EMPTY
+                record.project = projectEmpty
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val project = project_input.adapter.getItem(position) as Project
+                val project = adapterView.adapter.getItem(position) as Project
                 record.project = project
                 filterTasks(project)
                 action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
@@ -97,11 +97,11 @@ class TimeListActivity : InternetActivity(),
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.task = taskEmpty ?: ProjectTask.EMPTY
+                record.task = taskEmpty
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = task_input.adapter.getItem(position) as ProjectTask
+                val task = adapterView.adapter.getItem(position) as ProjectTask
                 record.task = task
                 action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
             }
@@ -579,8 +579,8 @@ class TimeListActivity : InternetActivity(),
         if ((recordStarted == null) || recordStarted.isEmpty()) {
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
-            record.project = projects.firstOrNull { it.id == recordStarted.project.id } ?: projectEmpty ?: Project.EMPTY
-            record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty ?: ProjectTask.EMPTY
+            record.project = projects.firstOrNull { it.id == recordStarted.project.id } ?: projectEmpty
+            record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty
             record.start = recordStarted.start
             showForm(!record.isEmpty())
         }
@@ -701,7 +701,7 @@ class TimeListActivity : InternetActivity(),
     private fun filterTasks(project: Project) {
         val filtered = tasks.filter { it.id in project.taskIds }
         val options = ArrayList<ProjectTask>(filtered.size + 1)
-        options.add(taskEmpty ?: ProjectTask.EMPTY)
+        options.add(taskEmpty)
         options.addAll(filtered)
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         task_input.setSelection(options.indexOf(record.task))
