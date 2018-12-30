@@ -19,5 +19,7 @@
         app:layout_constraintTop_toBottomOf="@+id/time_form" />
 
     <!-- Progress indicator -->
-    <include layout="@layout/progress" />
+    <include
+        layout="@layout/progress"
+        tools:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>
