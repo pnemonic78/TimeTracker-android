@@ -45,6 +45,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
@@ -79,18 +80,25 @@ class TimeListActivity : InternetActivity(),
     TimeListAdapter.OnTimeListListener {
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = 1
-        private const val REQUEST_ADD = 2
-        private const val REQUEST_EDIT = 3
+        private const val REQUEST_AUTHENTICATE = 0x109
+        private const val REQUEST_EDIT = 0xED17
 
         private const val STATE_DATE = "date"
         private const val STATE_PROJECTS = "projects"
         private const val STATE_TASKS = "tasks"
         private const val STATE_RECORD = "record"
         private const val STATE_LIST = "records"
+
+        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
+
+        const val EXTRA_PROJECT_ID = TimeEditActivity.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeEditActivity.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeEditActivity.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeEditActivity.EXTRA_FINISH_TIME
     }
 
     private val context: Context = this
+    private var intentLater: Intent? = null
 
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
@@ -149,11 +157,12 @@ class TimeListActivity : InternetActivity(),
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
         itemTouchHelper.attachToRecyclerView(list)
 
-        val now = date.timeInMillis
-        date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, now) ?: now
         if (savedInstanceState == null) {
             fetchPage(date)
+        } else {
+            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
         }
+        handleIntent(intent, savedInstanceState)
     }
 
     override fun onDestroy() {
@@ -169,6 +178,12 @@ class TimeListActivity : InternetActivity(),
     override fun onStart() {
         super.onStart()
         hideNotification()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        this.intent = intent
+        handleIntent(intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -287,14 +302,14 @@ class TimeListActivity : InternetActivity(),
 
         when (requestCode) {
             REQUEST_AUTHENTICATE -> if (resultCode == RESULT_OK) {
+                user.username = prefs.userCredentials.login
+                user.email = user.username
+                record.user = user
                 // Fetch the list for the user.
                 fetchPage(date)
             }
-            REQUEST_ADD -> if (resultCode == RESULT_OK) {
-                // Refresh the list with the newly added item.
-                fetchPage(date)
-            }
             REQUEST_EDIT -> if (resultCode == RESULT_OK) {
+                intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
             }
@@ -392,7 +407,7 @@ class TimeListActivity : InternetActivity(),
     private fun addTime() {
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
-        startActivityForResult(intent, REQUEST_ADD)
+        startActivityForResult(intent, REQUEST_EDIT)
     }
 
     /**
@@ -640,7 +655,7 @@ class TimeListActivity : InternetActivity(),
         populateTasks(doc, inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
 
-        val recordStarted = prefs.getStartedRecord()
+        val recordStarted = getStartedRecord()
         populateForm(recordStarted)
     }
 
@@ -680,6 +695,7 @@ class TimeListActivity : InternetActivity(),
             action_switcher.displayedChild = 1
 
             maybeStartTimer()
+            maybeStopTimer()
         }
     }
 
@@ -716,6 +732,7 @@ class TimeListActivity : InternetActivity(),
         record.startTime = now
 
         showNotification(false)
+        bindForm(record)
     }
 
     private fun showNotification(notify: Boolean = false) {
@@ -729,23 +746,25 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_NOTIFICATION, notify)
         }
         startService(service)
-
-        bindForm(record)
     }
 
-    private fun stopTimer() {
+    private fun stopTimer(callService: Boolean = true) {
         val now = System.currentTimeMillis()
-        record.finishTime = now
+        if (record.finish == null) {
+            record.finishTime = now
+        }
         timer?.dispose()
 
-        val service = Intent(this, TimerService::class.java).apply {
-            action = TimerService.ACTION_STOP
-            putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
-            putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-            putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
-            putExtra(TimerService.EXTRA_FINISH_TIME, now)
+        if (callService) {
+            val service = Intent(this, TimerService::class.java).apply {
+                action = TimerService.ACTION_STOP
+                putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
+                putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
+                putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
+                putExtra(TimerService.EXTRA_FINISH_TIME, now)
+            }
+            startService(service)
         }
-        startService(service)
         editRecord(record)
 
         record.start = null
@@ -754,7 +773,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun maybeShowNotification() {
-        if ((record.project.id > 0L) && (record.task.id > 0L) && (record.start != null)) {
+        if (!record.isEmpty()) {
             showNotification(true)
         }
     }
@@ -802,5 +821,46 @@ class TimeListActivity : InternetActivity(),
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
         action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+    }
+
+    private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
+        intentLater = if (intent.action == ACTION_STOP) intent else null
+    }
+
+    private fun maybeStopTimer() {
+        if (intentLater?.action == ACTION_STOP) {
+            intentLater = null
+            val started = prefs.getStartedRecord()
+            stopTimer(started != null)
+        }
+    }
+
+    private fun getStartedRecord(): TimeRecord? {
+        val started = prefs.getStartedRecord()
+        if (started != null) {
+            return started
+        }
+
+        val extras = intentLater?.extras
+        if (extras != null) {
+            val projectId = extras.getLong(EXTRA_PROJECT_ID)
+            val taskId = extras.getLong(EXTRA_TASK_ID)
+            val startTime = extras.getLong(EXTRA_START_TIME)
+            val finishTime = extras.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
+
+            val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
+            val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
+
+            val record = TimeRecord(user, project, task)
+            if (startTime > 0L) {
+                record.startTime = startTime
+            }
+            if (finishTime > 0L) {
+                record.finishTime = finishTime
+            }
+            return record
+        }
+
+        return null
     }
 }

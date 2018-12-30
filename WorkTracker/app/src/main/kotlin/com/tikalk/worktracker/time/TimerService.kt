@@ -143,13 +143,15 @@ class TimerService : Service() {
         if (finishTime <= startTime) return
 
         val context: Context = this
-        val intent = Intent(context, TimeEditActivity::class.java)
-        intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
-        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-        intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, projectId)
-        intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, taskId)
-        intent.putExtra(TimeEditActivity.EXTRA_START_TIME, startTime)
-        intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, finishTime)
+        val intent = Intent(context, TimeListActivity::class.java).apply {
+            action = TimeListActivity.ACTION_STOP
+            addFlags(FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            putExtra(TimeListActivity.EXTRA_PROJECT_ID, projectId)
+            putExtra(TimeListActivity.EXTRA_TASK_ID, taskId)
+            putExtra(TimeListActivity.EXTRA_START_TIME, startTime)
+            putExtra(TimeListActivity.EXTRA_FINISH_TIME, finishTime)
+        }
         startActivity(intent)
     }
 
