@@ -24,6 +24,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import okhttp3.Response
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import timber.log.Timber
 
 /**
@@ -186,24 +190,25 @@ class LoginActivity : InternetActivity() {
 
             val today = formatSystemDate()
             authTask = service.login(email, password, today)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ response ->
-                        showProgress(false)
-                        emailSignInButton.isEnabled = true
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+                    emailSignInButton.isEnabled = true
 
-                        val body = response.body()
-                        if (response.isSuccessful && (body != null)) {
-                            setResult(RESULT_OK)
-                            finish()
-                        } else {
-                            authenticate(email, response.raw())
-                        }
-                    }, { err ->
-                        Timber.e(err, "Error signing in: ${err.message}")
-                        showProgress(false)
-                        emailSignInButton.isEnabled = true
-                    })
+                    val body = response.body()
+                    if (response.isSuccessful && (body != null) && !hasResponseError(body)) {
+                        setResult(RESULT_OK)
+                        finish()
+                    } else {
+                        passwordView.requestFocus()
+                        authenticate(email, response.raw())
+                    }
+                }, { err ->
+                    Timber.e(err, "Error signing in: ${err.message}")
+                    showProgress(false)
+                    emailSignInButton.isEnabled = true
+                })
         }
     }
 
@@ -223,7 +228,7 @@ class LoginActivity : InternetActivity() {
 
         loginFormView.visibility = if (show) View.GONE else View.VISIBLE
         loginFormView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 loginFormView.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -231,7 +236,7 @@ class LoginActivity : InternetActivity() {
 
         progressView.visibility = if (show) View.VISIBLE else View.GONE
         progressView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }
@@ -253,6 +258,41 @@ class LoginActivity : InternetActivity() {
             }
         }
         return false
+    }
+
+    private fun hasResponseError(html: String): Boolean {
+        val doc: Document = Jsoup.parse(html)
+        val error = findError(doc)
+        return !error.isNullOrEmpty()
+    }
+
+    /**
+     * Find the first error table element.
+     */
+    private fun findError(doc: Document): String? {
+        val body = doc.body()
+        val tables = body.select("table")
+        var rows: Elements
+        var tr: Element
+        var cols: Elements
+        var td: Element
+        var classAttr: String
+
+        for (table in tables) {
+            rows = table.getElementsByTag("tr")
+            tr = rows.first()
+            if (tr.childNodeSize() < 2) {
+                continue
+            }
+            cols = tr.getElementsByTag("td")
+            td = cols[0]
+            classAttr = td.attr("class")
+            if (classAttr == "error") {
+                return td.text()
+            }
+        }
+
+        return null
     }
 }
 
