@@ -110,6 +110,9 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
     }
 
     override fun onClick(v: View) {
-        clickListener?.onRecordClick(record!!)
+        val record = this.record
+        if (record != null) {
+            clickListener?.onRecordClick(record)
+        }
     }
 }

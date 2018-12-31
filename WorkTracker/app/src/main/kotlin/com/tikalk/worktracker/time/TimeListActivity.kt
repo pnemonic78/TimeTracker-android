@@ -471,11 +471,11 @@ class TimeListActivity : InternetActivity(),
 
         val tdStart = cols[2]
         val startText = tdStart.ownText()
-        val start = parseRecordTime(startText)
+        val start = parseRecordTime(startText) ?: return null
 
         val tdFinish = cols[3]
         val finishText = tdFinish.ownText()
-        val finish = parseRecordTime(finishText)
+        val finish = parseRecordTime(finishText) ?: return null
 
         val tdNote = cols[5]
         val noteText = tdNote.text()
