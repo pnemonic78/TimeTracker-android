@@ -73,8 +73,8 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         val context: Context = itemView.context
         projectView.text = record.project.name
         taskView.text = record.task.name
-        val startTime = record.start!!.timeInMillis
-        val endTime = record.finish!!.timeInMillis
+        val startTime = record.startTime
+        val endTime = record.finishTime
         timeBuffer.delete(0, timeBuffer.length)
         val formatter = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
         timeRangeView.text = formatter.out() as CharSequence
