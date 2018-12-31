@@ -37,6 +37,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.Menu
@@ -745,7 +746,11 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_START_TIME, record.startTime)
             putExtra(TimerService.EXTRA_NOTIFICATION, notify)
         }
-        startService(service)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(service)
+        } else {
+            startService(service)
+        }
     }
 
     private fun stopTimer(callService: Boolean = true) {
@@ -763,7 +768,11 @@ class TimeListActivity : InternetActivity(),
                 putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
                 putExtra(TimerService.EXTRA_FINISH_TIME, now)
             }
-            startService(service)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(service)
+            } else {
+                startService(service)
+            }
         }
         editRecord(record)
 
@@ -783,7 +792,11 @@ class TimeListActivity : InternetActivity(),
             action = TimerService.ACTION_NOTIFY
             putExtra(TimerService.EXTRA_NOTIFICATION, false)
         }
-        startService(service)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(service)
+        } else {
+            startService(service)
+        }
     }
 
     private fun filterTasks(project: Project) {
