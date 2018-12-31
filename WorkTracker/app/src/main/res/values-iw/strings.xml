@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">גשש טיקאל</string>
+
+    <!-- Strings related to login -->
+    <string name="activity_login">כניסה</string>
+    <string name="prompt_email">דוא\"ל</string>
+    <string name="prompt_password">סיסמה</string>
+    <string name="action_sign_in">היכנס</string>
+    <string name="error_invalid_email">כתובת דוא\"ל זו שגויה</string>
+    <string name="error_invalid_password">סיסמה זו קצרה מדי</string>
+    <string name="error_incorrect_password">סיסמה זו שגויה</string>
+    <string name="error_field_required">שדה חובה</string>
+    <string name="activity_basic_realm">אימות תחום בסיסי</string>
+    <string name="authentication_basic_realm">אימות תחום בסיסי ל-\"%1$s\"</string>
+    <string name="action_authenticate">אימות</string>
+
+    <!-- Time edit -->
+    <string name="activity_time">גשש שעות</string>
+    <string name="prompt_username">שם משתמש</string>
+    <string name="project_label">פרויקט</string>
+    <string name="task_label">משימה</string>
+    <string name="date_label">תאריך</string>
+    <string name="start_label">שעת התחלה</string>
+    <string name="finish_label">שעת סיום</string>
+    <string name="submit">שמור</string>
+    <string name="note_hint">הערה</string>
+    <string name="error_finish_time_before_start_time">שעת ההתחלה חייב להיות לפני שעת הסיום.</string>
+    <string name="pick_date">מעבר לתאריך</string>
+    <string name="delete">מחק</string>
+
+    <!-- Time recorder -->
+    <string name="action_start">התחל</string>
+    <string name="action_stop">עצור</string>
+</resources>
