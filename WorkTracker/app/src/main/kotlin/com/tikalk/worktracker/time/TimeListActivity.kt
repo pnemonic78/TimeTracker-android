@@ -787,7 +787,7 @@ class TimeListActivity : InternetActivity(),
             action = TimerService.ACTION_NOTIFY
             putExtra(TimerService.EXTRA_NOTIFICATION, false)
         }
-        ContextCompat.startForegroundService(context, service)
+        stopService(service)
     }
 
     private fun filterTasks(project: Project) {

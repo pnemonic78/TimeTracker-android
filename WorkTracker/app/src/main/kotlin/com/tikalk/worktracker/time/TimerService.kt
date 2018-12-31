@@ -42,6 +42,10 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import timber.log.Timber
 
@@ -99,25 +103,18 @@ class TimerService : Service() {
     }
 
     private fun startTimer(extras: Bundle) {
-        val projectId = extras.getLong(EXTRA_PROJECT_ID)
-        if (projectId <= 0L) return
-        val projectName = extras.getString(EXTRA_PROJECT_NAME)
-        if (projectName.isNullOrEmpty()) return
-        val taskId = extras.getLong(EXTRA_TASK_ID)
-        if (taskId <= 0L) return
-        val taskName = extras.getString(EXTRA_TASK_NAME)
-        if (taskName.isNullOrEmpty()) return
-        val startTime = extras.getLong(EXTRA_START_TIME)
-        if (startTime <= 0L) return
+        Timber.v("startTimer")
+        val record = createRecord(extras) ?: return
 
-        prefs.startRecord(projectId, projectName, taskId, taskName, startTime)
+        prefs.startRecord(record)
 
         if (extras.getBoolean(EXTRA_NOTIFICATION, true)) {
-            startForeground(ID_NOTIFY, createNotification(projectId, projectName, taskId, taskName, startTime))
+            startForeground(ID_NOTIFY, createNotification(record))
         }
     }
 
     private fun stopTimer(extras: Bundle) {
+        Timber.v("stopTimer")
         if (extras.getBoolean(EXTRA_EDIT)) {
             val projectId = extras.getLong(EXTRA_PROJECT_ID)
             if (projectId <= 0L) return
@@ -137,6 +134,7 @@ class TimerService : Service() {
     }
 
     private fun editRecord(projectId: Long, taskId: Long, startTime: Long, finishTime: Long) {
+        Timber.v("editRecord $projectId,$taskId,$startTime,$finishTime")
         if (projectId <= 0L) return
         if (taskId <= 0L) return
         if (startTime <= 0L) return
@@ -159,7 +157,7 @@ class TimerService : Service() {
      * Create a notification while this service is running.
      * @return the notification.
      */
-    private fun createNotification(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long): Notification {
+    private fun createNotification(record: TimeRecord): Notification {
         val context: Context = this
         val res = context.resources
 
@@ -175,11 +173,11 @@ class TimerService : Service() {
         }
 
         val title = res.getText(R.string.title_service)
-        val text = res.getString(R.string.notification_description, projectName, taskName)
+        val text = res.getString(R.string.notification_description, record.project.name, record.task.name)
         // The PendingIntent to launch our activity if the user selects this notification.
         val contentIntent = createActivityIntent(context)
 
-        val stopActionIntent = createActionIntent(context, ACTION_STOP, projectId, taskId, startTime)
+        val stopActionIntent = createActionIntent(context, ACTION_STOP, record.project.id, record.task.id, record.startTime)
         val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
@@ -194,7 +192,7 @@ class TimerService : Service() {
             .setShowWhen(true)
             .setContentText(text)  // the contents of the entry
             .setTicker(text)  // the status text
-            .setWhen(startTime)  // the time stamp
+            .setWhen(record.startTime)  // the time stamp
             .addAction(stopAction)
             .build()
     }
@@ -218,26 +216,42 @@ class TimerService : Service() {
 
     private fun showNotification(extras: Bundle) {
         val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
+        Timber.v("showNotification visible=$visible")
         if (visible) {
-            val record = prefs.getStartedRecord() ?: return
-            val projectId = record.project.id
-            if (projectId <= 0L) return
-            val projectName = record.project.name
-            if (projectName.isEmpty()) return
-            val taskId = record.task.id
-            if (taskId <= 0L) return
-            val taskName = record.task.name
-            if (taskName.isEmpty()) return
-            val startTime = record.startTime
-            if (startTime <= 0L) return
-
-            startForeground(ID_NOTIFY, createNotification(projectId, projectName, taskId, taskName, startTime))
+            val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return
+            startForeground(ID_NOTIFY, createNotification(record))
         } else {
             dismissNotification()
         }
     }
 
     private fun dismissNotification() {
+        Timber.v("dismissNotification")
         stopForeground(true)
+    }
+
+    private fun createRecord(extras: Bundle): TimeRecord? {
+        val projectId = extras.getLong(EXTRA_PROJECT_ID)
+        val projectName = extras.getString(EXTRA_PROJECT_NAME)
+        val taskId = extras.getLong(EXTRA_TASK_ID)
+        val taskName = extras.getString(EXTRA_TASK_NAME)
+        val startTime = extras.getLong(EXTRA_START_TIME)
+        val finishTime = extras.getLong(EXTRA_FINISH_TIME)
+        Timber.v("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime")
+
+        if (projectId <= 0L) return null
+        if (projectName.isNullOrEmpty()) return null
+        if (taskId <= 0L) return null
+        if (taskName.isNullOrEmpty()) return null
+        if (startTime <= 0L) return null
+
+        val project = Project(projectName)
+        project.id = projectId
+        val task = ProjectTask(taskName)
+        task.id = taskId
+        val record = TimeRecord(User(""), project, task)
+        record.startTime = startTime
+        record.finishTime = finishTime
+        return record
     }
 }
