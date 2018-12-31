@@ -54,7 +54,7 @@ data class ProjectTask(
         id = parcel.readLong()
         _id = parcel.readLong()
         version = parcel.readInt()
-        name = parcel.readString()!!
+        name = parcel.readString() ?: ""
         description = parcel.readString()
     }
 

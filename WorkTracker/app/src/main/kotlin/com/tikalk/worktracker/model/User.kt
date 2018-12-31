@@ -35,6 +35,7 @@ import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.Entity
+import com.tikalk.net.createUriFromParcel
 
 /**
  * User entity.
@@ -73,7 +74,7 @@ data class User(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        Uri.CREATOR.createFromParcel(parcel),
+        createUriFromParcel(parcel),
         parcel.createStringArray())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -81,7 +82,7 @@ data class User(
         parcel.writeString(email)
         parcel.writeString(displayName)
         parcel.writeString(telephone)
-        parcel.writeParcelable(photo, flags)
+        Uri.writeToParcel(parcel, photo)
         parcel.writeStringArray(roles)
     }
 

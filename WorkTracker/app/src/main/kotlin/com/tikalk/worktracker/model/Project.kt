@@ -55,10 +55,10 @@ data class Project(
         id = parcel.readLong()
         _id = parcel.readLong()
         version = parcel.readInt()
-        name = parcel.readString()!!
+        name = parcel.readString() ?: ""
         description = parcel.readString()
-        val ids = parcel.createLongArray()!!
-        for (id in ids) taskIds.add(id)
+        val ids = parcel.createLongArray()
+        if (ids != null) for (id in ids) taskIds.add(id)
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
