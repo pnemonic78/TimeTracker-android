@@ -197,9 +197,14 @@ class LoginActivity : InternetActivity() {
                     emailSignInButton.isEnabled = true
 
                     val body = response.body()
-                    if (response.isSuccessful && (body != null) && !hasResponseError(body)) {
-                        setResult(RESULT_OK)
-                        finish()
+                    if (response.isSuccessful && (body != null)) {
+                        val errorMessage = getResponseError(body)
+                        if (errorMessage == null) {
+                            setResult(RESULT_OK)
+                            finish()
+                        } else {
+                            emailView.error = errorMessage
+                        }
                     } else {
                         passwordView.requestFocus()
                         authenticate(email, response.raw())
@@ -260,10 +265,9 @@ class LoginActivity : InternetActivity() {
         return false
     }
 
-    private fun hasResponseError(html: String): Boolean {
+    private fun getResponseError(html: String): String? {
         val doc: Document = Jsoup.parse(html)
-        val error = findError(doc)
-        return !error.isNullOrEmpty()
+        return findError(doc)
     }
 
     /**
