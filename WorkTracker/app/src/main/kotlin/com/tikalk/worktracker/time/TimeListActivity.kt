@@ -37,7 +37,6 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.Menu
@@ -45,6 +44,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -737,7 +737,8 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun showNotification(notify: Boolean = false) {
-        val service = Intent(this, TimerService::class.java).apply {
+        val context: Context = this
+        val service = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_START
             putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
             putExtra(TimerService.EXTRA_PROJECT_NAME, record.project.name)
@@ -746,11 +747,7 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_START_TIME, record.startTime)
             putExtra(TimerService.EXTRA_NOTIFICATION, notify)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(service)
-        } else {
-            startService(service)
-        }
+        ContextCompat.startForegroundService(context, service)
     }
 
     private fun stopTimer(callService: Boolean = true) {
@@ -761,18 +758,15 @@ class TimeListActivity : InternetActivity(),
         timer?.dispose()
 
         if (callService) {
-            val service = Intent(this, TimerService::class.java).apply {
+            val context: Context = this
+            val service = Intent(context, TimerService::class.java).apply {
                 action = TimerService.ACTION_STOP
                 putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
                 putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
                 putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
                 putExtra(TimerService.EXTRA_FINISH_TIME, now)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(service)
-            } else {
-                startService(service)
-            }
+            ContextCompat.startForegroundService(context, service)
         }
         editRecord(record)
 
@@ -788,15 +782,12 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun hideNotification() {
-        val service = Intent(this, TimerService::class.java).apply {
+        val context: Context = this
+        val service = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_NOTIFY
             putExtra(TimerService.EXTRA_NOTIFICATION, false)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(service)
-        } else {
-            startService(service)
-        }
+        ContextCompat.startForegroundService(context, service)
     }
 
     private fun filterTasks(project: Project) {
