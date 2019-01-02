@@ -117,18 +117,17 @@ class TimerService : Service() {
         Timber.v("stopTimer")
         if (extras.getBoolean(EXTRA_EDIT)) {
             val projectId = extras.getLong(EXTRA_PROJECT_ID)
-            if (projectId <= 0L) return
             val taskId = extras.getLong(EXTRA_TASK_ID)
-            if (taskId <= 0L) return
             val startTime = extras.getLong(EXTRA_START_TIME)
-            if (startTime <= 0L) return
             val finishTime = extras.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
+
+            if (projectId <= 0L) return
+            if (taskId <= 0L) return
+            if (startTime <= 0L) return
             if (finishTime <= startTime) return
 
             editRecord(projectId, taskId, startTime, finishTime)
         }
-
-        prefs.stopRecord()
 
         dismissNotification()
     }

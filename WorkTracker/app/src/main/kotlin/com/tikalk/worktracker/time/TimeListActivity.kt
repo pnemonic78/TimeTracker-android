@@ -83,6 +83,7 @@ class TimeListActivity : InternetActivity(),
     companion object {
         private const val REQUEST_AUTHENTICATE = 0x109
         private const val REQUEST_EDIT = 0xED17
+        private const val REQUEST_STOPPED = 0x5706
 
         private const val STATE_DATE = "date"
         private const val STATE_PROJECTS = "projects"
@@ -310,6 +311,12 @@ class TimeListActivity : InternetActivity(),
                 fetchPage(date)
             }
             REQUEST_EDIT -> if (resultCode == RESULT_OK) {
+                intent.action = null
+                // Refresh the list with the edited item.
+                fetchPage(date)
+            }
+            REQUEST_STOPPED -> if (resultCode == RESULT_OK) {
+                stopTimerCommit()
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
@@ -598,7 +605,7 @@ class TimeListActivity : InternetActivity(),
         return ""
     }
 
-    private fun editRecord(record: TimeRecord) {
+    private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
         val intent = Intent(context, TimeEditActivity::class.java)
         if ((record.id == 0L) && !record.isEmpty()) {
             intent.putExtra(TimeEditActivity.EXTRA_DATE, record.startTime)
@@ -610,7 +617,7 @@ class TimeListActivity : InternetActivity(),
             intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
             intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
         }
-        startActivityForResult(intent, REQUEST_EDIT)
+        startActivityForResult(intent, requestId)
     }
 
     private fun deleteRecord(record: TimeRecord) {
@@ -729,6 +736,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun startTimer() {
+        Timber.v("startTimer")
         val now = System.currentTimeMillis()
         record.startTime = now
 
@@ -737,6 +745,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun showNotification(notify: Boolean = false) {
+        Timber.v("showNotification notify=$notify")
         val context: Context = this
         val service = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_START
@@ -750,38 +759,41 @@ class TimeListActivity : InternetActivity(),
         ContextCompat.startForegroundService(context, service)
     }
 
-    private fun stopTimer(callService: Boolean = true) {
+    private fun stopTimer() {
+        Timber.v("stopTimer")
         val now = System.currentTimeMillis()
         if (record.finish == null) {
             record.finishTime = now
         }
-        timer?.dispose()
 
-        if (callService) {
-            val context: Context = this
-            val service = Intent(context, TimerService::class.java).apply {
-                action = TimerService.ACTION_STOP
-                putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
-                putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-                putExtra(TimerService.EXTRA_START_TIME, record.start?.timeInMillis ?: return)
-                putExtra(TimerService.EXTRA_FINISH_TIME, now)
-            }
-            ContextCompat.startForegroundService(context, service)
+        val context: Context = this
+        val service = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_STOP
         }
-        editRecord(record)
+        stopService(service)
+
+        editRecord(record, REQUEST_STOPPED)
+    }
+
+    private fun stopTimerCommit() {
+        Timber.v("stopTimerCommit")
+        timer?.dispose()
 
         record.start = null
         record.finish = null
+        prefs.stopRecord()
         bindForm(record)
     }
 
     private fun maybeShowNotification() {
-        if (!record.isEmpty()) {
+        Timber.v("maybeShowNotification finish=$isFinishing empty=${record.isEmpty()}")
+        if (isFinishing) {
             showNotification(true)
         }
     }
 
     private fun hideNotification() {
+        Timber.v("hideNotification")
         val context: Context = this
         val service = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_NOTIFY
@@ -834,8 +846,7 @@ class TimeListActivity : InternetActivity(),
     private fun maybeStopTimer() {
         if (intentLater?.action == ACTION_STOP) {
             intentLater = null
-            val started = prefs.getStartedRecord()
-            stopTimer(started != null)
+            stopTimer()
         }
     }
 

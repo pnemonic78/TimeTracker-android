@@ -33,6 +33,7 @@ package com.tikalk.worktracker.time
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -141,7 +142,6 @@ class TimeEditActivity : InternetActivity() {
         }
         start_input.setOnClickListener { pickStartTime() }
         finish_input.setOnClickListener { pickFinishTime() }
-        action_submit.setOnClickListener { submit() }
 
         handleIntent(intent, savedInstanceState)
     }
@@ -181,6 +181,7 @@ class TimeEditActivity : InternetActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
+                setResult(RESULT_CANCELED)
                 onBackPressed()
                 return true
             }
@@ -658,6 +659,7 @@ class TimeEditActivity : InternetActivity() {
 
     private fun deleteRecord() {
         if (record.id == 0L) {
+            setResult(RESULT_OK)
             finish()
         } else {
             deleteRecord(record)
