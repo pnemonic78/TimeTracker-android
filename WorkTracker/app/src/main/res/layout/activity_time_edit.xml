@@ -9,15 +9,6 @@
         android:id="@+id/time_form"
         layout="@layout/time_form" />
 
-    <Button
-        android:id="@+id/action_submit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:drawableEnd="@drawable/ic_done_black"
-        android:text="@string/action_submit"
-        app:layout_constraintTop_toBottomOf="@+id/time_form" />
-
     <!-- Progress indicator -->
     <include
         layout="@layout/progress"
