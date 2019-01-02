@@ -141,7 +141,6 @@ class TimeEditActivity : InternetActivity() {
         }
         start_input.setOnClickListener { pickStartTime() }
         finish_input.setOnClickListener { pickFinishTime() }
-        action_submit.setOnClickListener { submit() }
 
         handleIntent(intent, savedInstanceState)
     }
