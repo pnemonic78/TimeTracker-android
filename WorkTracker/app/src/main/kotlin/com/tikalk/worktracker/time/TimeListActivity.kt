@@ -337,12 +337,12 @@ class TimeListActivity : InternetActivity(),
         projects.clear()
         if (projectsList != null) {
             projects.addAll(projectsList)
-            projectEmpty = projectsList.first { it.isEmpty() }
+            projectEmpty = projectsList.firstOrNull { it.isEmpty() } ?: projectEmpty
         }
         tasks.clear()
         if (tasksList != null) {
             tasks.addAll(tasksList)
-            taskEmpty = tasksList.first { it.isEmpty() }
+            taskEmpty = tasksList.firstOrNull { it.isEmpty() } ?: taskEmpty
         }
         if (recordStated != null) {
             record.project = recordStated.project
