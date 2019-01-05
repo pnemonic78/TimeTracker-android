@@ -78,7 +78,7 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 class TimeListActivity : InternetActivity(),
-    TimeListAdapter.OnTimeListListener {
+        TimeListAdapter.OnTimeListListener {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 0x109
@@ -214,24 +214,24 @@ class TimeListActivity : InternetActivity(),
 
         val dateFormatted = formatSystemDate(date)
         service.fetchTimes(dateFormatted)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ response ->
-                showProgress(false)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
 
-                if (this.date != date) {
-                    this.date.timeInMillis = date.timeInMillis
-                }
-                if (validResponse(response)) {
-                    populateForm(response.body()!!, date)
-                    populateList(response.body()!!, date)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-            })
-            .addTo(disposables)
+                    if (this.date != date) {
+                        this.date.timeInMillis = date.timeInMillis
+                    }
+                    if (validResponse(response)) {
+                        populateForm(response.body()!!, date)
+                        populateList(response.body()!!, date)
+                    } else {
+                        authenticate(true)
+                    }
+                }, { err ->
+                    Timber.e(err, "Error fetching page: ${err.message}")
+                })
+                .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -395,7 +395,7 @@ class TimeListActivity : InternetActivity(),
 
         list.visibility = if (show) View.GONE else View.VISIBLE
         list.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 list.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -403,7 +403,7 @@ class TimeListActivity : InternetActivity(),
 
         progress.visibility = if (show) View.VISIBLE else View.GONE
         progress.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progress.visibility = if (show) View.VISIBLE else View.GONE
             }
@@ -574,10 +574,10 @@ class TimeListActivity : InternetActivity(),
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
                     val taskIds: List<Long> = matcher.group(2)
-                        .split(",")
-                        .map { it.toLong() }
+                            .split(",")
+                            .map { it.toLong() }
                     projects.find { it.id == projectId }!!
-                        .taskIds.addAll(taskIds)
+                            .taskIds.addAll(taskIds)
                 }
             }
         }
@@ -629,24 +629,24 @@ class TimeListActivity : InternetActivity(),
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         service.deleteTime(record.id)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { response ->
-                    showProgress(false)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        { response ->
+                            showProgress(false)
 
-                    if (validResponse(response)) {
-                        populateForm(response.body()!!, date)
-                        populateList(response.body()!!, date)
-                    } else {
-                        authenticate(true)
-                    }
-                },
-                { err ->
-                    Timber.e(err, "Error deleting record: ${err.message}")
-                }
-            )
-            .addTo(disposables)
+                            if (validResponse(response)) {
+                                populateForm(response.body()!!, date)
+                                populateList(response.body()!!, date)
+                            } else {
+                                authenticate(true)
+                            }
+                        },
+                        { err ->
+                            Timber.e(err, "Error deleting record: ${err.message}")
+                        }
+                )
+                .addTo(disposables)
     }
 
     /** Populate the record and then bind the form. */
@@ -756,7 +756,11 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_START_TIME, record.startTime)
             putExtra(TimerService.EXTRA_NOTIFICATION, notify)
         }
-        ContextCompat.startForegroundService(context, service)
+        if (notify) {
+            ContextCompat.startForegroundService(context, service)
+        } else {
+            startService(service)
+        }
     }
 
     private fun stopTimer() {
@@ -815,9 +819,9 @@ class TimeListActivity : InternetActivity(),
         val timer = this.timer
         if ((timer == null) || timer.isDisposed) {
             this.timer = Observable.interval(1L, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { updateTimer() }
-                .addTo(disposables)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { updateTimer() }
+                    .addTo(disposables)
         }
         updateTimer()
     }
