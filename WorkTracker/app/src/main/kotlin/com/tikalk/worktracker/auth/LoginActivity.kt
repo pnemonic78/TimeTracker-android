@@ -119,14 +119,13 @@ class LoginActivity : InternetActivity() {
 
         if (extras.containsKey(EXTRA_EMAIL)) {
             emailView.setText(extras.getString(EXTRA_EMAIL))
+            passwordView.text = null
         }
         if (extras.containsKey(EXTRA_PASSWORD)) {
             passwordView.setText(extras.getString(EXTRA_PASSWORD))
         }
-        if (extras.containsKey(EXTRA_SUBMIT)) {
-            if (extras.getBoolean(EXTRA_SUBMIT)) {
-                attemptLogin()
-            }
+        if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
+            attemptLogin()
         }
     }
 
@@ -190,30 +189,30 @@ class LoginActivity : InternetActivity() {
 
             val today = formatSystemDate()
             authTask = service.login(email, password, today)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
-                    emailSignInButton.isEnabled = true
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ response ->
+                        showProgress(false)
+                        emailSignInButton.isEnabled = true
 
-                    val body = response.body()
-                    if (response.isSuccessful && (body != null)) {
-                        val errorMessage = getResponseError(body)
-                        if (errorMessage == null) {
-                            setResult(RESULT_OK)
-                            finish()
+                        val body = response.body()
+                        if (response.isSuccessful && (body != null)) {
+                            val errorMessage = getResponseError(body)
+                            if (errorMessage == null) {
+                                setResult(RESULT_OK)
+                                finish()
+                            } else {
+                                emailView.error = errorMessage
+                            }
                         } else {
-                            emailView.error = errorMessage
+                            passwordView.requestFocus()
+                            authenticate(email, response.raw())
                         }
-                    } else {
-                        passwordView.requestFocus()
-                        authenticate(email, response.raw())
-                    }
-                }, { err ->
-                    Timber.e(err, "Error signing in: ${err.message}")
-                    showProgress(false)
-                    emailSignInButton.isEnabled = true
-                })
+                    }, { err ->
+                        Timber.e(err, "Error signing in: ${err.message}")
+                        showProgress(false)
+                        emailSignInButton.isEnabled = true
+                    })
         }
     }
 
@@ -233,7 +232,7 @@ class LoginActivity : InternetActivity() {
 
         loginFormView.visibility = if (show) View.GONE else View.VISIBLE
         loginFormView.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 loginFormView.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -241,7 +240,7 @@ class LoginActivity : InternetActivity() {
 
         progressView.visibility = if (show) View.VISIBLE else View.GONE
         progressView.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }

@@ -45,18 +45,8 @@ class BasicRealmActivity : InternetActivity() {
 
         val credentials = prefs.basicCredentials
         realmName = credentials.realm
-        var userName = credentials.username
-        var password = credentials.password
-        val args = intent.extras
-        if (args.containsKey(EXTRA_REALM)) {
-            realmName = args.getString(EXTRA_REALM)
-        }
-        if (args.containsKey(EXTRA_USER)) {
-            userName = args.getString(EXTRA_USER)
-            if (userName != credentials.username) {
-                password = ""
-            }
-        }
+        val userName = credentials.username
+        val password = credentials.password
 
         // Set up the login form.
         setContentView(R.layout.activity_basic_realm)
@@ -111,19 +101,18 @@ class BasicRealmActivity : InternetActivity() {
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_REALM)) {
-            realmName = extras.getString(EXTRA_REALM)!!
+            realmName = extras.getString(EXTRA_REALM) ?: "?"
             realmView.text = getString(R.string.authentication_basic_realm, realmName)
         }
         if (extras.containsKey(EXTRA_USER)) {
             usernameView.setText(extras.getString(EXTRA_USER))
+            passwordView.text = null
         }
         if (extras.containsKey(EXTRA_PASSWORD)) {
             passwordView.setText(extras.getString(EXTRA_PASSWORD))
         }
-        if (extras.containsKey(EXTRA_SUBMIT)) {
-            if (extras.getBoolean(EXTRA_SUBMIT)) {
-                attemptLogin()
-            }
+        if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
+            attemptLogin()
         }
     }
 
