@@ -122,7 +122,7 @@ class TimeEditActivity : InternetActivity() {
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.project = projectEmpty
+                projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -132,7 +132,7 @@ class TimeEditActivity : InternetActivity() {
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.task = taskEmpty
+                taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -191,6 +191,10 @@ class TimeEditActivity : InternetActivity() {
             }
             R.id.menu_submit -> {
                 submit()
+                return true
+            }
+            R.id.menu_favorite -> {
+                markFavorite()
                 return true
             }
         }
@@ -281,12 +285,18 @@ class TimeEditActivity : InternetActivity() {
         record.note = inputNote.text()
 
         if (id == 0L) {
+            val projectFavorite = prefs.getFavoriteProject()
+            val taskFavorite = prefs.getFavoriteTask()
+
             val extras = intent.extras
             if (extras != null) {
-                val projectId = extras.getLong(EXTRA_PROJECT_ID)
-                val taskId = extras.getLong(EXTRA_TASK_ID)
+                var projectId = extras.getLong(EXTRA_PROJECT_ID)
+                var taskId = extras.getLong(EXTRA_TASK_ID)
                 val startTime = extras.getLong(EXTRA_START_TIME)
                 val finishTime = extras.getLong(EXTRA_FINISH_TIME)
+
+                if (projectId == 0L) projectId = projectFavorite
+                if (taskId == 0L) taskId = taskFavorite
 
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
@@ -302,6 +312,9 @@ class TimeEditActivity : InternetActivity() {
                 } else {
                     record.finish = null
                 }
+            } else {
+                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
         }
 
@@ -640,7 +653,7 @@ class TimeEditActivity : InternetActivity() {
                 break
             }
         }
-        return projects[0]
+        return projectEmpty
     }
 
     private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
@@ -654,7 +667,7 @@ class TimeEditActivity : InternetActivity() {
                 break
             }
         }
-        return tasks[0]
+        return taskEmpty
     }
 
     private fun deleteRecord() {
@@ -699,5 +712,9 @@ class TimeEditActivity : InternetActivity() {
 
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
+    }
+
+    private fun markFavorite() {
+        prefs.setFavorite(record)
     }
 }

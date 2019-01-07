@@ -104,6 +104,7 @@ class TimeListActivity : InternetActivity(),
 
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
+    private var menuFavorite: MenuItem? = null
 
     private lateinit var prefs: TimeTrackerPrefs
 
@@ -131,7 +132,7 @@ class TimeListActivity : InternetActivity(),
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.project = projectEmpty
+                projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -141,7 +142,7 @@ class TimeListActivity : InternetActivity(),
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.task = taskEmpty
+                taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -191,6 +192,7 @@ class TimeListActivity : InternetActivity(),
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         menuInflater.inflate(R.menu.time_list, menu)
+        menuFavorite = menu.findItem(R.id.menu_favorite)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -198,6 +200,10 @@ class TimeListActivity : InternetActivity(),
         when (item.itemId) {
             R.id.menu_date -> {
                 pickDate()
+                return true
+            }
+            R.id.menu_favorite -> {
+                markFavorite()
                 return true
             }
         }
@@ -669,6 +675,10 @@ class TimeListActivity : InternetActivity(),
 
     private fun populateForm(recordStarted: TimeRecord?) {
         if ((recordStarted == null) || recordStarted.isEmpty()) {
+            val projectFavorite = prefs.getFavoriteProject()
+            val taskFavorite = prefs.getFavoriteTask()
+            record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+            record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
             record.project = projects.firstOrNull { it.id == recordStarted.project.id } ?: projectEmpty
@@ -683,6 +693,7 @@ class TimeListActivity : InternetActivity(),
     private fun showForm(visible: Boolean) {
         val visibility = if (visible) View.VISIBLE else View.GONE
         time_form_group.visibility = visibility
+        menuFavorite?.isVisible = visible
     }
 
     private fun bindForm(record: TimeRecord) {
@@ -718,7 +729,7 @@ class TimeListActivity : InternetActivity(),
                 break
             }
         }
-        return projects[0]
+        return projectEmpty
     }
 
     private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
@@ -732,7 +743,7 @@ class TimeListActivity : InternetActivity(),
                 break
             }
         }
-        return tasks[0]
+        return taskEmpty
     }
 
     private fun startTimer() {
@@ -790,10 +801,14 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun maybeShowNotification() {
-        Timber.v("maybeShowNotification finish=$isFinishing empty=${record.isEmpty()}")
-        if (isFinishing) {
+        Timber.v("maybeShowNotification finishing=$isFinishing empty=${record.isEmpty()}")
+        if (isBackground()) {
             showNotification(true)
         }
+    }
+
+    private fun isBackground(): Boolean {
+        return (isFinishing || isDestroyed) // && !isRunningTask
     }
 
     private fun hideNotification() {
@@ -881,5 +896,9 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
+    }
+
+    private fun markFavorite() {
+        prefs.setFavorite(record)
     }
 }
