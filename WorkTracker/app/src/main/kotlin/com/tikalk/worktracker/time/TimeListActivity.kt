@@ -44,7 +44,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -171,16 +170,6 @@ class TimeListActivity : InternetActivity(),
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        maybeShowNotification()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        hideNotification()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -751,12 +740,6 @@ class TimeListActivity : InternetActivity(),
         val now = System.currentTimeMillis()
         record.startTime = now
 
-        showNotification(false)
-        bindForm(record)
-    }
-
-    private fun showNotification(notify: Boolean = false) {
-        Timber.v("showNotification notify=$notify")
         val context: Context = this
         val service = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_START
@@ -765,13 +748,11 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
             putExtra(TimerService.EXTRA_TASK_NAME, record.task.name)
             putExtra(TimerService.EXTRA_START_TIME, record.startTime)
-            putExtra(TimerService.EXTRA_NOTIFICATION, notify)
+            putExtra(TimerService.EXTRA_NOTIFICATION, false)
         }
-        if (notify) {
-            ContextCompat.startForegroundService(context, service)
-        } else {
-            startService(service)
-        }
+        startService(service)
+
+        bindForm(record)
     }
 
     private fun stopTimer() {
@@ -798,27 +779,6 @@ class TimeListActivity : InternetActivity(),
         record.finish = null
         prefs.stopRecord()
         bindForm(record)
-    }
-
-    private fun maybeShowNotification() {
-        Timber.v("maybeShowNotification finishing=$isFinishing empty=${record.isEmpty()}")
-        if (isBackground()) {
-            showNotification(true)
-        }
-    }
-
-    private fun isBackground(): Boolean {
-        return (isFinishing || isDestroyed) // && !isRunningTask
-    }
-
-    private fun hideNotification() {
-        Timber.v("hideNotification")
-        val context: Context = this
-        val service = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_NOTIFY
-            putExtra(TimerService.EXTRA_NOTIFICATION, false)
-        }
-        stopService(service)
     }
 
     private fun filterTasks(project: Project) {
