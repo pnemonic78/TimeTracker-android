@@ -31,4 +31,7 @@
     <!-- Time recorder -->
     <string name="action_start">התחל</string>
     <string name="action_stop">עצור</string>
+
+    <!-- Favourite / Favorite -->
+    <string name="action_favorite">מועדף</string>
 </resources>
