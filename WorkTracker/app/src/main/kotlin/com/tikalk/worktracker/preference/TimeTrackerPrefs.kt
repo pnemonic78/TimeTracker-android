@@ -27,8 +27,10 @@ class TimeTrackerPrefs(context: Context) {
 
         private const val PROJECT_ID = "project.id"
         private const val PROJECT_NAME = "project.name"
+        private const val PROJECT_FAVORITE = "project.favorite"
         private const val TASK_ID = "task.id"
         private const val TASK_NAME = "task.name"
+        private const val TASK_FAVORITE = "task.favorite"
         private const val START_TIME = "start.time"
     }
 
@@ -119,5 +121,28 @@ class TimeTrackerPrefs(context: Context) {
             .remove(TASK_NAME)
             .remove(START_TIME)
             .apply()
+    }
+
+    fun setFavorite(record: TimeRecord) {
+        setFavorite(record.project, record.task)
+    }
+
+    fun setFavorite(project: Project, task: ProjectTask) {
+        setFavorite(project.id, task.id)
+    }
+
+    fun setFavorite(projectId: Long, taskId: Long) {
+        prefs.edit()
+                .putLong(PROJECT_FAVORITE, projectId)
+                .putLong(TASK_FAVORITE, taskId)
+                .apply()
+    }
+
+    fun getFavoriteProject(): Long {
+        return prefs.getLong(PROJECT_FAVORITE, 0L)
+    }
+
+    fun getFavoriteTask(): Long {
+        return prefs.getLong(TASK_FAVORITE, 0L)
     }
 }

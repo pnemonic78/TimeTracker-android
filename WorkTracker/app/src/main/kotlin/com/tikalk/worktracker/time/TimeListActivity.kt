@@ -44,7 +44,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -78,7 +77,7 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 class TimeListActivity : InternetActivity(),
-    TimeListAdapter.OnTimeListListener {
+        TimeListAdapter.OnTimeListListener {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 0x109
@@ -104,6 +103,7 @@ class TimeListActivity : InternetActivity(),
 
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
+    private var menuFavorite: MenuItem? = null
 
     private lateinit var prefs: TimeTrackerPrefs
 
@@ -131,7 +131,7 @@ class TimeListActivity : InternetActivity(),
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.project = projectEmpty
+                projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -141,7 +141,7 @@ class TimeListActivity : InternetActivity(),
         }
         task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                record.task = taskEmpty
+                taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -172,16 +172,6 @@ class TimeListActivity : InternetActivity(),
         disposables.dispose()
     }
 
-    override fun onStop() {
-        super.onStop()
-        maybeShowNotification()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        hideNotification()
-    }
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
@@ -191,6 +181,7 @@ class TimeListActivity : InternetActivity(),
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         menuInflater.inflate(R.menu.time_list, menu)
+        menuFavorite = menu.findItem(R.id.menu_favorite)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -198,6 +189,10 @@ class TimeListActivity : InternetActivity(),
         when (item.itemId) {
             R.id.menu_date -> {
                 pickDate()
+                return true
+            }
+            R.id.menu_favorite -> {
+                markFavorite()
                 return true
             }
         }
@@ -214,24 +209,24 @@ class TimeListActivity : InternetActivity(),
 
         val dateFormatted = formatSystemDate(date)
         service.fetchTimes(dateFormatted)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ response ->
-                showProgress(false)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
 
-                if (this.date != date) {
-                    this.date.timeInMillis = date.timeInMillis
-                }
-                if (validResponse(response)) {
-                    populateForm(response.body()!!, date)
-                    populateList(response.body()!!, date)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-            })
-            .addTo(disposables)
+                    if (this.date != date) {
+                        this.date.timeInMillis = date.timeInMillis
+                    }
+                    if (validResponse(response)) {
+                        populateForm(response.body()!!, date)
+                        populateList(response.body()!!, date)
+                    } else {
+                        authenticate(true)
+                    }
+                }, { err ->
+                    Timber.e(err, "Error fetching page: ${err.message}")
+                })
+                .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -395,7 +390,7 @@ class TimeListActivity : InternetActivity(),
 
         list.visibility = if (show) View.GONE else View.VISIBLE
         list.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 list.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -403,7 +398,7 @@ class TimeListActivity : InternetActivity(),
 
         progress.visibility = if (show) View.VISIBLE else View.GONE
         progress.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progress.visibility = if (show) View.VISIBLE else View.GONE
             }
@@ -574,10 +569,10 @@ class TimeListActivity : InternetActivity(),
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
                     val taskIds: List<Long> = matcher.group(2)
-                        .split(",")
-                        .map { it.toLong() }
+                            .split(",")
+                            .map { it.toLong() }
                     projects.find { it.id == projectId }!!
-                        .taskIds.addAll(taskIds)
+                            .taskIds.addAll(taskIds)
                 }
             }
         }
@@ -629,24 +624,24 @@ class TimeListActivity : InternetActivity(),
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         service.deleteTime(record.id)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { response ->
-                    showProgress(false)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        { response ->
+                            showProgress(false)
 
-                    if (validResponse(response)) {
-                        populateForm(response.body()!!, date)
-                        populateList(response.body()!!, date)
-                    } else {
-                        authenticate(true)
-                    }
-                },
-                { err ->
-                    Timber.e(err, "Error deleting record: ${err.message}")
-                }
-            )
-            .addTo(disposables)
+                            if (validResponse(response)) {
+                                populateForm(response.body()!!, date)
+                                populateList(response.body()!!, date)
+                            } else {
+                                authenticate(true)
+                            }
+                        },
+                        { err ->
+                            Timber.e(err, "Error deleting record: ${err.message}")
+                        }
+                )
+                .addTo(disposables)
     }
 
     /** Populate the record and then bind the form. */
@@ -669,6 +664,10 @@ class TimeListActivity : InternetActivity(),
 
     private fun populateForm(recordStarted: TimeRecord?) {
         if ((recordStarted == null) || recordStarted.isEmpty()) {
+            val projectFavorite = prefs.getFavoriteProject()
+            val taskFavorite = prefs.getFavoriteTask()
+            record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+            record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
             record.project = projects.firstOrNull { it.id == recordStarted.project.id } ?: projectEmpty
@@ -683,6 +682,7 @@ class TimeListActivity : InternetActivity(),
     private fun showForm(visible: Boolean) {
         val visibility = if (visible) View.VISIBLE else View.GONE
         time_form_group.visibility = visibility
+        menuFavorite?.isVisible = visible
     }
 
     private fun bindForm(record: TimeRecord) {
@@ -718,7 +718,7 @@ class TimeListActivity : InternetActivity(),
                 break
             }
         }
-        return projects[0]
+        return projectEmpty
     }
 
     private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
@@ -732,7 +732,7 @@ class TimeListActivity : InternetActivity(),
                 break
             }
         }
-        return tasks[0]
+        return taskEmpty
     }
 
     private fun startTimer() {
@@ -740,12 +740,6 @@ class TimeListActivity : InternetActivity(),
         val now = System.currentTimeMillis()
         record.startTime = now
 
-        showNotification(false)
-        bindForm(record)
-    }
-
-    private fun showNotification(notify: Boolean = false) {
-        Timber.v("showNotification notify=$notify")
         val context: Context = this
         val service = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_START
@@ -754,9 +748,11 @@ class TimeListActivity : InternetActivity(),
             putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
             putExtra(TimerService.EXTRA_TASK_NAME, record.task.name)
             putExtra(TimerService.EXTRA_START_TIME, record.startTime)
-            putExtra(TimerService.EXTRA_NOTIFICATION, notify)
+            putExtra(TimerService.EXTRA_NOTIFICATION, false)
         }
-        ContextCompat.startForegroundService(context, service)
+        startService(service)
+
+        bindForm(record)
     }
 
     private fun stopTimer() {
@@ -785,23 +781,6 @@ class TimeListActivity : InternetActivity(),
         bindForm(record)
     }
 
-    private fun maybeShowNotification() {
-        Timber.v("maybeShowNotification finish=$isFinishing empty=${record.isEmpty()}")
-        if (isFinishing) {
-            showNotification(true)
-        }
-    }
-
-    private fun hideNotification() {
-        Timber.v("hideNotification")
-        val context: Context = this
-        val service = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_NOTIFY
-            putExtra(TimerService.EXTRA_NOTIFICATION, false)
-        }
-        stopService(service)
-    }
-
     private fun filterTasks(project: Project) {
         val filtered = tasks.filter { it.id in project.taskIds }
         val options = ArrayList<ProjectTask>(filtered.size + 1)
@@ -815,9 +794,9 @@ class TimeListActivity : InternetActivity(),
         val timer = this.timer
         if ((timer == null) || timer.isDisposed) {
             this.timer = Observable.interval(1L, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { updateTimer() }
-                .addTo(disposables)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { updateTimer() }
+                    .addTo(disposables)
         }
         updateTimer()
     }
@@ -877,5 +856,9 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
+    }
+
+    private fun markFavorite() {
+        prefs.setFavorite(record)
     }
 }
