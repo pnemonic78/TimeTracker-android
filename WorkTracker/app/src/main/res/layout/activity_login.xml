@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:drawableEnd="@drawable/ic_vpn_key_black"
                 android:hint="@string/prompt_password"
-                android:imeActionId="@+id/login"
+                android:imeActionId="@integer/password_imeActionId"
                 android:imeActionLabel="@string/action_sign_in"
                 android:imeOptions="actionGo"
                 android:inputType="textPassword"
