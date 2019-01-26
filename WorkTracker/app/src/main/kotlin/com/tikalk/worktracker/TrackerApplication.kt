@@ -2,10 +2,8 @@ package com.tikalk.worktracker
 
 import android.app.Activity
 import android.app.Application
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import androidx.core.content.ContextCompat
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimerService
 import timber.log.Timber
 
@@ -14,8 +12,8 @@ import timber.log.Timber
  */
 class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
 
-    var active = 0
-        private set
+    private var active = 0
+    private lateinit var prefs: TimeTrackerPrefs
 
     override fun onCreate() {
         super.onCreate()
@@ -41,7 +39,7 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
     override fun onActivityStarted(activity: Activity) {
         active++
         Timber.v("onActivityStarted $activity $active")
-        hideNotification()
+        TimerService.hideNotification(this)
     }
 
     override fun onActivityDestroyed(activity: Activity) {
@@ -54,30 +52,10 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
         active = Math.max(0, active - 1)
         Timber.v("onActivityStopped $activity $active")
         if (active == 0) {
-            showNotification()
+            TimerService.maybeShowNotification(this)
         }
     }
 
     override fun onActivityCreated(activity: Activity, state: Bundle?) {
-    }
-
-    private fun showNotification() {
-        Timber.v("showNotification")
-        val context: Context = this
-        val service = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_NOTIFY
-            putExtra(TimerService.EXTRA_NOTIFICATION, true)
-        }
-        ContextCompat.startForegroundService(context, service)
-    }
-
-    private fun hideNotification() {
-        Timber.v("hideNotification")
-        val context: Context = this
-        val service = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_NOTIFY
-            putExtra(TimerService.EXTRA_NOTIFICATION, false)
-        }
-        stopService(service)
     }
 }

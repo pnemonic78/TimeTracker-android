@@ -69,6 +69,37 @@ class TimerService : Service() {
         private const val ID_NOTIFY = R.string.action_start
         private const val ID_ACTIVITY = 0
         private const val ID_ACTION_STOP = 1
+
+        fun maybeShowNotification(context: Context) {
+            Timber.v("maybeShowNotification")
+            val prefs = TimeTrackerPrefs(context)
+            val record = prefs.getStartedRecord() ?: return
+            if (!record.isEmpty()) {
+                showNotification(context)
+            }
+        }
+
+        private fun showNotification(context: Context) {
+            Timber.v("showNotification")
+            val service = Intent(context, TimerService::class.java).apply {
+                action = ACTION_NOTIFY
+                putExtra(EXTRA_NOTIFICATION, true)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(service)
+            } else {
+                context.startService(service)
+            }
+        }
+
+        fun hideNotification(context: Context) {
+            Timber.v("hideNotification")
+            val service = Intent(context, TimerService::class.java).apply {
+                action = ACTION_NOTIFY
+                putExtra(EXTRA_NOTIFICATION, false)
+            }
+            context.stopService(service)
+        }
     }
 
     private lateinit var prefs: TimeTrackerPrefs
