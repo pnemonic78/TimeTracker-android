@@ -38,6 +38,7 @@ class BasicRealmActivity : InternetActivity() {
 
     private lateinit var prefs: TimeTrackerPrefs
     private var realmName = "(realm)"
+    private var passwordImeActionId = 109
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +60,9 @@ class BasicRealmActivity : InternetActivity() {
         usernameView.setText(userName)
 
         passwordView = findViewById(R.id.password)
+        passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
         passwordView.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
-            if (id == R.id.login || id == EditorInfo.IME_NULL) {
+            if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
             }

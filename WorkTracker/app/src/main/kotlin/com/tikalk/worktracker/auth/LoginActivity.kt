@@ -59,6 +59,8 @@ class LoginActivity : InternetActivity() {
     private lateinit var loginFormView: View
     private lateinit var emailSignInButton: Button
 
+    private var passwordImeActionId = 109
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = TimeTrackerPrefs(this)
@@ -71,8 +73,9 @@ class LoginActivity : InternetActivity() {
         emailView.setText(prefs.userCredentials.login)
 
         passwordView = findViewById(R.id.password)
+        passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
         passwordView.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
-            if (id == R.id.login || id == EditorInfo.IME_NULL) {
+            if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
             }
