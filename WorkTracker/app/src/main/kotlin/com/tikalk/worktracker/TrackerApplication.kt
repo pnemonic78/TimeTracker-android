@@ -3,7 +3,6 @@ package com.tikalk.worktracker
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimerService
 import timber.log.Timber
 
@@ -13,7 +12,6 @@ import timber.log.Timber
 class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
-    private lateinit var prefs: TimeTrackerPrefs
 
     override fun onCreate() {
         super.onCreate()
