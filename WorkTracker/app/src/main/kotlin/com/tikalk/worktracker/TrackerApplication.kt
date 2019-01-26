@@ -3,9 +3,7 @@ package com.tikalk.worktracker
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import androidx.core.content.ContextCompat
 import com.crashlytics.android.Crashlytics
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimerService
 import io.fabric.sdk.android.Fabric
 import timber.log.Timber
