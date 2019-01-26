@@ -16,7 +16,6 @@ import timber.log.Timber
 class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
-    private lateinit var prefs: TimeTrackerPrefs
 
     override fun onCreate() {
         super.onCreate()
