@@ -43,8 +43,10 @@ class TimeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Timber.v("onReceive $intent")
 
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            TimerService.maybeShowNotification(context)
+        when (intent.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED ->
+                TimerService.maybeShowNotification(context)
         }
     }
 }
