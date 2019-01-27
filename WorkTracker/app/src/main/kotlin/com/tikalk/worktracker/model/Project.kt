@@ -33,27 +33,32 @@ package com.tikalk.worktracker.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 
 /**
  * Project entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
+@Entity(tableName = "project")
 data class Project(
+    @ColumnInfo(name = "name")
     var name: String,
+    @ColumnInfo(name = "description")
     var description: String? = null
 ) : TikalEntity(), Parcelable {
     override fun toString(): String {
         return name
     }
 
+    @Ignore
     val taskIds: MutableList<Long> = ArrayList()
 
     constructor(parcel: Parcel) : this("") {
         id = parcel.readLong()
-        _id = parcel.readLong()
+        dbId = parcel.readLong()
         version = parcel.readInt()
         name = parcel.readString() ?: ""
         description = parcel.readString()
@@ -63,7 +68,7 @@ data class Project(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
-        parcel.writeLong(_id)
+        parcel.writeLong(dbId)
         parcel.writeInt(version)
         parcel.writeString(name)
         parcel.writeString(description)

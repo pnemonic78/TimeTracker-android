@@ -83,7 +83,7 @@ data class TimeRecord(
 
     constructor(parcel: Parcel) : this(User("", ""), Project.EMPTY, ProjectTask.EMPTY) {
         id = parcel.readLong()
-        _id = parcel.readLong()
+        dbId = parcel.readLong()
         version = parcel.readInt()
 
         user = User.CREATOR.createFromParcel(parcel)
@@ -97,7 +97,7 @@ data class TimeRecord(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
-        parcel.writeLong(_id)
+        parcel.writeLong(dbId)
         parcel.writeInt(version)
 
         parcel.writeParcelable(user, flags)
