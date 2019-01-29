@@ -26,7 +26,7 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
 
         registerActivityLifecycleCallbacks(this)
 
-        db = Room.databaseBuilder(this, TrackerDatabase::class.java, "tracker").build()
+        db = Room.databaseBuilder(this, TrackerDatabase::class.java, "tracker.db").build()
     }
 
     override fun onTerminate() {
