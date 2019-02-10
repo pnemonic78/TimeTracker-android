@@ -45,6 +45,15 @@
             tools:text="@tools:sample/date/hhmmss" />
 
         <TextView
+            android:id="@+id/time_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/time_range"
+            tools:text="@tools:sample/date/hhmm" />
+
+        <TextView
             android:id="@+id/note"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

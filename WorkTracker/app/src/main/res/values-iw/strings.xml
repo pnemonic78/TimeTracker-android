@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">גשש טיקאל</string>
 
     <!-- Strings related to login -->
@@ -34,4 +34,7 @@
 
     <!-- Favourite / Favorite -->
     <string name="action_favorite">מועדף</string>
+
+    <!-- Time list -->
+    <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
 </resources>
