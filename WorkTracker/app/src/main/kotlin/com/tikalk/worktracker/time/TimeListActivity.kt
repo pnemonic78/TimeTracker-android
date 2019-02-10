@@ -39,12 +39,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.recyclerview.widget.ItemTouchHelper
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -118,6 +115,7 @@ class TimeListActivity : InternetActivity(),
     private var projectEmpty: Project = Project.EMPTY
     private var taskEmpty: ProjectTask = ProjectTask.EMPTY
     private var timer: Disposable? = null
+    private lateinit var gestureDetector: GestureDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,9 +153,38 @@ class TimeListActivity : InternetActivity(),
         fab_add.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
-        val swipeHandler = TimeListSwipeHandler(this)
-        val itemTouchHelper = ItemTouchHelper(swipeHandler)
-        itemTouchHelper.attachToRecyclerView(list)
+        // Disable swiping on item in favour of swiping days.
+        //val swipeHandler = TimeListSwipeHandler(this)
+        //val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        //itemTouchHelper.attachToRecyclerView(list)
+        gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+                val vx = Math.abs(velocityX)
+                val vy = Math.abs(velocityY)
+                if ((vx > vy) && (vx > 500)) {
+                    if (velocityX < 0) {    // Fling from right to left.
+                        if (isLocaleRTL()) {
+                            navigateYesterday()
+                        } else {
+                            navigateTomorrow()
+                        }
+                    } else {
+                        if (isLocaleRTL()) {
+                            navigateTomorrow()
+                        } else {
+                            navigateYesterday()
+                        }
+                    }
+                    return true
+                }
+                return super.onFling(e1, e2, velocityX, velocityY)
+            }
+        })
+        list.setOnTouchListener(object : View.OnTouchListener {
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                return gestureDetector.onTouchEvent(event)
+            }
+        })
 
         if (savedInstanceState == null) {
             fetchPage(date)
@@ -670,7 +697,8 @@ class TimeListActivity : InternetActivity(),
             record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
-            record.project = projects.firstOrNull { it.id == recordStarted.project.id } ?: projectEmpty
+            record.project = projects.firstOrNull { it.id == recordStarted.project.id }
+                    ?: projectEmpty
             record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty
             record.start = recordStarted.start
             showForm(!record.isEmpty())
@@ -860,5 +888,21 @@ class TimeListActivity : InternetActivity(),
 
     private fun markFavorite() {
         prefs.setFavorite(record)
+    }
+
+    private fun navigateTomorrow() {
+        val cal = date
+        cal.add(Calendar.DATE, 1)
+        fetchPage(cal)
+    }
+
+    private fun navigateYesterday() {
+        val cal = date
+        cal.add(Calendar.DATE, -1)
+        fetchPage(cal)
+    }
+
+    private fun isLocaleRTL(): Boolean {
+        return Locale.getDefault().language == "iw"
     }
 }
