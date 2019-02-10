@@ -3,8 +3,6 @@ package com.tikalk.worktracker
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import androidx.room.Room
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.TimerService
 import timber.log.Timber
 
@@ -15,8 +13,6 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
 
     private var active = 0
 
-    lateinit var db: TrackerDatabase
-
     override fun onCreate() {
         super.onCreate()
 
@@ -25,14 +21,11 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
         }
 
         registerActivityLifecycleCallbacks(this)
-
-        db = Room.databaseBuilder(this, TrackerDatabase::class.java, "tracker.db").build()
     }
 
     override fun onTerminate() {
         super.onTerminate()
         unregisterActivityLifecycleCallbacks(this)
-        db.close()
     }
 
     override fun onActivityPaused(activity: Activity) {
