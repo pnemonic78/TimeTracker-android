@@ -43,11 +43,12 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 
 class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
-    View.OnClickListener {
+        View.OnClickListener {
 
     private val projectView: TextView = itemView.findViewById(R.id.project)
     private val taskView: TextView = itemView.findViewById(R.id.task)
     private val timeRangeView: TextView = itemView.findViewById(R.id.time_range)
+    private val timeDurationView: TextView = itemView.findViewById(R.id.time_duration)
     private val noteView: TextView = itemView.findViewById(R.id.note)
 
     private val timeBuffer = StringBuilder(20)
@@ -75,9 +76,12 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         taskView.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
-        timeBuffer.delete(0, timeBuffer.length)
-        val formatter = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
-        timeRangeView.text = formatter.out() as CharSequence
+        timeBuffer.setLength(0)
+        val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
+        timeRangeView.text = formatterRange.out() as CharSequence
+        timeBuffer.setLength(0)
+        val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
+        timeDurationView.text = formatterElapsed.out() as CharSequence
         noteView.text = record.note
 
         bindColors(record)
@@ -87,6 +91,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         projectView.text = ""
         taskView.text = ""
         timeRangeView.text = ""
+        timeDurationView.text = ""
         noteView.text = ""
     }
 

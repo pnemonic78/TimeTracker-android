@@ -107,11 +107,16 @@ class BasicRealmActivity : InternetActivity() {
             realmView.text = getString(R.string.authentication_basic_realm, realmName)
         }
         if (extras.containsKey(EXTRA_USER)) {
-            usernameView.setText(extras.getString(EXTRA_USER))
-            passwordView.text = null
-        }
-        if (extras.containsKey(EXTRA_PASSWORD)) {
-            passwordView.setText(extras.getString(EXTRA_PASSWORD))
+            val username = extras.getString(EXTRA_USER)
+            usernameView.setText(username)
+
+            val credentials = prefs.basicCredentials
+
+            when {
+                extras.containsKey(EXTRA_PASSWORD) -> passwordView.setText(extras.getString(EXTRA_PASSWORD))
+                username == credentials.username -> passwordView.setText(credentials.password)
+                else -> passwordView.text = null
+            }
         }
         if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
             attemptLogin()

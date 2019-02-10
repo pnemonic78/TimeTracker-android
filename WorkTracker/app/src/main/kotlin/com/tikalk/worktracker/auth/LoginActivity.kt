@@ -123,9 +123,10 @@ class LoginActivity : InternetActivity() {
         if (extras.containsKey(EXTRA_EMAIL)) {
             emailView.setText(extras.getString(EXTRA_EMAIL))
             passwordView.text = null
-        }
-        if (extras.containsKey(EXTRA_PASSWORD)) {
-            passwordView.setText(extras.getString(EXTRA_PASSWORD))
+
+            if (extras.containsKey(EXTRA_PASSWORD)) {
+                passwordView.setText(extras.getString(EXTRA_PASSWORD))
+            }
         }
         if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
             attemptLogin()

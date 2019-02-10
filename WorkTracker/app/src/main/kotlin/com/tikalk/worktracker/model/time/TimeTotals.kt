@@ -29,72 +29,54 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.model.time
 
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
 
 /**
- * Project entity.
+ * Totals.
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "project")
-data class Project(
-    @ColumnInfo(name = "name")
-    var name: String,
-    @ColumnInfo(name = "description")
-    var description: String? = null
-) : TikalEntity(), Parcelable {
-    override fun toString(): String {
-        return name
-    }
-
-    @Ignore
-    val taskIds: MutableList<Long> = ArrayList()
-
-    constructor(parcel: Parcel) : this("") {
-        id = parcel.readLong()
-        dbId = parcel.readLong()
-        version = parcel.readInt()
-        name = parcel.readString() ?: ""
-        description = parcel.readString()
-        val ids = parcel.createLongArray()
-        if (ids != null) for (id in ids) taskIds.add(id)
+data class TimeTotals(
+    var daily: Long = 0,
+    var weekly: Long = 0,
+    var monthly: Long = 0,
+    var remaining: Long = 0
+) : Parcelable {
+    constructor(parcel: Parcel) : this() {
+        daily = parcel.readLong()
+        weekly = parcel.readLong()
+        monthly = parcel.readLong()
+        remaining = parcel.readLong()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id)
-        parcel.writeLong(dbId)
-        parcel.writeInt(version)
-        parcel.writeString(name)
-        parcel.writeString(description)
-        parcel.writeLongArray(taskIds.toLongArray())
+        parcel.writeLong(daily)
+        parcel.writeLong(weekly)
+        parcel.writeLong(monthly)
+        parcel.writeLong(remaining)
     }
 
     override fun describeContents(): Int {
         return 0
     }
 
-    fun isEmpty(): Boolean {
-        return (id == 0L) || name.isEmpty()
+    fun clear() {
+        daily = 0
+        weekly = 0
+        monthly = 0
+        remaining = 0
     }
 
-    companion object {
-        val EMPTY = Project("")
+    companion object CREATOR : Parcelable.Creator<TimeTotals> {
+        override fun createFromParcel(parcel: Parcel): TimeTotals {
+            return TimeTotals(parcel)
+        }
 
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<Project> {
-            override fun createFromParcel(parcel: Parcel): Project {
-                return Project(parcel)
-            }
-
-            override fun newArray(size: Int): Array<Project?> {
-                return arrayOfNulls(size)
-            }
+        override fun newArray(size: Int): Array<TimeTotals?> {
+            return arrayOfNulls(size)
         }
     }
 }

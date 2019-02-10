@@ -31,6 +31,8 @@
  */
 package com.tikalk.worktracker.model
 
+import android.provider.BaseColumns
+import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 
 /**
@@ -42,15 +44,18 @@ abstract class TikalEntity(
     /**
      * Server's id.
      */
+    @ColumnInfo(name = "id")
     open var id: Long = 0
 ) {
     /**
      * Android database's id.
      */
+    @ColumnInfo(name = BaseColumns._ID)
     @PrimaryKey
-    var _id: Long = 0
+    var dbId: Long = 0
     /**
      * Entity version to resolve conflicts.
      */
+    @ColumnInfo(name = "version")
     var version: Int = 0
 }

@@ -31,12 +31,16 @@
  */
 package com.tikalk.worktracker.time
 
+import android.content.Context
 import android.text.format.DateFormat
+import android.text.format.DateUtils
+import com.tikalk.worktracker.R
 import java.text.SimpleDateFormat
 import java.util.*
 
 const val SYSTEM_DATE_PATTERN = "yyyy-MM-dd"
 const val SYSTEM_TIME_PATTERN = "HH:mm"
+const val SYSTEM_HOURS_PATTERN = "HH:mm"
 
 fun formatSystemDate(date: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
@@ -78,6 +82,16 @@ fun parseSystemTime(date: Calendar, time: String?): Calendar? {
     cal.set(Calendar.MINUTE, parsed.minutes)
     cal.set(Calendar.SECOND, parsed.seconds)
     return cal
+}
+
+fun parseHours(time: String?): Long? {
+    if (time.isNullOrEmpty()) {
+        return null
+    }
+    val dateFormat = SimpleDateFormat(SYSTEM_HOURS_PATTERN, Locale.US)
+    dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val parsed = dateFormat.parse(time)
+    return parsed.time
 }
 
 var Calendar.era: Int
@@ -157,4 +171,19 @@ fun Calendar.isSameDay(that: Calendar): Boolean {
         && (this.year == that.year)
         && (this.month == that.month)
         && (this.dayOfMonth == that.dayOfMonth)
+}
+
+private var sElapsedFormatHMM: String? = null
+
+fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): Formatter {
+    // Break the elapsed seconds into hours, minutes, and seconds.
+    val hours = elapsedMs / DateUtils.HOUR_IN_MILLIS
+    val minutes = (elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS
+
+    var format = sElapsedFormatHMM
+    if (format == null) {
+        format = context.getString(R.string.elapsed_time_short_format_h_mm)
+        sElapsedFormatHMM = format
+    }
+    return formatter.format(format, hours, minutes)
 }

@@ -35,44 +35,34 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 
 /**
- * Project entity.
+ * Project-Task relational ID entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "project")
-data class Project(
-    @ColumnInfo(name = "name")
-    var name: String,
-    @ColumnInfo(name = "description")
-    var description: String? = null
+@Entity(tableName = "project_task_key")
+data class ProjectTaskKey(
+    @ColumnInfo(name = "project_id")
+    var projectId: Long,
+    @ColumnInfo(name = "task_id")
+    var taskId: Long
 ) : TikalEntity(), Parcelable {
-    override fun toString(): String {
-        return name
-    }
 
-    @Ignore
-    val taskIds: MutableList<Long> = ArrayList()
-
-    constructor(parcel: Parcel) : this("") {
+    constructor(parcel: Parcel) : this(0, 0) {
         id = parcel.readLong()
         dbId = parcel.readLong()
         version = parcel.readInt()
-        name = parcel.readString() ?: ""
-        description = parcel.readString()
-        val ids = parcel.createLongArray()
-        if (ids != null) for (id in ids) taskIds.add(id)
+        projectId = parcel.readLong()
+        taskId = parcel.readLong()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
         parcel.writeLong(dbId)
         parcel.writeInt(version)
-        parcel.writeString(name)
-        parcel.writeString(description)
-        parcel.writeLongArray(taskIds.toLongArray())
+        parcel.writeLong(projectId)
+        parcel.writeLong(taskId)
     }
 
     override fun describeContents(): Int {
@@ -80,19 +70,17 @@ data class Project(
     }
 
     fun isEmpty(): Boolean {
-        return (id == 0L) || name.isEmpty()
+        return (id == 0L) || (projectId == 0L) || (taskId == 0L)
     }
 
     companion object {
-        val EMPTY = Project("")
-
         @JvmField
-        val CREATOR = object : Parcelable.Creator<Project> {
-            override fun createFromParcel(parcel: Parcel): Project {
-                return Project(parcel)
+        val CREATOR = object : Parcelable.Creator<ProjectTaskKey> {
+            override fun createFromParcel(parcel: Parcel): ProjectTaskKey {
+                return ProjectTaskKey(parcel)
             }
 
-            override fun newArray(size: Int): Array<Project?> {
+            override fun newArray(size: Int): Array<ProjectTaskKey?> {
                 return arrayOfNulls(size)
             }
         }
