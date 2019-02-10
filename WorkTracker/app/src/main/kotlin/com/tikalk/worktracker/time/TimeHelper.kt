@@ -40,6 +40,7 @@ import java.util.*
 
 const val SYSTEM_DATE_PATTERN = "yyyy-MM-dd"
 const val SYSTEM_TIME_PATTERN = "HH:mm"
+const val SYSTEM_HOURS_PATTERN = "HH:mm"
 
 fun formatSystemDate(date: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
@@ -81,6 +82,16 @@ fun parseSystemTime(date: Calendar, time: String?): Calendar? {
     cal.set(Calendar.MINUTE, parsed.minutes)
     cal.set(Calendar.SECOND, parsed.seconds)
     return cal
+}
+
+fun parseHours(time: String?): Long? {
+    if (time.isNullOrEmpty()) {
+        return null
+    }
+    val dateFormat = SimpleDateFormat(SYSTEM_HOURS_PATTERN, Locale.US)
+    dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val parsed = dateFormat.parse(time)
+    return parsed.time
 }
 
 var Calendar.era: Int

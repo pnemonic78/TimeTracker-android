@@ -45,4 +45,8 @@
 
     <!-- Time list -->
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
+    <string name="day_total">Day total</string>
+    <string name="remaining_quota">Remaining quota</string>
+    <string name="month_total">Month total</string>
+    <string name="week_total">Week total</string>
 </resources>

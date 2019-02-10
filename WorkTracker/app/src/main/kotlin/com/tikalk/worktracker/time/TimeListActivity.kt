@@ -50,6 +50,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
@@ -62,6 +63,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
 import kotlinx.android.synthetic.main.progress.*
+import kotlinx.android.synthetic.main.time_totals.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -74,7 +76,7 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 class TimeListActivity : InternetActivity(),
-        TimeListAdapter.OnTimeListListener {
+    TimeListAdapter.OnTimeListListener {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 0x109
@@ -86,6 +88,7 @@ class TimeListActivity : InternetActivity(),
         private const val STATE_TASKS = "tasks"
         private const val STATE_RECORD = "record"
         private const val STATE_LIST = "records"
+        private const val STATE_TOTALS = "totals"
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
@@ -116,6 +119,7 @@ class TimeListActivity : InternetActivity(),
     private var taskEmpty: ProjectTask = ProjectTask.EMPTY
     private var timer: Disposable? = null
     private lateinit var gestureDetector: GestureDetector
+    private var totals = TimeTotals()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -236,24 +240,24 @@ class TimeListActivity : InternetActivity(),
 
         val dateFormatted = formatSystemDate(date)
         service.fetchTimes(dateFormatted)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ response ->
-                    showProgress(false)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                showProgress(false)
 
-                    if (this.date != date) {
-                        this.date.timeInMillis = date.timeInMillis
-                    }
-                    if (validResponse(response)) {
-                        populateForm(response.body()!!, date)
-                        populateList(response.body()!!, date)
-                    } else {
-                        authenticate(true)
-                    }
-                }, { err ->
-                    Timber.e(err, "Error fetching page: ${err.message}")
-                })
-                .addTo(disposables)
+                if (this.date != date) {
+                    this.date.timeInMillis = date.timeInMillis
+                }
+                if (validResponse(response)) {
+                    populateForm(response.body()!!, date)
+                    populateList(response.body()!!, date)
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error fetching page: ${err.message}")
+            })
+            .addTo(disposables)
     }
 
     private fun validResponse(response: Response<String>): Boolean {
@@ -304,14 +308,27 @@ class TimeListActivity : InternetActivity(),
                 }
             }
         }
+        populateTotals(doc, form, totals)
 
-        bindList(records)
+        bindList(records, totals)
     }
 
-    private fun bindList(records: List<TimeRecord>) {
+    private fun bindList(records: List<TimeRecord>, totals: TimeTotals) {
         listItems.clear()
         listItems.addAll(records)
         listAdapter.submitList(records)
+
+        val context: Context = this
+        val timeBuffer = StringBuilder(20)
+        val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+
+        day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
+        timeBuffer.setLength(0)
+        week_total.text =  formatElapsedTime(context, timeFormatter,totals.weekly).toString()
+        timeBuffer.setLength(0)
+        month_total.text =  formatElapsedTime(context, timeFormatter,totals.monthly).toString()
+        timeBuffer.setLength(0)
+        remaining_quota.text =  formatElapsedTime(context, timeFormatter,totals.remaining).toString()
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -353,6 +370,7 @@ class TimeListActivity : InternetActivity(),
         outState.putParcelableArrayList(STATE_TASKS, tasks)
         outState.putParcelable(STATE_RECORD, record)
         outState.putParcelableArrayList(STATE_LIST, listItems)
+        outState.putParcelable(STATE_TOTALS, totals)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -362,6 +380,7 @@ class TimeListActivity : InternetActivity(),
         val tasksList = savedInstanceState.getParcelableArrayList<ProjectTask>(STATE_TASKS)
         val recordStated = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
         val list = savedInstanceState.getParcelableArrayList<TimeRecord>(STATE_LIST)
+        val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
 
         projects.clear()
         if (projectsList != null) {
@@ -379,8 +398,11 @@ class TimeListActivity : InternetActivity(),
             record.start = recordStated.start
             populateForm(record)
         }
+        if (totals != null) {
+            this.totals = totals
+        }
         if (list != null) {
-            bindList(list)
+            bindList(list, this.totals)
         }
     }
 
@@ -417,7 +439,7 @@ class TimeListActivity : InternetActivity(),
 
         list.visibility = if (show) View.GONE else View.VISIBLE
         list.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 list.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -425,7 +447,7 @@ class TimeListActivity : InternetActivity(),
 
         progress.visibility = if (show) View.VISIBLE else View.GONE
         progress.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progress.visibility = if (show) View.VISIBLE else View.GONE
             }
@@ -596,10 +618,10 @@ class TimeListActivity : InternetActivity(),
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
                     val taskIds: List<Long> = matcher.group(2)
-                            .split(",")
-                            .map { it.toLong() }
+                        .split(",")
+                        .map { it.toLong() }
                     projects.find { it.id == projectId }!!
-                            .taskIds.addAll(taskIds)
+                        .taskIds.addAll(taskIds)
                 }
             }
         }
@@ -651,24 +673,24 @@ class TimeListActivity : InternetActivity(),
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         service.deleteTime(record.id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        { response ->
-                            showProgress(false)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { response ->
+                    showProgress(false)
 
-                            if (validResponse(response)) {
-                                populateForm(response.body()!!, date)
-                                populateList(response.body()!!, date)
-                            } else {
-                                authenticate(true)
-                            }
-                        },
-                        { err ->
-                            Timber.e(err, "Error deleting record: ${err.message}")
-                        }
-                )
-                .addTo(disposables)
+                    if (validResponse(response)) {
+                        populateForm(response.body()!!, date)
+                        populateList(response.body()!!, date)
+                    } else {
+                        authenticate(true)
+                    }
+                },
+                { err ->
+                    Timber.e(err, "Error deleting record: ${err.message}")
+                }
+            )
+            .addTo(disposables)
     }
 
     /** Populate the record and then bind the form. */
@@ -698,7 +720,7 @@ class TimeListActivity : InternetActivity(),
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
             record.project = projects.firstOrNull { it.id == recordStarted.project.id }
-                    ?: projectEmpty
+                ?: projectEmpty
             record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty
             record.start = recordStarted.start
             showForm(!record.isEmpty())
@@ -822,9 +844,9 @@ class TimeListActivity : InternetActivity(),
         val timer = this.timer
         if ((timer == null) || timer.isDisposed) {
             this.timer = Observable.interval(1L, TimeUnit.SECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { updateTimer() }
-                    .addTo(disposables)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { updateTimer() }
+                .addTo(disposables)
         }
         updateTimer()
     }
@@ -904,5 +926,67 @@ class TimeListActivity : InternetActivity(),
 
     private fun isLocaleRTL(): Boolean {
         return Locale.getDefault().language == "iw"
+    }
+
+
+    private fun populateTotals(doc: Document, parent: Element?, totals: TimeTotals) {
+        totals.clear()
+        if (parent == null) {
+            return
+        }
+
+        val table = findTotalsTable(doc, parent) ?: return
+        val cells = table.getElementsByTag("td")
+        for (td in cells) {
+            val text = td.text()
+            val value: String
+            when {
+                text.startsWith("Day total:") -> {
+                    value = text.substring(text.indexOf(':') + 1).trim()
+                    totals.daily = parseHours(value) ?: 0L
+                }
+                text.startsWith("Week total:") -> {
+                    value = text.substring(text.indexOf(':') + 1).trim()
+                    totals.weekly = parseHours(value) ?: 0L
+                }
+                text.startsWith("Month total:") -> {
+                    value = text.substring(text.indexOf(':') + 1).trim()
+                    totals.monthly = parseHours(value) ?: 0L
+                }
+                text.startsWith("Remaining quota:") -> {
+                    value = text.substring(text.indexOf(':') + 1).trim()
+                    totals.remaining = parseHours(value) ?: 0L
+                }
+            }
+        }
+    }
+
+    private fun findTotalsTable(doc: Document, parent: Element?): Element? {
+        val body = doc.body()
+        val tables = body.select("table")
+        var rows: Elements
+        var tr: Element
+        var cols: Elements
+        var td: Element
+        var label: String
+
+        for (table in tables) {
+            if ((parent != null) && (table.parent() != parent)) {
+                continue
+            }
+            rows = table.getElementsByTag("tr")
+            tr = rows.first()
+            if (tr.childNodeSize() < 1) {
+                continue
+            }
+            cols = tr.getElementsByTag("td")
+            td = cols.first()
+            label = td.ownText()
+            if (label.startsWith("Week total:")) {
+                return table
+            }
+        }
+
+        return null
     }
 }

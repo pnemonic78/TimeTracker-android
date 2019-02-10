@@ -41,4 +41,12 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="Widget.TextView.Value" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.TextView.Value.Time">
+        <item name="android:gravity">right</item>
+    </style>
+
 </resources>
