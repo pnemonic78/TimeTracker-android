@@ -38,4 +38,13 @@ object TTS {
         textToSpeech.setOnUtteranceProgressListener(utteranceProgressListener)
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null)
     }
+
+    fun speak(texts: List<String>, utteranceProgressListener: UtteranceProgressListener? = null) {
+        val textToSpeech = this.textToSpeech ?: return
+        textToSpeech.setOnUtteranceProgressListener(utteranceProgressListener)
+
+        for (text in texts) {
+            textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null)
+        }
+    }
 }

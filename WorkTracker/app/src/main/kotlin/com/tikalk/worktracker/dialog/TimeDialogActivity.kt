@@ -47,7 +47,9 @@ import android.os.Bundle
 import android.speech.tts.UtteranceProgressListener
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
@@ -152,10 +154,13 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
     override fun onResult(response: AIResponse) {
         Timber.d("onResult")
         this.response = response
+        if (BuildConfig.DEBUG) {
+            Timber.d(Gson().toJson(response))
+        }
 
         runOnUiThread {
             Timber.i("Received success response")
-            adapter.add(response)
+            val bubbles = adapter.add(response)
             conversation.scrollToPosition(0)
 
             // this is example how to get different parts of result object
@@ -169,7 +174,12 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
             Timber.i("Action: %s", result.action)
             val speech = result.fulfillment.speech
             Timber.i("Speech: $speech")
-            TTS.speak(speech, utteranceProgressListener)
+            if (bubbles.isEmpty()) {
+                TTS.speak(speech, utteranceProgressListener)
+            } else {
+                val texts = bubbles.filter { it.type == TikalDialogSpeechBubbleType.AGENT }.map { it.speech }
+                TTS.speak(texts, utteranceProgressListener)
+            }
 
             val metadata = result.metadata
             if (metadata != null) {
@@ -187,10 +197,21 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
 
             // utteranceProgressListener not called by TTS?
             action_ai.postDelayed({
-                if (!utteranceListening) {
+                if (!hasUtteranceProgress) {
                     action_ai.postDelayed({ utteranceProgressListener.onDone("") }, 750L)
                 }
             }, 100L)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == REQUEST_PERMISSIONS) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                finish()
+                return
+            }
         }
     }
 
@@ -211,12 +232,12 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         }
     }
 
-    private var utteranceListening = false
+    private var hasUtteranceProgress = false
 
     private val utteranceProgressListener: UtteranceProgressListener = object : UtteranceProgressListener() {
         override fun onStart(utteranceId: String?) {
             Timber.d("onStart utteranceId=%s", utteranceId)
-            utteranceListening = true
+            hasUtteranceProgress = true
         }
 
         override fun onDone(utteranceId: String) {
@@ -234,8 +255,11 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         Timber.d("listenAgain")
         val response = this.response ?: return
         val result = response.result
-        if (result.action.isNullOrEmpty() && result.fulfillment.speech.isNullOrEmpty()) {
-            return
+        if (result.contexts.size > 0) {
+            val context = result.contexts[0]
+            if (context.lifespan <= 0) {
+                return
+            }
         }
 
         val contexts = result.contexts.map { out ->

@@ -10,8 +10,8 @@
         style="@style/Widget.TextView.Bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="end"
         android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_bubble_error"
+        android:background="@drawable/bg_bubble_me"
         tools:text="@tools:sample/lorem" />
 </LinearLayout>

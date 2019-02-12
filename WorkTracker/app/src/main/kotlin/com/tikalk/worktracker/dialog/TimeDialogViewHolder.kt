@@ -31,18 +31,15 @@
  */
 package com.tikalk.worktracker.dialog
 
-import ai.api.model.AIError
-import ai.api.model.AIResponse
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class TimeDialogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    private val meView: TextView = itemView.findViewById(android.R.id.text1)
-    private val youView: TextView? = itemView.findViewById(android.R.id.text2)
+    private val textView: TextView = itemView.findViewById(android.R.id.text1)
 
-    var response: Any? = null
+    var speech: TikalDialogSpeechBubble? = null
         set(value) {
             field = value
             if (value != null) {
@@ -52,38 +49,11 @@ class TimeDialogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             }
         }
 
-    private fun bind(item: Any) {
-        if (item is AIResponse) {
-            bindResponse(item)
-        } else if (item is AIError) {
-            bindError(item)
-        } else {
-            clear()
-        }
-    }
-
-    private fun bindResponse(response: AIResponse) {
-        val result = response.result
-
-        meView.text = result.resolvedQuery
-
-        val displayText = result.fulfillment.displayText
-        val speech = result.fulfillment.speech
-        val message = if (displayText.isNullOrEmpty()) speech else displayText
-        youView!!.text = message
-        if (message.isNullOrEmpty()) {
-            youView.visibility = View.GONE
-        } else {
-            youView.visibility = View.VISIBLE
-        }
-    }
-
-    private fun bindError(error: AIError) {
-        meView.text = error.message
+    private fun bind(item: TikalDialogSpeechBubble) {
+        textView.text = item.speech
     }
 
     private fun clear() {
-        meView.text = ""
-        youView?.text = ""
+        textView.text = ""
     }
 }

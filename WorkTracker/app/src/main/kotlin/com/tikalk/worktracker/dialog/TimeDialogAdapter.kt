@@ -33,58 +33,82 @@ package com.tikalk.worktracker.dialog
 
 import ai.api.model.AIError
 import ai.api.model.AIResponse
+import ai.api.model.ResponseMessage
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
+import java.lang.IllegalArgumentException
 
 class TimeDialogAdapter : RecyclerView.Adapter<TimeDialogViewHolder>() {
 
-    companion object {
-        private const val TYPE_RESPONSE = 0
-        private const val TYPE_ERROR = 1
-    }
-
-    private val data = ArrayList<Any>()
+    private val data = ArrayList<TikalDialogSpeechBubble>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeDialogViewHolder {
         val context: Context = parent.context
-        val view = if (viewType == TYPE_ERROR) {
-            LayoutInflater.from(context).inflate(R.layout.speech_bubble_error, parent, false)
-        } else {
-            LayoutInflater.from(context).inflate(R.layout.speech_bubbles, parent, false)
+        val view = when (viewType) {
+            TikalDialogSpeechBubbleType.ME.ordinal -> {
+                LayoutInflater.from(context).inflate(R.layout.speech_bubble_me, parent, false)
+            }
+            TikalDialogSpeechBubbleType.AGENT.ordinal -> {
+                LayoutInflater.from(context).inflate(R.layout.speech_bubble_you, parent, false)
+            }
+            TikalDialogSpeechBubbleType.ERROR.ordinal -> {
+                LayoutInflater.from(context).inflate(R.layout.speech_bubble_error, parent, false)
+            }
+            else -> throw IllegalArgumentException("unknown view type $viewType")
         }
         return TimeDialogViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: TimeDialogViewHolder, position: Int) {
-        holder.response = getItem(position)
+        holder.speech = getItem(position)
     }
 
     override fun getItemViewType(position: Int): Int {
         val item = getItem(position)
-        if (item is AIError) {
-            return TYPE_ERROR
-        }
-        return TYPE_RESPONSE
+        return item.type.ordinal
     }
 
     override fun getItemCount(): Int {
         return data.size
     }
 
-    private fun getItem(position: Int): Any {
+    private fun getItem(position: Int): TikalDialogSpeechBubble {
         return data[position]
     }
 
-    fun add(response: AIResponse) {
-        data.add(0, response)
-        notifyItemInserted(0)
+    fun add(response: AIResponse): List<TikalDialogSpeechBubble> {
+        val result = response.result
+        val bubbles = ArrayList<TikalDialogSpeechBubble>()
+        var bubble: TikalDialogSpeechBubble
+
+        bubble = TikalDialogSpeechBubble(TikalDialogSpeechBubbleType.ME, result.resolvedQuery)
+        data.add(0, bubble)
+        bubbles.add(bubble)
+
+        val fulfillment = result.fulfillment
+        val messages = fulfillment.messages
+
+        for (message in messages) {
+            if (message is ResponseMessage.ResponseSpeech) {
+                for (speech in message.speech) {
+                    bubble = TikalDialogSpeechBubble(TikalDialogSpeechBubbleType.AGENT, speech)
+                    data.add(0, bubble)
+                    bubbles.add(bubble)
+                }
+            }
+        }
+
+        notifyItemRangeChanged(0, bubbles.size)
+        return bubbles
     }
 
-    fun add(error: AIError) {
-        data.add(0, error)
+    fun add(error: AIError): TikalDialogSpeechBubble {
+        val bubble = TikalDialogSpeechBubble(TikalDialogSpeechBubbleType.ERROR, error.message)
+        data.add(0, bubble)
         notifyItemInserted(0)
+        return bubble
     }
 }

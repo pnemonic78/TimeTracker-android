@@ -12,7 +12,6 @@
     <com.tikalk.worktracker.dialog.TikalDialogButton
         android:id="@+id/action_ai"
         style="@style/Microphone"
-        android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -27,5 +26,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/speech_bubbles" />
+        tools:listitem="@layout/speech_bubble_you" />
 </androidx.constraintlayout.widget.ConstraintLayout>
