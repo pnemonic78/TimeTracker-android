@@ -9,7 +9,7 @@
     android:layout_marginBottom="@dimen/activity_vertical_margin"
     tools:context="com.tikalk.worktracker.dialog.TimeDialogActivity">
 
-    <ai.api.ui.AIButton
+    <com.tikalk.worktracker.dialog.TikalDialogButton
         android:id="@+id/action_ai"
         style="@style/Microphone"
         android:layout_margin="16dp"
@@ -27,10 +27,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/action_ai"
-        tools:listitem="@layout/speech_bubble_me" />
-
-    <!-- Progress indicator -->
-    <include
-        layout="@layout/progress"
-        tools:visibility="gone" />
+        tools:listitem="@layout/speech_bubbles" />
 </androidx.constraintlayout.widget.ConstraintLayout>

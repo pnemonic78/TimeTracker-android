@@ -18,6 +18,7 @@ package com.tikalk.worktracker.dialog
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import timber.log.Timber
 
 object TTS {
@@ -32,7 +33,9 @@ object TTS {
         }
     }
 
-    fun speak(text: String) {
-        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null)
+    fun speak(text: String, utteranceProgressListener: UtteranceProgressListener? = null) {
+        val textToSpeech = this.textToSpeech ?: return
+        textToSpeech.setOnUtteranceProgressListener(utteranceProgressListener)
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null)
     }
 }

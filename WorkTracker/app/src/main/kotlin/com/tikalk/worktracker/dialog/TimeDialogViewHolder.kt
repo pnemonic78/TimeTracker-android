@@ -33,7 +33,6 @@ package com.tikalk.worktracker.dialog
 
 import ai.api.model.AIError
 import ai.api.model.AIResponse
-import ai.api.model.ResponseMessage
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -68,24 +67,12 @@ class TimeDialogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         meView.text = result.resolvedQuery
 
-        val fulfillment = result.fulfillment
-        val speech = fulfillment.speech
-        val messages = fulfillment.messages
-        var message: String? = null
-        if (messages.isNotEmpty()) {
-            val responseMessages = messages[0]
-            if (responseMessages is ResponseMessage.ResponseSpeech) {
-                val speeches = responseMessages.speech
-                if (speeches.isNotEmpty()) {
-                    message = speeches[0]
-                }
-            }
-        }
-
-        if (message != null) {
-            youView!!.text = message
+        val speech = result.fulfillment.speech
+        youView!!.text = speech
+        if (speech.isNullOrEmpty()) {
+            youView.visibility = View.GONE
         } else {
-            youView!!.text = speech
+            youView.visibility = View.VISIBLE
         }
     }
 

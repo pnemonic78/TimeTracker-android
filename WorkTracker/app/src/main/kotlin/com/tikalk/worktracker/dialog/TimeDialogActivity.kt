@@ -32,31 +32,31 @@
 package com.tikalk.worktracker.dialog
 
 import ai.api.AIConfiguration.SupportedLanguages
+import ai.api.RequestExtras
 import ai.api.android.AIConfiguration
 import ai.api.android.AIConfiguration.RecognitionEngine
+import ai.api.model.AIContext
 import ai.api.model.AIError
 import ai.api.model.AIResponse
+import ai.api.model.Entity
 import ai.api.ui.AIButton
 import android.Manifest
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
+import android.speech.tts.UtteranceProgressListener
+import android.text.format.DateUtils
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_time_dialog.*
-import kotlinx.android.synthetic.main.activity_time_edit.*
-import kotlinx.android.synthetic.main.progress.*
 import timber.log.Timber
 import java.util.*
+import kotlin.collections.HashMap
 
 class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
 
@@ -67,15 +67,15 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
 
-        private const val AI_ACCESS_TOKEN = "4db8e909a1c649baa40f12f487eea2e5"
+        private const val AGENT_ACCESS_TOKEN = "4db8e909a1c649baa40f12f487eea2e5"
     }
 
     private lateinit var prefs: TimeTrackerPrefs
 
     private val disposables = CompositeDisposable()
     private var date = Calendar.getInstance()
-    private var user = User("")
     private val adapter = TimeDialogAdapter()
+    private var response: AIResponse? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,16 +84,9 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         // Set up the form.
         setContentView(R.layout.activity_time_dialog)
 
-        user.username = prefs.userCredentials.login
-        user.email = user.username
-
-
-        val config = AIConfiguration(AI_ACCESS_TOKEN,
+        val config = AIConfiguration(AGENT_ACCESS_TOKEN,
             SupportedLanguages.English,
             RecognitionEngine.System)
-//        config.recognizerStartSound = resources.openRawResourceFd(R.raw.test_start)
-//        config.recognizerStopSound = resources.openRawResourceFd(R.raw.test_stop)
-//        config.recognizerCancelSound = resources.openRawResourceFd(R.raw.test_cancel)
         action_ai.initialize(config)
         action_ai.setResultsListener(this)
         TTS.init(applicationContext)
@@ -156,12 +149,13 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
     }
 
     override fun onResult(response: AIResponse) {
-        runOnUiThread {
-            Timber.d("onResult")
+        Timber.d("onResult")
+        this.response = response
 
+        runOnUiThread {
             Timber.i("Received success response")
             adapter.add(response)
-            conversation.scrollToPosition(adapter.itemCount)
+            conversation.scrollToPosition(adapter.itemCount - 1)
 
             // this is example how to get different parts of result object
             val status = response.status
@@ -174,7 +168,7 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
             Timber.i("Action: %s", result.action)
             val speech = result.fulfillment.speech
             Timber.i("Speech: $speech")
-            TTS.speak(speech)
+            TTS.speak(speech, utteranceProgressListener)
 
             val metadata = result.metadata
             if (metadata != null) {
@@ -189,30 +183,10 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
                     Timber.i(String.format("%s: %s", entry.key, entry.value.toString()))
                 }
             }
+
+            // FIXME utteranceProgressListener not called by TTS.
+            action_ai.postDelayed({ utteranceProgressListener.onDone("") }, DateUtils.SECOND_IN_MILLIS / 2)
         }
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    private fun showProgress(show: Boolean) {
-        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-
-        time_form.visibility = if (show) View.GONE else View.VISIBLE
-        time_form.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                time_form.visibility = if (show) View.GONE else View.VISIBLE
-            }
-        })
-
-        progress.visibility = if (show) View.VISIBLE else View.GONE
-        progress.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                progress.visibility = if (show) View.VISIBLE else View.GONE
-            }
-        })
     }
 
     private fun checkAudioRecordPermission() {
@@ -230,5 +204,42 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_PERMISSIONS)
             }
         }
+    }
+
+    private val utteranceProgressListener: UtteranceProgressListener = object : UtteranceProgressListener() {
+        override fun onStart(utteranceId: String?) {
+            Timber.d("onStart utteranceId=%s", utteranceId)
+        }
+
+        override fun onDone(utteranceId: String) {
+            Timber.d("onDone utteranceId=%s", utteranceId)
+            listenAgain()
+        }
+
+        override fun onError(utteranceId: String) {
+            Timber.d("onError utteranceId=%s", utteranceId)
+            listenAgain()
+        }
+    }
+
+    private fun listenAgain() {
+        Timber.d("listenAgain")
+        val response = this.response ?: return
+        val result = response.result
+        val contexts = result.contexts.map { out ->
+            val ctx = AIContext(out.name)
+            ctx.lifespan = out.lifespan
+
+            val m = HashMap<String, String>()
+            for (key in out.parameters.keys) {
+                m[key] = out.parameters[key].toString()
+            }
+            ctx.parameters = m
+
+            ctx
+        }
+        val entities: List<Entity> = emptyList()
+        val requestExtras = RequestExtras(contexts, entities)
+        action_ai.startListening(requestExtras)
     }
 }
