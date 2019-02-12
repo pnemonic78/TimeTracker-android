@@ -34,7 +34,6 @@ package com.tikalk.worktracker.dialog
 import ai.api.AIConfiguration.SupportedLanguages
 import ai.api.android.AIConfiguration
 import ai.api.android.AIConfiguration.RecognitionEngine
-import ai.api.android.GsonFactory
 import ai.api.model.AIError
 import ai.api.model.AIResponse
 import ai.api.ui.AIButton
@@ -76,7 +75,7 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
     private val disposables = CompositeDisposable()
     private var date = Calendar.getInstance()
     private var user = User("")
-    private val gson = GsonFactory.getGson()
+    private val adapter = TimeDialogAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +97,8 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         action_ai.initialize(config)
         action_ai.setResultsListener(this)
         TTS.init(applicationContext)
+
+        conversation.adapter = adapter
 
         checkAudioRecordPermission()
 
@@ -144,14 +145,13 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
     override fun onCancelled() {
         runOnUiThread {
             Timber.w("onCancelled")
-            conversation.text = ""
         }
     }
 
     override fun onError(error: AIError) {
         runOnUiThread {
             Timber.e("onError %s", error)
-            conversation.text = error.toString()
+            adapter.add(error)
         }
     }
 
@@ -159,9 +159,9 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         runOnUiThread {
             Timber.d("onResult")
 
-            conversation.text = gson.toJson(response)
-
             Timber.i("Received success response")
+            adapter.add(response)
+            conversation.scrollToPosition(adapter.itemCount)
 
             // this is example how to get different parts of result object
             val status = response.status

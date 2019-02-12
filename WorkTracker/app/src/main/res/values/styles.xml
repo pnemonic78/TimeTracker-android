@@ -2,6 +2,8 @@
 
     <style name="Widget" />
 
+    <style name="Widget.TextView" parent="TextAppearance.AppCompat.Medium" />
+
     <style name="Widget.TextView.Label" parent="TextAppearance.AppCompat.Caption" />
 
     <style name="Widget.TextView.Error" parent="TextAppearance.AppCompat.Body1">
@@ -49,6 +51,9 @@
         <item name="android:gravity">right</item>
     </style>
 
-    <style name="Microphone" parent="ApiAi.Microphone"/>
+    <style name="Microphone" parent="ApiAi.Microphone" />
 
+    <style name="Widget.TextView.Bubble">
+        <item name="android:padding">8dp</item>
+    </style>
 </resources>
