@@ -33,7 +33,6 @@ package com.tikalk.worktracker.time
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -222,7 +221,7 @@ class TimeEditActivity : InternetActivity() {
                 showProgress(false)
 
                 this.date = date
-                if (validResponse(response)) {
+                if (validResponse(response, TimeTrackerService.PHP_TIME)) {
                     populateForm(response.body()!!, date, id)
                 } else {
                     authenticate(true)
@@ -231,27 +230,6 @@ class TimeEditActivity : InternetActivity() {
                 Timber.e(err, "Error fetching page: ${err.message}")
             })
             .addTo(disposables)
-    }
-
-    private fun validResponse(response: Response<String>): Boolean {
-        val body = response.body()
-        if (response.isSuccessful && (body != null)) {
-            val networkResponse = response.raw().networkResponse()
-            val priorResponse = response.raw().priorResponse()
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request().url()
-                val priorUrl = priorResponse.request().url()
-                if (networkUrl == priorUrl) {
-                    return true
-                }
-                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
-                    return true
-                }
-                return false
-            }
-            return true
-        }
-        return false
     }
 
     /** Populate the record and then bind the form. */
@@ -516,7 +494,7 @@ class TimeEditActivity : InternetActivity() {
                     showProgress(false)
                 }
 
-                if (validResponse(response)) {
+                if (validResponse(response, TimeTrackerService.PHP_TIME)) {
                     if (last) {
                         setResult(RESULT_OK)
                         finish()
@@ -693,7 +671,7 @@ class TimeEditActivity : InternetActivity() {
             .subscribe({ response ->
                 showProgress(false)
 
-                if (validResponse(response)) {
+                if (validResponse(response, TimeTrackerService.PHP_TIME)) {
                     setResult(RESULT_OK)
                     finish()
                 } else {

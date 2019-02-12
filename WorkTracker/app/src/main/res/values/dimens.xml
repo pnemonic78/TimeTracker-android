@@ -12,4 +12,7 @@
     <string name="constraint_ratio_1_1" translatable="false">H,1:1</string>
 
     <dimen name="time_list_marginTop">8dp</dimen>
+
+    <!-- Buttons -->
+    <dimen name="button_size">48dp</dimen>
 </resources>

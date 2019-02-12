@@ -17,6 +17,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.InternetActivity
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
@@ -193,30 +194,30 @@ class LoginActivity : InternetActivity() {
 
             val today = formatSystemDate()
             authTask = service.login(email, password, today)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ response ->
-                        showProgress(false)
-                        emailSignInButton.isEnabled = true
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+                    emailSignInButton.isEnabled = true
 
-                        val body = response.body()
-                        if (response.isSuccessful && (body != null)) {
-                            val errorMessage = getResponseError(body)
-                            if (errorMessage == null) {
-                                setResult(RESULT_OK)
-                                finish()
-                            } else {
-                                emailView.error = errorMessage
-                            }
+                    if (validResponse(response, TimeTrackerService.PHP_TIME)) {
+                        val body = response.body()!!
+                        val errorMessage = getResponseError(body)
+                        if (errorMessage == null) {
+                            setResult(RESULT_OK)
+                            finish()
                         } else {
-                            passwordView.requestFocus()
-                            authenticate(email, response.raw())
+                            emailView.error = errorMessage
                         }
-                    }, { err ->
-                        Timber.e(err, "Error signing in: ${err.message}")
-                        showProgress(false)
-                        emailSignInButton.isEnabled = true
-                    })
+                    } else {
+                        passwordView.requestFocus()
+                        authenticate(email, response.raw())
+                    }
+                }, { err ->
+                    Timber.e(err, "Error signing in: ${err.message}")
+                    showProgress(false)
+                    emailSignInButton.isEnabled = true
+                })
         }
     }
 
@@ -236,7 +237,7 @@ class LoginActivity : InternetActivity() {
 
         loginFormView.visibility = if (show) View.GONE else View.VISIBLE
         loginFormView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 loginFormView.visibility = if (show) View.GONE else View.VISIBLE
             }
@@ -244,7 +245,7 @@ class LoginActivity : InternetActivity() {
 
         progressView.visibility = if (show) View.VISIBLE else View.GONE
         progressView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 progressView.visibility = if (show) View.VISIBLE else View.GONE
             }

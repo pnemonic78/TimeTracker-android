@@ -80,6 +80,7 @@ class TimeListActivity : InternetActivity(),
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 0x109
+        private const val REQUEST_DIALOG = 0xD1A0
         private const val REQUEST_EDIT = 0xED17
         private const val REQUEST_STOPPED = 0x5706
 
@@ -155,6 +156,7 @@ class TimeListActivity : InternetActivity(),
         action_start.setOnClickListener { startTimer() }
         action_stop.setOnClickListener { stopTimer() }
         fab_add.setOnClickListener { addTime() }
+        fab_dialog.setOnClickListener { addDialog() }
 
         list.adapter = listAdapter
         // Disable swiping on item in favour of swiping days.
@@ -248,7 +250,7 @@ class TimeListActivity : InternetActivity(),
                 if (this.date != date) {
                     this.date.timeInMillis = date.timeInMillis
                 }
-                if (validResponse(response)) {
+                if (validResponse(response, TimeTrackerService.PHP_TIME)) {
                     populateForm(response.body()!!, date)
                     populateList(response.body()!!, date)
                 } else {
@@ -258,27 +260,6 @@ class TimeListActivity : InternetActivity(),
                 Timber.e(err, "Error fetching page: ${err.message}")
             })
             .addTo(disposables)
-    }
-
-    private fun validResponse(response: Response<String>): Boolean {
-        val body = response.body()
-        if (response.isSuccessful && (body != null)) {
-            val networkResponse = response.raw().networkResponse()
-            val priorResponse = response.raw().priorResponse()
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request().url()
-                val priorUrl = priorResponse.request().url()
-                if (networkUrl == priorUrl) {
-                    return true
-                }
-                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
-                    return true
-                }
-                return false
-            }
-            return true
-        }
-        return false
     }
 
     /** Populate the list. */
@@ -324,11 +305,11 @@ class TimeListActivity : InternetActivity(),
 
         day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
         timeBuffer.setLength(0)
-        week_total.text =  formatElapsedTime(context, timeFormatter,totals.weekly).toString()
+        week_total.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
         timeBuffer.setLength(0)
-        month_total.text =  formatElapsedTime(context, timeFormatter,totals.monthly).toString()
+        month_total.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
         timeBuffer.setLength(0)
-        remaining_quota.text =  formatElapsedTime(context, timeFormatter,totals.remaining).toString()
+        remaining_quota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -349,6 +330,7 @@ class TimeListActivity : InternetActivity(),
                 // Fetch the list for the user.
                 fetchPage(date)
             }
+            REQUEST_DIALOG,
             REQUEST_EDIT -> if (resultCode == RESULT_OK) {
                 intent.action = null
                 // Refresh the list with the edited item.
@@ -454,6 +436,7 @@ class TimeListActivity : InternetActivity(),
         })
 
         fab_add.isEnabled = !show
+        fab_dialog.isEnabled = !show
     }
 
     private fun addTime() {
@@ -679,7 +662,7 @@ class TimeListActivity : InternetActivity(),
                 { response ->
                     showProgress(false)
 
-                    if (validResponse(response)) {
+                    if (validResponse(response, TimeTrackerService.PHP_TIME)) {
                         populateForm(response.body()!!, date)
                         populateList(response.body()!!, date)
                     } else {
@@ -988,5 +971,11 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
+    }
+
+    private fun addDialog() {
+        val intent = Intent(context, TimeDialogActivity::class.java)
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
+        startActivityForResult(intent, REQUEST_DIALOG)
     }
 }

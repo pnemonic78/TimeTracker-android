@@ -89,4 +89,8 @@ dependencies {
 
     // Logging
     implementation "com.jakewharton.timber:timber:$timberVersion"
+
+    // Voice
+//    implementation 'ai.api:sdk:2.0.7'
+//    implementation 'ai.api:libai:1.6.12'
 }
