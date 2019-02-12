@@ -226,6 +226,10 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         Timber.d("listenAgain")
         val response = this.response ?: return
         val result = response.result
+        if (result.action.isNullOrEmpty() && result.fulfillment.speech.isNullOrEmpty()) {
+            return
+        }
+
         val contexts = result.contexts.map { out ->
             val ctx = AIContext(out.name)
             ctx.lifespan = out.lifespan

@@ -67,9 +67,11 @@ class TimeDialogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         meView.text = result.resolvedQuery
 
+        val displayText = result.fulfillment.displayText
         val speech = result.fulfillment.speech
-        youView!!.text = speech
-        if (speech.isNullOrEmpty()) {
+        val message = if (displayText.isNullOrEmpty()) speech else displayText
+        youView!!.text = message
+        if (message.isNullOrEmpty()) {
             youView.visibility = View.GONE
         } else {
             youView.visibility = View.VISIBLE
