@@ -45,9 +45,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.tts.UtteranceProgressListener
-import android.text.format.DateUtils
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
@@ -92,6 +92,7 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         TTS.init(applicationContext)
 
         conversation.adapter = adapter
+        (conversation.layoutManager as LinearLayoutManager).reverseLayout = true
 
         checkAudioRecordPermission()
 
@@ -155,7 +156,7 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         runOnUiThread {
             Timber.i("Received success response")
             adapter.add(response)
-            conversation.scrollToPosition(adapter.itemCount - 1)
+            conversation.scrollToPosition(0)
 
             // this is example how to get different parts of result object
             val status = response.status
@@ -184,8 +185,12 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
                 }
             }
 
-            // FIXME utteranceProgressListener not called by TTS.
-            action_ai.postDelayed({ utteranceProgressListener.onDone("") }, DateUtils.SECOND_IN_MILLIS / 2)
+            // utteranceProgressListener not called by TTS?
+            action_ai.postDelayed({
+                if (!utteranceListening) {
+                    action_ai.postDelayed({ utteranceProgressListener.onDone("") }, 750L)
+                }
+            }, 100L)
         }
     }
 
@@ -206,9 +211,12 @@ class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
         }
     }
 
+    private var utteranceListening = false
+
     private val utteranceProgressListener: UtteranceProgressListener = object : UtteranceProgressListener() {
         override fun onStart(utteranceId: String?) {
             Timber.d("onStart utteranceId=%s", utteranceId)
+            utteranceListening = true
         }
 
         override fun onDone(utteranceId: String) {

@@ -79,14 +79,12 @@ class TimeDialogAdapter : RecyclerView.Adapter<TimeDialogViewHolder>() {
     }
 
     fun add(response: AIResponse) {
-        val index = data.size
-        data += response
-        notifyItemInserted(index)
+        data.add(0, response)
+        notifyItemInserted(0)
     }
 
     fun add(error: AIError) {
-        val index = data.size
-        data += error
-        notifyItemInserted(index)
+        data.add(0, error)
+        notifyItemInserted(0)
     }
 }

@@ -23,8 +23,8 @@ import javax.net.ssl.*
 class TimeTrackerServiceFactory {
 
     companion object {
-        //private const val BASE_URL = "https://planet.tikalk.com/timetracker/"
-        private const val BASE_URL = "https://192.168.1.8/timetracker/"
+        private const val BASE_URL = "https://planet.tikalk.com/timetracker/"
+        //private const val BASE_URL = "https://192.168.1.8/timetracker/"
 
         private val cookieHandler: CookieHandler = CookieManager()
 
@@ -99,7 +99,7 @@ class TimeTrackerServiceFactory {
         }
 
         fun createPlain(authToken: String? = null): TimeTrackerService {
-            val httpClient = createUnsafeHttpClient(authToken)
+            val httpClient = createHttpClient(authToken)
 
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
