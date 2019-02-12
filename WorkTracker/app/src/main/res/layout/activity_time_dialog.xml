@@ -3,12 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.tikalk.worktracker.time.TimeDialogActivity">
+    android:layout_marginStart="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    tools:context="com.tikalk.worktracker.dialog.TimeDialogActivity">
 
-    <Button
+    <ai.api.ui.AIButton
         android:id="@+id/action_ai"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
+        style="@style/Microphone"
         android:layout_margin="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

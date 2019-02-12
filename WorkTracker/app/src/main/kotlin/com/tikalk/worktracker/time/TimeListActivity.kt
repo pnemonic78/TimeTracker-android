@@ -45,6 +45,7 @@ import android.widget.ArrayAdapter
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.dialog.TimeDialogActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
@@ -68,7 +69,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import retrofit2.Response
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit

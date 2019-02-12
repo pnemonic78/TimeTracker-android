@@ -29,14 +29,24 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time
+package com.tikalk.worktracker.dialog
 
+import ai.api.AIConfiguration.SupportedLanguages
+import ai.api.android.AIConfiguration
+import ai.api.android.AIConfiguration.RecognitionEngine
+import ai.api.android.GsonFactory
+import ai.api.model.AIError
+import ai.api.model.AIResponse
+import ai.api.ui.AIButton
+import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.User
@@ -46,25 +56,27 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_time_dialog.*
 import kotlinx.android.synthetic.main.activity_time_edit.*
 import kotlinx.android.synthetic.main.progress.*
+import timber.log.Timber
 import java.util.*
 
-class TimeDialogActivity : InternetActivity() {
+class TimeDialogActivity : InternetActivity(), AIButton.AIButtonListener {
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = 1
+        private const val REQUEST_PERMISSIONS = 33
 
         private const val STATE_DATE = "date"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
-    }
 
-    private val context: Context = this
+        private const val AI_ACCESS_TOKEN = "4db8e909a1c649baa40f12f487eea2e5"
+    }
 
     private lateinit var prefs: TimeTrackerPrefs
 
     private val disposables = CompositeDisposable()
     private var date = Calendar.getInstance()
     private var user = User("")
+    private val gson = GsonFactory.getGson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +88,18 @@ class TimeDialogActivity : InternetActivity() {
         user.username = prefs.userCredentials.login
         user.email = user.username
 
-        action_ai.setOnClickListener { startDialog() }
+
+        val config = AIConfiguration(AI_ACCESS_TOKEN,
+            SupportedLanguages.English,
+            RecognitionEngine.System)
+//        config.recognizerStartSound = resources.openRawResourceFd(R.raw.test_start)
+//        config.recognizerStopSound = resources.openRawResourceFd(R.raw.test_stop)
+//        config.recognizerCancelSound = resources.openRawResourceFd(R.raw.test_cancel)
+        action_ai.initialize(config)
+        action_ai.setResultsListener(this)
+        TTS.init(applicationContext)
+
+        checkAudioRecordPermission()
 
         handleIntent(intent, savedInstanceState)
     }
@@ -84,6 +107,21 @@ class TimeDialogActivity : InternetActivity() {
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // use this method to disconnect from speech recognition service
+        // Not destroying the SpeechRecognition object in onPause method would block other apps from using SpeechRecognition service
+        action_ai.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // use this method to re-init connection to recognition service
+        action_ai.resume()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -100,6 +138,57 @@ class TimeDialogActivity : InternetActivity() {
             date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
         } else {
             date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, now) ?: now
+        }
+    }
+
+    override fun onCancelled() {
+        runOnUiThread {
+            Timber.w("onCancelled")
+            conversation.text = ""
+        }
+    }
+
+    override fun onError(error: AIError) {
+        runOnUiThread {
+            Timber.e("onError %s", error)
+            conversation.text = error.toString()
+        }
+    }
+
+    override fun onResult(response: AIResponse) {
+        runOnUiThread {
+            Timber.d("onResult")
+
+            conversation.text = gson.toJson(response)
+
+            Timber.i("Received success response")
+
+            // this is example how to get different parts of result object
+            val status = response.status
+            Timber.i("Status code: %s", status.code)
+            Timber.i("Status type: %s", status.errorType)
+
+            val result = response.result
+            Timber.i("Resolved query: %s", result.resolvedQuery)
+
+            Timber.i("Action: %s", result.action)
+            val speech = result.fulfillment.speech
+            Timber.i("Speech: $speech")
+            TTS.speak(speech)
+
+            val metadata = result.metadata
+            if (metadata != null) {
+                Timber.i("Intent id: %s", metadata.intentId)
+                Timber.i("Intent name: %s", metadata.intentName)
+            }
+
+            val params = result.parameters
+            if (params != null && !params.isEmpty()) {
+                Timber.i("Parameters: ")
+                for (entry in params.entries) {
+                    Timber.i(String.format("%s: %s", entry.key, entry.value.toString()))
+                }
+            }
         }
     }
 
@@ -126,7 +215,20 @@ class TimeDialogActivity : InternetActivity() {
         })
     }
 
-    private fun startDialog() {
-        conversation.text = "Hello, World!"
+    private fun checkAudioRecordPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_PERMISSIONS)
+            }
+        }
     }
 }
