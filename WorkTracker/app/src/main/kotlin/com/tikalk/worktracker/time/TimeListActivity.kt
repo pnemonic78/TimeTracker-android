@@ -766,8 +766,8 @@ class TimeListActivity : InternetActivity(),
         task_input.setSelection(tasks.indexOf(record.task))
         project_input.requestFocus()
 
-        val startTime = record.start
-        if ((startTime == null) || (startTime.timeInMillis <= 0L)) {
+        val startTime = record.startTime
+        if (startTime <= 0L) {
             project_input.isEnabled = true
             task_input.isEnabled = true
             action_switcher.displayedChild = 0
