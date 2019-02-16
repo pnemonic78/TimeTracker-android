@@ -320,15 +320,39 @@ class TimeListActivity : InternetActivity(),
 
         val context: Context = this
         val timeBuffer = StringBuilder(20)
-        val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+        val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
-        day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
-        timeBuffer.setLength(0)
-        week_total.text =  formatElapsedTime(context, timeFormatter,totals.weekly).toString()
-        timeBuffer.setLength(0)
-        month_total.text =  formatElapsedTime(context, timeFormatter,totals.monthly).toString()
-        timeBuffer.setLength(0)
-        remaining_quota.text =  formatElapsedTime(context, timeFormatter,totals.remaining).toString()
+        if (totals.daily == TimeTotals.UNKNOWN) {
+            day_total_label.visibility = View.INVISIBLE
+            day_total.text = null
+        } else {
+            day_total_label.visibility = View.VISIBLE
+            day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
+        }
+        if (totals.weekly == TimeTotals.UNKNOWN) {
+            week_total_label.visibility = View.INVISIBLE
+            week_total.text = null
+        } else {
+            timeBuffer.setLength(0)
+            week_total_label.visibility = View.VISIBLE
+            week_total.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
+        }
+        if (totals.monthly == TimeTotals.UNKNOWN) {
+            month_total_label.visibility = View.INVISIBLE
+            month_total.text = null
+        } else {
+            timeBuffer.setLength(0)
+            month_total_label.visibility = View.VISIBLE
+            month_total.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
+        }
+        if (totals.remaining == TimeTotals.UNKNOWN) {
+            remaining_quota_label.visibility = View.INVISIBLE
+            remaining_quota.text = null
+        } else {
+            timeBuffer.setLength(0)
+            remaining_quota_label.visibility = View.VISIBLE
+            remaining_quota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
+        }
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -930,7 +954,7 @@ class TimeListActivity : InternetActivity(),
 
 
     private fun populateTotals(doc: Document, parent: Element?, totals: TimeTotals) {
-        totals.clear()
+        totals.clear(true)
         if (parent == null) {
             return
         }
@@ -943,19 +967,19 @@ class TimeListActivity : InternetActivity(),
             when {
                 text.startsWith("Day total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.daily = parseHours(value) ?: 0L
+                    totals.daily = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Week total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.weekly = parseHours(value) ?: 0L
+                    totals.weekly = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Month total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.monthly = parseHours(value) ?: 0L
+                    totals.monthly = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Remaining quota:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.remaining = parseHours(value) ?: 0L
+                    totals.remaining = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
             }
         }
