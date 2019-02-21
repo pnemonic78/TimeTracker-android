@@ -63,20 +63,32 @@ data class TimeTotals(
         return 0
     }
 
-    fun clear() {
-        daily = 0
-        weekly = 0
-        monthly = 0
-        remaining = 0
+    fun clear(unknown: Boolean = false) {
+        if (unknown) {
+            daily = UNKNOWN
+            weekly = UNKNOWN
+            monthly = UNKNOWN
+            remaining = UNKNOWN
+        } else {
+            daily = 0
+            weekly = 0
+            monthly = 0
+            remaining = 0
+        }
     }
 
-    companion object CREATOR : Parcelable.Creator<TimeTotals> {
-        override fun createFromParcel(parcel: Parcel): TimeTotals {
-            return TimeTotals(parcel)
-        }
+    companion object {
+        const val UNKNOWN = -1L
 
-        override fun newArray(size: Int): Array<TimeTotals?> {
-            return arrayOfNulls(size)
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<TimeTotals> {
+            override fun createFromParcel(parcel: Parcel): TimeTotals {
+                return TimeTotals(parcel)
+            }
+
+            override fun newArray(size: Int): Array<TimeTotals?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 }

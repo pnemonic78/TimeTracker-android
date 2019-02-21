@@ -24,10 +24,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import okhttp3.Response
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 import timber.log.Timber
 
 /**
@@ -199,10 +195,10 @@ class LoginActivity : InternetActivity() {
                         showProgress(false)
                         emailSignInButton.isEnabled = true
 
-                        val body = response.body()
-                        if (response.isSuccessful && (body != null)) {
+                        if (isValidResponse(response)) {
+                            val body = response.body()!!
                             val errorMessage = getResponseError(body)
-                            if (errorMessage == null) {
+                            if (errorMessage.isNullOrEmpty()) {
                                 setResult(RESULT_OK)
                                 finish()
                             } else {
@@ -266,40 +262,6 @@ class LoginActivity : InternetActivity() {
             }
         }
         return false
-    }
-
-    private fun getResponseError(html: String): String? {
-        val doc: Document = Jsoup.parse(html)
-        return findError(doc)
-    }
-
-    /**
-     * Find the first error table element.
-     */
-    private fun findError(doc: Document): String? {
-        val body = doc.body()
-        val tables = body.select("table")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
-        var td: Element
-        var classAttr: String
-
-        for (table in tables) {
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.childNodeSize() < 2) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols[0]
-            classAttr = td.attr("class")
-            if (classAttr == "error") {
-                return td.text()
-            }
-        }
-
-        return null
     }
 }
 

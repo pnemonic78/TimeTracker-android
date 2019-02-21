@@ -52,7 +52,6 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Observable
@@ -68,7 +67,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import retrofit2.Response
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -248,9 +246,10 @@ class TimeListActivity : InternetActivity(),
                 if (this.date != date) {
                     this.date.timeInMillis = date.timeInMillis
                 }
-                if (validResponse(response)) {
-                    populateForm(response.body()!!, date)
-                    populateList(response.body()!!, date)
+                if (isValidResponse(response)) {
+                    val body = response.body()!!
+                    populateForm(body, date)
+                    populateList(body, date)
                 } else {
                     authenticate(true)
                 }
@@ -258,27 +257,6 @@ class TimeListActivity : InternetActivity(),
                 Timber.e(err, "Error fetching page: ${err.message}")
             })
             .addTo(disposables)
-    }
-
-    private fun validResponse(response: Response<String>): Boolean {
-        val body = response.body()
-        if (response.isSuccessful && (body != null)) {
-            val networkResponse = response.raw().networkResponse()
-            val priorResponse = response.raw().priorResponse()
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request().url()
-                val priorUrl = priorResponse.request().url()
-                if (networkUrl == priorUrl) {
-                    return true
-                }
-                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
-                    return true
-                }
-                return false
-            }
-            return true
-        }
-        return false
     }
 
     /** Populate the list. */
@@ -320,15 +298,39 @@ class TimeListActivity : InternetActivity(),
 
         val context: Context = this
         val timeBuffer = StringBuilder(20)
-        val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+        val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
-        day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
-        timeBuffer.setLength(0)
-        week_total.text =  formatElapsedTime(context, timeFormatter,totals.weekly).toString()
-        timeBuffer.setLength(0)
-        month_total.text =  formatElapsedTime(context, timeFormatter,totals.monthly).toString()
-        timeBuffer.setLength(0)
-        remaining_quota.text =  formatElapsedTime(context, timeFormatter,totals.remaining).toString()
+        if (totals.daily == TimeTotals.UNKNOWN) {
+            day_total_label.visibility = View.INVISIBLE
+            day_total.text = null
+        } else {
+            day_total_label.visibility = View.VISIBLE
+            day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
+        }
+        if (totals.weekly == TimeTotals.UNKNOWN) {
+            week_total_label.visibility = View.INVISIBLE
+            week_total.text = null
+        } else {
+            timeBuffer.setLength(0)
+            week_total_label.visibility = View.VISIBLE
+            week_total.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
+        }
+        if (totals.monthly == TimeTotals.UNKNOWN) {
+            month_total_label.visibility = View.INVISIBLE
+            month_total.text = null
+        } else {
+            timeBuffer.setLength(0)
+            month_total_label.visibility = View.VISIBLE
+            month_total.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
+        }
+        if (totals.remaining == TimeTotals.UNKNOWN) {
+            remaining_quota_label.visibility = View.INVISIBLE
+            remaining_quota.text = null
+        } else {
+            timeBuffer.setLength(0)
+            remaining_quota_label.visibility = View.VISIBLE
+            remaining_quota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
+        }
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -679,9 +681,10 @@ class TimeListActivity : InternetActivity(),
                 { response ->
                     showProgress(false)
 
-                    if (validResponse(response)) {
-                        populateForm(response.body()!!, date)
-                        populateList(response.body()!!, date)
+                    if (isValidResponse(response)) {
+                        val body = response.body()!!
+                        populateForm(body, date)
+                        populateList(body, date)
                     } else {
                         authenticate(true)
                     }
@@ -742,8 +745,8 @@ class TimeListActivity : InternetActivity(),
         task_input.setSelection(tasks.indexOf(record.task))
         project_input.requestFocus()
 
-        val startTime = record.start
-        if ((startTime == null) || (startTime.timeInMillis <= 0L)) {
+        val startTime = record.startTime
+        if (startTime <= 0L) {
             project_input.isEnabled = true
             task_input.isEnabled = true
             action_switcher.displayedChild = 0
@@ -930,7 +933,7 @@ class TimeListActivity : InternetActivity(),
 
 
     private fun populateTotals(doc: Document, parent: Element?, totals: TimeTotals) {
-        totals.clear()
+        totals.clear(true)
         if (parent == null) {
             return
         }
@@ -943,19 +946,19 @@ class TimeListActivity : InternetActivity(),
             when {
                 text.startsWith("Day total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.daily = parseHours(value) ?: 0L
+                    totals.daily = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Week total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.weekly = parseHours(value) ?: 0L
+                    totals.weekly = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Month total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.monthly = parseHours(value) ?: 0L
+                    totals.monthly = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Remaining quota:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.remaining = parseHours(value) ?: 0L
+                    totals.remaining = parseHours(value) ?: TimeTotals.UNKNOWN
                 }
             }
         }
