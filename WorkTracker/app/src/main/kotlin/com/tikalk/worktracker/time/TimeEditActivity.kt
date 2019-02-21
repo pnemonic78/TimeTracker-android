@@ -33,7 +33,6 @@ package com.tikalk.worktracker.time
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -55,7 +54,6 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Single
@@ -222,8 +220,9 @@ class TimeEditActivity : InternetActivity() {
                 showProgress(false)
 
                 this.date = date
-                if (validResponse(response)) {
-                    populateForm(response.body()!!, date, id)
+                if (isValidResponse(response)) {
+                    val body = response.body()!!
+                    populateForm(body, date, id)
                 } else {
                     authenticate(true)
                 }
@@ -233,35 +232,13 @@ class TimeEditActivity : InternetActivity() {
             .addTo(disposables)
     }
 
-    private fun validResponse(response: Response<String>): Boolean {
-        val body = response.body()
-        if (response.isSuccessful && (body != null)) {
-            val networkResponse = response.raw().networkResponse()
-            val priorResponse = response.raw().priorResponse()
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request().url()
-                val priorUrl = priorResponse.request().url()
-                if (networkUrl == priorUrl) {
-                    return true
-                }
-                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
-                    return true
-                }
-                return false
-            }
-            return true
-        }
-        return false
-    }
-
     /** Populate the record and then bind the form. */
     private fun populateForm(html: String, date: Calendar, id: Long) {
         val doc: Document = Jsoup.parse(html)
 
         record.id = id
 
-        val errorNode = doc.selectFirst("td[class='error']")
-        errorMessage = errorNode?.text()?.trim() ?: ""
+        errorMessage = findError(doc)?.trim() ?: ""
 
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
@@ -487,6 +464,7 @@ class TimeEditActivity : InternetActivity() {
         // perform the user login attempt.
         if (first) {
             showProgress(true)
+            error_label.text = ""
         }
 
         val authToken = prefs.basicCredentials.authToken()
@@ -516,10 +494,16 @@ class TimeEditActivity : InternetActivity() {
                     showProgress(false)
                 }
 
-                if (validResponse(response)) {
-                    if (last) {
-                        setResult(RESULT_OK)
-                        finish()
+                if (isValidResponse(response)) {
+                    val body = response.body()!!
+                    val errorMessage = getResponseError(body)
+                    if (errorMessage.isNullOrEmpty()) {
+                        if (last) {
+                            setResult(RESULT_OK)
+                            finish()
+                        }
+                    } else {
+                        error_label.text = errorMessage
                     }
                 } else {
                     authenticate(true)
@@ -693,7 +677,7 @@ class TimeEditActivity : InternetActivity() {
             .subscribe({ response ->
                 showProgress(false)
 
-                if (validResponse(response)) {
+                if (isValidResponse(response)) {
                     setResult(RESULT_OK)
                     finish()
                 } else {
