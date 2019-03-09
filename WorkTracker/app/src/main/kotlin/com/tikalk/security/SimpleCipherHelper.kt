@@ -1,18 +1,17 @@
 package com.tikalk.security
 
+import android.os.Build
 import android.util.Base64
 import android.util.Base64.NO_WRAP
 import java.nio.charset.StandardCharsets
 import java.security.Key
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.security.spec.AlgorithmParameterSpec
 import java.security.spec.KeySpec
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
-
 
 /**
  * Simple password-based encryption cipher helper.
@@ -31,13 +30,8 @@ class SimpleCipherHelper(privateKey: String, salt: String) : CipherHelper {
     private val cipherDecrypt: Cipher
 
     init {
-        var algorithm = "PBKDF2withHmacSHA256"
-        val keyFactory = try {
-            SecretKeyFactory.getInstance(algorithm)
-        } catch (e: NoSuchAlgorithmException) {
-            algorithm = "PBKDF2withHmacSHA1"
-            SecretKeyFactory.getInstance(algorithm)
-        }
+        var algorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256" else "PBKDF2withHmacSHA1"
+        val keyFactory = SecretKeyFactory.getInstance(algorithm)
 
         val privateKeyChars = privateKey.toCharArray()
 
