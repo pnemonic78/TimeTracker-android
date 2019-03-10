@@ -23,4 +23,10 @@ interface ProjectDao : BaseDao<Project> {
      */
     @Query("SELECT * FROM project WHERE id = :projectId")
     fun queryById(projectId: Long): Project
+
+    /**
+     * Delete all entities.
+     */
+    @Query("DELETE FROM project")
+    fun deleteAll()
 }

@@ -366,7 +366,7 @@ class TimeEditActivity : InternetActivity() {
         val scriptText = findScript(doc, tokenStart, tokenEnd)
 
         for (project in projects) {
-            project.taskIds.clear()
+            project.clearTasks()
         }
 
         if (scriptText.isNotEmpty()) {
@@ -379,8 +379,7 @@ class TimeEditActivity : InternetActivity() {
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    projects.find { it.id == projectId }!!
-                        .taskIds.addAll(taskIds)
+                    projects.find { it.id == projectId }?.addTasks(taskIds)
                 }
             }
         }

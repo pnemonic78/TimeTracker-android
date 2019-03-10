@@ -45,6 +45,7 @@ import android.widget.ArrayAdapter
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
@@ -239,9 +240,9 @@ class TimeListActivity : InternetActivity(),
         val dateFormatted = formatSystemDate(date)
         service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
-                showProgress(false)
+                runOnUiThread { showProgress(false) }
 
                 if (this.date != date) {
                     this.date.timeInMillis = date.timeInMillis
@@ -288,7 +289,7 @@ class TimeListActivity : InternetActivity(),
         }
         populateTotals(doc, form, totals)
 
-        bindList(records, totals)
+        runOnUiThread { bindList(records, totals) }
     }
 
     private fun bindList(records: List<TimeRecord>, totals: TimeTotals) {
@@ -334,7 +335,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        showProgress(true)
+        runOnUiThread { showProgress(true) }
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
@@ -404,7 +405,7 @@ class TimeListActivity : InternetActivity(),
             this.totals = totals
         }
         if (list != null) {
-            bindList(list, this.totals)
+            runOnUiThread { bindList(list, this.totals) }
         }
     }
 
@@ -581,6 +582,11 @@ class TimeListActivity : InternetActivity(),
             projects.add(item)
         }
 
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        projectsDao.deleteAll()
+        projectsDao.insert(projects)
+
         populateTaskIds(doc, projects)
     }
 
@@ -601,6 +607,11 @@ class TimeListActivity : InternetActivity(),
             }
             tasks.add(item)
         }
+
+        val db = TrackerDatabase.getDatabase(this)
+        val tasksDao = db.taskDao()
+        tasksDao.deleteAll()
+        tasksDao.insert(tasks)
     }
 
     private fun populateTaskIds(doc: Document, projects: List<Project>) {
@@ -609,7 +620,7 @@ class TimeListActivity : InternetActivity(),
         val scriptText = findScript(doc, tokenStart, tokenEnd)
 
         for (project in projects) {
-            project.taskIds.clear()
+            project.clearTasks()
         }
 
         if (scriptText.isNotEmpty()) {
@@ -622,10 +633,16 @@ class TimeListActivity : InternetActivity(),
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    projects.find { it.id == projectId }!!
-                        .taskIds.addAll(taskIds)
+                    projects.find { it.id == projectId }?.addTasks(taskIds)
                 }
             }
+        }
+
+        val db = TrackerDatabase.getDatabase(this)
+        val projectTasksDao = db.projectTaskKeyDao()
+        projectTasksDao.deleteAll()
+        for (project in projects) {
+            projectTasksDao.insert(project.tasks.values)
         }
     }
 
@@ -676,10 +693,10 @@ class TimeListActivity : InternetActivity(),
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { response ->
-                    showProgress(false)
+                    runOnUiThread { showProgress(false) }
 
                     if (isValidResponse(response)) {
                         val body = response.body()!!
@@ -711,7 +728,7 @@ class TimeListActivity : InternetActivity(),
         record.task = findSelectedTask(inputTasks, tasks)
 
         val recordStarted = getStartedRecord()
-        populateForm(recordStarted)
+        runOnUiThread { populateForm(recordStarted) }
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {

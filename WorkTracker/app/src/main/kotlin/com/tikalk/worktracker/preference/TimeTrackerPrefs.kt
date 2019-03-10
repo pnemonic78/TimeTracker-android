@@ -3,9 +3,7 @@ package com.tikalk.worktracker.preference
 import android.content.Context
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 
@@ -103,7 +101,7 @@ class TimeTrackerPrefs(context: Context) {
         val project = Project("")
         project.id = projectId
         project.name = projectName
-        project.taskIds += taskId
+        project.tasks[taskId] = ProjectTaskKey(projectId, taskId)
         val task = ProjectTask("")
         task.id = taskId
         task.name = taskName
@@ -133,9 +131,9 @@ class TimeTrackerPrefs(context: Context) {
 
     fun setFavorite(projectId: Long, taskId: Long) {
         prefs.edit()
-                .putLong(PROJECT_FAVORITE, projectId)
-                .putLong(TASK_FAVORITE, taskId)
-                .apply()
+            .putLong(PROJECT_FAVORITE, projectId)
+            .putLong(TASK_FAVORITE, taskId)
+            .apply()
     }
 
     fun getFavoriteProject(): Long {

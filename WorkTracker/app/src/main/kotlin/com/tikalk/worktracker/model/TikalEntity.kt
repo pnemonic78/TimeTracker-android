@@ -41,18 +41,23 @@ import androidx.room.PrimaryKey
  * @author Moshe Waisberg.
  */
 abstract class TikalEntity(
+    @ColumnInfo(name = "id")
+    private var _id: Long = 0
+) {
     /**
      * Server's id.
      */
-    @ColumnInfo(name = "id")
-    open var id: Long = 0
-) {
-    /**
-     * Android database's id.
-     */
-    @ColumnInfo(name = BaseColumns._ID)
-    @PrimaryKey
-    var dbId: Long = 0
+    open var id: Long
+        get() = _id
+        set(value) {
+            _id = value
+        }
+//    /**
+//     * Android database's id.
+//     */
+//    @ColumnInfo(name = BaseColumns._ID)
+//    @PrimaryKey
+//    var dbId: Long = 0
     /**
      * Entity version to resolve conflicts.
      */

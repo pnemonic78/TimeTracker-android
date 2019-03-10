@@ -49,26 +49,39 @@ data class Project(
     @ColumnInfo(name = "description")
     var description: String? = null
 ) : TikalEntity(), Parcelable {
+
+    override var id: Long
+        get() = super.id
+        set(value) {
+            super.id = value
+            for (task in tasks.values) {
+                task.projectId = value
+            }
+        }
+
+    @Ignore
+    val tasks: MutableMap<Long, ProjectTaskKey> = HashMap()
+
+    val taskIds: Set<Long>
+        get() = tasks.keys
+
     override fun toString(): String {
         return name
     }
 
-    @Ignore
-    val taskIds: MutableList<Long> = ArrayList()
-
     constructor(parcel: Parcel) : this("") {
         id = parcel.readLong()
-        dbId = parcel.readLong()
+        parcel.readLong() // old dbId
         version = parcel.readInt()
         name = parcel.readString() ?: ""
         description = parcel.readString()
         val ids = parcel.createLongArray()
-        if (ids != null) for (id in ids) taskIds.add(id)
+        if (ids != null) for (id in ids) addTask(id)
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
-        parcel.writeLong(dbId)
+        parcel.writeLong(0L)//dbId
         parcel.writeInt(version)
         parcel.writeString(name)
         parcel.writeString(description)
@@ -81,6 +94,20 @@ data class Project(
 
     fun isEmpty(): Boolean {
         return (id == 0L) || name.isEmpty()
+    }
+
+    fun clearTasks() {
+        tasks.clear()
+    }
+
+    fun addTask(taskId: Long) {
+        tasks[taskId] = ProjectTaskKey(id, taskId)
+    }
+
+    fun addTasks(taskIds: List<Long>) {
+        for (id in taskIds) {
+            addTask(id)
+        }
     }
 
     companion object {
