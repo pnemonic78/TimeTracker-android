@@ -16,11 +16,11 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      * @return all keys.
      */
     @Query("SELECT * FROM project_task_key")
-    fun getAll(): List<ProjectTaskKey>
+    fun queryAll(): List<ProjectTaskKey>
 
     /**
      * Select a project's keys.
      */
     @Query("SELECT * FROM project_task_key WHERE project_id = :projectId")
-    fun getAllByProject(projectId: Long): List<ProjectTaskKey>
+    fun queryAllByProject(projectId: Long): List<ProjectTaskKey>
 }

@@ -16,11 +16,11 @@ interface ProjectDao : BaseDao<Project> {
      * @return all articles.
      */
     @Query("SELECT * FROM project")
-    fun getAll(): List<Project>
+    fun queryAll(): List<Project>
 
     /**
      * Select a project by its id.
      */
     @Query("SELECT * FROM project WHERE id = :projectId")
-    fun getById(projectId: Long): Project
+    fun queryById(projectId: Long): Project
 }

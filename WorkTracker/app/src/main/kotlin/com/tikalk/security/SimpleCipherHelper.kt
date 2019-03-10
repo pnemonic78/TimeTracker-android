@@ -30,7 +30,7 @@ class SimpleCipherHelper(privateKey: String, salt: String) : CipherHelper {
     private val cipherDecrypt: Cipher
 
     init {
-        var algorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256" else "PBKDF2withHmacSHA1"
+        val algorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256" else "PBKDF2withHmacSHA1"
         val keyFactory = SecretKeyFactory.getInstance(algorithm)
 
         val privateKeyChars = privateKey.toCharArray()
