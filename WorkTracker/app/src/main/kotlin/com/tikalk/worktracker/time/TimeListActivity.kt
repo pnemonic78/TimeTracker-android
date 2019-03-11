@@ -585,7 +585,9 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val projectsDao = db.projectDao()
         projectsDao.deleteAll()
-        projectsDao.insert(projects)
+        for (project in projects) {
+            project.dbId = projectsDao.insert(project)
+        }
 
         populateTaskIds(doc, projects)
     }
@@ -611,7 +613,9 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val tasksDao = db.taskDao()
         tasksDao.deleteAll()
-        tasksDao.insert(tasks)
+        for (task in tasks) {
+            task.dbId = tasksDao.insert(task)
+        }
     }
 
     private fun populateTaskIds(doc: Document, projects: List<Project>) {
@@ -642,7 +646,9 @@ class TimeListActivity : InternetActivity(),
         val projectTasksDao = db.projectTaskKeyDao()
         projectTasksDao.deleteAll()
         for (project in projects) {
-            projectTasksDao.insert(project.tasks.values)
+            for (key in project.tasks.values) {
+                key.dbId = projectTasksDao.insert(key)
+            }
         }
     }
 

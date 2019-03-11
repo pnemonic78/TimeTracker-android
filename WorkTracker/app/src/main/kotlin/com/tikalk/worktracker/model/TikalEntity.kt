@@ -52,12 +52,12 @@ abstract class TikalEntity(
         set(value) {
             _id = value
         }
-//    /**
-//     * Android database's id.
-//     */
-//    @ColumnInfo(name = BaseColumns._ID)
-//    @PrimaryKey
-//    var dbId: Long = 0
+    /**
+     * SQLite table id.
+     */
+    @ColumnInfo(name = BaseColumns._ID)
+    @PrimaryKey(autoGenerate = true)
+    var dbId: Long = 0
     /**
      * Entity version to resolve conflicts.
      */
