@@ -110,6 +110,17 @@ data class Project(
         }
     }
 
+    fun addKey(key: ProjectTaskKey) {
+        if (key.projectId <= 0L) key.projectId = id
+        tasks[key.taskId] = key
+    }
+
+    fun addKeys(keys: List<ProjectTaskKey>) {
+        for (key in keys) {
+            addKey(key)
+        }
+    }
+
     companion object {
         val EMPTY = Project("")
 

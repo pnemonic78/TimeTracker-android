@@ -53,6 +53,10 @@ data class ProjectTask(
         return name
     }
 
+    override fun equals(other: Any?): Boolean {
+        return super.equals(other) || ((other is ProjectTask) && (this.id == other.id))
+    }
+
     constructor(parcel: Parcel) : this("") {
         id = parcel.readLong()
         dbId = parcel.readLong()
