@@ -1067,7 +1067,6 @@ class TimeListActivity : InternetActivity(),
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { projects ->
-                    println("~!@ q projects=$projects")
                     this.projects.addAll(projects)
                     projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
                     populateForm(record)
@@ -1083,7 +1082,6 @@ class TimeListActivity : InternetActivity(),
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { tasks ->
-                    println("~!@ q tasks=$tasks")
                     this.tasks.addAll(tasks)
                     taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
                     populateForm(record)
@@ -1099,7 +1097,6 @@ class TimeListActivity : InternetActivity(),
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { pairs ->
-                    println("~!@ q pairs=$pairs")
                     if (projects.isNotEmpty()) {
                         projects.forEach { project ->
                             val pairsForProject = pairs.filter { it.projectId == project.id }
