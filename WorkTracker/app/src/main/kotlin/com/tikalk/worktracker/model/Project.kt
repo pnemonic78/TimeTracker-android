@@ -101,7 +101,7 @@ data class Project(
     }
 
     fun addTask(taskId: Long) {
-        tasks[taskId] = ProjectTaskKey(id, taskId)
+        addKey(ProjectTaskKey(id, taskId))
     }
 
     fun addTasks(taskIds: List<Long>) {
@@ -135,4 +135,8 @@ data class Project(
             }
         }
     }
+}
+
+inline fun Project?.isNullOrEmpty(): Boolean {
+    return this == null || this.isEmpty()
 }

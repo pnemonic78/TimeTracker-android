@@ -48,10 +48,12 @@ import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.ProjectTaskKey
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import com.tikalk.worktracker.model.time.isNullOrEmpty
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -83,8 +85,6 @@ class TimeListActivity : InternetActivity(),
         private const val REQUEST_STOPPED = 0x5706
 
         private const val STATE_DATE = "date"
-        private const val STATE_PROJECTS = "projects"
-        private const val STATE_TASKS = "tasks"
         private const val STATE_RECORD = "record"
         private const val STATE_LIST = "records"
         private const val STATE_TOTALS = "totals"
@@ -193,6 +193,7 @@ class TimeListActivity : InternetActivity(),
             fetchPage(date)
         } else {
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
+            loadPage()
         }
         handleIntent(intent, savedInstanceState)
     }
@@ -230,14 +231,19 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun fetchPage(date: Calendar) {
+        val dateFormatted = formatSystemDate(date)
+        Timber.d("fetchPage $dateFormatted")
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
 
+        // Fetch from local database.
+        loadPage()
+
+        // Fetch from remote server.
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        val dateFormatted = formatSystemDate(date)
         service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
             //.observeOn(AndroidSchedulers.mainThread())
@@ -262,8 +268,6 @@ class TimeListActivity : InternetActivity(),
 
     /** Populate the list. */
     private fun populateList(html: String, date: Calendar) {
-        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
-
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
         val table = findTable(doc)
@@ -289,7 +293,10 @@ class TimeListActivity : InternetActivity(),
         }
         populateTotals(doc, form, totals)
 
-        runOnUiThread { bindList(records, totals) }
+        runOnUiThread {
+            date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+            bindList(records, totals)
+        }
     }
 
     private fun bindList(records: List<TimeRecord>, totals: TimeTotals) {
@@ -369,8 +376,6 @@ class TimeListActivity : InternetActivity(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putParcelableArrayList(STATE_PROJECTS, projects)
-        outState.putParcelableArrayList(STATE_TASKS, tasks)
         outState.putParcelable(STATE_RECORD, record)
         outState.putParcelableArrayList(STATE_LIST, listItems)
         outState.putParcelable(STATE_TOTALS, totals)
@@ -379,33 +384,21 @@ class TimeListActivity : InternetActivity(),
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val projectsList = savedInstanceState.getParcelableArrayList<Project>(STATE_PROJECTS)
-        val tasksList = savedInstanceState.getParcelableArrayList<ProjectTask>(STATE_TASKS)
-        val recordStated = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
         val list = savedInstanceState.getParcelableArrayList<TimeRecord>(STATE_LIST)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
 
-        projects.clear()
-        if (projectsList != null) {
-            projects.addAll(projectsList)
-            projectEmpty = projectsList.firstOrNull { it.isEmpty() } ?: projectEmpty
-        }
-        tasks.clear()
-        if (tasksList != null) {
-            tasks.addAll(tasksList)
-            taskEmpty = tasksList.firstOrNull { it.isEmpty() } ?: taskEmpty
-        }
-        if (recordStated != null) {
-            record.project = recordStated.project
-            record.task = recordStated.task
-            record.start = recordStated.start
+        if (recordParcel != null) {
+            record.project = recordParcel.project
+            record.task = recordParcel.task
+            record.start = recordParcel.start
             populateForm(record)
         }
         if (totals != null) {
             this.totals = totals
         }
         if (list != null) {
-            runOnUiThread { bindList(list, this.totals) }
+            bindList(list, this.totals)
         }
     }
 
@@ -564,8 +557,9 @@ class TimeListActivity : InternetActivity(),
         return id.toLong()
     }
 
-    private fun populateProjects(doc: Document, select: Element, projects: MutableList<Project>) {
-        projects.clear()
+    private fun populateProjects(doc: Document, select: Element, target: MutableList<Project>) {
+        Timber.v("populateProjects")
+        val projects = ArrayList<Project>()
 
         val options = select.select("option")
         var value: String
@@ -585,15 +579,26 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val projectsDao = db.projectDao()
         projectsDao.deleteAll()
-        for (project in projects) {
-            project.dbId = projectsDao.insert(project)
-        }
+        Observable.fromArray(projectsDao.insert(projects))
+            .subscribe(
+                { ids ->
+                    for (i in 0 until ids.size) {
+                        projects[i].dbId = ids[i]
+                    }
 
-        populateTaskIds(doc, projects)
+                    populateTaskIds(doc, projects)
+
+                    target.clear()
+                    target.addAll(projects)
+                },
+                { err -> Timber.e(err, "Error inserting projects into db: ${err.message}") }
+            )
+            .addTo(disposables)
     }
 
-    private fun populateTasks(doc: Document, select: Element, tasks: MutableList<ProjectTask>) {
-        tasks.clear()
+    private fun populateTasks(doc: Document, select: Element, target: MutableList<ProjectTask>) {
+        Timber.v("populateTasks")
+        val tasks = ArrayList<ProjectTask>()
 
         val options = select.select("option")
         var value: String
@@ -613,15 +618,27 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val tasksDao = db.taskDao()
         tasksDao.deleteAll()
-        for (task in tasks) {
-            task.dbId = tasksDao.insert(task)
-        }
+        Observable.fromArray(tasksDao.insert(tasks))
+            .subscribe(
+                { ids ->
+                    for (i in 0 until ids.size) {
+                        tasks[i].dbId = ids[i]
+                    }
+
+                    target.clear()
+                    target.addAll(tasks)
+                },
+                { err -> Timber.e(err, "Error inserting tasks into db: ${err.message}") }
+            )
+            .addTo(disposables)
     }
 
     private fun populateTaskIds(doc: Document, projects: List<Project>) {
+        Timber.v("populateTaskIds")
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
         val scriptText = findScript(doc, tokenStart, tokenEnd)
+        val pairs = ArrayList<ProjectTaskKey>()
 
         for (project in projects) {
             project.clearTasks()
@@ -637,7 +654,11 @@ class TimeListActivity : InternetActivity(),
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    projects.find { it.id == projectId }?.addTasks(taskIds)
+                    val project = projects.find { it.id == projectId }
+                    project?.apply {
+                        addTasks(taskIds)
+                        pairs.addAll(tasks.values)
+                    }
                 }
             }
         }
@@ -645,11 +666,16 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val projectTasksDao = db.projectTaskKeyDao()
         projectTasksDao.deleteAll()
-        for (project in projects) {
-            for (key in project.tasks.values) {
-                key.dbId = projectTasksDao.insert(key)
-            }
-        }
+        Observable.fromArray(projectTasksDao.insert(pairs))
+            .subscribe(
+                { ids ->
+                    for (i in 0 until ids.size) {
+                        pairs[i].dbId = ids[i]
+                    }
+                },
+                { err -> Timber.e(err, "Error inserting project-task pair into db: ${err.message}") }
+            )
+            .addTo(disposables)
     }
 
     private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
@@ -738,17 +764,22 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
-        if ((recordStarted == null) || recordStarted.isEmpty()) {
+        Timber.v("populateForm $recordStarted")
+        if (recordStarted.isNullOrEmpty()) {
             val projectFavorite = prefs.getFavoriteProject()
+            if (projectFavorite != 0L) {
+                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+            }
             val taskFavorite = prefs.getFavoriteTask()
-            record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
-            record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
+            if (taskFavorite != 0L) {
+                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
+            }
             showForm(DateUtils.isToday(date.timeInMillis))
         } else {
-            record.project = projects.firstOrNull { it.id == recordStarted.project.id }
+            record.project = projects.firstOrNull { it.id == recordStarted!!.project.id }
                 ?: projectEmpty
-            record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty
-            record.start = recordStarted.start
+            record.task = tasks.firstOrNull { it.id == recordStarted!!.task.id } ?: taskEmpty
+            record.start = recordStarted!!.start
             showForm(!record.isEmpty())
         }
 
@@ -762,10 +793,15 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun bindForm(record: TimeRecord) {
+        Timber.v("bindForm record=$record")
         project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        project_input.setSelection(projects.indexOf(record.project))
+        if (projects.isNotEmpty()) {
+            project_input.setSelection(projects.indexOf(record.project))
+        }
         task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
-        task_input.setSelection(tasks.indexOf(record.task))
+        if (tasks.isNotEmpty()) {
+            task_input.setSelection(tasks.indexOf(record.task))
+        }
         project_input.requestFocus()
 
         val startTime = record.startTime
@@ -1014,5 +1050,68 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
+    }
+
+    private fun loadPage() {
+        Timber.v("loadPage")
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        val tasksDao = db.taskDao()
+        val projectTasksDao = db.projectTaskKeyDao()
+
+        this.projects.clear()
+        this.tasks.clear()
+
+        projectsDao.queryAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { projects ->
+                    println("~!@ q projects=$projects")
+                    this.projects.addAll(projects)
+                    projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+                    populateForm(record)
+                    showProgress(false)
+                },
+                { err ->
+                    Timber.e(err, "Error fetching projects from db: ${err.message}")
+                })
+            .addTo(disposables)
+
+        tasksDao.queryAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { tasks ->
+                    println("~!@ q tasks=$tasks")
+                    this.tasks.addAll(tasks)
+                    taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+                    populateForm(record)
+                    showProgress(false)
+                },
+                { err ->
+                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
+                })
+            .addTo(disposables)
+
+        projectTasksDao.queryAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { pairs ->
+                    println("~!@ q pairs=$pairs")
+                    if (projects.isNotEmpty()) {
+                        projects.forEach { project ->
+                            val pairsForProject = pairs.filter { it.projectId == project.id }
+                            project.addKeys(pairsForProject)
+                        }
+                        populateForm(record)
+                    }
+                    showProgress(false)
+                },
+                { err ->
+                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
+                })
+            .addTo(disposables)
     }
 }

@@ -178,3 +178,7 @@ fun TimeRecord.split(): List<TimeRecord> {
 
     return results
 }
+
+inline fun TimeRecord?.isNullOrEmpty(): Boolean {
+    return this == null || this.isEmpty()
+}

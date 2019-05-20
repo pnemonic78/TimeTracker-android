@@ -86,3 +86,7 @@ data class ProjectTaskKey(
         }
     }
 }
+
+inline fun ProjectTaskKey?.isNullOrEmpty(): Boolean {
+    return this == null || this.isEmpty()
+}
