@@ -19,7 +19,7 @@ project.ext {
     junitVersion = '4.12'
     okhttpVersion = '3.8.1'
     retrofit2Version = '2.3.0'
-    roomVersion = '2.0.0'
+    roomVersion = '2.1.0'
     rxandroid2Version = '2.1.0'
     rxkbinding2Version = '2.0.0'
     rxkotlin2Version = '2.1.0'
