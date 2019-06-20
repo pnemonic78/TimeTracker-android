@@ -97,12 +97,6 @@
         </LinearLayout>
     </ViewSwitcher>
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/time_form_group"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:constraint_referenced_ids="project_icon,project_input,task_icon,task_input,action_switcher" />
-
     <Button
         android:id="@+id/date_input"
         android:layout_width="0dp"

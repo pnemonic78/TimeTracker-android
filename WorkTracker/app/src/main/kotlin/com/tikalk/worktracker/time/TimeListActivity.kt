@@ -774,22 +774,14 @@ class TimeListActivity : InternetActivity(),
             if (taskFavorite != 0L) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
-            showForm(DateUtils.isToday(date.timeInMillis))
         } else {
             record.project = projects.firstOrNull { it.id == recordStarted!!.project.id }
                 ?: projectEmpty
             record.task = tasks.firstOrNull { it.id == recordStarted!!.task.id } ?: taskEmpty
             record.start = recordStarted!!.start
-            showForm(!record.isEmpty())
         }
 
         bindForm(record)
-    }
-
-    private fun showForm(visible: Boolean) {
-        val visibility = if (visible) View.VISIBLE else View.GONE
-        time_form_group.visibility = visibility
-        menuFavorite?.isVisible = visible
     }
 
     private fun bindForm(record: TimeRecord) {
