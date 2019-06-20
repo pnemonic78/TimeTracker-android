@@ -14,7 +14,7 @@
         android:contentDescription="@string/project_label"
         android:src="@drawable/ic_business"
         app:layout_constraintBottom_toBottomOf="@+id/project_input"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="@+id/project_input" />
 
     <Spinner
@@ -37,7 +37,7 @@
         android:contentDescription="@string/task_label"
         android:src="@drawable/ic_folder"
         app:layout_constraintBottom_toBottomOf="@+id/task_input"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="@+id/task_input" />
 
     <Spinner
@@ -60,7 +60,7 @@
         android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/task_input">
 
         <Button
@@ -97,21 +97,11 @@
         </LinearLayout>
     </ViewSwitcher>
 
-    <View
-        android:id="@+id/time_form_divider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:background="@drawable/divider_horizontal_dark"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/action_switcher" />
-
     <androidx.constraintlayout.widget.Group
         android:id="@+id/time_form_group"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:constraint_referenced_ids="project_icon,project_input,task_icon,task_input,action_switcher,time_form_divider" />
+        app:constraint_referenced_ids="project_icon,project_input,task_icon,task_input,action_switcher" />
 
     <Button
         android:id="@+id/date_input"
@@ -122,9 +112,9 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:drawableEnd="@drawable/ic_today_black"
         android:hint="@string/date_label"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_form_divider" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@android:id/list"
@@ -133,7 +123,7 @@
         android:layout_marginBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/totals_divider"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/date_input"
         tools:listitem="@layout/time_item" />
@@ -171,4 +161,11 @@
     <include
         layout="@layout/progress"
         tools:visibility="gone" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 </androidx.constraintlayout.widget.ConstraintLayout>
