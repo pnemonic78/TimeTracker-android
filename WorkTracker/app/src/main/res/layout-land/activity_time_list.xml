@@ -6,13 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".time.TimeListActivity">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.50" />
-
     <ImageView
         android:id="@+id/project_icon"
         android:layout_width="wrap_content"
@@ -104,22 +97,6 @@
         </LinearLayout>
     </ViewSwitcher>
 
-    <View
-        android:id="@+id/time_form_divider"
-        android:layout_width="1dp"
-        android:layout_height="0dp"
-        android:background="@drawable/divider_vertical_dark"
-        app:layout_constraintBottom_toTopOf="@+id/totals_divider"
-        app:layout_constraintEnd_toEndOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/time_form_group"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:constraint_referenced_ids="project_icon,project_input,task_icon,task_input,action_switcher,time_form_divider" />
-
     <Button
         android:id="@+id/date_input"
         android:layout_width="0dp"
@@ -178,4 +155,11 @@
     <include
         layout="@layout/progress"
         tools:visibility="gone" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 </androidx.constraintlayout.widget.ConstraintLayout>
