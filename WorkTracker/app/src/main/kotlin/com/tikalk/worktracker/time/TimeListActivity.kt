@@ -230,8 +230,7 @@ class TimeListActivity : InternetActivity(),
     private fun fetchPage(date: Calendar) {
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted")
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
 
         // Fetch from local database.

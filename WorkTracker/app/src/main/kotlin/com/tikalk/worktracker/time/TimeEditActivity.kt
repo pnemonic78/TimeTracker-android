@@ -48,6 +48,7 @@ import android.widget.TextView
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
@@ -56,6 +57,7 @@ import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -200,24 +202,27 @@ class TimeEditActivity : InternetActivity() {
     }
 
     private fun fetchPage(date: Calendar, id: Long) {
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        val dateFormatted = formatSystemDate(date)
+        Timber.d("fetchPage $dateFormatted")
+        // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
+
+        // Fetch from local database.
+        loadPage()
 
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
 
         val fetcher: Single<Response<String>> = if (id == 0L) {
-            val dateFormatted = formatSystemDate(date)
             service.fetchTimes(dateFormatted)
         } else {
             service.fetchTimes(id)
         }
         fetcher
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
-                showProgress(false)
+                runOnUiThread { showProgress(false) }
 
                 this.date = date
                 if (isValidResponse(response)) {
@@ -295,6 +300,11 @@ class TimeEditActivity : InternetActivity() {
             }
         }
 
+        runOnUiThread { bindForm(record) }
+    }
+
+    private fun populateForm(record: TimeRecord) {
+        Timber.v("populateForm $record")
         bindForm(record)
     }
 
@@ -320,8 +330,9 @@ class TimeEditActivity : InternetActivity() {
         return ""
     }
 
-    private fun populateProjects(doc: Document, select: Element, projects: MutableList<Project>) {
-        projects.clear()
+    private fun populateProjects(doc: Document, select: Element, target: MutableList<Project>) {
+        Timber.v("populateProjects")
+        val projects = ArrayList<Project>()
 
         val options = select.select("option")
         var value: String
@@ -338,7 +349,24 @@ class TimeEditActivity : InternetActivity() {
             projects.add(item)
         }
 
-        populateTaskIds(doc, projects)
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        projectsDao.deleteAll()
+        Observable.fromArray(projectsDao.insert(projects))
+            .subscribe(
+                { ids ->
+                    for (i in 0 until ids.size) {
+                        projects[i].dbId = ids[i]
+                    }
+
+                    populateTaskIds(doc, projects)
+
+                    target.clear()
+                    target.addAll(projects)
+                },
+                { err -> Timber.e(err, "Error inserting projects into db: ${err.message}") }
+            )
+            .addTo(disposables)
     }
 
     private fun populateTasks(doc: Document, select: Element, tasks: MutableList<ProjectTask>) {
@@ -699,5 +727,65 @@ class TimeEditActivity : InternetActivity() {
 
     private fun markFavorite() {
         prefs.setFavorite(record)
+    }
+
+    private fun loadPage() {
+        Timber.v("loadPage")
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        val tasksDao = db.taskDao()
+        val projectTasksDao = db.projectTaskKeyDao()
+
+        this.projects.clear()
+        this.tasks.clear()
+
+        projectsDao.queryAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { projects ->
+                    this.projects.addAll(projects)
+                    projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+                    populateForm(record)
+                    showProgress(false)
+                },
+                { err ->
+                    Timber.e(err, "Error fetching projects from db: ${err.message}")
+                })
+            .addTo(disposables)
+
+        tasksDao.queryAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { tasks ->
+                    this.tasks.addAll(tasks)
+                    taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+                    populateForm(record)
+                    showProgress(false)
+                },
+                { err ->
+                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
+                })
+            .addTo(disposables)
+
+        projectTasksDao.queryAll()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { pairs ->
+                    if (projects.isNotEmpty()) {
+                        projects.forEach { project ->
+                            val pairsForProject = pairs.filter { it.projectId == project.id }
+                            project.addKeys(pairsForProject)
+                        }
+                        populateForm(record)
+                    }
+                    showProgress(false)
+                },
+                { err ->
+                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
+                })
+            .addTo(disposables)
     }
 }
