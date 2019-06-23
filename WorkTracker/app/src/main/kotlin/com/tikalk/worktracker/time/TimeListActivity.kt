@@ -75,6 +75,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.math.abs
 
 class TimeListActivity : InternetActivity(),
     TimeListAdapter.OnTimeListListener {
@@ -162,8 +163,8 @@ class TimeListActivity : InternetActivity(),
         //itemTouchHelper.attachToRecyclerView(list)
         gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                val vx = Math.abs(velocityX)
-                val vy = Math.abs(velocityY)
+                val vx = abs(velocityX)
+                val vy = abs(velocityY)
                 if ((vx > vy) && (vx > 500)) {
                     if (velocityX < 0) {    // Fling from right to left.
                         if (isLocaleRTL()) {
@@ -183,11 +184,7 @@ class TimeListActivity : InternetActivity(),
                 return super.onFling(e1, e2, velocityX, velocityY)
             }
         })
-        list.setOnTouchListener(object : View.OnTouchListener {
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
-                return gestureDetector.onTouchEvent(event)
-            }
-        })
+        list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
 
         if (savedInstanceState == null) {
             fetchPage(date)
