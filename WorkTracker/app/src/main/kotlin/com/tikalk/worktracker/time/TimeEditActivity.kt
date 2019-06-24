@@ -217,17 +217,17 @@ class TimeEditActivity : InternetActivity() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
-                showProgress(false)
-
                 this.date = date
                 if (isValidResponse(response)) {
                     val body = response.body()!!
                     populateForm(body, date, id)
+                    showProgress(false)
                 } else {
                     authenticate(true)
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                showProgress(false)
             })
             .addTo(disposables)
     }
@@ -625,6 +625,10 @@ class TimeEditActivity : InternetActivity() {
         submitMenuItem?.isEnabled = !show
     }
 
+    private fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
+    }
+
     private fun findSelectedProject(project: Element, projects: List<Project>): Project {
         for (option in project.children()) {
             if (option.hasAttr("selected")) {
@@ -674,9 +678,8 @@ class TimeEditActivity : InternetActivity() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
-                showProgress(false)
-
                 if (isValidResponse(response)) {
+                    showProgress(false)
                     setResult(RESULT_OK)
                     finish()
                 } else {
@@ -684,6 +687,7 @@ class TimeEditActivity : InternetActivity() {
                 }
             }, { err ->
                 Timber.e(err, "Error deleting record: ${err.message}")
+                showProgress(false)
             })
             .addTo(disposables)
     }
