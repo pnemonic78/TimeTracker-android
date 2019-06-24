@@ -1,8 +1,11 @@
 package com.tikalk.security
 
+import android.content.Context
 import android.os.Build
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -23,6 +26,9 @@ class EncryptionTest {
 
     @Test
     fun simpleCipher() {
+        val context: Context = ApplicationProvider.getApplicationContext()
+        assertNotNull(context)
+
         val key = "key"
         val cipher: CipherHelper = SimpleCipherHelper(key, "salt")
 
