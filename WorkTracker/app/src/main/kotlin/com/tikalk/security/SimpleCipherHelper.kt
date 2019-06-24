@@ -12,6 +12,7 @@ import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
+import kotlin.math.min
 
 /**
  * Simple password-based encryption cipher helper.
@@ -51,6 +52,7 @@ class SimpleCipherHelper(privateKey: String, salt: String) : CipherHelper {
         return Base64.encodeToString(digest.digest(), NO_WRAP)
     }
 
+    @Synchronized
     override fun encrypt(clear: ByteArray, key: String): String {
         val aps = toParameterSpec(key)
         cipherEncrypt.init(Cipher.ENCRYPT_MODE, secretKey, aps)
@@ -58,6 +60,7 @@ class SimpleCipherHelper(privateKey: String, salt: String) : CipherHelper {
         return Base64.encodeToString(cryptic, NO_WRAP)
     }
 
+    @Synchronized
     override fun decrypt(cryptic: ByteArray, key: String): String {
         val base64 = Base64.decode(cryptic, NO_WRAP)
         val aps = toParameterSpec(key)
@@ -69,7 +72,7 @@ class SimpleCipherHelper(privateKey: String, salt: String) : CipherHelper {
     private fun toParameterSpec(key: String): AlgorithmParameterSpec {
         val keyBytes = key.toByteArray(StandardCharsets.UTF_8)
         val iv = ByteArray(16)
-        System.arraycopy(keyBytes, 0, iv, 0, Math.min(16, keyBytes.size))
+        System.arraycopy(keyBytes, 0, iv, 0, min(16, keyBytes.size))
         return IvParameterSpec(iv)
     }
 }
