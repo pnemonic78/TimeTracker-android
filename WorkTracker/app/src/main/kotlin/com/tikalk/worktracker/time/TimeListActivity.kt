@@ -244,8 +244,6 @@ class TimeListActivity : InternetActivity(),
             .subscribeOn(Schedulers.io())
             //.observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
-                runOnUiThread { showProgress(false) }
-
                 if (this.date != date) {
                     this.date.timeInMillis = date.timeInMillis
                 }
@@ -253,11 +251,13 @@ class TimeListActivity : InternetActivity(),
                     val body = response.body()!!
                     populateForm(body, date)
                     populateList(body, date)
+                    showProgressMain(false)
                 } else {
                     authenticate(true)
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                showProgressMain(false)
             })
             .addTo(disposables)
     }
@@ -338,7 +338,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        runOnUiThread { showProgress(true) }
+        showProgressMain(true)
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
@@ -446,6 +446,10 @@ class TimeListActivity : InternetActivity(),
         })
 
         fab_add.isEnabled = !show
+    }
+
+    private fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
     }
 
     private fun addTime() {
@@ -724,18 +728,18 @@ class TimeListActivity : InternetActivity(),
             //.observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { response ->
-                    runOnUiThread { showProgress(false) }
-
                     if (isValidResponse(response)) {
                         val body = response.body()!!
                         populateForm(body, date)
                         populateList(body, date)
+                        showProgressMain(false)
                     } else {
                         authenticate(true)
                     }
                 },
                 { err ->
                     Timber.e(err, "Error deleting record: ${err.message}")
+                    showProgressMain(false)
                 }
             )
             .addTo(disposables)
@@ -1062,6 +1066,7 @@ class TimeListActivity : InternetActivity(),
                 },
                 { err ->
                     Timber.e(err, "Error fetching projects from db: ${err.message}")
+                    showProgress(false)
                 })
             .addTo(disposables)
 
@@ -1077,6 +1082,7 @@ class TimeListActivity : InternetActivity(),
                 },
                 { err ->
                     Timber.e(err, "Error fetching tasks from db: ${err.message}")
+                    showProgress(false)
                 })
             .addTo(disposables)
 
@@ -1095,7 +1101,8 @@ class TimeListActivity : InternetActivity(),
                     showProgress(false)
                 },
                 { err ->
-                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
+                    Timber.e(err, "Error fetching project-tasks from db: ${err.message}")
+                    showProgress(false)
                 })
             .addTo(disposables)
     }
