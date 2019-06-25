@@ -39,19 +39,23 @@ package com.tikalk.worktracker.model.time
 enum class TaskRecordStatus {
 
     /**
-     * Inserted (New)
+     * Draft (New).
+     */
+    DRAFT,
+    /**
+     * Inserted (Exists in the local database).
      */
     INSERTED,
     /**
-     * Current (Synced)
+     * Current (Synced with the remote database).
      */
     CURRENT,
     /**
-     * Modified (Changed)
+     * Modified (Changed).
      */
     MODIFIED,
     /**
-     * Deleted
+     * Deleted.
      */
     DELETED
 
