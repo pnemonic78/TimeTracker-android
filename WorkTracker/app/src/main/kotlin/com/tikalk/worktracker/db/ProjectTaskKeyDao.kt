@@ -3,8 +3,8 @@ package com.tikalk.worktracker.db
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.ProjectTaskKey
-import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Single
 
 /**
  * DAO for joining Project and Task entities.
@@ -18,7 +18,7 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      * @return all keys.
      */
     @Query("SELECT * FROM project_task_key")
-    fun queryAll(): Flowable<List<ProjectTaskKey>>
+    fun queryAll(): Single<List<ProjectTaskKey>>
 
     /**
      * Select a project's keys.

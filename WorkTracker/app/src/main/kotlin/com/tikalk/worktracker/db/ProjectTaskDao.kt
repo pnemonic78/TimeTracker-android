@@ -3,8 +3,8 @@ package com.tikalk.worktracker.db
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.ProjectTask
-import io.reactivex.Flowable
 import io.reactivex.Maybe
+import io.reactivex.Single
 
 /**
  * Project Task entity DAO.
@@ -18,7 +18,7 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
      * @return all tasks.
      */
     @Query("SELECT * FROM project_task")
-    fun queryAll(): Flowable<List<ProjectTask>>
+    fun queryAll(): Single<List<ProjectTask>>
 
     /**
      * Select a task by its id.
