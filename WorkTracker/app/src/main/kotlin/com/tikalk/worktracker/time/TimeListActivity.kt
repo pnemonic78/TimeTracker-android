@@ -59,9 +59,11 @@ import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.Function3
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
@@ -193,6 +195,8 @@ class TimeListActivity : InternetActivity(),
         } else {
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
             loadPage()
+                .subscribe()
+                .addTo(disposables)
         }
         handleIntent(intent, savedInstanceState)
     }
@@ -236,30 +240,36 @@ class TimeListActivity : InternetActivity(),
         showProgress(true)
 
         // Fetch from local database.
-        //FIXME loadPage()
+        loadPage()
+            .subscribe({
+                // Fetch from remote server.
+                val authToken = prefs.basicCredentials.authToken()
+                val service = TimeTrackerServiceFactory.createPlain(authToken)
 
-        // Fetch from remote server.
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
-
-        service.fetchTimes(dateFormatted)
-            .subscribeOn(Schedulers.io())
-            .subscribe({ response ->
-                if (this.date != date) {
-                    this.date.timeInMillis = date.timeInMillis
-                }
-                if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    populateForm(body, date)
-                    populateList(body, date)
-                    showProgressMain(false)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                showProgressMain(false)
-            })
+                service.fetchTimes(dateFormatted)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe({ response ->
+                        if (this.date != date) {
+                            this.date.timeInMillis = date.timeInMillis
+                        }
+                        if (isValidResponse(response)) {
+                            val body = response.body()!!
+                            populateForm(body, date)
+                            populateList(body, date)
+                            showProgressMain(false)
+                        } else {
+                            authenticate(true)
+                        }
+                    }, { err ->
+                        Timber.e(err, "Error fetching page: ${err.message}")
+                        showProgressMain(false)
+                    })
+                    .addTo(disposables)
+            },
+                { err ->
+                    Timber.e(err, "Error fetching page: ${err.message}")
+                    showProgress(false)
+                })
             .addTo(disposables)
     }
 
@@ -396,6 +406,7 @@ class TimeListActivity : InternetActivity(),
             record.task = recordParcel.task
             record.start = recordParcel.start
             populateForm(record)
+            bindForm(record)
         }
         if (list != null) {
             bindList(date, list)
@@ -769,6 +780,7 @@ class TimeListActivity : InternetActivity(),
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
+        runOnUiThread { bindForm(record) }
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
@@ -788,8 +800,6 @@ class TimeListActivity : InternetActivity(),
             record.task = tasks.firstOrNull { it.id == recordStarted!!.task.id } ?: taskEmpty
             record.start = recordStarted!!.start
         }
-
-        runOnUiThread { bindForm(record) }
     }
 
     @MainThread
@@ -1053,66 +1063,46 @@ class TimeListActivity : InternetActivity(),
         return null
     }
 
-    private fun loadPage() {
+    private fun loadPage(): Single<Any> {
         Timber.v("loadPage")
         val db = TrackerDatabase.getDatabase(this)
         val projectsDao = db.projectDao()
         val tasksDao = db.taskDao()
         val projectTasksDao = db.projectTaskKeyDao()
 
-        this.projects.clear()
-        this.tasks.clear()
+        val zipper = Function3<List<Project>, List<ProjectTask>, List<ProjectTaskKey>, Any> { projects, tasks, pairs ->
+            this.projects.clear()
+            this.tasks.clear()
 
-        projectsDao.queryAll()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { projects ->
-                    this.projects.addAll(projects)
-                    projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
-                    populateForm(record)
-                    showProgress(false)
-                },
-                { err ->
-                    Timber.e(err, "Error fetching projects from db: ${err.message}")
-                    showProgress(false)
-                })
-            .addTo(disposables)
+            this.projects.addAll(projects)
+            this.projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
 
-        tasksDao.queryAll()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { tasks ->
-                    this.tasks.addAll(tasks)
-                    taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
-                    populateForm(record)
-                    showProgress(false)
-                },
-                { err ->
-                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
-                    showProgress(false)
-                })
-            .addTo(disposables)
+            this.tasks.addAll(tasks)
+            this.taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
 
-        projectTasksDao.queryAll()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { pairs ->
-                    if (projects.isNotEmpty()) {
-                        projects.forEach { project ->
-                            val pairsForProject = pairs.filter { it.projectId == project.id }
-                            project.addKeys(pairsForProject)
-                        }
-                        populateForm(record)
-                    }
-                    showProgress(false)
-                },
-                { err ->
-                    Timber.e(err, "Error fetching project-tasks from db: ${err.message}")
-                    showProgress(false)
-                })
-            .addTo(disposables)
+            if (projects.isNotEmpty()) {
+                projects.forEach { project ->
+                    val pairsForProject = pairs.filter { it.projectId == project.id }
+                    project.addKeys(pairsForProject)
+                }
+            }
+
+            populateForm(record)
+            bindForm(record)
+            showProgress(false)
+            return@Function3 this
+        }
+
+        return Single.zip(
+            projectsDao.queryAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()),
+            tasksDao.queryAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()),
+            projectTasksDao.queryAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()),
+            zipper)
     }
 }
