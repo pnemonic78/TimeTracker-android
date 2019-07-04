@@ -27,7 +27,8 @@
         android:prompt="@string/project_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/project_icon"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@android:layout/simple_list_item_1" />
 
     <ImageView
         android:id="@+id/task_icon"
@@ -50,7 +51,8 @@
         android:prompt="@string/task_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/task_icon"
-        app:layout_constraintTop_toBottomOf="@+id/project_input" />
+        app:layout_constraintTop_toBottomOf="@+id/project_input"
+        tools:listitem="@android:layout/simple_list_item_1" />
 
     <ViewSwitcher
         android:id="@+id/action_switcher"

@@ -4,8 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -30,7 +28,8 @@
         android:prompt="@string/project_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/project_icon"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@android:layout/simple_list_item_1" />
 
     <ImageView
         android:id="@+id/task_icon"
@@ -51,7 +50,8 @@
         android:prompt="@string/task_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/task_icon"
-        app:layout_constraintTop_toBottomOf="@+id/project_input" />
+        app:layout_constraintTop_toBottomOf="@+id/project_input"
+        tools:listitem="@android:layout/simple_list_item_1" />
 
     <ImageView
         android:id="@+id/start_icon"
