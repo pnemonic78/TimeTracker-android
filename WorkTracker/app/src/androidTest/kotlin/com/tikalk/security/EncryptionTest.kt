@@ -1,6 +1,9 @@
 package com.tikalk.security
 
+import android.content.Context
 import android.os.Build
+import android.provider.Settings
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -25,60 +28,71 @@ class EncryptionTest {
 
     @Test
     fun simpleCipher() {
+        simpleCipherM()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             simpleCipherO()
-        } else {
-            simpleCipherM()
         }
         simpleCipherDigest()
     }
 
     private fun simpleCipherM() {
         val key = "key"
-        val cipher: CipherHelper = SimpleCipherHelper(key, "salt")
+        val context: Context = ApplicationProvider.getApplicationContext()
+        assertNotNull(context)
+        val salt = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        assertNotNull(salt)
+        val cipher: CipherHelper = SimpleCipherHelper(key, salt)
 
         assertEquals("ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", cipher.hash("abc"))
 
         var cryptic = cipher.encrypt("def", key)
-        assertEquals("5AVlK2kXvqW7AZ4L+Xay5Q==", cryptic)
+        assertEquals("igHBJowYYyoe/PJeOz3IEA==", cryptic)
         var clear = cipher.decrypt(cryptic, key)
         assertEquals("def", clear)
 
         cryptic = cipher.encrypt("ghi", key)
-        assertEquals("dhyU6qOE0jpMH6a3fhUb7A==", cryptic)
+        assertEquals("0P9KKNkImrWVqTDvHZDdnw==", cryptic)
         clear = cipher.decrypt(cryptic, key)
         assertEquals("ghi", clear)
     }
 
     private fun simpleCipherO() {
         val key = "key"
-        val cipher: CipherHelper = SimpleCipherHelper(key, "salt")
+        val context: Context = ApplicationProvider.getApplicationContext()
+        assertNotNull(context)
+        val salt = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        assertNotNull(salt)
+        val cipher: CipherHelper = SimpleCipherHelper(key, salt)
 
         assertEquals("ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", cipher.hash("abc"))
 
         var cryptic = cipher.encrypt("def", key)
-        assertEquals("J5LFXPfcM0d86rludTdcOg==", cryptic)
+        assertEquals("igHBJowYYyoe/PJeOz3IEA==", cryptic)
         var clear = cipher.decrypt(cryptic, key)
         assertEquals("def", clear)
 
         cryptic = cipher.encrypt("ghi", key)
-        assertEquals("p+/yeBQl8nP2Lkaxi7OyLg==", cryptic)
+        assertEquals("0P9KKNkImrWVqTDvHZDdnw==", cryptic)
         clear = cipher.decrypt(cryptic, key)
         assertEquals("ghi", clear)
     }
 
     private fun simpleCipherDigest() {
         val key = "key"
+        val context: Context = ApplicationProvider.getApplicationContext()
+        assertNotNull(context)
+        val salt = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        assertNotNull(salt)
 
         val digest1 = MessageDigest.getInstance("SHA-1")
         assertNotNull(digest1)
-        val cipher1: CipherHelper = SimpleCipherHelper(key, "salt", digest1)
+        val cipher1: CipherHelper = SimpleCipherHelper(key, salt, digest1)
         assertNotNull(cipher1)
         assertEquals("qZk+NkcGgWq6PiVxeFDCbJzQ2J0=", cipher1.hash("abc"))
 
         val digest256 = MessageDigest.getInstance("SHA-256")
         assertNotNull(digest256)
-        val cipher256: CipherHelper = SimpleCipherHelper(key, "salt", digest256)
+        val cipher256: CipherHelper = SimpleCipherHelper(key, salt, digest256)
         assertNotNull(cipher256)
         assertEquals("ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", cipher256.hash("abc"))
     }
