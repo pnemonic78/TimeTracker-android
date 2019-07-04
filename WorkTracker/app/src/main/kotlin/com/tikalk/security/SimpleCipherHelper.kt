@@ -18,13 +18,13 @@ import kotlin.math.min
  * Simple password-based encryption cipher helper.
  * @author moshe on 2018/07/18.
  */
-class SimpleCipherHelper(privateKey: String, salt: String) : CipherHelper {
+class SimpleCipherHelper(privateKey: String, salt: String, private val digest: MessageDigest) : CipherHelper {
 
-    private val digest: MessageDigest = try {
+    constructor(privateKey: String, salt: String) : this(privateKey, salt, try {
         MessageDigest.getInstance("SHA-256")
     } catch (e: Throwable) {
         MessageDigest.getInstance("SHA-1")
-    }
+    })
 
     private val secretKey: Key
     private val cipherEncrypt: Cipher
