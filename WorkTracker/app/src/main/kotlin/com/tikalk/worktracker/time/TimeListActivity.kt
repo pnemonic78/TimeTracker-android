@@ -291,14 +291,15 @@ class TimeListActivity : InternetActivity(),
         populateTotals(doc, form, totals)
 
         runOnUiThread {
-            date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
-            bindList(records)
+            bindList(date, records)
             bindTotals(totals)
         }
     }
 
     @MainThread
-    private fun bindList(records: List<TimeRecord>) {
+    private fun bindList(date: Calendar, records: List<TimeRecord>) {
+        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+
         listItems.clear()
         listItems.addAll(records)
         listAdapter.submitList(records)
@@ -397,7 +398,7 @@ class TimeListActivity : InternetActivity(),
             populateForm(record)
         }
         if (list != null) {
-            bindList(list)
+            bindList(date, list)
         }
         if (totals != null) {
             this.totals = totals
