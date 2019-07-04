@@ -42,6 +42,7 @@ import android.text.format.DateUtils
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.annotation.MainThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -291,15 +292,20 @@ class TimeListActivity : InternetActivity(),
 
         runOnUiThread {
             date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
-            bindList(records, totals)
+            bindList(records)
+            bindTotals(totals)
         }
     }
 
-    private fun bindList(records: List<TimeRecord>, totals: TimeTotals) {
+    @MainThread
+    private fun bindList(records: List<TimeRecord>) {
         listItems.clear()
         listItems.addAll(records)
         listAdapter.submitList(records)
+    }
 
+    @MainThread
+    private fun bindTotals(totals: TimeTotals) {
         val context: Context = this
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
@@ -390,11 +396,12 @@ class TimeListActivity : InternetActivity(),
             record.start = recordParcel.start
             populateForm(record)
         }
+        if (list != null) {
+            bindList(list)
+        }
         if (totals != null) {
             this.totals = totals
-        }
-        if (list != null) {
-            bindList(list, this.totals)
+            bindTotals(totals)
         }
     }
 
@@ -760,7 +767,7 @@ class TimeListActivity : InternetActivity(),
         record.task = findSelectedTask(inputTasks, tasks)
 
         val recordStarted = getStartedRecord()
-        runOnUiThread { populateForm(recordStarted) }
+        populateForm(recordStarted)
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
@@ -781,9 +788,10 @@ class TimeListActivity : InternetActivity(),
             record.start = recordStarted!!.start
         }
 
-        bindForm(record)
+        runOnUiThread { bindForm(record) }
     }
 
+    @MainThread
     private fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
         project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
