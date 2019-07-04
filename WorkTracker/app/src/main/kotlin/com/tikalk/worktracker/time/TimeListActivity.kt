@@ -76,6 +76,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.abs
+import kotlin.math.max
 
 class TimeListActivity : InternetActivity(),
     TimeListAdapter.OnTimeListListener {
@@ -234,7 +235,7 @@ class TimeListActivity : InternetActivity(),
         showProgress(true)
 
         // Fetch from local database.
-        loadPage()
+        //FIXME loadPage()
 
         // Fetch from remote server.
         val authToken = prefs.basicCredentials.authToken()
@@ -242,7 +243,6 @@ class TimeListActivity : InternetActivity(),
 
         service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
-            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 if (this.date != date) {
                     this.date.timeInMillis = date.timeInMillis
@@ -786,13 +786,13 @@ class TimeListActivity : InternetActivity(),
 
     private fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
-        project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         if (projects.isNotEmpty()) {
-            project_input.setSelection(projects.indexOf(record.project))
+            project_input.setSelection(max(0, projects.indexOf(record.project)))
         }
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         if (tasks.isNotEmpty()) {
-            task_input.setSelection(tasks.indexOf(record.task))
+            task_input.setSelection(max(0, tasks.indexOf(record.task)))
         }
         project_input.requestFocus()
 

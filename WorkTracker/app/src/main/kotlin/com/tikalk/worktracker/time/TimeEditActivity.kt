@@ -51,7 +51,9 @@ import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.ProjectTaskKey
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetActivity
@@ -74,6 +76,7 @@ import timber.log.Timber
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.math.max
 
 class TimeEditActivity : InternetActivity() {
 
@@ -220,7 +223,6 @@ class TimeEditActivity : InternetActivity() {
         }
         fetcher
             .subscribeOn(Schedulers.io())
-            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 this.date = date
                 if (isValidResponse(response)) {
@@ -252,7 +254,7 @@ class TimeEditActivity : InternetActivity() {
         record.project = findSelectedProject(inputProjects, projects)
 
         val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(doc, inputTasks, tasks)
+        populateTasks(inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
 
         val inputStart = form.selectFirst("input[name='start']")
@@ -298,6 +300,8 @@ class TimeEditActivity : InternetActivity() {
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
+        } else {
+            record.status = TaskRecordStatus.CURRENT
         }
 
         runOnUiThread { bindForm(record) }
@@ -369,8 +373,9 @@ class TimeEditActivity : InternetActivity() {
             .addTo(disposables)
     }
 
-    private fun populateTasks(doc: Document, select: Element, tasks: MutableList<ProjectTask>) {
-        tasks.clear()
+    private fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
+        Timber.v("populateTasks")
+        val tasks = ArrayList<ProjectTask>()
 
         val options = select.select("option")
         var value: String
@@ -386,12 +391,31 @@ class TimeEditActivity : InternetActivity() {
             }
             tasks.add(item)
         }
+
+        val db = TrackerDatabase.getDatabase(this)
+        val tasksDao = db.taskDao()
+        tasksDao.deleteAll()
+        Observable.fromArray(tasksDao.insert(tasks))
+            .subscribe(
+                { ids ->
+                    for (i in 0 until ids.size) {
+                        tasks[i].dbId = ids[i]
+                    }
+
+                    target.clear()
+                    target.addAll(tasks)
+                },
+                { err -> Timber.e(err, "Error inserting tasks into db: ${err.message}") }
+            )
+            .addTo(disposables)
     }
 
     private fun populateTaskIds(doc: Document, projects: List<Project>) {
+        Timber.v("populateTaskIds")
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
         val scriptText = findScript(doc, tokenStart, tokenEnd)
+        val pairs = ArrayList<ProjectTaskKey>()
 
         for (project in projects) {
             project.clearTasks()
@@ -407,32 +431,59 @@ class TimeEditActivity : InternetActivity() {
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    projects.find { it.id == projectId }?.addTasks(taskIds)
+                    val project = projects.find { it.id == projectId }
+                    project?.apply {
+                        addTasks(taskIds)
+                        pairs.addAll(tasks.values)
+                    }
                 }
             }
         }
+
+        val db = TrackerDatabase.getDatabase(this)
+        val projectTasksDao = db.projectTaskKeyDao()
+        projectTasksDao.deleteAll()
+        Observable.fromArray(projectTasksDao.insert(pairs))
+            .subscribe(
+                { ids ->
+                    for (i in 0 until ids.size) {
+                        pairs[i].dbId = ids[i]
+                    }
+                },
+                { err -> Timber.e(err, "Error inserting project-task pair into db: ${err.message}") }
+            )
+            .addTo(disposables)
     }
 
     private fun bindForm(record: TimeRecord) {
         error_label.text = errorMessage
-        project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        project_input.setSelection(projects.indexOf(record.project))
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
-        task_input.setSelection(tasks.indexOf(record.task))
-        start_input.text = if (record.start != null)
-            DateUtils.formatDateTime(context, record.startTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        if (projects.isNotEmpty()) {
+            project_input.setSelection(max(0, projects.indexOf(record.project)))
+        }
+        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        if (tasks.isNotEmpty()) {
+            task_input.setSelection(max(0, tasks.indexOf(record.task)))
+        }
+        project_input.requestFocus()
+
+        val startTime = record.startTime
+        start_input.text = if (startTime > 0L)
+            DateUtils.formatDateTime(context, startTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
         else
             ""
         start_input.error = null
         startPickerDialog = null
-        finish_input.text = if (record.finish != null)
-            DateUtils.formatDateTime(context, record.finishTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+
+        val finishTime = record.finishTime
+        finish_input.text = if (finishTime > 0L)
+            DateUtils.formatDateTime(context, finishTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
         else
             ""
         finish_input.error = null
         finishPickerDialog = null
+
         note_input.setText(record.note)
-        project_input.requestFocus()
     }
 
     private fun bindRecord(record: TimeRecord) {
@@ -440,7 +491,7 @@ class TimeEditActivity : InternetActivity() {
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        showProgress(true)
+        showProgressMain(true)
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
