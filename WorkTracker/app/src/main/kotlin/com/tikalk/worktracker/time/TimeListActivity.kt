@@ -598,19 +598,25 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val projectsDao = db.projectDao()
         projectsDao.deleteAll()
-        Observable.fromArray(projectsDao.insert(projects))
             .subscribe(
-                { ids ->
-                    for (i in 0 until ids.size) {
-                        projects[i].dbId = ids[i]
-                    }
+                {
+                    projectsDao.insert(projects)
+                        .subscribe(
+                            { ids ->
+                                for (i in 0 until ids.size) {
+                                    projects[i].dbId = ids[i]
+                                }
 
-                    populateTaskIds(doc, projects)
+                                populateTaskIds(doc, projects)
 
-                    target.clear()
-                    target.addAll(projects)
+                                target.clear()
+                                target.addAll(projects)
+                            },
+                            { err -> Timber.e(err, "Error inserting projects into db: ${err.message}") }
+                        )
+                        .addTo(disposables)
                 },
-                { err -> Timber.e(err, "Error inserting projects into db: ${err.message}") }
+                { err -> Timber.e(err, "Error deleting projects from db: ${err.message}") }
             )
             .addTo(disposables)
     }
@@ -637,17 +643,23 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val tasksDao = db.taskDao()
         tasksDao.deleteAll()
-        Observable.fromArray(tasksDao.insert(tasks))
             .subscribe(
-                { ids ->
-                    for (i in 0 until ids.size) {
-                        tasks[i].dbId = ids[i]
-                    }
+                {
+                    tasksDao.insert(tasks)
+                        .subscribe(
+                            { ids ->
+                                for (i in 0 until ids.size) {
+                                    tasks[i].dbId = ids[i]
+                                }
 
-                    target.clear()
-                    target.addAll(tasks)
+                                target.clear()
+                                target.addAll(tasks)
+                            },
+                            { err -> Timber.e(err, "Error inserting tasks into db: ${err.message}") }
+                        )
+                        .addTo(disposables)
                 },
-                { err -> Timber.e(err, "Error inserting tasks into db: ${err.message}") }
+                { err -> Timber.e(err, "Error deleting tasks from db: ${err.message}") }
             )
             .addTo(disposables)
     }
@@ -685,14 +697,20 @@ class TimeListActivity : InternetActivity(),
         val db = TrackerDatabase.getDatabase(this)
         val projectTasksDao = db.projectTaskKeyDao()
         projectTasksDao.deleteAll()
-        Observable.fromArray(projectTasksDao.insert(pairs))
             .subscribe(
-                { ids ->
-                    for (i in 0 until ids.size) {
-                        pairs[i].dbId = ids[i]
-                    }
+                {
+                    projectTasksDao.insert(pairs)
+                        .subscribe(
+                            { ids ->
+                                for (i in 0 until ids.size) {
+                                    pairs[i].dbId = ids[i]
+                                }
+                            },
+                            { err -> Timber.e(err, "Error inserting project-task pair into db: ${err.message}") }
+                        )
+                        .addTo(disposables)
                 },
-                { err -> Timber.e(err, "Error inserting project-task pair into db: ${err.message}") }
+                { err -> Timber.e(err, "Error deleting project-task pair from db: ${err.message}") }
             )
             .addTo(disposables)
     }

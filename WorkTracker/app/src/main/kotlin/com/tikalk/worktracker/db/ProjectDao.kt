@@ -13,9 +13,9 @@ import io.reactivex.Single
 interface ProjectDao : BaseDao<Project> {
 
     /**
-     * Select all articles from the articles table.
+     * Select all projects from the projects table.
      *
-     * @return all articles.
+     * @return all projects.
      */
     @Query("SELECT * FROM project")
     fun queryAll(): Single<List<Project>>
@@ -27,8 +27,8 @@ interface ProjectDao : BaseDao<Project> {
     fun queryById(projectId: Long): Maybe<Project>
 
     /**
-     * Delete all entities.
+     * Delete all projects.
      */
     @Query("DELETE FROM project")
-    fun deleteAll()
+    fun deleteAll(): Single<Int>
 }

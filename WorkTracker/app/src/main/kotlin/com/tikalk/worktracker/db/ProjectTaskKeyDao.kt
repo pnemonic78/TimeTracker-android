@@ -27,8 +27,8 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
     fun queryAllByProject(projectId: Long): Maybe<List<ProjectTaskKey>>
 
     /**
-     * Delete all entities.
+     * Delete all keys.
      */
     @Query("DELETE FROM project_task_key")
-    fun deleteAll()
+    fun deleteAll(): Single<Int>
 }
