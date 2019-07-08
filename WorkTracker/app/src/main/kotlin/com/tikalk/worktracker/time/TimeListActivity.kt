@@ -287,6 +287,8 @@ class TimeListActivity : InternetActivity(),
         val inputTasks = form.selectFirst("select[name='task']")
         populateTasks(doc, inputTasks, tasks)
 
+        populateTaskIds(doc, projects)
+
         // The first row of the table is the header
         if (table != null) {
             // loop through all the rows and parse each record
@@ -595,30 +597,8 @@ class TimeListActivity : InternetActivity(),
             projects.add(item)
         }
 
-        val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        projectsDao.deleteAll()
-            .subscribe(
-                {
-                    projectsDao.insert(projects)
-                        .subscribe(
-                            { ids ->
-                                for (i in 0 until ids.size) {
-                                    projects[i].dbId = ids[i]
-                                }
-
-                                populateTaskIds(doc, projects)
-
-                                target.clear()
-                                target.addAll(projects)
-                            },
-                            { err -> Timber.e(err, "Error inserting projects into db: ${err.message}") }
-                        )
-                        .addTo(disposables)
-                },
-                { err -> Timber.e(err, "Error deleting projects from db: ${err.message}") }
-            )
-            .addTo(disposables)
+        target.clear()
+        target.addAll(projects)
     }
 
     private fun populateTasks(doc: Document, select: Element, target: MutableList<ProjectTask>) {
@@ -640,28 +620,8 @@ class TimeListActivity : InternetActivity(),
             tasks.add(item)
         }
 
-        val db = TrackerDatabase.getDatabase(this)
-        val tasksDao = db.taskDao()
-        tasksDao.deleteAll()
-            .subscribe(
-                {
-                    tasksDao.insert(tasks)
-                        .subscribe(
-                            { ids ->
-                                for (i in 0 until ids.size) {
-                                    tasks[i].dbId = ids[i]
-                                }
-
-                                target.clear()
-                                target.addAll(tasks)
-                            },
-                            { err -> Timber.e(err, "Error inserting tasks into db: ${err.message}") }
-                        )
-                        .addTo(disposables)
-                },
-                { err -> Timber.e(err, "Error deleting tasks from db: ${err.message}") }
-            )
-            .addTo(disposables)
+        target.clear()
+        target.addAll(tasks)
     }
 
     private fun populateTaskIds(doc: Document, projects: List<Project>) {
@@ -693,26 +653,6 @@ class TimeListActivity : InternetActivity(),
                 }
             }
         }
-
-        val db = TrackerDatabase.getDatabase(this)
-        val projectTasksDao = db.projectTaskKeyDao()
-        projectTasksDao.deleteAll()
-            .subscribe(
-                {
-                    projectTasksDao.insert(pairs)
-                        .subscribe(
-                            { ids ->
-                                for (i in 0 until ids.size) {
-                                    pairs[i].dbId = ids[i]
-                                }
-                            },
-                            { err -> Timber.e(err, "Error inserting project-task pair into db: ${err.message}") }
-                        )
-                        .addTo(disposables)
-                },
-                { err -> Timber.e(err, "Error deleting project-task pair from db: ${err.message}") }
-            )
-            .addTo(disposables)
     }
 
     private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
@@ -795,6 +735,12 @@ class TimeListActivity : InternetActivity(),
         val inputTasks = form.selectFirst("select[name='task']")
         populateTasks(doc, inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
+
+        populateTaskIds(doc, projects)
+
+        savePage()
+            .subscribeOn(Schedulers.io())
+            .subscribe()
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
@@ -1122,5 +1068,48 @@ class TimeListActivity : InternetActivity(),
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()),
             zipper)
+    }
+
+    private fun savePage(): Single<Any> {
+        Timber.v("savePage")
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        val tasksDao = db.taskDao()
+        val projectTasksDao = db.projectTaskKeyDao()
+
+        val projects = this.projects
+        val tasks = this.tasks
+        val keys = ArrayList<ProjectTaskKey>()
+        projects.map { project -> keys.addAll(project.tasks.values) }
+
+        val zipperInsert = Function3<LongArray, LongArray, LongArray, Any> { projectIds, taskIds, keyIds ->
+            for (i in 0 until projectIds.size) {
+                projects[i].dbId = projectIds[i]
+            }
+
+            for (i in 0 until taskIds.size) {
+                tasks[i].dbId = taskIds[i]
+            }
+
+            for (i in 0 until keyIds.size) {
+                keys[i].dbId = keyIds[i]
+            }
+
+            return@Function3 this
+        }
+
+        val zipperDelete = Function3<Int, Int, Int, Any> { _, _, _ ->
+            return@Function3 Single.zip(
+                projectsDao.insert(projects),
+                tasksDao.insert(tasks),
+                projectTasksDao.insert(keys),
+                zipperInsert)
+                .subscribe()
+        }
+
+        return Single.zip(projectsDao.deleteAll(),
+            tasksDao.deleteAll(),
+            projectTasksDao.deleteAll(),
+            zipperDelete)
     }
 }
