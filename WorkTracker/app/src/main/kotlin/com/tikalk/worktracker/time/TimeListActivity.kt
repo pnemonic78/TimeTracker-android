@@ -50,18 +50,14 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ProjectTaskKey
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.model.time.isNullOrEmpty
-import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function3
 import io.reactivex.rxkotlin.addTo
@@ -76,12 +72,11 @@ import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 import kotlin.math.max
 
-class TimeListActivity : InternetActivity(),
+class TimeListActivity : TimeFormActivity(),
     TimeListAdapter.OnTimeListListener {
 
     companion object {
@@ -109,31 +104,17 @@ class TimeListActivity : InternetActivity(),
     private var datePickerDialog: DatePickerDialog? = null
     private var menuFavorite: MenuItem? = null
 
-    private lateinit var prefs: TimeTrackerPrefs
-
-    private val disposables = CompositeDisposable()
-    private val date = Calendar.getInstance()
-    private var user = User("")
-    private var record = TimeRecord(user, Project(""), ProjectTask(""))
-    private val projects = ArrayList<Project>()
-    private val tasks = ArrayList<ProjectTask>()
     private val listAdapter = TimeListAdapter(this)
     private val listItems = ArrayList<TimeRecord>()
-    private var projectEmpty: Project = Project.EMPTY
-    private var taskEmpty: ProjectTask = ProjectTask.EMPTY
     private var timer: Disposable? = null
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
 
         // Set up the form.
         setContentView(R.layout.activity_time_list)
-
-        user.username = prefs.userCredentials.login
-        user.email = user.username
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -199,11 +180,6 @@ class TimeListActivity : InternetActivity(),
                 .addTo(disposables)
         }
         handleIntent(intent, savedInstanceState)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -277,15 +253,15 @@ class TimeListActivity : InternetActivity(),
     private fun populateList(html: String, date: Calendar) {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
-        val table = findTable(doc)
+        val table = findRecordsTable(doc)
 
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
         val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(doc, inputProjects, projects)
+        populateProjects(inputProjects, projects)
 
         val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(doc, inputTasks, tasks)
+        populateTasks(inputTasks, tasks)
 
         populateTaskIds(doc, projects)
 
@@ -444,10 +420,7 @@ class TimeListActivity : InternetActivity(),
         datePickerDialog!!.show()
     }
 
-    /**
-     * Shows the progress UI and hides the list.
-     */
-    private fun showProgress(show: Boolean) {
+    override fun showProgress(show: Boolean) {
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
         list.visibility = if (show) View.GONE else View.VISIBLE
@@ -469,10 +442,6 @@ class TimeListActivity : InternetActivity(),
         fab_add.isEnabled = !show
     }
 
-    private fun showProgressMain(show: Boolean) {
-        runOnUiThread { showProgress(show) }
-    }
-
     private fun addTime() {
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
@@ -482,7 +451,7 @@ class TimeListActivity : InternetActivity(),
     /**
      * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
      */
-    private fun findTable(doc: Document): Element? {
+    private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
         val tables = body.select("table")
         var rows: Elements
@@ -578,105 +547,6 @@ class TimeListActivity : InternetActivity(),
         return id.toLong()
     }
 
-    private fun populateProjects(doc: Document, select: Element, target: MutableList<Project>) {
-        Timber.v("populateProjects")
-        val projects = ArrayList<Project>()
-
-        val options = select.select("option")
-        var value: String
-        var name: String
-        for (option in options) {
-            name = option.ownText()
-            value = option.attr("value")
-            val item = Project(name)
-            if (value.isEmpty()) {
-                projectEmpty = item
-            } else {
-                item.id = value.toLong()
-            }
-            projects.add(item)
-        }
-
-        target.clear()
-        target.addAll(projects)
-    }
-
-    private fun populateTasks(doc: Document, select: Element, target: MutableList<ProjectTask>) {
-        Timber.v("populateTasks")
-        val tasks = ArrayList<ProjectTask>()
-
-        val options = select.select("option")
-        var value: String
-        var name: String
-        for (option in options) {
-            name = option.ownText()
-            value = option.attr("value")
-            val item = ProjectTask(name)
-            if (value.isEmpty()) {
-                taskEmpty = item
-            } else {
-                item.id = value.toLong()
-            }
-            tasks.add(item)
-        }
-
-        target.clear()
-        target.addAll(tasks)
-    }
-
-    private fun populateTaskIds(doc: Document, projects: List<Project>) {
-        Timber.v("populateTaskIds")
-        val tokenStart = "var task_ids = new Array();"
-        val tokenEnd = "// Prepare an array of task names."
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
-        val pairs = ArrayList<ProjectTaskKey>()
-
-        for (project in projects) {
-            project.clearTasks()
-        }
-
-        if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val projectId = matcher.group(1).toLong()
-                    val taskIds: List<Long> = matcher.group(2)
-                        .split(",")
-                        .map { it.toLong() }
-                    val project = projects.find { it.id == projectId }
-                    project?.apply {
-                        addTasks(taskIds)
-                        pairs.addAll(tasks.values)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
-        val scripts = doc.select("script")
-        var scriptText: String
-        var indexStart: Int
-        var indexEnd: Int
-
-        for (script in scripts) {
-            scriptText = script.html()
-            indexStart = scriptText.indexOf(tokenStart)
-            if (indexStart >= 0) {
-                indexStart += tokenStart.length
-                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
-                if (indexEnd < 0) {
-                    indexEnd = scriptText.length
-                }
-                return scriptText.substring(indexStart, indexEnd)
-            }
-        }
-
-        return ""
-    }
-
     private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
         val intent = Intent(context, TimeEditActivity::class.java)
         if ((record.id == 0L) && !record.isEmpty()) {
@@ -729,17 +599,16 @@ class TimeListActivity : InternetActivity(),
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
         val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(doc, inputProjects, projects)
+        populateProjects(inputProjects, projects)
         record.project = findSelectedProject(inputProjects, projects)
 
         val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(doc, inputTasks, tasks)
+        populateTasks(inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
 
         populateTaskIds(doc, projects)
 
         savePage()
-            .subscribeOn(Schedulers.io())
             .subscribe()
 
         val recordStarted = getStartedRecord()
@@ -792,34 +661,6 @@ class TimeListActivity : InternetActivity(),
             maybeStartTimer()
             maybeStopTimer()
         }
-    }
-
-    private fun findSelectedProject(project: Element, projects: List<Project>): Project {
-        for (option in project.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.attr("value")
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return projects.find { id == it.id }!!
-                }
-                break
-            }
-        }
-        return projectEmpty
-    }
-
-    private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
-        for (option in task.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.attr("value")
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return tasks.find { id == it.id }!!
-                }
-                break
-            }
-        }
-        return taskEmpty
     }
 
     private fun startTimer() {
@@ -943,10 +784,6 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
-    }
-
-    private fun markFavorite() {
-        prefs.setFavorite(record)
     }
 
     private fun navigateTomorrow() {
@@ -1107,9 +944,11 @@ class TimeListActivity : InternetActivity(),
                 .subscribe()
         }
 
+        //FIXME re-use existing records instead of just deleting them willy nilly.
         return Single.zip(projectsDao.deleteAll(),
             tasksDao.deleteAll(),
             projectTasksDao.deleteAll(),
             zipperDelete)
+            .subscribeOn(Schedulers.io())
     }
 }

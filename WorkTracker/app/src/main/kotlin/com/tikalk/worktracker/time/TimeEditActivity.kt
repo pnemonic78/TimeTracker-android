@@ -51,17 +51,12 @@ import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
-import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_edit.*
@@ -69,15 +64,13 @@ import kotlinx.android.synthetic.main.progress.*
 import kotlinx.android.synthetic.main.time_form.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
-class TimeEditActivity : InternetActivity() {
+class TimeEditActivity : TimeFormActivity() {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 1
@@ -95,32 +88,18 @@ class TimeEditActivity : InternetActivity() {
 
     private val context: Context = this
 
-    private lateinit var prefs: TimeTrackerPrefs
-
     // UI references
     private var submitMenuItem: MenuItem? = null
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
 
-    private val disposables = CompositeDisposable()
-    private var date = Calendar.getInstance()
-    private var user = User("")
-    private var record = TimeRecord(user, Project(""), ProjectTask(""))
-    private val projects = ArrayList<Project>()
-    private val tasks = ArrayList<ProjectTask>()
     private var errorMessage: String = ""
-    private var projectEmpty: Project = Project.EMPTY
-    private var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
 
         // Set up the form.
         setContentView(R.layout.activity_time_edit)
-
-        user.username = prefs.userCredentials.login
-        user.email = user.username
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -146,11 +125,6 @@ class TimeEditActivity : InternetActivity() {
         finish_input.setOnClickListener { pickFinishTime() }
 
         handleIntent(intent, savedInstanceState)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -210,7 +184,7 @@ class TimeEditActivity : InternetActivity() {
         showProgress(true)
 
         // Fetch from local database.
-        loadPage()
+        //FIXME loadPage()
 
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(authToken)
@@ -249,12 +223,14 @@ class TimeEditActivity : InternetActivity() {
         val form = doc.selectFirst("form[name='timeRecordForm']")
 
         val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(doc, inputProjects, projects)
+        populateProjects(inputProjects, projects)
         record.project = findSelectedProject(inputProjects, projects)
 
         val inputTasks = form.selectFirst("select[name='task']")
         populateTasks(inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
+
+        populateTaskIds(doc, projects)
 
         val inputStart = form.selectFirst("input[name='start']")
         val startValue = inputStart.attr("value")
@@ -309,167 +285,6 @@ class TimeEditActivity : InternetActivity() {
     private fun populateForm(record: TimeRecord) {
         Timber.v("populateForm $record")
         bindForm(record)
-    }
-
-    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
-        val scripts = doc.select("script")
-        var scriptText: String
-        var indexStart: Int
-        var indexEnd: Int
-
-        for (script in scripts) {
-            scriptText = script.html()
-            indexStart = scriptText.indexOf(tokenStart)
-            if (indexStart >= 0) {
-                indexStart += tokenStart.length
-                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
-                if (indexEnd < 0) {
-                    indexEnd = scriptText.length
-                }
-                return scriptText.substring(indexStart, indexEnd)
-            }
-        }
-
-        return ""
-    }
-
-    private fun populateProjects(doc: Document, select: Element, target: MutableList<Project>) {
-        Timber.v("populateProjects")
-        val projects = ArrayList<Project>()
-
-        val options = select.select("option")
-        var value: String
-        var name: String
-        for (option in options) {
-            name = option.ownText()
-            value = option.attr("value")
-            val item = Project(name)
-            if (value.isEmpty()) {
-                projectEmpty = item
-            } else {
-                item.id = value.toLong()
-            }
-            projects.add(item)
-        }
-
-        val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        projectsDao.deleteAll()
-            .subscribe(
-                {
-                    projectsDao.insert(projects)
-                        .subscribe(
-                            { ids ->
-                                for (i in 0 until ids.size) {
-                                    projects[i].dbId = ids[i]
-                                }
-
-                                populateTaskIds(doc, projects)
-
-                                target.clear()
-                                target.addAll(projects)
-                            },
-                            { err -> Timber.e(err, "Error inserting projects into db: ${err.message}") }
-                        )
-                        .addTo(disposables)
-                },
-                { err -> Timber.e(err, "Error deleting projects from db: ${err.message}") }
-            )
-            .addTo(disposables)
-    }
-
-    private fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
-        Timber.v("populateTasks")
-        val tasks = ArrayList<ProjectTask>()
-
-        val options = select.select("option")
-        var value: String
-        var name: String
-        for (option in options) {
-            name = option.ownText()
-            value = option.attr("value")
-            val item = ProjectTask(name)
-            if (value.isEmpty()) {
-                taskEmpty = item
-            } else {
-                item.id = value.toLong()
-            }
-            tasks.add(item)
-        }
-
-        val db = TrackerDatabase.getDatabase(this)
-        val tasksDao = db.taskDao()
-        tasksDao.deleteAll()
-            .subscribe(
-                {
-                    tasksDao.insert(tasks)
-                        .subscribe(
-                            { ids ->
-                                for (i in 0 until ids.size) {
-                                    tasks[i].dbId = ids[i]
-                                }
-
-                                target.clear()
-                                target.addAll(tasks)
-                            },
-                            { err -> Timber.e(err, "Error inserting tasks into db: ${err.message}") }
-                        )
-                        .addTo(disposables)
-                },
-                { err -> Timber.e(err, "Error deleting tasks from db: ${err.message}") }
-            )
-            .addTo(disposables)
-    }
-
-    private fun populateTaskIds(doc: Document, projects: List<Project>) {
-        Timber.v("populateTaskIds")
-        val tokenStart = "var task_ids = new Array();"
-        val tokenEnd = "// Prepare an array of task names."
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
-        val pairs = ArrayList<ProjectTaskKey>()
-
-        for (project in projects) {
-            project.clearTasks()
-        }
-
-        if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val projectId = matcher.group(1).toLong()
-                    val taskIds: List<Long> = matcher.group(2)
-                        .split(",")
-                        .map { it.toLong() }
-                    val project = projects.find { it.id == projectId }
-                    project?.apply {
-                        addTasks(taskIds)
-                        pairs.addAll(tasks.values)
-                    }
-                }
-            }
-        }
-
-        val db = TrackerDatabase.getDatabase(this)
-        val projectTasksDao = db.projectTaskKeyDao()
-        projectTasksDao.deleteAll()
-            .subscribe(
-                {
-                    projectTasksDao.insert(pairs)
-                        .subscribe(
-                            { ids ->
-                                for (i in 0 until ids.size) {
-                                    pairs[i].dbId = ids[i]
-                                }
-                            },
-                            { err -> Timber.e(err, "Error inserting project-task pair into db: ${err.message}") }
-                        )
-                        .addTo(disposables)
-                },
-                { err -> Timber.e(err, "Error deleting project-task pair from db: ${err.message}") }
-            )
-            .addTo(disposables)
     }
 
     private fun bindForm(record: TimeRecord) {
@@ -696,10 +511,7 @@ class TimeEditActivity : InternetActivity() {
         task_input.setSelection(options.indexOf(record.task))
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    private fun showProgress(show: Boolean) {
+    override fun showProgress(show: Boolean) {
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
         time_form.visibility = if (show) View.GONE else View.VISIBLE
@@ -719,38 +531,6 @@ class TimeEditActivity : InternetActivity() {
         })
 
         submitMenuItem?.isEnabled = !show
-    }
-
-    private fun showProgressMain(show: Boolean) {
-        runOnUiThread { showProgress(show) }
-    }
-
-    private fun findSelectedProject(project: Element, projects: List<Project>): Project {
-        for (option in project.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.attr("value")
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return projects.find { id == it.id }!!
-                }
-                break
-            }
-        }
-        return projectEmpty
-    }
-
-    private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
-        for (option in task.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.attr("value")
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return tasks.find { id == it.id }!!
-                }
-                break
-            }
-        }
-        return taskEmpty
     }
 
     private fun deleteRecord() {
@@ -795,10 +575,6 @@ class TimeEditActivity : InternetActivity() {
 
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
-    }
-
-    private fun markFavorite() {
-        prefs.setFavorite(record)
     }
 
     private fun loadPage() {
