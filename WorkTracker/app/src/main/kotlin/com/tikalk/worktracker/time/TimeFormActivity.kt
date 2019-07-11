@@ -1,6 +1,7 @@
 package com.tikalk.worktracker.time
 
 import android.os.Bundle
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ProjectTaskKey
@@ -8,7 +9,11 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.functions.Function3
+import io.reactivex.schedulers.Schedulers
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -181,5 +186,90 @@ abstract class TimeFormActivity : InternetActivity() {
 
     protected fun showProgressMain(show: Boolean) {
         runOnUiThread { showProgress(show) }
+    }
+
+    protected fun saveFormToDb(): Single<Any> {
+        Timber.v("saveFormToDb")
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        val tasksDao = db.taskDao()
+        val projectTasksDao = db.projectTaskKeyDao()
+
+        val projects = this.projects
+        val tasks = this.tasks
+        val keys = ArrayList<ProjectTaskKey>()
+        projects.map { project -> keys.addAll(project.tasks.values) }
+
+        val zipperInsert = Function3<LongArray, LongArray, LongArray, Any> { projectIds, taskIds, keyIds ->
+            for (i in 0 until projectIds.size) {
+                projects[i].dbId = projectIds[i]
+            }
+
+            for (i in 0 until taskIds.size) {
+                tasks[i].dbId = taskIds[i]
+            }
+
+            for (i in 0 until keyIds.size) {
+                keys[i].dbId = keyIds[i]
+            }
+
+            return@Function3 this
+        }
+
+        val zipperDelete = Function3<Int, Int, Int, Any> { _, _, _ ->
+            return@Function3 Single.zip(
+                projectsDao.insert(projects),
+                tasksDao.insert(tasks),
+                projectTasksDao.insert(keys),
+                zipperInsert)
+                .subscribe()
+        }
+
+        //FIXME re-use existing records instead of just deleting them willy nilly.
+        return Single.zip(projectsDao.deleteAll(),
+            tasksDao.deleteAll(),
+            projectTasksDao.deleteAll(),
+            zipperDelete)
+            .subscribeOn(Schedulers.io())
+    }
+
+    protected fun loadFormFromDb(): Single<Any> {
+        Timber.v("loadPage")
+        val db = TrackerDatabase.getDatabase(this)
+        val projectsDao = db.projectDao()
+        val tasksDao = db.taskDao()
+        val projectTasksDao = db.projectTaskKeyDao()
+
+        val zipper = Function3<List<Project>, List<ProjectTask>, List<ProjectTaskKey>, Any> { projects, tasks, pairs ->
+            this.projects.clear()
+            this.tasks.clear()
+
+            this.projects.addAll(projects)
+            this.projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+
+            this.tasks.addAll(tasks)
+            this.taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+
+            if (projects.isNotEmpty()) {
+                projects.forEach { project ->
+                    val pairsForProject = pairs.filter { it.projectId == project.id }
+                    project.addKeys(pairsForProject)
+                }
+            }
+
+            return@Function3 this
+        }
+
+        return Single.zip(
+            projectsDao.queryAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()),
+            tasksDao.queryAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()),
+            projectTasksDao.queryAll()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()),
+            zipper)
     }
 }

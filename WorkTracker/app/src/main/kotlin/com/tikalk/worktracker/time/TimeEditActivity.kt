@@ -279,6 +279,9 @@ class TimeEditActivity : TimeFormActivity() {
             record.status = TaskRecordStatus.CURRENT
         }
 
+        savePage()
+            .subscribe()
+
         runOnUiThread { bindForm(record) }
     }
 
@@ -577,63 +580,11 @@ class TimeEditActivity : TimeFormActivity() {
         record.task = task
     }
 
-    private fun loadPage() {
-        Timber.v("loadPage")
-        val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        val tasksDao = db.taskDao()
-        val projectTasksDao = db.projectTaskKeyDao()
+    private fun loadPage(): Single<Any> {
+        return loadFormFromDb()
+    }
 
-        this.projects.clear()
-        this.tasks.clear()
-
-        projectsDao.queryAll()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { projects ->
-                    this.projects.addAll(projects)
-                    projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
-                    populateForm(record)
-                    showProgress(false)
-                },
-                { err ->
-                    Timber.e(err, "Error fetching projects from db: ${err.message}")
-                })
-            .addTo(disposables)
-
-        tasksDao.queryAll()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { tasks ->
-                    this.tasks.addAll(tasks)
-                    taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
-                    populateForm(record)
-                    showProgress(false)
-                },
-                { err ->
-                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
-                })
-            .addTo(disposables)
-
-        projectTasksDao.queryAll()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { pairs ->
-                    if (projects.isNotEmpty()) {
-                        projects.forEach { project ->
-                            val pairsForProject = pairs.filter { it.projectId == project.id }
-                            project.addKeys(pairsForProject)
-                        }
-                        populateForm(record)
-                    }
-                    showProgress(false)
-                },
-                { err ->
-                    Timber.e(err, "Error fetching tasks from db: ${err.message}")
-                })
-            .addTo(disposables)
+    private fun savePage(): Single<Any> {
+        return saveFormToDb()
     }
 }

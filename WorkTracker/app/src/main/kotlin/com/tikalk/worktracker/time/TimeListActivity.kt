@@ -176,7 +176,12 @@ class TimeListActivity : TimeFormActivity(),
         } else {
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
             loadPage()
-                .subscribe()
+                .subscribe({
+                    populateForm(record)
+                    bindForm(record)
+                    showProgress(false)
+                }, {}
+                )
                 .addTo(disposables)
         }
         handleIntent(intent, savedInstanceState)
@@ -218,6 +223,9 @@ class TimeListActivity : TimeFormActivity(),
         // Fetch from local database.
         loadPage()
             .subscribe({
+                populateForm(record)
+                bindForm(record)
+
                 // Fetch from remote server.
                 val authToken = prefs.basicCredentials.authToken()
                 val service = TimeTrackerServiceFactory.createPlain(authToken)
@@ -865,90 +873,10 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun loadPage(): Single<Any> {
-        Timber.v("loadPage")
-        val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        val tasksDao = db.taskDao()
-        val projectTasksDao = db.projectTaskKeyDao()
-
-        val zipper = Function3<List<Project>, List<ProjectTask>, List<ProjectTaskKey>, Any> { projects, tasks, pairs ->
-            this.projects.clear()
-            this.tasks.clear()
-
-            this.projects.addAll(projects)
-            this.projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
-
-            this.tasks.addAll(tasks)
-            this.taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
-
-            if (projects.isNotEmpty()) {
-                projects.forEach { project ->
-                    val pairsForProject = pairs.filter { it.projectId == project.id }
-                    project.addKeys(pairsForProject)
-                }
-            }
-
-            populateForm(record)
-            bindForm(record)
-            showProgress(false)
-            return@Function3 this
-        }
-
-        return Single.zip(
-            projectsDao.queryAll()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()),
-            tasksDao.queryAll()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()),
-            projectTasksDao.queryAll()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()),
-            zipper)
+        return loadFormFromDb()
     }
 
     private fun savePage(): Single<Any> {
-        Timber.v("savePage")
-        val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        val tasksDao = db.taskDao()
-        val projectTasksDao = db.projectTaskKeyDao()
-
-        val projects = this.projects
-        val tasks = this.tasks
-        val keys = ArrayList<ProjectTaskKey>()
-        projects.map { project -> keys.addAll(project.tasks.values) }
-
-        val zipperInsert = Function3<LongArray, LongArray, LongArray, Any> { projectIds, taskIds, keyIds ->
-            for (i in 0 until projectIds.size) {
-                projects[i].dbId = projectIds[i]
-            }
-
-            for (i in 0 until taskIds.size) {
-                tasks[i].dbId = taskIds[i]
-            }
-
-            for (i in 0 until keyIds.size) {
-                keys[i].dbId = keyIds[i]
-            }
-
-            return@Function3 this
-        }
-
-        val zipperDelete = Function3<Int, Int, Int, Any> { _, _, _ ->
-            return@Function3 Single.zip(
-                projectsDao.insert(projects),
-                tasksDao.insert(tasks),
-                projectTasksDao.insert(keys),
-                zipperInsert)
-                .subscribe()
-        }
-
-        //FIXME re-use existing records instead of just deleting them willy nilly.
-        return Single.zip(projectsDao.deleteAll(),
-            tasksDao.deleteAll(),
-            projectTasksDao.deleteAll(),
-            zipperDelete)
-            .subscribeOn(Schedulers.io())
+        return saveFormToDb()
     }
 }
