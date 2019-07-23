@@ -185,7 +185,7 @@ class LoginActivity : InternetActivity() {
             prefs.userCredentials = UserCredentials(email, password)
 
             val authToken = prefs.basicCredentials.authToken()
-            val service = TimeTrackerServiceFactory.createPlain(authToken)
+            val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
             val today = formatSystemDate()
             authTask = service.login(email, password, today)

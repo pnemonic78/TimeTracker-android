@@ -225,7 +225,7 @@ class TimeListActivity : TimeFormActivity(),
 
                 // Fetch from remote server.
                 val authToken = prefs.basicCredentials.authToken()
-                val service = TimeTrackerServiceFactory.createPlain(authToken)
+                val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
@@ -573,7 +573,7 @@ class TimeListActivity : TimeFormActivity(),
         showProgress(true)
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())

@@ -186,7 +186,7 @@ class TimeEditActivity : TimeFormActivity() {
         //FIXME loadPage()
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         val fetcher: Single<Response<String>> = if (id == 0L) {
             service.fetchTimes(dateFormatted)
@@ -380,7 +380,7 @@ class TimeEditActivity : TimeFormActivity() {
         }
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         val submitter: Single<Response<String>> = if (record.id == 0L) {
             service.addTime(record.project.id,
@@ -550,7 +550,7 @@ class TimeEditActivity : TimeFormActivity() {
         showProgress(true)
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
