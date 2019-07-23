@@ -48,7 +48,6 @@ import android.widget.TextView
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TaskRecordStatus
