@@ -30,5 +30,5 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
      * Delete all tasks.
      */
     @Query("DELETE FROM project_task")
-    fun deleteAll(): Single<Int>
+    fun deleteAll(): Int
 }

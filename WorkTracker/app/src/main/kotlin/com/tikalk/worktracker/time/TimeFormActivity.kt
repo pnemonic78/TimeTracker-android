@@ -188,7 +188,7 @@ abstract class TimeFormActivity : InternetActivity() {
         runOnUiThread { showProgress(show) }
     }
 
-    protected fun saveFormToDb(): Single<Any> {
+    protected fun saveFormToDb() {
         Timber.v("saveFormToDb")
         val db = TrackerDatabase.getDatabase(this)
         val projectsDao = db.projectDao()
@@ -200,37 +200,26 @@ abstract class TimeFormActivity : InternetActivity() {
         val keys = ArrayList<ProjectTaskKey>()
         projects.map { project -> keys.addAll(project.tasks.values) }
 
-        val zipperInsert = Function3<LongArray, LongArray, LongArray, Any> { projectIds, taskIds, keyIds ->
-            for (i in 0 until projectIds.size) {
-                projects[i].dbId = projectIds[i]
-            }
-
-            for (i in 0 until taskIds.size) {
-                tasks[i].dbId = taskIds[i]
-            }
-
-            for (i in 0 until keyIds.size) {
-                keys[i].dbId = keyIds[i]
-            }
-
-            return@Function3 this
+        //FIXME re-use existing records instead of just deleting them willy-nilly.
+        projectsDao.deleteAll()
+        val projectIds = projectsDao.insert(projects)
+        for (i in 0 until projectIds.size) {
+            projects[i].dbId = projectIds[i]
         }
 
-        val zipperDelete = Function3<Int, Int, Int, Any> { _, _, _ ->
-            return@Function3 Single.zip(
-                projectsDao.insert(projects),
-                tasksDao.insert(tasks),
-                projectTasksDao.insert(keys),
-                zipperInsert)
-                .subscribe()
+        //FIXME re-use existing records instead of just deleting them willy-nilly.
+        tasksDao.deleteAll()
+        val taskIds = tasksDao.insert(tasks)
+        for (i in 0 until taskIds.size) {
+            tasks[i].dbId = taskIds[i]
         }
 
-        //FIXME re-use existing records instead of just deleting them willy nilly.
-        return Single.zip(projectsDao.deleteAll(),
-            tasksDao.deleteAll(),
-            projectTasksDao.deleteAll(),
-            zipperDelete)
-            .subscribeOn(Schedulers.io())
+        //FIXME re-use existing records instead of just deleting them willy-nilly.
+        projectTasksDao.deleteAll()
+        val keyIds = projectTasksDao.insert(keys)
+        for (i in 0 until keyIds.size) {
+            keys[i].dbId = keyIds[i]
+        }
     }
 
     protected fun loadFormFromDb(): Single<Any> {

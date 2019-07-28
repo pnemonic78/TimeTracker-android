@@ -614,7 +614,6 @@ class TimeListActivity : TimeFormActivity(),
         populateTaskIds(doc, projects)
 
         savePage()
-            .subscribe()
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
@@ -873,7 +872,7 @@ class TimeListActivity : TimeFormActivity(),
         return loadFormFromDb()
     }
 
-    private fun savePage(): Single<Any> {
+    private fun savePage() {
         return saveFormToDb()
     }
 }

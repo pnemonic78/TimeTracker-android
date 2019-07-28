@@ -279,7 +279,6 @@ class TimeEditActivity : TimeFormActivity() {
         }
 
         savePage()
-            .subscribe()
 
         runOnUiThread { bindForm(record) }
     }
@@ -583,7 +582,7 @@ class TimeEditActivity : TimeFormActivity() {
         return loadFormFromDb()
     }
 
-    private fun savePage(): Single<Any> {
+    private fun savePage() {
         return saveFormToDb()
     }
 }

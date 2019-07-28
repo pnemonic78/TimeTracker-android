@@ -30,5 +30,5 @@ interface ProjectDao : BaseDao<Project> {
      * Delete all projects.
      */
     @Query("DELETE FROM project")
-    fun deleteAll(): Single<Int>
+    fun deleteAll(): Int
 }
