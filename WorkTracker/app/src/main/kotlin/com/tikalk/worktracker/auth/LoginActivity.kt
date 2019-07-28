@@ -250,12 +250,11 @@ class LoginActivity : InternetActivity() {
     private fun authenticate(email: String, response: Response): Boolean {
         val challenges = response.challenges()
         for (challenge in challenges) {
-            if (challenge.scheme() == BasicCredentials.SCHEME) {
-                val realm = challenge.realm()
+            if (challenge.scheme == BasicCredentials.SCHEME) {
                 val indexAt = email.indexOf('@')
                 val username = if (indexAt < 0) email else email.substring(0, indexAt)
                 val intent = Intent(context, BasicRealmActivity::class.java)
-                intent.putExtra(BasicRealmActivity.EXTRA_REALM, realm)
+                intent.putExtra(BasicRealmActivity.EXTRA_REALM, challenge.realm)
                 intent.putExtra(BasicRealmActivity.EXTRA_USER, username)
                 startActivityForResult(intent, REQUEST_AUTHENTICATE)
                 return true
