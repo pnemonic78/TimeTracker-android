@@ -13,6 +13,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Function3
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -20,6 +21,7 @@ import timber.log.Timber
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 abstract class TimeFormActivity : InternetActivity() {
 
@@ -200,21 +202,68 @@ abstract class TimeFormActivity : InternetActivity() {
         val keys = ArrayList<ProjectTaskKey>()
         projects.map { project -> keys.addAll(project.tasks.values) }
 
-        //FIXME re-use existing records instead of just deleting them willy-nilly.
-        projectsDao.deleteAll()
-        val projectIds = projectsDao.insert(projects)
-        for (i in 0 until projectIds.size) {
-            projects[i].dbId = projectIds[i]
-        }
+        projectsDao.queryAll()
+            .subscribe { projectsDb ->
+                val projectsDbById: MutableMap<Long, Project> = HashMap()
+                for (project in projectsDb) {
+                    projectsDbById[project.id] = project
+                }
 
-        //FIXME re-use existing records instead of just deleting them willy-nilly.
-        tasksDao.deleteAll()
-        val taskIds = tasksDao.insert(tasks)
-        for (i in 0 until taskIds.size) {
-            tasks[i].dbId = taskIds[i]
-        }
+                val projectsToInsert = ArrayList<Project>()
+                val projectsToUpdate = ArrayList<Project>()
+                for (project in projects) {
+                    val projectId = project.id
+                    if (projectsDbById.containsKey(projectId)){
+                        projectsToUpdate.add(project)
+                    } else {
+                        projectsToInsert.add(project)
+                    }
+                    projectsDbById.remove(projectId)
+                }
 
-        //FIXME re-use existing records instead of just deleting them willy-nilly.
+                val projectsToDelete = projectsDbById.values
+                projectsDao.delete(projectsToDelete)
+
+                val projectIds = projectsDao.insert(projectsToInsert)
+                for (i in 0 until projectIds.size) {
+                    projectsToInsert[i].dbId = projectIds[i]
+                }
+
+                projectsDao.update(projectsToUpdate)
+            }
+            .addTo(disposables)
+
+        tasksDao.queryAll()
+            .subscribe { tasksDb ->
+                val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
+                for (task in tasksDb) {
+                    tasksDbById[task.id] = task
+                }
+
+                val tasksToInsert = ArrayList<ProjectTask>()
+                val tasksToUpdate = ArrayList<ProjectTask>()
+                for (task in tasks) {
+                    val taskId = task.id
+                    if (tasksDbById.containsKey(taskId)){
+                        tasksToUpdate.add(task)
+                    } else {
+                        tasksToInsert.add(task)
+                    }
+                    tasksDbById.remove(taskId)
+                }
+
+                val tasksToDelete = tasksDbById.values
+                tasksDao.delete(tasksToDelete)
+
+                val taskIds = tasksDao.insert(tasksToInsert)
+                for (i in 0 until taskIds.size) {
+                    tasksToInsert[i].dbId = taskIds[i]
+                }
+
+                tasksDao.update(tasksToUpdate)
+            }
+            .addTo(disposables)
+
         projectTasksDao.deleteAll()
         val keyIds = projectTasksDao.insert(keys)
         for (i in 0 until keyIds.size) {
