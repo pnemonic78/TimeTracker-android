@@ -211,9 +211,12 @@ abstract class TimeFormActivity : InternetActivity() {
 
                 val projectsToInsert = ArrayList<Project>()
                 val projectsToUpdate = ArrayList<Project>()
+                var projectDb: Project
                 for (project in projects) {
                     val projectId = project.id
-                    if (projectsDbById.containsKey(projectId)){
+                    if (projectsDbById.containsKey(projectId)) {
+                        projectDb = projectsDbById[projectId]!!
+                        project.dbId = projectDb.dbId
                         projectsToUpdate.add(project)
                     } else {
                         projectsToInsert.add(project)
@@ -242,9 +245,12 @@ abstract class TimeFormActivity : InternetActivity() {
 
                 val tasksToInsert = ArrayList<ProjectTask>()
                 val tasksToUpdate = ArrayList<ProjectTask>()
+                var taskDb: ProjectTask
                 for (task in tasks) {
                     val taskId = task.id
-                    if (tasksDbById.containsKey(taskId)){
+                    if (tasksDbById.containsKey(taskId)) {
+                        taskDb = tasksDbById[taskId]!!
+                        task.dbId = taskDb.dbId
                         tasksToUpdate.add(task)
                     } else {
                         tasksToInsert.add(task)
@@ -261,6 +267,41 @@ abstract class TimeFormActivity : InternetActivity() {
                 }
 
                 tasksDao.update(tasksToUpdate)
+            }
+            .addTo(disposables)
+
+        projectTasksDao.queryAll()
+            .subscribe { keysDb ->
+                val keysDbMutable = keysDb.toMutableList()
+                val keysToInsert = ArrayList<ProjectTaskKey>()
+                val keysToUpdate = ArrayList<ProjectTaskKey>()
+                var keyDbFound: ProjectTaskKey?
+                for (key in keys) {
+                    keyDbFound = null
+                    for (keyDb in keysDbMutable) {
+                        if (key == keyDb) {
+                            keyDbFound = keyDb
+                            break
+                        }
+                    }
+                    if (keyDbFound != null) {
+                        key.dbId = keyDbFound.dbId
+                        keysToUpdate.add(key)
+                        keysDbMutable.remove(keyDbFound)
+                    } else {
+                        keysToInsert.add(key)
+                    }
+                }
+
+                val keysToDelete = keysDbMutable
+                projectTasksDao.delete(keysToDelete)
+
+                val keyIds = projectTasksDao.insert(keysToInsert)
+                for (i in 0 until keyIds.size) {
+                    keysToInsert[i].dbId = keyIds[i]
+                }
+
+                projectTasksDao.update(keysToUpdate)
             }
             .addTo(disposables)
 
