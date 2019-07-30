@@ -15,7 +15,7 @@ project.ext {
     glideVersion = '4.1.1'
     guavaVersion = '18.0'
     junitVersion = '4.12'
-    okhttpVersion = '4.0.1'
+    okhttpVersion = '3.12.3'  // '3.13.0' requires API 21+
     retrofit2Version = '2.6.0'
     roomVersion = '2.1.0'
     rxandroid2Version = '2.1.1'
