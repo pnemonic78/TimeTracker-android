@@ -258,19 +258,9 @@ class TimeListActivity : TimeFormActivity(),
     private fun populateList(html: String, date: Calendar) {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
-        val table = findRecordsTable(doc)
-
-        val form = doc.selectFirst("form[name='timeRecordForm']")
-
-        val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
 
         // The first row of the table is the header
+        val table = findRecordsTable(doc)
         if (table != null) {
             // loop through all the rows and parse each record
             val rows = table.getElementsByTag("tr")
@@ -281,6 +271,8 @@ class TimeListActivity : TimeFormActivity(),
                 }
             }
         }
+
+        val form = doc.selectFirst("form[name='timeRecordForm']")
         populateTotals(doc, form, totals)
 
         runOnUiThread {
@@ -601,14 +593,15 @@ class TimeListActivity : TimeFormActivity(),
     private fun populateForm(html: String, date: Calendar) {
         val doc: Document = Jsoup.parse(html)
 
-        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
 
-        val inputProjects = form.selectFirst("select[name='project']")
+        val inputProjects = form.selectFirst("select[name='project']") ?: return
         populateProjects(inputProjects, projects)
-        record.project = findSelectedProject(inputProjects, projects)
 
-        val inputTasks = form.selectFirst("select[name='task']")
+        val inputTasks = form.selectFirst("select[name='task']") ?: return
         populateTasks(inputTasks, tasks)
+
+        record.project = findSelectedProject(inputProjects, projects)
         record.task = findSelectedTask(inputTasks, tasks)
 
         populateTaskIds(doc, projects)

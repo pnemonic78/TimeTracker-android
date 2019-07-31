@@ -91,10 +91,12 @@ abstract class InternetActivity : AppCompatActivity() {
     protected fun findError(doc: Document): String? {
         val body = doc.body()
         val tables = body.select("table")
-        var errorNode: Element?
+        if (tables.isEmpty()) {
+            return body.text()
+        }
 
         for (table in tables) {
-            errorNode = table.selectFirst("td[class='error']")
+            val errorNode = table.selectFirst("td[class='error']")
             if (errorNode != null) {
                 return errorNode.text()
             }
