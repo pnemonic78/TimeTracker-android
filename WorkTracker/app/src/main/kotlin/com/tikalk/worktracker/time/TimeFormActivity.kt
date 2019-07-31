@@ -193,123 +193,118 @@ abstract class TimeFormActivity : InternetActivity() {
     protected fun saveFormToDb() {
         Timber.v("saveFormToDb")
         val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        val tasksDao = db.taskDao()
-        val projectTasksDao = db.projectTaskKeyDao()
 
+        saveProjects(db)
+        saveTasks(db)
+        saveProjectTaskKeys(db)
+    }
+
+    private fun saveProjects(db: TrackerDatabase) {
         val projects = this.projects
+        val projectsDao = db.projectDao()
+        val projectsDb = projectsDao.queryAllInstant()
+        val projectsDbById: MutableMap<Long, Project> = HashMap()
+        for (project in projectsDb) {
+            projectsDbById[project.id] = project
+        }
+
+        val projectsToInsert = ArrayList<Project>()
+        val projectsToUpdate = ArrayList<Project>()
+        var projectDb: Project
+        for (project in projects) {
+            val projectId = project.id
+            if (projectsDbById.containsKey(projectId)) {
+                projectDb = projectsDbById[projectId]!!
+                project.dbId = projectDb.dbId
+                projectsToUpdate.add(project)
+            } else {
+                projectsToInsert.add(project)
+            }
+            projectsDbById.remove(projectId)
+        }
+
+        val projectsToDelete = projectsDbById.values
+        projectsDao.delete(projectsToDelete)
+
+        val projectIds = projectsDao.insert(projectsToInsert)
+        for (i in 0 until projectIds.size) {
+            projectsToInsert[i].dbId = projectIds[i]
+        }
+
+        projectsDao.update(projectsToUpdate)
+    }
+
+    private fun saveTasks(db: TrackerDatabase) {
         val tasks = this.tasks
+        val tasksDao = db.taskDao()
+        val tasksDb = tasksDao.queryAllInstant()
+        val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
+        for (task in tasksDb) {
+            tasksDbById[task.id] = task
+        }
+
+        val tasksToInsert = ArrayList<ProjectTask>()
+        val tasksToUpdate = ArrayList<ProjectTask>()
+        var taskDb: ProjectTask
+        for (task in tasks) {
+            val taskId = task.id
+            if (tasksDbById.containsKey(taskId)) {
+                taskDb = tasksDbById[taskId]!!
+                task.dbId = taskDb.dbId
+                tasksToUpdate.add(task)
+            } else {
+                tasksToInsert.add(task)
+            }
+            tasksDbById.remove(taskId)
+        }
+
+        val tasksToDelete = tasksDbById.values
+        tasksDao.delete(tasksToDelete)
+
+        val taskIds = tasksDao.insert(tasksToInsert)
+        for (i in 0 until taskIds.size) {
+            tasksToInsert[i].dbId = taskIds[i]
+        }
+
+        tasksDao.update(tasksToUpdate)
+    }
+
+    private fun saveProjectTaskKeys(db: TrackerDatabase) {
         val keys = ArrayList<ProjectTaskKey>()
         projects.map { project -> keys.addAll(project.tasks.values) }
 
-        projectsDao.queryAll()
-            .subscribe { projectsDb ->
-                val projectsDbById: MutableMap<Long, Project> = HashMap()
-                for (project in projectsDb) {
-                    projectsDbById[project.id] = project
+        val projectTasksDao = db.projectTaskKeyDao()
+        val keysDb = projectTasksDao.queryAllInstant()
+        val keysDbMutable = keysDb.toMutableList()
+        val keysToInsert = ArrayList<ProjectTaskKey>()
+        val keysToUpdate = ArrayList<ProjectTaskKey>()
+        var keyDbFound: ProjectTaskKey?
+        for (key in keys) {
+            keyDbFound = null
+            for (keyDb in keysDbMutable) {
+                if (key == keyDb) {
+                    keyDbFound = keyDb
+                    break
                 }
-
-                val projectsToInsert = ArrayList<Project>()
-                val projectsToUpdate = ArrayList<Project>()
-                var projectDb: Project
-                for (project in projects) {
-                    val projectId = project.id
-                    if (projectsDbById.containsKey(projectId)) {
-                        projectDb = projectsDbById[projectId]!!
-                        project.dbId = projectDb.dbId
-                        projectsToUpdate.add(project)
-                    } else {
-                        projectsToInsert.add(project)
-                    }
-                    projectsDbById.remove(projectId)
-                }
-
-                val projectsToDelete = projectsDbById.values
-                projectsDao.delete(projectsToDelete)
-
-                val projectIds = projectsDao.insert(projectsToInsert)
-                for (i in 0 until projectIds.size) {
-                    projectsToInsert[i].dbId = projectIds[i]
-                }
-
-                projectsDao.update(projectsToUpdate)
             }
-            .addTo(disposables)
-
-        tasksDao.queryAll()
-            .subscribe { tasksDb ->
-                val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
-                for (task in tasksDb) {
-                    tasksDbById[task.id] = task
-                }
-
-                val tasksToInsert = ArrayList<ProjectTask>()
-                val tasksToUpdate = ArrayList<ProjectTask>()
-                var taskDb: ProjectTask
-                for (task in tasks) {
-                    val taskId = task.id
-                    if (tasksDbById.containsKey(taskId)) {
-                        taskDb = tasksDbById[taskId]!!
-                        task.dbId = taskDb.dbId
-                        tasksToUpdate.add(task)
-                    } else {
-                        tasksToInsert.add(task)
-                    }
-                    tasksDbById.remove(taskId)
-                }
-
-                val tasksToDelete = tasksDbById.values
-                tasksDao.delete(tasksToDelete)
-
-                val taskIds = tasksDao.insert(tasksToInsert)
-                for (i in 0 until taskIds.size) {
-                    tasksToInsert[i].dbId = taskIds[i]
-                }
-
-                tasksDao.update(tasksToUpdate)
+            if (keyDbFound != null) {
+                key.dbId = keyDbFound.dbId
+                keysToUpdate.add(key)
+                keysDbMutable.remove(keyDbFound)
+            } else {
+                keysToInsert.add(key)
             }
-            .addTo(disposables)
-
-        projectTasksDao.queryAll()
-            .subscribe { keysDb ->
-                val keysDbMutable = keysDb.toMutableList()
-                val keysToInsert = ArrayList<ProjectTaskKey>()
-                val keysToUpdate = ArrayList<ProjectTaskKey>()
-                var keyDbFound: ProjectTaskKey?
-                for (key in keys) {
-                    keyDbFound = null
-                    for (keyDb in keysDbMutable) {
-                        if (key == keyDb) {
-                            keyDbFound = keyDb
-                            break
-                        }
-                    }
-                    if (keyDbFound != null) {
-                        key.dbId = keyDbFound.dbId
-                        keysToUpdate.add(key)
-                        keysDbMutable.remove(keyDbFound)
-                    } else {
-                        keysToInsert.add(key)
-                    }
-                }
-
-                val keysToDelete = keysDbMutable
-                projectTasksDao.delete(keysToDelete)
-
-                val keyIds = projectTasksDao.insert(keysToInsert)
-                for (i in 0 until keyIds.size) {
-                    keysToInsert[i].dbId = keyIds[i]
-                }
-
-                projectTasksDao.update(keysToUpdate)
-            }
-            .addTo(disposables)
-
-        projectTasksDao.deleteAll()
-        val keyIds = projectTasksDao.insert(keys)
-        for (i in 0 until keyIds.size) {
-            keys[i].dbId = keyIds[i]
         }
+
+        val keysToDelete = keysDbMutable
+        projectTasksDao.delete(keysToDelete)
+
+        val keyIds = projectTasksDao.insert(keysToInsert)
+        for (i in 0 until keyIds.size) {
+            keysToInsert[i].dbId = keyIds[i]
+        }
+
+        projectTasksDao.update(keysToUpdate)
     }
 
     protected fun loadFormFromDb(): Single<Any> {
