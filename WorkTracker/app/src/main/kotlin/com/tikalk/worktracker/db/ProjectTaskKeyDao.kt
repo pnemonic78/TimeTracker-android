@@ -21,6 +21,14 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
     fun queryAll(): Single<List<ProjectTaskKey>>
 
     /**
+     * Select all keys from the table.
+     *
+     * @return all keys.
+     */
+    @Query("SELECT * FROM project_task_key")
+    fun queryAllInstant(): List<ProjectTaskKey>
+
+    /**
      * Select a project's keys.
      */
     @Query("SELECT * FROM project_task_key WHERE project_id = :projectId")
@@ -30,5 +38,5 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      * Delete all keys.
      */
     @Query("DELETE FROM project_task_key")
-    fun deleteAll(): Single<Int>
+    fun deleteAll(): Int
 }

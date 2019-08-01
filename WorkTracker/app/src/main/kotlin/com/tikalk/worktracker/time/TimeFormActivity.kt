@@ -13,6 +13,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Function3
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -20,6 +21,7 @@ import timber.log.Timber
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 abstract class TimeFormActivity : InternetActivity() {
 
@@ -188,49 +190,121 @@ abstract class TimeFormActivity : InternetActivity() {
         runOnUiThread { showProgress(show) }
     }
 
-    protected fun saveFormToDb(): Single<Any> {
+    protected fun saveFormToDb() {
         Timber.v("saveFormToDb")
         val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        val tasksDao = db.taskDao()
-        val projectTasksDao = db.projectTaskKeyDao()
 
+        saveProjects(db)
+        saveTasks(db)
+        saveProjectTaskKeys(db)
+    }
+
+    private fun saveProjects(db: TrackerDatabase) {
         val projects = this.projects
+        val projectsDao = db.projectDao()
+        val projectsDb = projectsDao.queryAllInstant()
+        val projectsDbById: MutableMap<Long, Project> = HashMap()
+        for (project in projectsDb) {
+            projectsDbById[project.id] = project
+        }
+
+        val projectsToInsert = ArrayList<Project>()
+        val projectsToUpdate = ArrayList<Project>()
+        var projectDb: Project
+        for (project in projects) {
+            val projectId = project.id
+            if (projectsDbById.containsKey(projectId)) {
+                projectDb = projectsDbById[projectId]!!
+                project.dbId = projectDb.dbId
+                projectsToUpdate.add(project)
+            } else {
+                projectsToInsert.add(project)
+            }
+            projectsDbById.remove(projectId)
+        }
+
+        val projectsToDelete = projectsDbById.values
+        projectsDao.delete(projectsToDelete)
+
+        val projectIds = projectsDao.insert(projectsToInsert)
+        for (i in 0 until projectIds.size) {
+            projectsToInsert[i].dbId = projectIds[i]
+        }
+
+        projectsDao.update(projectsToUpdate)
+    }
+
+    private fun saveTasks(db: TrackerDatabase) {
         val tasks = this.tasks
+        val tasksDao = db.taskDao()
+        val tasksDb = tasksDao.queryAllInstant()
+        val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
+        for (task in tasksDb) {
+            tasksDbById[task.id] = task
+        }
+
+        val tasksToInsert = ArrayList<ProjectTask>()
+        val tasksToUpdate = ArrayList<ProjectTask>()
+        var taskDb: ProjectTask
+        for (task in tasks) {
+            val taskId = task.id
+            if (tasksDbById.containsKey(taskId)) {
+                taskDb = tasksDbById[taskId]!!
+                task.dbId = taskDb.dbId
+                tasksToUpdate.add(task)
+            } else {
+                tasksToInsert.add(task)
+            }
+            tasksDbById.remove(taskId)
+        }
+
+        val tasksToDelete = tasksDbById.values
+        tasksDao.delete(tasksToDelete)
+
+        val taskIds = tasksDao.insert(tasksToInsert)
+        for (i in 0 until taskIds.size) {
+            tasksToInsert[i].dbId = taskIds[i]
+        }
+
+        tasksDao.update(tasksToUpdate)
+    }
+
+    private fun saveProjectTaskKeys(db: TrackerDatabase) {
         val keys = ArrayList<ProjectTaskKey>()
         projects.map { project -> keys.addAll(project.tasks.values) }
 
-        val zipperInsert = Function3<LongArray, LongArray, LongArray, Any> { projectIds, taskIds, keyIds ->
-            for (i in 0 until projectIds.size) {
-                projects[i].dbId = projectIds[i]
+        val projectTasksDao = db.projectTaskKeyDao()
+        val keysDb = projectTasksDao.queryAllInstant()
+        val keysDbMutable = keysDb.toMutableList()
+        val keysToInsert = ArrayList<ProjectTaskKey>()
+        val keysToUpdate = ArrayList<ProjectTaskKey>()
+        var keyDbFound: ProjectTaskKey?
+        for (key in keys) {
+            keyDbFound = null
+            for (keyDb in keysDbMutable) {
+                if (key == keyDb) {
+                    keyDbFound = keyDb
+                    break
+                }
             }
-
-            for (i in 0 until taskIds.size) {
-                tasks[i].dbId = taskIds[i]
+            if (keyDbFound != null) {
+                key.dbId = keyDbFound.dbId
+                keysToUpdate.add(key)
+                keysDbMutable.remove(keyDbFound)
+            } else {
+                keysToInsert.add(key)
             }
-
-            for (i in 0 until keyIds.size) {
-                keys[i].dbId = keyIds[i]
-            }
-
-            return@Function3 this
         }
 
-        val zipperDelete = Function3<Int, Int, Int, Any> { _, _, _ ->
-            return@Function3 Single.zip(
-                projectsDao.insert(projects),
-                tasksDao.insert(tasks),
-                projectTasksDao.insert(keys),
-                zipperInsert)
-                .subscribe()
+        val keysToDelete = keysDbMutable
+        projectTasksDao.delete(keysToDelete)
+
+        val keyIds = projectTasksDao.insert(keysToInsert)
+        for (i in 0 until keyIds.size) {
+            keysToInsert[i].dbId = keyIds[i]
         }
 
-        //FIXME re-use existing records instead of just deleting them willy nilly.
-        return Single.zip(projectsDao.deleteAll(),
-            tasksDao.deleteAll(),
-            projectTasksDao.deleteAll(),
-            zipperDelete)
-            .subscribeOn(Schedulers.io())
+        projectTasksDao.update(keysToUpdate)
     }
 
     protected fun loadFormFromDb(): Single<Any> {

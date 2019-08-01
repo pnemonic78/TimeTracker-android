@@ -21,6 +21,14 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
     fun queryAll(): Single<List<ProjectTask>>
 
     /**
+     * Select all tasks from the tasks table.
+     *
+     * @return all tasks.
+     */
+    @Query("SELECT * FROM project_task")
+    fun queryAllInstant(): List<ProjectTask>
+
+    /**
      * Select a task by its id.
      */
     @Query("SELECT * FROM project_task WHERE id = :taskId")
@@ -30,5 +38,5 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
      * Delete all tasks.
      */
     @Query("DELETE FROM project_task")
-    fun deleteAll(): Single<Int>
+    fun deleteAll(): Int
 }

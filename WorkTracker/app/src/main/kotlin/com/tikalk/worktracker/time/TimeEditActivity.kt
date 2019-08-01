@@ -48,7 +48,6 @@ import android.widget.TextView
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TaskRecordStatus
@@ -187,7 +186,7 @@ class TimeEditActivity : TimeFormActivity() {
         //FIXME loadPage()
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         val fetcher: Single<Response<String>> = if (id == 0L) {
             service.fetchTimes(dateFormatted)
@@ -220,28 +219,29 @@ class TimeEditActivity : TimeFormActivity() {
 
         errorMessage = findError(doc)?.trim() ?: ""
 
-        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
 
-        val inputProjects = form.selectFirst("select[name='project']")
+        val inputProjects = form.selectFirst("select[name='project']") ?: return
         populateProjects(inputProjects, projects)
-        record.project = findSelectedProject(inputProjects, projects)
 
-        val inputTasks = form.selectFirst("select[name='task']")
+        val inputTasks = form.selectFirst("select[name='task']") ?: return
         populateTasks(inputTasks, tasks)
-        record.task = findSelectedTask(inputTasks, tasks)
 
         populateTaskIds(doc, projects)
 
-        val inputStart = form.selectFirst("input[name='start']")
+        val inputStart = form.selectFirst("input[name='start']") ?: return
         val startValue = inputStart.attr("value")
-        record.start = parseSystemTime(date, startValue)
 
-        val inputFinish = form.selectFirst("input[name='finish']")
+        val inputFinish = form.selectFirst("input[name='finish']") ?: return
         val finishValue = inputFinish.attr("value")
-        record.finish = parseSystemTime(date, finishValue)
 
         val inputNote = form.selectFirst("textarea[name='note']")
-        record.note = inputNote.text()
+
+        record.project = findSelectedProject(inputProjects, projects)
+        record.task = findSelectedTask(inputTasks, tasks)
+        record.start = parseSystemTime(date, startValue)
+        record.finish = parseSystemTime(date, finishValue)
+        record.note = inputNote?.text() ?: ""
 
         if (id == 0L) {
             val projectFavorite = prefs.getFavoriteProject()
@@ -280,7 +280,6 @@ class TimeEditActivity : TimeFormActivity() {
         }
 
         savePage()
-            .subscribe()
 
         runOnUiThread { bindForm(record) }
     }
@@ -381,7 +380,7 @@ class TimeEditActivity : TimeFormActivity() {
         }
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         val submitter: Single<Response<String>> = if (record.id == 0L) {
             service.addTime(record.project.id,
@@ -551,7 +550,7 @@ class TimeEditActivity : TimeFormActivity() {
         showProgress(true)
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
@@ -584,7 +583,7 @@ class TimeEditActivity : TimeFormActivity() {
         return loadFormFromDb()
     }
 
-    private fun savePage(): Single<Any> {
+    private fun savePage() {
         return saveFormToDb()
     }
 }

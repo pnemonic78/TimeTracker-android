@@ -46,10 +46,8 @@ import androidx.annotation.MainThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -59,7 +57,6 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Function3
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
@@ -228,7 +225,7 @@ class TimeListActivity : TimeFormActivity(),
 
                 // Fetch from remote server.
                 val authToken = prefs.basicCredentials.authToken()
-                val service = TimeTrackerServiceFactory.createPlain(authToken)
+                val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
@@ -261,19 +258,9 @@ class TimeListActivity : TimeFormActivity(),
     private fun populateList(html: String, date: Calendar) {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
-        val table = findRecordsTable(doc)
-
-        val form = doc.selectFirst("form[name='timeRecordForm']")
-
-        val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
 
         // The first row of the table is the header
+        val table = findRecordsTable(doc)
         if (table != null) {
             // loop through all the rows and parse each record
             val rows = table.getElementsByTag("tr")
@@ -284,6 +271,8 @@ class TimeListActivity : TimeFormActivity(),
                 }
             }
         }
+
+        val form = doc.selectFirst("form[name='timeRecordForm']")
         populateTotals(doc, form, totals)
 
         runOnUiThread {
@@ -576,7 +565,7 @@ class TimeListActivity : TimeFormActivity(),
         showProgress(true)
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
@@ -604,20 +593,20 @@ class TimeListActivity : TimeFormActivity(),
     private fun populateForm(html: String, date: Calendar) {
         val doc: Document = Jsoup.parse(html)
 
-        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
 
-        val inputProjects = form.selectFirst("select[name='project']")
+        val inputProjects = form.selectFirst("select[name='project']") ?: return
         populateProjects(inputProjects, projects)
-        record.project = findSelectedProject(inputProjects, projects)
 
-        val inputTasks = form.selectFirst("select[name='task']")
+        val inputTasks = form.selectFirst("select[name='task']") ?: return
         populateTasks(inputTasks, tasks)
+
+        record.project = findSelectedProject(inputProjects, projects)
         record.task = findSelectedTask(inputTasks, tasks)
 
         populateTaskIds(doc, projects)
 
         savePage()
-            .subscribe()
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
@@ -876,7 +865,7 @@ class TimeListActivity : TimeFormActivity(),
         return loadFormFromDb()
     }
 
-    private fun savePage(): Single<Any> {
+    private fun savePage() {
         return saveFormToDb()
     }
 }

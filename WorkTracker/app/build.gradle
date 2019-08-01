@@ -50,11 +50,6 @@ android {
             java.srcDirs += 'src/test/kotlin'
         }
     }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
 }
 
 dependencies {
@@ -63,7 +58,7 @@ dependencies {
 
     // Google Support
     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
-    implementation 'com.google.android.material:material:1.1.0-alpha08'
+    implementation 'com.google.android.material:material:1.1.0-alpha07'
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
 
     // Testing
@@ -92,7 +87,7 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
     implementation 'com.google.code.gson:gson:2.8.5'
-    implementation "org.jsoup:jsoup:$jsoupVersion"
+    implementation 'org.jsoup:jsoup:1.12.1'
 
     // Logging
     implementation "com.jakewharton.timber:timber:$timberVersion"
