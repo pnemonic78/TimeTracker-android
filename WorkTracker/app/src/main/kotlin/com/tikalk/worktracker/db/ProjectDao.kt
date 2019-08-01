@@ -49,7 +49,7 @@ interface ProjectDao : BaseDao<Project> {
      * @return all projects.
      */
     @Query("SELECT * FROM project")
-    fun queryAll(): Single<List<Project>>
+    fun queryAll(): List<Project>
 
     /**
      * Select all projects from the projects table.
@@ -57,7 +57,7 @@ interface ProjectDao : BaseDao<Project> {
      * @return all projects.
      */
     @Query("SELECT * FROM project")
-    fun queryAllInstant(): List<Project>
+    fun queryAllSingle(): Single<List<Project>>
 
     /**
      * Select a project by its id.

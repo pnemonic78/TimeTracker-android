@@ -232,7 +232,7 @@ abstract class TimeFormActivity : InternetActivity() {
     private fun saveProjects(db: TrackerDatabase) {
         val projects = this.projects
         val projectsDao = db.projectDao()
-        val projectsDb = projectsDao.queryAllInstant()
+        val projectsDb = projectsDao.queryAll()
         val projectsDbById: MutableMap<Long, Project> = HashMap()
         for (project in projectsDb) {
             projectsDbById[project.id] = project
@@ -267,7 +267,7 @@ abstract class TimeFormActivity : InternetActivity() {
     private fun saveTasks(db: TrackerDatabase) {
         val tasks = this.tasks
         val tasksDao = db.taskDao()
-        val tasksDb = tasksDao.queryAllInstant()
+        val tasksDb = tasksDao.queryAll()
         val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
         for (task in tasksDb) {
             tasksDbById[task.id] = task
@@ -304,7 +304,7 @@ abstract class TimeFormActivity : InternetActivity() {
         projects.map { project -> keys.addAll(project.tasks.values) }
 
         val projectTasksDao = db.projectTaskKeyDao()
-        val keysDb = projectTasksDao.queryAllInstant()
+        val keysDb = projectTasksDao.queryAll()
         val keysDbMutable = keysDb.toMutableList()
         val keysToInsert = ArrayList<ProjectTaskKey>()
         val keysToUpdate = ArrayList<ProjectTaskKey>()
@@ -365,13 +365,13 @@ abstract class TimeFormActivity : InternetActivity() {
         }
 
         return Single.zip(
-            projectsDao.queryAll()
+            projectsDao.queryAllSingle()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()),
-            tasksDao.queryAll()
+            tasksDao.queryAllSingle()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()),
-            projectTasksDao.queryAll()
+            projectTasksDao.queryAllSingle()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()),
             zipper)

@@ -49,7 +49,7 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      * @return all keys.
      */
     @Query("SELECT * FROM project_task_key")
-    fun queryAll(): Single<List<ProjectTaskKey>>
+    fun queryAll(): List<ProjectTaskKey>
 
     /**
      * Select all keys from the table.
@@ -57,7 +57,7 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      * @return all keys.
      */
     @Query("SELECT * FROM project_task_key")
-    fun queryAllInstant(): List<ProjectTaskKey>
+    fun queryAllSingle(): Single<List<ProjectTaskKey>>
 
     /**
      * Select a project's keys.
