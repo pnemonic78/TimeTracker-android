@@ -34,7 +34,6 @@ package com.tikalk.worktracker
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import androidx.room.Room
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.TimerService
 import timber.log.Timber

@@ -40,7 +40,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import retrofit2.Response
 
 /**
