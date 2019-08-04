@@ -83,6 +83,8 @@ class TimeEditActivity : TimeFormActivity() {
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
+
+        private const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 
     private val context: Context = this
@@ -303,7 +305,7 @@ class TimeEditActivity : TimeFormActivity() {
 
         val startTime = record.startTime
         start_input.text = if (startTime > 0L)
-            DateUtils.formatDateTime(context, startTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
         else
             ""
         start_input.error = null
@@ -311,7 +313,7 @@ class TimeEditActivity : TimeFormActivity() {
 
         val finishTime = record.finishTime
         finish_input.text = if (finishTime > 0L)
-            DateUtils.formatDateTime(context, finishTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
         else
             ""
         finish_input.error = null
@@ -434,7 +436,7 @@ class TimeEditActivity : TimeFormActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.start = cal
-                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 start_input.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -451,7 +453,7 @@ class TimeEditActivity : TimeFormActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.finish = cal
-                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 finish_input.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)

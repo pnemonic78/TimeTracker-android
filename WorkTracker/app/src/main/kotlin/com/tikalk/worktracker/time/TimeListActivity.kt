@@ -283,7 +283,7 @@ class TimeListActivity : TimeFormActivity(),
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
-        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
+        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
 
         listItems.clear()
         listItems.addAll(records)
