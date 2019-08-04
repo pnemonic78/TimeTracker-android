@@ -339,6 +339,9 @@ class TimeEditActivity : TimeFormActivity() {
         if (requestCode == REQUEST_AUTHENTICATE) {
             if (resultCode == RESULT_OK) {
                 fetchPage(date, record.id)
+            } else {
+                showProgress(false)
+                finish()
             }
         }
     }

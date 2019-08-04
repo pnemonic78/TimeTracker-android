@@ -346,17 +346,24 @@ class TimeListActivity : TimeFormActivity(),
                 record.user = user
                 // Fetch the list for the user.
                 fetchPage(date)
+            } else {
+                showProgress(false)
+                finish()
             }
             REQUEST_EDIT -> if (resultCode == RESULT_OK) {
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
+            } else {
+                showProgress(false)
             }
             REQUEST_STOPPED -> if (resultCode == RESULT_OK) {
                 stopTimerCommit()
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
+            } else {
+                showProgress(false)
             }
         }
     }
@@ -440,6 +447,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun addTime() {
+        showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
         startActivityForResult(intent, REQUEST_EDIT)
@@ -545,6 +553,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
+        showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
         if ((record.id == 0L) && !record.isEmpty()) {
             intent.putExtra(TimeEditActivity.EXTRA_DATE, record.startTime)
