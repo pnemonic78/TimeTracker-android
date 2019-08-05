@@ -584,8 +584,10 @@ class TimeEditActivity : TimeFormActivity() {
         record.task = task
     }
 
-    private fun loadPage(): Single<Any> {
-        return loadFormFromDb()
+    private fun loadPage(): Single<Unit> {
+        return Single.fromCallable { loadFormFromDb() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun savePage() {

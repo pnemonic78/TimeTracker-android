@@ -176,8 +176,10 @@ class TimeListActivity : TimeFormActivity(),
                     populateForm(record)
                     bindForm(record)
                     showProgress(false)
-                }, {}
-                )
+                }, { err ->
+                    Timber.e(err, "Error loading page: ${err.message}")
+                    showProgress(false)
+                })
                 .addTo(disposables)
         }
         handleIntent(intent, savedInstanceState)
@@ -215,7 +217,7 @@ class TimeListActivity : TimeFormActivity(),
         // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
 
-        // Fetch from local database.
+        // Fetch from local database first.
         loadPage()
             .subscribe({
                 populateForm(record)
@@ -244,11 +246,10 @@ class TimeListActivity : TimeFormActivity(),
                         showProgressMain(false)
                     })
                     .addTo(disposables)
-            },
-                { err ->
-                    Timber.e(err, "Error fetching page: ${err.message}")
-                    showProgress(false)
-                })
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
+            })
             .addTo(disposables)
     }
 
@@ -868,8 +869,10 @@ class TimeListActivity : TimeFormActivity(),
         return null
     }
 
-    private fun loadPage(): Single<Any> {
-        return loadFormFromDb()
+    private fun loadPage(): Single<Unit> {
+        return Single.fromCallable { loadFormFromDb() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun savePage() {

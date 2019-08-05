@@ -40,11 +40,7 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Function3
-import io.reactivex.schedulers.Schedulers
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -337,43 +333,40 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.update(keysToUpdate)
     }
 
-    protected fun loadFormFromDb(): Single<Any> {
-        Timber.v("loadPage")
+    protected fun loadFormFromDb() {
+        Timber.v("loadFormFromDb")
         val db = TrackerDatabase.getDatabase(this)
-        val projectsDao = db.projectDao()
-        val tasksDao = db.taskDao()
-        val projectTasksDao = db.projectTaskKeyDao()
 
-        val zipper = Function3<List<Project>, List<ProjectTask>, List<ProjectTaskKey>, Any> { projects, tasks, pairs ->
-            this.projects.clear()
-            this.tasks.clear()
-
-            this.projects.addAll(projects)
-            this.projectEmpty = this.projects.firstOrNull { it.isEmpty() } ?: projectEmpty
-
-            this.tasks.addAll(tasks)
-            this.taskEmpty = this.tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
-
-            if (projects.isNotEmpty()) {
-                projects.forEach { project ->
-                    val pairsForProject = pairs.filter { it.projectId == project.id }
-                    project.addKeys(pairsForProject)
-                }
-            }
-
-            return@Function3 this
-        }
-
-        return Single.zip(
-            projectsDao.queryAllSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()),
-            tasksDao.queryAllSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()),
-            projectTasksDao.queryAllSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()),
-            zipper)
+        loadProjects(db)
+        loadTasks(db)
+        loadProjectTaskKeys(db)
     }
+
+    private fun loadProjects(db: TrackerDatabase) {
+        val projectsDao = db.projectDao()
+        val projectsDb = projectsDao.queryAll()
+        projects.clear()
+        projects.addAll(projectsDb)
+        this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+    }
+
+    private fun loadTasks(db: TrackerDatabase) {
+        val tasksDao = db.taskDao()
+        val tasksDb = tasksDao.queryAll()
+        tasks.clear()
+        tasks.addAll(tasksDb)
+        this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+    }
+
+    private fun loadProjectTaskKeys(db: TrackerDatabase) {
+        val projectTasksDao = db.projectTaskKeyDao()
+        val keysDb = projectTasksDao.queryAll()
+        if (projects.isNotEmpty()) {
+            projects.forEach { project ->
+                val pairsForProject = keysDb.filter { it.projectId == project.id }
+                project.addKeys(pairsForProject)
+            }
+        }
+    }
+
 }
