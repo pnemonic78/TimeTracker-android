@@ -99,7 +99,6 @@ class TimeListActivity : TimeFormActivity(),
 
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
-    private var menuFavorite: MenuItem? = null
 
     private val listAdapter = TimeListAdapter(this)
     private val listItems = ArrayList<TimeRecord>()
@@ -193,7 +192,6 @@ class TimeListActivity : TimeFormActivity(),
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         menuInflater.inflate(R.menu.time_list, menu)
-        menuFavorite = menu.findItem(R.id.menu_favorite)
         return super.onCreateOptionsMenu(menu)
     }
 
