@@ -75,6 +75,7 @@ class TimeEditActivity : TimeFormActivity() {
         private const val REQUEST_AUTHENTICATE = 1
 
         private const val STATE_DATE = "date"
+        private const val STATE_RECORD_ID = "record_id"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
         const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
@@ -136,16 +137,19 @@ class TimeEditActivity : TimeFormActivity() {
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
         val now = date.timeInMillis
+        var recordId = record.id
+
         val extras = intent.extras
         if (extras != null) {
-            val dateExtra = extras.getLong(EXTRA_DATE, now)
-            date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, dateExtra) ?: dateExtra
-            val recordId = extras.getLong(EXTRA_RECORD, record.id)
-            fetchPage(date, recordId)
-        } else {
-            date.timeInMillis = savedInstanceState?.getLong(STATE_DATE, now) ?: now
-            fetchPage(date, 0L)
+            date.timeInMillis = extras.getLong(EXTRA_DATE, now)
+            recordId = extras.getLong(EXTRA_RECORD, recordId)
         }
+        if (savedInstanceState != null) {
+            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, now)
+            recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
+        }
+
+        fetchPage(date, recordId)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -349,11 +353,13 @@ class TimeEditActivity : TimeFormActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
+        outState.putLong(STATE_RECORD_ID, record.id)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
+        record.id = savedInstanceState.getLong(STATE_RECORD_ID)
     }
 
     private fun submit() {
