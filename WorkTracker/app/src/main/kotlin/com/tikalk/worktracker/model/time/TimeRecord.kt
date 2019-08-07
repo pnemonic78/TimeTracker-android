@@ -86,7 +86,7 @@ data class TimeRecord(
         dbId = parcel.readLong()
         version = parcel.readInt()
 
-        user = User.CREATOR.createFromParcel(parcel)
+        user = User.createFromParcel(parcel)
         project = Project.CREATOR.createFromParcel(parcel)
         task = ProjectTask.CREATOR.createFromParcel(parcel)
         startTime = parcel.readLong()

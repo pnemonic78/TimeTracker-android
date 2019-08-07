@@ -76,6 +76,7 @@ class TimeEditActivity : TimeFormActivity() {
 
         private const val STATE_DATE = "date"
         private const val STATE_RECORD_ID = "record_id"
+        private const val STATE_RECORD = "record"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
         const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
@@ -362,13 +363,23 @@ class TimeEditActivity : TimeFormActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
+
+        bindRecord(record)
         outState.putLong(STATE_RECORD_ID, record.id)
+        outState.putParcelable(STATE_RECORD, record)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        record.id = savedInstanceState.getLong(STATE_RECORD_ID)
+        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+
+        if (recordParcel != null) {
+            record = recordParcel
+            populateForm(record)
+        } else {
+            record.id = savedInstanceState.getLong(STATE_RECORD_ID)
+        }
     }
 
     private fun submit() {
