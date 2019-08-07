@@ -42,21 +42,20 @@ import android.text.format.DateUtils
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.annotation.MainThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.net.InternetActivity
+import com.tikalk.worktracker.model.time.isNullOrEmpty
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
@@ -70,10 +69,11 @@ import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.math.abs
+import kotlin.math.max
 
-class TimeListActivity : InternetActivity(),
+class TimeListActivity : TimeFormActivity(),
     TimeListAdapter.OnTimeListListener {
 
     companion object {
@@ -82,8 +82,6 @@ class TimeListActivity : InternetActivity(),
         private const val REQUEST_STOPPED = 0x5706
 
         private const val STATE_DATE = "date"
-        private const val STATE_PROJECTS = "projects"
-        private const val STATE_TASKS = "tasks"
         private const val STATE_RECORD = "record"
         private const val STATE_LIST = "records"
         private const val STATE_TOTALS = "totals"
@@ -101,33 +99,18 @@ class TimeListActivity : InternetActivity(),
 
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
-    private var menuFavorite: MenuItem? = null
 
-    private lateinit var prefs: TimeTrackerPrefs
-
-    private val disposables = CompositeDisposable()
-    private val date = Calendar.getInstance()
-    private var user = User("")
-    private var record = TimeRecord(user, Project(""), ProjectTask(""))
-    private val projects = ArrayList<Project>()
-    private val tasks = ArrayList<ProjectTask>()
     private val listAdapter = TimeListAdapter(this)
     private val listItems = ArrayList<TimeRecord>()
-    private var projectEmpty: Project = Project.EMPTY
-    private var taskEmpty: ProjectTask = ProjectTask.EMPTY
     private var timer: Disposable? = null
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
 
         // Set up the form.
         setContentView(R.layout.activity_time_list)
-
-        user.username = prefs.userCredentials.login
-        user.email = user.username
 
         project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -161,8 +144,8 @@ class TimeListActivity : InternetActivity(),
         //itemTouchHelper.attachToRecyclerView(list)
         gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                val vx = Math.abs(velocityX)
-                val vy = Math.abs(velocityY)
+                val vx = abs(velocityX)
+                val vy = abs(velocityY)
                 if ((vx > vy) && (vx > 500)) {
                     if (velocityX < 0) {    // Fling from right to left.
                         if (isLocaleRTL()) {
@@ -182,23 +165,9 @@ class TimeListActivity : InternetActivity(),
                 return super.onFling(e1, e2, velocityX, velocityY)
             }
         })
-        list.setOnTouchListener(object : View.OnTouchListener {
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
-                return gestureDetector.onTouchEvent(event)
-            }
-        })
+        list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
 
-        if (savedInstanceState == null) {
-            fetchPage(date)
-        } else {
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
-        }
         handleIntent(intent, savedInstanceState)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -210,7 +179,6 @@ class TimeListActivity : InternetActivity(),
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         menuInflater.inflate(R.menu.time_list, menu)
-        menuFavorite = menu.findItem(R.id.menu_favorite)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -229,53 +197,54 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun fetchPage(date: Calendar) {
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        val dateFormatted = formatSystemDate(date)
+        Timber.d("fetchPage $dateFormatted")
+        // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
 
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        // Fetch from local database first.
+        loadPage()
+            .subscribe({
+                populateForm(record)
+                bindForm(record)
 
-        val dateFormatted = formatSystemDate(date)
-        service.fetchTimes(dateFormatted)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ response ->
-                showProgress(false)
+                // Fetch from remote server.
+                val authToken = prefs.basicCredentials.authToken()
+                val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
-                if (this.date != date) {
-                    this.date.timeInMillis = date.timeInMillis
-                }
-                if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    populateForm(body, date)
-                    populateList(body, date)
-                } else {
-                    authenticate(true)
-                }
+                service.fetchTimes(dateFormatted)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe({ response ->
+                        if (this.date != date) {
+                            this.date.timeInMillis = date.timeInMillis
+                        }
+                        if (isValidResponse(response)) {
+                            val body = response.body()!!
+                            populateForm(body, date)
+                            populateList(body, date)
+                            showProgressMain(false)
+                        } else {
+                            authenticate(true)
+                        }
+                    }, { err ->
+                        Timber.e(err, "Error fetching page: ${err.message}")
+                        showProgressMain(false)
+                    })
+                    .addTo(disposables)
             }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
+                Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
             })
             .addTo(disposables)
     }
 
     /** Populate the list. */
     private fun populateList(html: String, date: Calendar) {
-        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE)
-
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
-        val table = findTable(doc)
-
-        val form = doc.selectFirst("form[name='timeRecordForm']")
-
-        val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(doc, inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(doc, inputTasks, tasks)
 
         // The first row of the table is the header
+        val table = findRecordsTable(doc)
         if (table != null) {
             // loop through all the rows and parse each record
             val rows = table.getElementsByTag("tr")
@@ -286,16 +255,27 @@ class TimeListActivity : InternetActivity(),
                 }
             }
         }
+
+        val form = doc.selectFirst("form[name='timeRecordForm']")
         populateTotals(doc, form, totals)
 
-        bindList(records, totals)
+        runOnUiThread {
+            bindList(date, records)
+            bindTotals(totals)
+        }
     }
 
-    private fun bindList(records: List<TimeRecord>, totals: TimeTotals) {
+    @MainThread
+    private fun bindList(date: Calendar, records: List<TimeRecord>) {
+        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
+
         listItems.clear()
         listItems.addAll(records)
         listAdapter.submitList(records)
+    }
 
+    @MainThread
+    private fun bindTotals(totals: TimeTotals) {
         val context: Context = this
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
@@ -334,7 +314,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        showProgress(true)
+        showProgressMain(true)
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
@@ -350,17 +330,24 @@ class TimeListActivity : InternetActivity(),
                 record.user = user
                 // Fetch the list for the user.
                 fetchPage(date)
+            } else {
+                showProgress(false)
+                finish()
             }
             REQUEST_EDIT -> if (resultCode == RESULT_OK) {
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
+            } else {
+                showProgress(false)
             }
             REQUEST_STOPPED -> if (resultCode == RESULT_OK) {
                 stopTimerCommit()
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
+            } else {
+                showProgress(false)
             }
         }
     }
@@ -368,8 +355,6 @@ class TimeListActivity : InternetActivity(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putParcelableArrayList(STATE_PROJECTS, projects)
-        outState.putParcelableArrayList(STATE_TASKS, tasks)
         outState.putParcelable(STATE_RECORD, record)
         outState.putParcelableArrayList(STATE_LIST, listItems)
         outState.putParcelable(STATE_TOTALS, totals)
@@ -378,33 +363,23 @@ class TimeListActivity : InternetActivity(),
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val projectsList = savedInstanceState.getParcelableArrayList<Project>(STATE_PROJECTS)
-        val tasksList = savedInstanceState.getParcelableArrayList<ProjectTask>(STATE_TASKS)
-        val recordStated = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
         val list = savedInstanceState.getParcelableArrayList<TimeRecord>(STATE_LIST)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
 
-        projects.clear()
-        if (projectsList != null) {
-            projects.addAll(projectsList)
-            projectEmpty = projectsList.firstOrNull { it.isEmpty() } ?: projectEmpty
-        }
-        tasks.clear()
-        if (tasksList != null) {
-            tasks.addAll(tasksList)
-            taskEmpty = tasksList.firstOrNull { it.isEmpty() } ?: taskEmpty
-        }
-        if (recordStated != null) {
-            record.project = recordStated.project
-            record.task = recordStated.task
-            record.start = recordStated.start
+        if (recordParcel != null) {
+            record.project = recordParcel.project
+            record.task = recordParcel.task
+            record.start = recordParcel.start
             populateForm(record)
+            bindForm(record)
+        }
+        if (list != null) {
+            bindList(date, list)
         }
         if (totals != null) {
             this.totals = totals
-        }
-        if (list != null) {
-            bindList(list, this.totals)
+            bindTotals(totals)
         }
     }
 
@@ -433,10 +408,7 @@ class TimeListActivity : InternetActivity(),
         datePickerDialog!!.show()
     }
 
-    /**
-     * Shows the progress UI and hides the list.
-     */
-    private fun showProgress(show: Boolean) {
+    override fun showProgress(show: Boolean) {
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
         list.visibility = if (show) View.GONE else View.VISIBLE
@@ -459,6 +431,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun addTime() {
+        showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
         startActivityForResult(intent, REQUEST_EDIT)
@@ -467,7 +440,7 @@ class TimeListActivity : InternetActivity(),
     /**
      * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
      */
-    private fun findTable(doc: Document): Element? {
+    private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
         val tables = body.select("table")
         var rows: Elements
@@ -563,95 +536,8 @@ class TimeListActivity : InternetActivity(),
         return id.toLong()
     }
 
-    private fun populateProjects(doc: Document, select: Element, projects: MutableList<Project>) {
-        projects.clear()
-
-        val options = select.select("option")
-        var value: String
-        var name: String
-        for (option in options) {
-            name = option.ownText()
-            value = option.attr("value")
-            val item = Project(name)
-            if (value.isEmpty()) {
-                projectEmpty = item
-            } else {
-                item.id = value.toLong()
-            }
-            projects.add(item)
-        }
-
-        populateTaskIds(doc, projects)
-    }
-
-    private fun populateTasks(doc: Document, select: Element, tasks: MutableList<ProjectTask>) {
-        tasks.clear()
-
-        val options = select.select("option")
-        var value: String
-        var name: String
-        for (option in options) {
-            name = option.ownText()
-            value = option.attr("value")
-            val item = ProjectTask(name)
-            if (value.isEmpty()) {
-                taskEmpty = item
-            } else {
-                item.id = value.toLong()
-            }
-            tasks.add(item)
-        }
-    }
-
-    private fun populateTaskIds(doc: Document, projects: List<Project>) {
-        val tokenStart = "var task_ids = new Array();"
-        val tokenEnd = "// Prepare an array of task names."
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
-
-        for (project in projects) {
-            project.taskIds.clear()
-        }
-
-        if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val projectId = matcher.group(1).toLong()
-                    val taskIds: List<Long> = matcher.group(2)
-                        .split(",")
-                        .map { it.toLong() }
-                    projects.find { it.id == projectId }!!
-                        .taskIds.addAll(taskIds)
-                }
-            }
-        }
-    }
-
-    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
-        val scripts = doc.select("script")
-        var scriptText: String
-        var indexStart: Int
-        var indexEnd: Int
-
-        for (script in scripts) {
-            scriptText = script.html()
-            indexStart = scriptText.indexOf(tokenStart)
-            if (indexStart >= 0) {
-                indexStart += tokenStart.length
-                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
-                if (indexEnd < 0) {
-                    indexEnd = scriptText.length
-                }
-                return scriptText.substring(indexStart, indexEnd)
-            }
-        }
-
-        return ""
-    }
-
     private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
+        showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
         if ((record.id == 0L) && !record.isEmpty()) {
             intent.putExtra(TimeEditActivity.EXTRA_DATE, record.startTime)
@@ -672,25 +558,25 @@ class TimeListActivity : InternetActivity(),
         showProgress(true)
 
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(authToken)
+        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { response ->
-                    showProgress(false)
-
                     if (isValidResponse(response)) {
                         val body = response.body()!!
                         populateForm(body, date)
                         populateList(body, date)
+                        showProgressMain(false)
                     } else {
                         authenticate(true)
                     }
                 },
                 { err ->
                     Timber.e(err, "Error deleting record: ${err.message}")
+                    showProgressMain(false)
                 }
             )
             .addTo(disposables)
@@ -700,49 +586,56 @@ class TimeListActivity : InternetActivity(),
     private fun populateForm(html: String, date: Calendar) {
         val doc: Document = Jsoup.parse(html)
 
-        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
 
-        val inputProjects = form.selectFirst("select[name='project']")
-        populateProjects(doc, inputProjects, projects)
+        val inputProjects = form.selectFirst("select[name='project']") ?: return
+        populateProjects(inputProjects, projects)
+
+        val inputTasks = form.selectFirst("select[name='task']") ?: return
+        populateTasks(inputTasks, tasks)
+
         record.project = findSelectedProject(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']")
-        populateTasks(doc, inputTasks, tasks)
         record.task = findSelectedTask(inputTasks, tasks)
+
+        populateTaskIds(doc, projects)
+
+        savePage()
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
+        runOnUiThread { bindForm(record) }
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
-        if ((recordStarted == null) || recordStarted.isEmpty()) {
+        Timber.v("populateForm $recordStarted")
+        if (recordStarted.isNullOrEmpty()) {
             val projectFavorite = prefs.getFavoriteProject()
+            if (projectFavorite != 0L) {
+                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+            }
             val taskFavorite = prefs.getFavoriteTask()
-            record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
-            record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
-            showForm(DateUtils.isToday(date.timeInMillis))
+            if (taskFavorite != 0L) {
+                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
+            }
         } else {
-            record.project = projects.firstOrNull { it.id == recordStarted.project.id }
+            record.project = projects.firstOrNull { it.id == recordStarted!!.project.id }
                 ?: projectEmpty
-            record.task = tasks.firstOrNull { it.id == recordStarted.task.id } ?: taskEmpty
-            record.start = recordStarted.start
-            showForm(!record.isEmpty())
+            record.task = tasks.firstOrNull { it.id == recordStarted!!.task.id } ?: taskEmpty
+            record.start = recordStarted!!.start
         }
-
-        bindForm(record)
     }
 
-    private fun showForm(visible: Boolean) {
-        val visibility = if (visible) View.VISIBLE else View.GONE
-        time_form_group.visibility = visibility
-        menuFavorite?.isVisible = visible
-    }
-
+    @MainThread
     private fun bindForm(record: TimeRecord) {
-        project_input.adapter = ArrayAdapter<Project>(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        project_input.setSelection(projects.indexOf(record.project))
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
-        task_input.setSelection(tasks.indexOf(record.task))
+        Timber.v("bindForm record=$record")
+        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        if (projects.isNotEmpty()) {
+            project_input.setSelection(max(0, projects.indexOf(record.project)))
+        }
+        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        if (tasks.isNotEmpty()) {
+            task_input.setSelection(max(0, tasks.indexOf(record.task)))
+        }
         project_input.requestFocus()
 
         val startTime = record.startTime
@@ -758,34 +651,6 @@ class TimeListActivity : InternetActivity(),
             maybeStartTimer()
             maybeStopTimer()
         }
-    }
-
-    private fun findSelectedProject(project: Element, projects: List<Project>): Project {
-        for (option in project.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.attr("value")
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return projects.find { id == it.id }!!
-                }
-                break
-            }
-        }
-        return projectEmpty
-    }
-
-    private fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
-        for (option in task.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.attr("value")
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return tasks.find { id == it.id }!!
-                }
-                break
-            }
-        }
-        return taskEmpty
     }
 
     private fun startTimer() {
@@ -873,6 +738,22 @@ class TimeListActivity : InternetActivity(),
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
         intentLater = if (intent.action == ACTION_STOP) intent else null
+
+        if (savedInstanceState == null) {
+            fetchPage(date)
+        } else {
+            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
+            loadPage()
+                .subscribe({
+                    populateForm(record)
+                    bindForm(record)
+                    showProgress(false)
+                }, { err ->
+                    Timber.e(err, "Error loading page: ${err.message}")
+                    showProgress(false)
+                })
+                .addTo(disposables)
+        }
     }
 
     private fun maybeStopTimer() {
@@ -909,10 +790,6 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
-    }
-
-    private fun markFavorite() {
-        prefs.setFavorite(record)
     }
 
     private fun navigateTomorrow() {
@@ -991,5 +868,15 @@ class TimeListActivity : InternetActivity(),
         }
 
         return null
+    }
+
+    private fun loadPage(): Single<Unit> {
+        return Single.fromCallable { loadFormFromDb() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun savePage() {
+        return saveFormToDb()
     }
 }

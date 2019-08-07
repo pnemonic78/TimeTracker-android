@@ -55,7 +55,7 @@ data class TimeRecord(
     var start: Calendar? = null,
     var finish: Calendar? = null,
     var note: String = "",
-    var status: TaskRecordStatus = TaskRecordStatus.INSERTED,
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
     override var id: Long = 0
 ) : TikalEntity(id), Parcelable {
 
@@ -86,7 +86,7 @@ data class TimeRecord(
         dbId = parcel.readLong()
         version = parcel.readInt()
 
-        user = User.CREATOR.createFromParcel(parcel)
+        user = User.createFromParcel(parcel)
         project = Project.CREATOR.createFromParcel(parcel)
         task = ProjectTask.CREATOR.createFromParcel(parcel)
         startTime = parcel.readLong()
@@ -177,4 +177,8 @@ fun TimeRecord.split(): List<TimeRecord> {
     }
 
     return results
+}
+
+inline fun TimeRecord?.isNullOrEmpty(): Boolean {
+    return this == null || this.isEmpty()
 }

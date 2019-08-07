@@ -85,4 +85,15 @@ data class ProjectTaskKey(
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is ProjectTaskKey) {
+            return (this.projectId == other.projectId) and (this.taskId == other.taskId)
+        }
+        return super.equals(other)
+    }
+}
+
+inline fun ProjectTaskKey?.isNullOrEmpty(): Boolean {
+    return this == null || this.isEmpty()
 }

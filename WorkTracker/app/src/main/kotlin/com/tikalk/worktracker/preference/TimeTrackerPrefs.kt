@@ -1,3 +1,34 @@
+/*
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.tikalk.worktracker.preference
 
 import android.content.Context
@@ -5,6 +36,7 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.ProjectTaskKey
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
@@ -103,7 +135,7 @@ class TimeTrackerPrefs(context: Context) {
         val project = Project("")
         project.id = projectId
         project.name = projectName
-        project.taskIds += taskId
+        project.tasks[taskId] = ProjectTaskKey(projectId, taskId)
         val task = ProjectTask("")
         task.id = taskId
         task.name = taskName
@@ -133,9 +165,9 @@ class TimeTrackerPrefs(context: Context) {
 
     fun setFavorite(projectId: Long, taskId: Long) {
         prefs.edit()
-                .putLong(PROJECT_FAVORITE, projectId)
-                .putLong(TASK_FAVORITE, taskId)
-                .apply()
+            .putLong(PROJECT_FAVORITE, projectId)
+            .putLong(TASK_FAVORITE, taskId)
+            .apply()
     }
 
     fun getFavoriteProject(): Long {
