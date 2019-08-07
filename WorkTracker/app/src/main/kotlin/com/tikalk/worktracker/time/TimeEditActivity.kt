@@ -146,10 +146,19 @@ class TimeEditActivity : TimeFormActivity() {
         }
         if (savedInstanceState != null) {
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, now)
-            recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
+            record.id = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
+            loadPage()
+                .subscribe({
+                    populateForm(record)
+                    showProgress(false)
+                }, { err ->
+                    Timber.e(err, "Error loading page: ${err.message}")
+                    showProgress(false)
+                })
+                .addTo(disposables)
+        } else {
+            fetchPage(date, recordId)
         }
-
-        fetchPage(date, recordId)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

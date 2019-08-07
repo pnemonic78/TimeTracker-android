@@ -167,21 +167,6 @@ class TimeListActivity : TimeFormActivity(),
         })
         list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
 
-        if (savedInstanceState == null) {
-            fetchPage(date)
-        } else {
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
-            loadPage()
-                .subscribe({
-                    populateForm(record)
-                    bindForm(record)
-                    showProgress(false)
-                }, { err ->
-                    Timber.e(err, "Error loading page: ${err.message}")
-                    showProgress(false)
-                })
-                .addTo(disposables)
-        }
         handleIntent(intent, savedInstanceState)
     }
 
@@ -753,6 +738,22 @@ class TimeListActivity : TimeFormActivity(),
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
         intentLater = if (intent.action == ACTION_STOP) intent else null
+
+        if (savedInstanceState == null) {
+            fetchPage(date)
+        } else {
+            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
+            loadPage()
+                .subscribe({
+                    populateForm(record)
+                    bindForm(record)
+                    showProgress(false)
+                }, { err ->
+                    Timber.e(err, "Error loading page: ${err.message}")
+                    showProgress(false)
+                })
+                .addTo(disposables)
+        }
     }
 
     private fun maybeStopTimer() {
