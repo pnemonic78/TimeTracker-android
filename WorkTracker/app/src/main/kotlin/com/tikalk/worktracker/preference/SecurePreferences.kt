@@ -37,6 +37,8 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
 import android.provider.Settings
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.tikalk.security.CipherHelper
 import com.tikalk.security.SimpleCipherHelper
 import java.util.*
@@ -53,7 +55,7 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
 
     init {
         val prefs = context.getSharedPreferences(KEYS_PREFS_NAME, Context.MODE_PRIVATE)
-        val privateKey = prefs.getString(PREF_KEY, UUID.randomUUID().toString())
+        val privateKey = prefs.getString(PREF_KEY, null) ?: UUID.randomUUID().toString()
         if (!prefs.contains(PREF_KEY)) {
             prefs.edit().putString(PREF_KEY, privateKey).apply()
         }
@@ -169,13 +171,20 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
          * @return A [SecurePreferences] instance that can be used to retrieve and listen
          * to values of the preferences.
          */
-        fun getDefaultSharedPreferences(context: Context): SecurePreferences {
+        fun getDefaultSharedPreferences(context: Context): SharedPreferences {
             return getSharedPreferences(context, getDefaultSharedPreferencesName(context),
-                    getDefaultSharedPreferencesMode())
+                getDefaultSharedPreferencesMode())
         }
 
-        fun getSharedPreferences(context: Context, name: String, mode: Int): SecurePreferences {
-            return SecurePreferences(context, name, mode)
+        fun getSharedPreferences(context: Context, name: String, mode: Int): SharedPreferences {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                EncryptedSharedPreferences.create(name,
+                    MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
+                    context,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
+            else
+                SecurePreferences(context, name, mode)
         }
 
         /**

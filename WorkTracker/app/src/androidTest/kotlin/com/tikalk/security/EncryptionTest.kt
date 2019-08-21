@@ -14,7 +14,6 @@ import javax.crypto.SecretKeyFactory
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-@RunWith(AndroidJUnit4::class)
 class EncryptionTest {
     @Test
     fun defaultCipher() {
