@@ -53,7 +53,7 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
 
     init {
         val prefs = context.getSharedPreferences(KEYS_PREFS_NAME, Context.MODE_PRIVATE)
-        val privateKey = prefs.getString(PREF_KEY, UUID.randomUUID().toString())
+        val privateKey = prefs.getString(PREF_KEY, null) ?: UUID.randomUUID().toString()
         if (!prefs.contains(PREF_KEY)) {
             prefs.edit().putString(PREF_KEY, privateKey).apply()
         }
