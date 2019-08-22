@@ -3,11 +3,15 @@ package com.tikalk.graphics
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import kotlinx.android.synthetic.main.activity_time_list.view.*
 
 fun drawableToBitmap(drawable: Drawable): Bitmap {
+    if (drawable is BitmapDrawable) {
+        return drawable.bitmap
+    }
     val width = drawable.intrinsicWidth
     val height = drawable.intrinsicHeight;
     val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
