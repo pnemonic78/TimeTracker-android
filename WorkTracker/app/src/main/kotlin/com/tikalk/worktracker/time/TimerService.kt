@@ -39,6 +39,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.tikalk.graphics.drawableToBitmap
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -49,7 +50,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import timber.log.Timber
 
-class TimerService : Service() {
+class TimerService : IntentService("Tikal Timer") {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
@@ -86,11 +87,7 @@ class TimerService : Service() {
                 action = ACTION_NOTIFY
                 putExtra(EXTRA_NOTIFICATION, true)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(service)
-            } else {
-                context.startService(service)
-            }
+            context.startService(service)
         }
 
         fun hideNotification(context: Context) {
@@ -99,7 +96,7 @@ class TimerService : Service() {
                 action = ACTION_NOTIFY
                 putExtra(EXTRA_NOTIFICATION, false)
             }
-            context.stopService(service)
+            context.startService(service)
         }
     }
 
@@ -118,14 +115,7 @@ class TimerService : Service() {
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent != null) {
-            onHandleIntent(intent)
-        }
-        return START_STICKY
-    }
-
-    private fun onHandleIntent(intent: Intent) {
+    override fun onHandleIntent(intent: Intent) {
         Timber.v("onHandleIntent $intent")
         when (intent.action) {
             ACTION_START -> startTimer(intent.extras ?: return)
@@ -141,7 +131,8 @@ class TimerService : Service() {
         prefs.startRecord(record)
 
         if (extras.getBoolean(EXTRA_NOTIFICATION, true)) {
-            startForeground(ID_NOTIFY, createNotification(record))
+            val nm = NotificationManagerCompat.from(this)
+            nm.notify(ID_NOTIFY, createNotification(record))
         }
     }
 
@@ -238,12 +229,13 @@ class TimerService : Service() {
     }
 
     private fun createActionIntent(context: Context, action: String, projectId: Long, taskId: Long, startTime: Long): PendingIntent {
-        val intent = Intent(context, this.javaClass)
-        intent.action = action
-        intent.putExtra(EXTRA_PROJECT_ID, projectId)
-        intent.putExtra(EXTRA_TASK_ID, taskId)
-        intent.putExtra(EXTRA_START_TIME, startTime)
-        intent.putExtra(EXTRA_EDIT, true)
+        val intent = Intent(context, this.javaClass).apply {
+            this.action = action
+            putExtra(EXTRA_PROJECT_ID, projectId)
+            putExtra(EXTRA_TASK_ID, taskId)
+            putExtra(EXTRA_START_TIME, startTime)
+            putExtra(EXTRA_EDIT, true)
+        }
         return PendingIntent.getService(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
@@ -253,7 +245,8 @@ class TimerService : Service() {
         if (visible) {
             val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return
             Timber.v("showNotification record=$record")
-            startForeground(ID_NOTIFY, createNotification(record))
+            val nm = NotificationManagerCompat.from(this)
+            nm.notify(ID_NOTIFY, createNotification(record))
         } else {
             dismissNotification()
         }
@@ -261,7 +254,8 @@ class TimerService : Service() {
 
     private fun dismissNotification() {
         Timber.v("dismissNotification")
-        stopForeground(true)
+        val nm = NotificationManagerCompat.from(this)
+        nm.cancel(ID_NOTIFY)
     }
 
     private fun createRecord(extras: Bundle): TimeRecord? {
