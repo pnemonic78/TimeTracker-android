@@ -35,11 +35,11 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.tikalk.graphics.drawableToBitmap
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
@@ -74,6 +74,7 @@ class TimerService : Service() {
             Timber.v("maybeShowNotification")
             val prefs = TimeTrackerPrefs(context)
             val record = prefs.getStartedRecord() ?: return
+            Timber.v("maybeShowNotification record=$record")
             if (!record.isEmpty()) {
                 showNotification(context)
             }
@@ -188,6 +189,7 @@ class TimerService : Service() {
      * @return the notification.
      */
     private fun createNotification(record: TimeRecord): Notification {
+        Timber.v("createNotification record=$record")
         val context: Context = this
         val res = context.resources
 
@@ -200,6 +202,7 @@ class TimerService : Service() {
                     NotificationManager.IMPORTANCE_DEFAULT)
                 notificationManager.createNotificationChannel(channel)
             }
+            Timber.v("createNotification channel=$channel")
         }
 
         val title = res.getText(R.string.title_service)
@@ -214,7 +217,7 @@ class TimerService : Service() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
-            .setLargeIcon(BitmapFactory.decodeResource(res, R.mipmap.ic_launcher))
+            .setLargeIcon(drawableToBitmap(res, R.mipmap.ic_launcher))
             .setSmallIcon(R.drawable.stat_launcher)  // the status icon
             .setContentTitle(title)  // the label of the entry
             .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
@@ -249,6 +252,7 @@ class TimerService : Service() {
         Timber.v("showNotification visible=$visible")
         if (visible) {
             val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return
+            Timber.v("showNotification record=$record")
             startForeground(ID_NOTIFY, createNotification(record))
         } else {
             dismissNotification()
