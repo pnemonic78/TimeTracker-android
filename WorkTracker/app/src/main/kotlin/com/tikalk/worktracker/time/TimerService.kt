@@ -98,6 +98,26 @@ class TimerService : IntentService("Tikal Timer") {
             }
             context.startService(service)
         }
+
+        fun startTimer(context: Context, record: TimeRecord) {
+            val service = Intent(context, TimerService::class.java).apply {
+                action = TimerService.ACTION_START
+                putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
+                putExtra(TimerService.EXTRA_PROJECT_NAME, record.project.name)
+                putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
+                putExtra(TimerService.EXTRA_TASK_NAME, record.task.name)
+                putExtra(TimerService.EXTRA_START_TIME, record.startTime)
+                putExtra(TimerService.EXTRA_NOTIFICATION, false)
+            }
+            context.startService(service)
+        }
+
+        fun stopTimer(context: Context) {
+            val service = Intent(context, TimerService::class.java).apply {
+                action = ACTION_STOP
+            }
+            context.stopService(service)
+        }
     }
 
     private lateinit var prefs: TimeTrackerPrefs

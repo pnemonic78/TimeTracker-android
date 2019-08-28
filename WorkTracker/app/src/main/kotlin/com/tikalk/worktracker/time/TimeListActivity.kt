@@ -659,16 +659,7 @@ class TimeListActivity : TimeFormActivity(),
         record.startTime = now
 
         val context: Context = this
-        val service = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_START
-            putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
-            putExtra(TimerService.EXTRA_PROJECT_NAME, record.project.name)
-            putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-            putExtra(TimerService.EXTRA_TASK_NAME, record.task.name)
-            putExtra(TimerService.EXTRA_START_TIME, record.startTime)
-            putExtra(TimerService.EXTRA_NOTIFICATION, false)
-        }
-        startService(service)
+        TimerService.startTimer(context, record)
 
         bindForm(record)
     }
@@ -681,10 +672,7 @@ class TimeListActivity : TimeFormActivity(),
         }
 
         val context: Context = this
-        val service = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_STOP
-        }
-        stopService(service)
+        TimerService.stopTimer(context)
 
         editRecord(record, REQUEST_STOPPED)
     }
