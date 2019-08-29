@@ -36,9 +36,10 @@ import android.app.Application
 import android.os.Bundle
 import com.crashlytics.android.Crashlytics
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.time.TimerService
+import com.tikalk.worktracker.time.work.TimerWorker
 import io.fabric.sdk.android.Fabric
 import timber.log.Timber
+import kotlin.math.max
 
 /**
  * Time tracker application.
@@ -46,8 +47,6 @@ import timber.log.Timber
 class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
-
-    lateinit var db: TrackerDatabase
 
     override fun onCreate() {
         super.onCreate()
@@ -58,14 +57,12 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
         Fabric.with(this, Crashlytics())
 
         registerActivityLifecycleCallbacks(this)
-
-        db = TrackerDatabase.getDatabase(this)
     }
 
     override fun onTerminate() {
         super.onTerminate()
         unregisterActivityLifecycleCallbacks(this)
-        db.close()
+        TrackerDatabase.getDatabase(this).close()
     }
 
     override fun onActivityPaused(activity: Activity) {
@@ -77,7 +74,7 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
     override fun onActivityStarted(activity: Activity) {
         active++
         Timber.v("onActivityStarted $activity $active")
-        TimerService.hideNotification(this)
+        TimerWorker.hideNotification(this)
     }
 
     override fun onActivityDestroyed(activity: Activity) {
@@ -87,10 +84,10 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
     }
 
     override fun onActivityStopped(activity: Activity) {
-        active = Math.max(0, active - 1)
+        active = max(0, active - 1)
         Timber.v("onActivityStopped $activity $active")
         if (active == 0) {
-            TimerService.maybeShowNotification(this)
+            TimerWorker.maybeShowNotification(this)
         }
     }
 
