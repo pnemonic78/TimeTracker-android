@@ -51,7 +51,7 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
 import timber.log.Timber
 
-class TimerService : IntentService("Tikal Timer") {
+class TimerWorker : IntentService("Tikal Timer") {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
@@ -84,7 +84,7 @@ class TimerService : IntentService("Tikal Timer") {
 
         private fun showNotification(context: Context) {
             Timber.v("showNotification")
-            val service = Intent(context, TimerService::class.java).apply {
+            val service = Intent(context, TimerWorker::class.java).apply {
                 action = ACTION_NOTIFY
                 putExtra(EXTRA_NOTIFICATION, true)
             }
@@ -93,7 +93,7 @@ class TimerService : IntentService("Tikal Timer") {
 
         fun hideNotification(context: Context) {
             Timber.v("hideNotification")
-            val service = Intent(context, TimerService::class.java).apply {
+            val service = Intent(context, TimerWorker::class.java).apply {
                 action = ACTION_NOTIFY
                 putExtra(EXTRA_NOTIFICATION, false)
             }
@@ -101,7 +101,7 @@ class TimerService : IntentService("Tikal Timer") {
         }
 
         fun startTimer(context: Context, record: TimeRecord) {
-            val service = Intent(context, TimerService::class.java).apply {
+            val service = Intent(context, TimerWorker::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_PROJECT_ID, record.project.id)
                 putExtra(EXTRA_PROJECT_NAME, record.project.name)
@@ -114,7 +114,7 @@ class TimerService : IntentService("Tikal Timer") {
         }
 
         fun stopTimer(context: Context) {
-            val service = Intent(context, TimerService::class.java).apply {
+            val service = Intent(context, TimerWorker::class.java).apply {
                 action = ACTION_STOP
             }
             context.stopService(service)

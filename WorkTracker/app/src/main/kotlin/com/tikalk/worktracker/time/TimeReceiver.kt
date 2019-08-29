@@ -34,7 +34,7 @@ package com.tikalk.worktracker.time
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.tikalk.worktracker.time.work.TimerService
+import com.tikalk.worktracker.time.work.TimerWorker
 import timber.log.Timber
 
 /**
@@ -47,7 +47,7 @@ class TimeReceiver : BroadcastReceiver() {
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED ->
-                TimerService.maybeShowNotification(context)
+                TimerWorker.maybeShowNotification(context)
         }
     }
 }

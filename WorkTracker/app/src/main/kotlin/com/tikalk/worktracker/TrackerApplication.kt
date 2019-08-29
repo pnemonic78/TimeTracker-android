@@ -35,7 +35,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.time.work.TimerService
+import com.tikalk.worktracker.time.work.TimerWorker
 import timber.log.Timber
 import kotlin.math.max
 
@@ -71,7 +71,7 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
     override fun onActivityStarted(activity: Activity) {
         active++
         Timber.v("onActivityStarted $activity $active")
-        TimerService.hideNotification(this)
+        TimerWorker.hideNotification(this)
     }
 
     override fun onActivityDestroyed(activity: Activity) {
@@ -84,7 +84,7 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
         active = max(0, active - 1)
         Timber.v("onActivityStopped $activity $active")
         if (active == 0) {
-            TimerService.maybeShowNotification(this)
+            TimerWorker.maybeShowNotification(this)
         }
     }
 

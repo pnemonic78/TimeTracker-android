@@ -53,7 +53,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.model.time.isNullOrEmpty
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.time.work.TimerService
+import com.tikalk.worktracker.time.work.TimerWorker
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -660,7 +660,7 @@ class TimeListActivity : TimeFormActivity(),
         record.startTime = now
 
         val context: Context = this
-        TimerService.startTimer(context, record)
+        TimerWorker.startTimer(context, record)
 
         bindForm(record)
     }
@@ -673,7 +673,7 @@ class TimeListActivity : TimeFormActivity(),
         }
 
         val context: Context = this
-        TimerService.stopTimer(context)
+        TimerWorker.stopTimer(context)
 
         editRecord(record, REQUEST_STOPPED)
     }
