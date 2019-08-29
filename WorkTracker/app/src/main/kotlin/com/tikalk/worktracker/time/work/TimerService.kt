@@ -29,7 +29,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time
+package com.tikalk.worktracker.time.work
 
 import android.app.*
 import android.content.Context
@@ -48,6 +48,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import com.tikalk.worktracker.time.TimeListActivity
 import timber.log.Timber
 
 class TimerService : IntentService("Tikal Timer") {
@@ -101,13 +102,13 @@ class TimerService : IntentService("Tikal Timer") {
 
         fun startTimer(context: Context, record: TimeRecord) {
             val service = Intent(context, TimerService::class.java).apply {
-                action = TimerService.ACTION_START
-                putExtra(TimerService.EXTRA_PROJECT_ID, record.project.id)
-                putExtra(TimerService.EXTRA_PROJECT_NAME, record.project.name)
-                putExtra(TimerService.EXTRA_TASK_ID, record.task.id)
-                putExtra(TimerService.EXTRA_TASK_NAME, record.task.name)
-                putExtra(TimerService.EXTRA_START_TIME, record.startTime)
-                putExtra(TimerService.EXTRA_NOTIFICATION, false)
+                action = ACTION_START
+                putExtra(EXTRA_PROJECT_ID, record.project.id)
+                putExtra(EXTRA_PROJECT_NAME, record.project.name)
+                putExtra(EXTRA_TASK_ID, record.task.id)
+                putExtra(EXTRA_TASK_NAME, record.task.name)
+                putExtra(EXTRA_START_TIME, record.startTime)
+                putExtra(EXTRA_NOTIFICATION, false)
             }
             context.startService(service)
         }

@@ -46,7 +46,7 @@
         </activity>
 
         <service
-            android:name="com.tikalk.worktracker.time.TimerService"
+            android:name="com.tikalk.worktracker.time.work.TimerService"
             android:enabled="true"
             android:exported="false" />
 

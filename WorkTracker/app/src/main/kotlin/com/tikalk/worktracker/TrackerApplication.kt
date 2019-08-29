@@ -35,7 +35,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.time.TimerService
+import com.tikalk.worktracker.time.work.TimerService
 import timber.log.Timber
 import kotlin.math.max
 
