@@ -48,6 +48,8 @@ class TimeReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED ->
                 TimerWorker.maybeShowNotification(context)
+            TimerWorker.ACTION_STOP ->
+                TimerWorker.stopTimer(context, intent)
         }
     }
 }
