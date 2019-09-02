@@ -51,6 +51,7 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
+import com.tikalk.worktracker.time.TimeReceiver
 import timber.log.Timber
 
 class TimerWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
@@ -129,10 +130,15 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
             WorkManager.getInstance(context).enqueue(workRequest)
         }
 
-        fun stopTimer(context: Context) {
+        fun stopTimer(context: Context, intent: Intent? = null) {
             Timber.v("stopTimer")
+            val extras = intent?.extras
             val inputData = Data.Builder()
                 .putString(EXTRA_ACTION, ACTION_STOP)
+                .putLong(EXTRA_PROJECT_ID, extras?.getLong(EXTRA_PROJECT_ID) ?: 0L)
+                .putLong(EXTRA_TASK_ID, extras?.getLong(EXTRA_TASK_ID) ?: 0L)
+                .putLong(EXTRA_START_TIME, extras?.getLong(EXTRA_START_TIME) ?: 0L)
+                .putBoolean(EXTRA_EDIT, extras?.getBoolean(EXTRA_EDIT) ?: false)
                 .build()
             val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
                 .setInputData(inputData)
@@ -172,9 +178,10 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
     private fun stopTimer(extras: Data): Result {
         Timber.v("stopTimer")
         if (extras.getBoolean(EXTRA_EDIT, false)) {
-            val projectId = extras.getLong(EXTRA_PROJECT_ID, 0L)
-            val taskId = extras.getLong(EXTRA_TASK_ID, 0L)
-            val startTime = extras.getLong(EXTRA_START_TIME, 0L)
+            val record = prefs.getStartedRecord()
+            val projectId = extras.getLong(EXTRA_PROJECT_ID, record?.project?.id ?: 0L)
+            val taskId = extras.getLong(EXTRA_TASK_ID, record?.task?.id ?: 0L)
+            val startTime = extras.getLong(EXTRA_START_TIME, record?.startTime ?: 0L)
             val finishTime = extras.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
 
             if (projectId <= 0L) return Result.failure()
@@ -262,14 +269,14 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
     }
 
     private fun createActionIntent(context: Context, action: String, projectId: Long, taskId: Long, startTime: Long): PendingIntent {
-        val intent = Intent(context, this.javaClass).apply {
+        val intent = Intent(context, TimeReceiver::class.java).apply {
             this.action = action
             putExtra(EXTRA_PROJECT_ID, projectId)
             putExtra(EXTRA_TASK_ID, taskId)
             putExtra(EXTRA_START_TIME, startTime)
             putExtra(EXTRA_EDIT, true)
         }
-        return PendingIntent.getService(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getBroadcast(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun showNotification(extras: Data): Result {
