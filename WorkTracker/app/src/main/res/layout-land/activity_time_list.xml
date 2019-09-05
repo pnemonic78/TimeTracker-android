@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:contentDescription="@string/project_label"
-        android:src="@drawable/ic_business"
+        app:srcCompat="@drawable/ic_business"
         app:layout_constraintBottom_toBottomOf="@+id/project_input"
         app:layout_constraintStart_toEndOf="@+id/time_form_divider"
         app:layout_constraintTop_toTopOf="@+id/project_input" />
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:contentDescription="@string/task_label"
-        android:src="@drawable/ic_folder"
+        app:srcCompat="@drawable/ic_folder"
         app:layout_constraintBottom_toBottomOf="@+id/task_input"
         app:layout_constraintStart_toEndOf="@+id/time_form_divider"
         app:layout_constraintTop_toTopOf="@+id/task_input" />
@@ -159,7 +159,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:src="@drawable/ic_action_add"
+        app:srcCompat="@drawable/ic_action_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
