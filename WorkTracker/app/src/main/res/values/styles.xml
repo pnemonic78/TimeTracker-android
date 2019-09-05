@@ -28,12 +28,12 @@
 
     <style name="Widget.Button.Start">
         <item name="colorButtonNormal">@color/lime</item>
-        <item name="android:drawableEnd">@drawable/ic_play_arrow_black</item>
+        <item name="android:drawableEnd">@drawable/ic_play_arrow</item>
     </style>
 
     <style name="Widget.Button.Stop">
         <item name="colorButtonNormal">@color/red</item>
-        <item name="android:drawableEnd">@drawable/ic_stop_black</item>
+        <item name="android:drawableEnd">@drawable/ic_stop</item>
     </style>
 
     <style name="Widget.TextView.Timer" parent="TextAppearance.AppCompat.Headline">
