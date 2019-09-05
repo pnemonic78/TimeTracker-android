@@ -65,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:drawableEnd="@drawable/ic_lock_open_black"
+            android:drawableEnd="@drawable/ic_lock_open"
             android:text="@string/action_authenticate" />
 
     </LinearLayout>
