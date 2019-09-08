@@ -31,8 +31,6 @@
  */
 package com.tikalk.worktracker.model
 
-import android.os.Parcel
-import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 
@@ -47,43 +45,10 @@ data class ProjectTaskKey(
     var projectId: Long,
     @ColumnInfo(name = "task_id")
     var taskId: Long
-) : TikalEntity(), Parcelable {
-
-    constructor(parcel: Parcel) : this(0, 0) {
-        id = parcel.readLong()
-        dbId = parcel.readLong()
-        version = parcel.readInt()
-        projectId = parcel.readLong()
-        taskId = parcel.readLong()
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id)
-        parcel.writeLong(dbId)
-        parcel.writeInt(version)
-        parcel.writeLong(projectId)
-        parcel.writeLong(taskId)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
+) : TikalEntity() {
 
     fun isEmpty(): Boolean {
         return (id == 0L) || (projectId == 0L) || (taskId == 0L)
-    }
-
-    companion object {
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<ProjectTaskKey> {
-            override fun createFromParcel(parcel: Parcel): ProjectTaskKey {
-                return ProjectTaskKey(parcel)
-            }
-
-            override fun newArray(size: Int): Array<ProjectTaskKey?> {
-                return arrayOfNulls(size)
-            }
-        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -94,6 +59,7 @@ data class ProjectTaskKey(
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun ProjectTaskKey?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }

@@ -81,14 +81,14 @@ data class TimeRecord(
             || (startTime <= 0L)
     }
 
-    constructor(parcel: Parcel) : this(User("", ""), Project.EMPTY, ProjectTask.EMPTY) {
+    constructor(parcel: Parcel) : this(User("", ""), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
         id = parcel.readLong()
         dbId = parcel.readLong()
         version = parcel.readInt()
 
         user = User.createFromParcel(parcel)
-        project = Project.CREATOR.createFromParcel(parcel)
-        task = ProjectTask.CREATOR.createFromParcel(parcel)
+        project.id = parcel.readLong()
+        task.id = parcel.readLong()
         startTime = parcel.readLong()
         finishTime = parcel.readLong()
         note = parcel.readString() ?: ""
@@ -101,8 +101,8 @@ data class TimeRecord(
         parcel.writeInt(version)
 
         parcel.writeParcelable(user, flags)
-        parcel.writeParcelable(project, flags)
-        parcel.writeParcelable(task, flags)
+        parcel.writeLong(project.id)
+        parcel.writeLong(task.id)
         parcel.writeLong(startTime)
         parcel.writeLong(finishTime)
         parcel.writeString(note)
@@ -113,13 +113,16 @@ data class TimeRecord(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<TimeRecord> {
-        override fun createFromParcel(parcel: Parcel): TimeRecord {
-            return TimeRecord(parcel)
-        }
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<TimeRecord> {
+            override fun createFromParcel(parcel: Parcel): TimeRecord {
+                return TimeRecord(parcel)
+            }
 
-        override fun newArray(size: Int): Array<TimeRecord?> {
-            return arrayOfNulls(size)
+            override fun newArray(size: Int): Array<TimeRecord?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 }
@@ -179,6 +182,7 @@ fun TimeRecord.split(): List<TimeRecord> {
     return results
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun TimeRecord?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }

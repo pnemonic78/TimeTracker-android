@@ -31,8 +31,6 @@
  */
 package com.tikalk.worktracker.model
 
-import android.os.Parcel
-import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 
@@ -47,7 +45,7 @@ data class ProjectTask(
     var name: String,
     @ColumnInfo(name = "description")
     var description: String? = null
-) : TikalEntity(), Parcelable {
+) : TikalEntity() {
 
     override fun toString(): String {
         return name
@@ -57,43 +55,12 @@ data class ProjectTask(
         return super.equals(other) || ((other is ProjectTask) && (this.id == other.id))
     }
 
-    constructor(parcel: Parcel) : this("") {
-        id = parcel.readLong()
-        dbId = parcel.readLong()
-        version = parcel.readInt()
-        name = parcel.readString() ?: ""
-        description = parcel.readString()
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id)
-        parcel.writeLong(dbId)
-        parcel.writeInt(version)
-        parcel.writeString(name)
-        parcel.writeString(description)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
     fun isEmpty(): Boolean {
         return (id == 0L) || name.isEmpty()
     }
 
     companion object {
         val EMPTY = ProjectTask("")
-
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<ProjectTask> {
-            override fun createFromParcel(parcel: Parcel): ProjectTask {
-                return ProjectTask(parcel)
-            }
-
-            override fun newArray(size: Int): Array<ProjectTask?> {
-                return arrayOfNulls(size)
-            }
-        }
     }
 }
 
