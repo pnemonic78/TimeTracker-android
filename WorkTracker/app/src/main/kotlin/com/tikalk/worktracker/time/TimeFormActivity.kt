@@ -32,7 +32,9 @@
 package com.tikalk.worktracker.time
 
 import android.os.Bundle
+import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ProjectTaskKey
@@ -59,6 +61,7 @@ abstract class TimeFormActivity : InternetActivity() {
     protected val tasks = ArrayList<ProjectTask>()
     protected var projectEmpty: Project = Project.EMPTY
     protected var taskEmpty: ProjectTask = ProjectTask.EMPTY
+    protected val records = ArrayList<TimeRecord>()
 
     protected lateinit var prefs: TimeTrackerPrefs
 
@@ -223,6 +226,7 @@ abstract class TimeFormActivity : InternetActivity() {
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
+        saveRecords(db)
     }
 
     private fun saveProjects(db: TrackerDatabase) {
@@ -253,7 +257,7 @@ abstract class TimeFormActivity : InternetActivity() {
         projectsDao.delete(projectsToDelete)
 
         val projectIds = projectsDao.insert(projectsToInsert)
-        for (i in 0 until projectIds.size) {
+        for (i in projectIds.indices) {
             projectsToInsert[i].dbId = projectIds[i]
         }
 
@@ -288,7 +292,7 @@ abstract class TimeFormActivity : InternetActivity() {
         tasksDao.delete(tasksToDelete)
 
         val taskIds = tasksDao.insert(tasksToInsert)
-        for (i in 0 until taskIds.size) {
+        for (i in taskIds.indices) {
             tasksToInsert[i].dbId = taskIds[i]
         }
 
@@ -326,11 +330,46 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.delete(keysToDelete)
 
         val keyIds = projectTasksDao.insert(keysToInsert)
-        for (i in 0 until keyIds.size) {
+        for (i in keyIds.indices) {
             keysToInsert[i].dbId = keyIds[i]
         }
 
         projectTasksDao.update(keysToUpdate)
+    }
+
+    private fun saveRecords(db: TrackerDatabase) {
+        val records = this.records
+        val recordsDao = db.timeRecordDao()
+        val recordsDb = recordsDao.queryAll()
+        val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
+        for (record in recordsDb) {
+            recordsDbById[record.id] = record
+        }
+
+        val recordsToInsert = ArrayList<TimeRecord>()
+        val recordsToUpdate = ArrayList<TimeRecord>()
+        var recordDb: TimeRecordEntity
+        for (record in records) {
+            val recordId = record.id
+            if (recordsDbById.containsKey(recordId)) {
+                recordDb = recordsDbById[recordId]!!
+                record.dbId = recordDb.dbId
+                recordsToUpdate.add(record)
+            } else {
+                recordsToInsert.add(record)
+            }
+            recordsDbById.remove(recordId)
+        }
+
+        val recordsToDelete = recordsDbById.values
+        recordsDao.delete(recordsToDelete)
+
+        val recordIds = recordsDao.insert(recordsToInsert.map { toTimeRecordEntity(it) })
+        for (i in recordIds.indices) {
+            recordsToInsert[i].dbId = recordIds[i]
+        }
+
+        recordsDao.update(recordsToUpdate.map { toTimeRecordEntity(it) })
     }
 
     protected fun loadFormFromDb() {

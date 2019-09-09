@@ -58,7 +58,9 @@ abstract class TrackerDatabase : RoomDatabase() {
                 synchronized(TrackerDatabase::class.java) {
                     if (instance == null) {
                         // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db").build()
+                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
+                            .fallbackToDestructiveMigration()
+                            .build()
                     }
                 }
             }

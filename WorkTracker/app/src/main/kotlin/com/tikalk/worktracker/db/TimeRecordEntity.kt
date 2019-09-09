@@ -37,6 +37,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
+import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 
 /**
@@ -79,3 +80,14 @@ open class TimeRecordConverters : Converters() {
     @TypeConverter
     fun toRecordStatus(value: Int): TaskRecordStatus = TaskRecordStatus.values()[value]
 }
+
+fun toTimeRecordEntity(value: TimeRecord): TimeRecordEntity =
+    TimeRecordEntity(
+        value.user.id,
+        value.project.id,
+        value.task.id,
+        value.start,
+        value.finish,
+        value.note,
+        value.status
+    )

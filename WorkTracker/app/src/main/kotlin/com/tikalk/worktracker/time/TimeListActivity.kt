@@ -102,7 +102,6 @@ class TimeListActivity : TimeFormActivity(),
     private var datePickerDialog: DatePickerDialog? = null
 
     private val listAdapter = TimeListAdapter(this)
-    private val listItems = ArrayList<TimeRecord>()
     private var timer: Disposable? = null
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
@@ -223,6 +222,7 @@ class TimeListActivity : TimeFormActivity(),
                             val body = response.body()!!
                             populateForm(body, date)
                             populateList(body, date)
+                            savePage()
                             showProgressMain(false)
                         } else {
                             authenticate(true)
@@ -270,8 +270,8 @@ class TimeListActivity : TimeFormActivity(),
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
         date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
 
-        listItems.clear()
-        listItems.addAll(records)
+        this.records.clear()
+        this.records.addAll(records)
         listAdapter.submitList(records)
     }
 
@@ -357,7 +357,7 @@ class TimeListActivity : TimeFormActivity(),
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_RECORD, record)
-        outState.putParcelableArrayList(STATE_LIST, listItems)
+        outState.putParcelableArrayList(STATE_LIST, records)
         outState.putParcelable(STATE_TOTALS, totals)
     }
 
@@ -570,6 +570,7 @@ class TimeListActivity : TimeFormActivity(),
                         val body = response.body()!!
                         populateForm(body, date)
                         populateList(body, date)
+                        savePage()
                         showProgressMain(false)
                     } else {
                         authenticate(true)
@@ -599,8 +600,6 @@ class TimeListActivity : TimeFormActivity(),
         record.task = findSelectedTask(inputTasks, tasks)
 
         populateTaskIds(doc, projects)
-
-        savePage()
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)

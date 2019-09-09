@@ -45,18 +45,13 @@ import java.util.*
  */
 @TypeConverters(Converters::class)
 abstract class TikalEntity(
+    /**
+     * Remote server's id.
+     */
     @ColumnInfo(name = "id")
     @PrimaryKey(autoGenerate = false)
-    private var _id: Long = 0
+    open var id: Long = 0
 ) {
-    /**
-     * Server's id.
-     */
-    open var id: Long
-        get() = _id
-        set(value) {
-            _id = value
-        }
     /**
      * SQLite table id.
      */

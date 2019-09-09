@@ -216,6 +216,7 @@ class TimeEditActivity : TimeFormActivity() {
                 if (isValidResponse(response)) {
                     val body = response.body()!!
                     populateForm(body, date, id)
+                    savePage()
                     showProgressMain(false)
                 } else {
                     authenticate(true)
@@ -294,8 +295,6 @@ class TimeEditActivity : TimeFormActivity() {
         } else {
             record.status = TaskRecordStatus.CURRENT
         }
-
-        savePage()
 
         runOnUiThread { bindForm(record) }
     }
