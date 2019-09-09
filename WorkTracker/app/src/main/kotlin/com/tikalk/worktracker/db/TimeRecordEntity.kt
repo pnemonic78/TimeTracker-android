@@ -29,60 +29,45 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.db
 
-import android.provider.BaseColumns
 import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
+import androidx.room.Entity
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.tikalk.worktracker.model.Converters
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.TaskRecordStatus
 import java.util.*
 
 /**
- * Tikal base entity.
+ * Time record database entity.
  *
  * @author Moshe Waisberg.
  */
-@TypeConverters(Converters::class)
-abstract class TikalEntity(
-    @ColumnInfo(name = "id")
-    private var _id: Long = 0
-) {
-    /**
-     * Server's id.
-     */
-    open var id: Long
-        get() = _id
-        set(value) {
-            _id = value
-        }
-    /**
-     * SQLite table id.
-     */
-    @ColumnInfo(name = BaseColumns._ID)
-    @PrimaryKey(autoGenerate = true)
-    var dbId: Long = 0
-    /**
-     * Entity version to resolve conflicts.
-     */
-    @ColumnInfo(name = "version")
-    var version: Int = 0
-}
+@Entity(tableName = "record")
+@TypeConverters(TimeRecordConverters::class)
+data class TimeRecordEntity(
+    @ColumnInfo(name = "user")
+    var user: Long,
+    @ColumnInfo(name = "project")
+    var project: Long,
+    @ColumnInfo(name = "task")
+    var task: Long,
+    @ColumnInfo(name = "start")
+    var start: Calendar? = null,
+    @ColumnInfo(name = "finish")
+    var finish: Calendar? = null,
+    @ColumnInfo(name = "note")
+    var note: String = "",
+    @ColumnInfo(name = "status")
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
+) : TikalEntity()
 
-open class Converters {
+open class TimeRecordConverters : Converters() {
     @TypeConverter
-    fun fromTimestamp(value: Long?): Date? = value?.let { Date(it) }
+    fun fromRecordStatus(value: TaskRecordStatus): Int = value.ordinal
 
     @TypeConverter
-    fun toTimestamp(value: Date?): Long? = value?.time
-
-    @TypeConverter
-    fun fromCalendar(value: Long?): Calendar? = value?.let {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = it
-        return@let cal
-    }
-
-    @TypeConverter
-    fun toCalendar(value: Calendar?): Long? = value?.time?.time
+    fun toRecordStatus(value: Int): TaskRecordStatus = TaskRecordStatus.values()[value]
 }

@@ -34,7 +34,6 @@ package com.tikalk.worktracker.model.time
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.format.DateUtils
-import androidx.room.Entity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -47,7 +46,6 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-@Entity
 data class TimeRecord(
     var user: User,
     var project: Project,

@@ -29,60 +29,60 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.db
 
-import android.provider.BaseColumns
-import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
-import java.util.*
+import androidx.room.Dao
+import androidx.room.Query
+import io.reactivex.Maybe
+import io.reactivex.Single
 
 /**
- * Tikal base entity.
- *
- * @author Moshe Waisberg.
+ * Time record entity DAO.
  */
-@TypeConverters(Converters::class)
-abstract class TikalEntity(
-    @ColumnInfo(name = "id")
-    private var _id: Long = 0
-) {
+@Dao
+interface TimeRecordDao : BaseDao<TimeRecordEntity> {
+
     /**
-     * Server's id.
+     * Select all records from the table.
+     *
+     * @return all records.
      */
-    open var id: Long
-        get() = _id
-        set(value) {
-            _id = value
-        }
+    @Query("SELECT * FROM record")
+    fun queryAll(): List<TimeRecordEntity>
+
     /**
-     * SQLite table id.
+     * Select all records from the table.
+     *
+     * @return all records.
      */
-    @ColumnInfo(name = BaseColumns._ID)
-    @PrimaryKey(autoGenerate = true)
-    var dbId: Long = 0
+    @Query("SELECT * FROM record")
+    fun queryAllSingle(): Single<List<TimeRecordEntity>>
+
     /**
-     * Entity version to resolve conflicts.
+     * Select a record by its id.
      */
-    @ColumnInfo(name = "version")
-    var version: Int = 0
-}
+    @Query("SELECT * FROM record WHERE id = :recordId")
+    fun queryById(recordId: Long): Maybe<TimeRecordEntity>
 
-open class Converters {
-    @TypeConverter
-    fun fromTimestamp(value: Long?): Date? = value?.let { Date(it) }
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDay(start: Long, finish: Long): List<TimeRecordEntity>
 
-    @TypeConverter
-    fun toTimestamp(value: Date?): Long? = value?.time
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDaySingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
 
-    @TypeConverter
-    fun fromCalendar(value: Long?): Calendar? = value?.let {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = it
-        return@let cal
-    }
-
-    @TypeConverter
-    fun toCalendar(value: Calendar?): Long? = value?.time?.time
+    /**
+     * Delete all records.
+     */
+    @Query("DELETE FROM record")
+    fun deleteAll(): Int
 }

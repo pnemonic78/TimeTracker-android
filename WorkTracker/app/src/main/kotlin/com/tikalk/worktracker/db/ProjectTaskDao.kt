@@ -44,7 +44,7 @@ import io.reactivex.Single
 interface ProjectTaskDao : BaseDao<ProjectTask> {
 
     /**
-     * Select all tasks from the tasks table.
+     * Select all tasks from the table.
      *
      * @return all tasks.
      */
@@ -52,7 +52,7 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
     fun queryAll(): List<ProjectTask>
 
     /**
-     * Select all tasks from the tasks table.
+     * Select all tasks from the table.
      *
      * @return all tasks.
      */
