@@ -32,10 +32,7 @@
 package com.tikalk.worktracker.db
 
 import androidx.room.*
-import com.tikalk.worktracker.model.Converters
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
@@ -91,3 +88,20 @@ fun toTimeRecordEntity(value: TimeRecord): TimeRecordEntity =
         value.note,
         value.status
     )
+
+fun toTimeRecord(value: TimeRecordEntity, user: User? = null, projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+    val project = projects?.firstOrNull { it.id == value.projectId }
+        ?: Project.EMPTY.copy().apply { id = value.projectId }
+    val task = tasks?.firstOrNull { it.id == value.taskId }
+        ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
+
+    return TimeRecord(
+        user ?: User(""),
+        project,
+        task,
+        value.start,
+        value.finish,
+        value.note,
+        value.status
+    )
+}

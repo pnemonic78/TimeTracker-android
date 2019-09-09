@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 import android.os.Bundle
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -379,6 +380,7 @@ abstract class TimeFormActivity : InternetActivity() {
         loadProjects(db)
         loadTasks(db)
         loadProjectTaskKeys(db)
+        loadRecords(db)
     }
 
     private fun loadProjects(db: TrackerDatabase) {
@@ -406,6 +408,14 @@ abstract class TimeFormActivity : InternetActivity() {
                 project.addKeys(pairsForProject)
             }
         }
+    }
+
+    private fun loadRecords(db: TrackerDatabase) {
+        val recordsDao = db.timeRecordDao()
+        val recordsDb = recordsDao.queryAll()
+        records.clear()
+        records.addAll(recordsDb.map { toTimeRecord(it, user, projects, tasks) })
+        //TODO this.record = records.firstOrNull { it.isEmpty() } ?: record
     }
 
 }
