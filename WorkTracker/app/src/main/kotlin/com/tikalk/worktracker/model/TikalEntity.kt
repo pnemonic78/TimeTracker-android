@@ -46,6 +46,7 @@ import java.util.*
 @TypeConverters(Converters::class)
 abstract class TikalEntity(
     @ColumnInfo(name = "id")
+    @PrimaryKey(autoGenerate = false)
     private var _id: Long = 0
 ) {
     /**
@@ -60,7 +61,6 @@ abstract class TikalEntity(
      * SQLite table id.
      */
     @ColumnInfo(name = BaseColumns._ID)
-    @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
     /**
      * Entity version to resolve conflicts.

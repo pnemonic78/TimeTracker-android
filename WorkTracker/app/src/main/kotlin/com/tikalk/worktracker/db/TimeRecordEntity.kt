@@ -31,11 +31,10 @@
  */
 package com.tikalk.worktracker.db
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
+import androidx.room.*
 import com.tikalk.worktracker.model.Converters
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import java.util.*
@@ -45,15 +44,24 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "record")
+@Entity(tableName = "record",
+    foreignKeys = [
+        ForeignKey(entity = Project::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("project_id")),
+        ForeignKey(entity = ProjectTask::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("task_id"))
+    ]
+)
 @TypeConverters(TimeRecordConverters::class)
 data class TimeRecordEntity(
-    @ColumnInfo(name = "user")
-    var user: Long,
-    @ColumnInfo(name = "project")
-    var project: Long,
-    @ColumnInfo(name = "task")
-    var task: Long,
+    @ColumnInfo(name = "user_id")
+    var userId: Long,
+    @ColumnInfo(name = "project_id")
+    var projectId: Long,
+    @ColumnInfo(name = "task_id")
+    var taskId: Long,
     @ColumnInfo(name = "start")
     var start: Calendar? = null,
     @ColumnInfo(name = "finish")
