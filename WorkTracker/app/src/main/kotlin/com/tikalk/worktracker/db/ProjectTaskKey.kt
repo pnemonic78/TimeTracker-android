@@ -29,11 +29,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 
 /**
  * Project-Task relational ID entity.
@@ -43,21 +46,39 @@ import androidx.room.ForeignKey
 @Entity(tableName = "project_task_key",
     foreignKeys = [
         ForeignKey(entity = Project::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("project_id")),
+            parentColumns = ["id"],
+            childColumns = ["project_id"]),
         ForeignKey(entity = ProjectTask::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("task_id"))
+            parentColumns = ["id"],
+            childColumns = ["task_id"])
     ])
 data class ProjectTaskKey(
     @ColumnInfo(name = "project_id")
-    var projectId: Long,
+    private var _projectId: Long,
     @ColumnInfo(name = "task_id")
-    var taskId: Long
+    private var _taskId: Long
 ) : TikalEntity() {
 
+    init {
+        updateId()
+    }
+
+    var projectId: Long
+        get() = _projectId
+        set(value) {
+            _projectId = value
+            updateId()
+        }
+
+    var taskId: Long
+        get() = _taskId
+        set(value) {
+            _taskId = value
+            updateId()
+        }
+
     fun isEmpty(): Boolean {
-        return (id == 0L) || (projectId == 0L) || (taskId == 0L)
+        return (projectId == 0L) || (taskId == 0L)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -65,6 +86,10 @@ data class ProjectTaskKey(
             return (this.projectId == other.projectId) and (this.taskId == other.taskId)
         }
         return super.equals(other)
+    }
+
+    private fun updateId() {
+        id = ((projectId and 0xFFFFFFFF) shl 32) + (taskId and 0xFFFFFFFF)
     }
 }
 

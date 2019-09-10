@@ -33,7 +33,6 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.tikalk.worktracker.model.ProjectTaskKey
 import io.reactivex.Maybe
 import io.reactivex.Single
 

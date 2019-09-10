@@ -45,11 +45,11 @@ import java.util.*
 @Entity(tableName = "record",
     foreignKeys = [
         ForeignKey(entity = Project::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("project_id")),
+            parentColumns = ["id"],
+            childColumns = ["project_id"]),
         ForeignKey(entity = ProjectTask::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("task_id"))
+            parentColumns = ["id"],
+            childColumns = ["task_id"])
     ]
 )
 @TypeConverters(TimeRecordConverters::class)

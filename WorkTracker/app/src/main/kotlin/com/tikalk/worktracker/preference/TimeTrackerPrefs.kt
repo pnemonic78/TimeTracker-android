@@ -36,7 +36,7 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
+import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*

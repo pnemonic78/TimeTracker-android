@@ -38,7 +38,7 @@ import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
+import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
@@ -246,7 +246,7 @@ abstract class TimeFormActivity : InternetActivity() {
             val projectId = project.id
             if (projectsDbById.containsKey(projectId)) {
                 projectDb = projectsDbById[projectId]!!
-                project.dbId = projectDb.dbId
+                //project.dbId = projectDb.dbId
                 projectsToUpdate.add(project)
             } else {
                 projectsToInsert.add(project)
@@ -258,9 +258,9 @@ abstract class TimeFormActivity : InternetActivity() {
         projectsDao.delete(projectsToDelete)
 
         val projectIds = projectsDao.insert(projectsToInsert)
-        for (i in projectIds.indices) {
-            projectsToInsert[i].dbId = projectIds[i]
-        }
+        //for (i in projectIds.indices) {
+        //    projectsToInsert[i].dbId = projectIds[i]
+        //}
 
         projectsDao.update(projectsToUpdate)
     }
@@ -281,7 +281,7 @@ abstract class TimeFormActivity : InternetActivity() {
             val taskId = task.id
             if (tasksDbById.containsKey(taskId)) {
                 taskDb = tasksDbById[taskId]!!
-                task.dbId = taskDb.dbId
+                //task.dbId = taskDb.dbId
                 tasksToUpdate.add(task)
             } else {
                 tasksToInsert.add(task)
@@ -293,9 +293,9 @@ abstract class TimeFormActivity : InternetActivity() {
         tasksDao.delete(tasksToDelete)
 
         val taskIds = tasksDao.insert(tasksToInsert)
-        for (i in taskIds.indices) {
-            tasksToInsert[i].dbId = taskIds[i]
-        }
+        //for (i in taskIds.indices) {
+        //    tasksToInsert[i].dbId = taskIds[i]
+        //}
 
         tasksDao.update(tasksToUpdate)
     }
@@ -319,7 +319,7 @@ abstract class TimeFormActivity : InternetActivity() {
                 }
             }
             if (keyDbFound != null) {
-                key.dbId = keyDbFound.dbId
+                //key.dbId = keyDbFound.dbId
                 keysToUpdate.add(key)
                 keysDbMutable.remove(keyDbFound)
             } else {
@@ -331,9 +331,9 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.delete(keysToDelete)
 
         val keyIds = projectTasksDao.insert(keysToInsert)
-        for (i in keyIds.indices) {
-            keysToInsert[i].dbId = keyIds[i]
-        }
+        //for (i in keyIds.indices) {
+        //    keysToInsert[i].dbId = keyIds[i]
+        //}
 
         projectTasksDao.update(keysToUpdate)
     }
@@ -354,7 +354,7 @@ abstract class TimeFormActivity : InternetActivity() {
             val recordId = record.id
             if (recordsDbById.containsKey(recordId)) {
                 recordDb = recordsDbById[recordId]!!
-                record.dbId = recordDb.dbId
+                //record.dbId = recordDb.dbId
                 recordsToUpdate.add(record)
             } else {
                 recordsToInsert.add(record)
@@ -366,9 +366,9 @@ abstract class TimeFormActivity : InternetActivity() {
         recordsDao.delete(recordsToDelete)
 
         val recordIds = recordsDao.insert(recordsToInsert.map { toTimeRecordEntity(it) })
-        for (i in recordIds.indices) {
-            recordsToInsert[i].dbId = recordIds[i]
-        }
+        //for (i in recordIds.indices) {
+        //    recordsToInsert[i].dbId = recordIds[i]
+        //}
 
         recordsDao.update(recordsToUpdate.map { toTimeRecordEntity(it) })
     }

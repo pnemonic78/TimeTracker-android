@@ -55,8 +55,8 @@ abstract class TikalEntity(
     /**
      * SQLite table id.
      */
-    @ColumnInfo(name = BaseColumns._ID)
-    var dbId: Long = 0
+    //@ColumnInfo(name = BaseColumns._ID)
+    //var dbId: Long = 0
     /**
      * Entity version to resolve conflicts.
      */

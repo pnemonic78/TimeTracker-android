@@ -37,7 +37,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
 
 /**
  * Work Tracker database.
