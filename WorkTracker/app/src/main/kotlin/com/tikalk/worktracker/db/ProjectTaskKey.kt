@@ -78,7 +78,7 @@ data class ProjectTaskKey(
         }
 
     fun isEmpty(): Boolean {
-        return (projectId == 0L) || (taskId == 0L)
+        return (projectId == ID_NONE) || (taskId == ID_NONE)
     }
 
     override fun equals(other: Any?): Boolean {

@@ -54,6 +54,8 @@ import java.util.*
 )
 @TypeConverters(TimeRecordConverters::class)
 data class TimeRecordEntity(
+    @Ignore
+    override var id: Long,
     @ColumnInfo(name = "user_id")
     var userId: Long,
     @ColumnInfo(name = "project_id")
@@ -68,7 +70,7 @@ data class TimeRecordEntity(
     var note: String = "",
     @ColumnInfo(name = "status")
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
-) : TikalEntity()
+) : TikalEntity(id)
 
 open class TimeRecordConverters : Converters() {
     @TypeConverter
@@ -80,6 +82,7 @@ open class TimeRecordConverters : Converters() {
 
 fun toTimeRecordEntity(value: TimeRecord): TimeRecordEntity =
     TimeRecordEntity(
+        value.id,
         value.user.id,
         value.project.id,
         value.task.id,
@@ -96,6 +99,7 @@ fun toTimeRecord(value: TimeRecordEntity, user: User = User.EMPTY.copy(), projec
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
     return TimeRecord(
+        value.id,
         user,
         project,
         task,

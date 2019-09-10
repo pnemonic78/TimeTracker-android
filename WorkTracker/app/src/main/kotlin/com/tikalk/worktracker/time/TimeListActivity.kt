@@ -48,6 +48,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -512,7 +513,7 @@ class TimeListActivity : TimeFormActivity(),
         val editLink = tdEdit.child(0).attr("href")
         val id = parseRecordId(editLink)
 
-        return TimeRecord(user, project, task, start, finish, note, TaskRecordStatus.CURRENT, id)
+        return TimeRecord(id, user, project, task, start, finish, note, TaskRecordStatus.CURRENT)
     }
 
     private fun parseRecordProject(name: String): Project? {
@@ -767,7 +768,7 @@ class TimeListActivity : TimeFormActivity(),
             val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
             val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
-            val record = TimeRecord(user, project, task)
+            val record = TimeRecord(TikalEntity.ID_NONE, user, project, task)
             if (startTime > 0L) {
                 record.startTime = startTime
             }

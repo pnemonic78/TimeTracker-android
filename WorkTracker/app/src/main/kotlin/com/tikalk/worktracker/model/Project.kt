@@ -62,7 +62,7 @@ data class Project(
     }
 
     fun isEmpty(): Boolean {
-        return (id == 0L) || name.isEmpty()
+        return (id == ID_NONE) || name.isEmpty()
     }
 
     fun clearTasks() {

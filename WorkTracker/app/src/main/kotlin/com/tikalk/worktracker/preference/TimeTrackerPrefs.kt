@@ -36,6 +36,7 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
@@ -141,7 +142,7 @@ class TimeTrackerPrefs(context: Context) {
         val start = Calendar.getInstance()
         start.timeInMillis = startTime
 
-        return TimeRecord(user, project, task, start)
+        return TimeRecord(TikalEntity.ID_NONE, user, project, task, start)
     }
 
     fun stopRecord() {

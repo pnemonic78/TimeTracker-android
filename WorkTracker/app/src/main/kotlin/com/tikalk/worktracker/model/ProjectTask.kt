@@ -56,7 +56,7 @@ data class ProjectTask(
     }
 
     fun isEmpty(): Boolean {
-        return (id == 0L) || name.isEmpty()
+        return (id == ID_NONE) || name.isEmpty()
     }
 
     companion object {

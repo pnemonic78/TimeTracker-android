@@ -32,13 +32,10 @@
 package com.tikalk.worktracker.time
 
 import android.os.Bundle
-import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.db.ProjectTaskKey
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
@@ -57,7 +54,7 @@ abstract class TimeFormActivity : InternetActivity() {
     protected val disposables = CompositeDisposable()
     protected var date = Calendar.getInstance()
     protected var user = User.EMPTY.copy()
-    protected var record = TimeRecord(user, Project(""), ProjectTask(""))
+    protected var record = TimeRecord(TikalEntity.ID_NONE, user, Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
     protected val projects = ArrayList<Project>()
     protected val tasks = ArrayList<ProjectTask>()
     protected var projectEmpty: Project = Project.EMPTY
@@ -226,7 +223,7 @@ abstract class TimeFormActivity : InternetActivity() {
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
-        saveRecords(db)
+        saveRecords(db, date)
     }
 
     private fun saveProjects(db: TrackerDatabase) {
@@ -240,11 +237,11 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val projectsToInsert = ArrayList<Project>()
         val projectsToUpdate = ArrayList<Project>()
-        var projectDb: Project
+        //var projectDb: Project
         for (project in projects) {
             val projectId = project.id
             if (projectsDbById.containsKey(projectId)) {
-                projectDb = projectsDbById[projectId]!!
+                //projectDb = projectsDbById[projectId]!!
                 //project.dbId = projectDb.dbId
                 projectsToUpdate.add(project)
             } else {
@@ -275,11 +272,11 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val tasksToInsert = ArrayList<ProjectTask>()
         val tasksToUpdate = ArrayList<ProjectTask>()
-        var taskDb: ProjectTask
+        //var taskDb: ProjectTask
         for (task in tasks) {
             val taskId = task.id
             if (tasksDbById.containsKey(taskId)) {
-                taskDb = tasksDbById[taskId]!!
+                //taskDb = tasksDbById[taskId]!!
                 //task.dbId = taskDb.dbId
                 tasksToUpdate.add(task)
             } else {
@@ -338,10 +335,10 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.update(keysToUpdate)
     }
 
-    private fun saveRecords(db: TrackerDatabase) {
+    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
         val records = this.records
         val recordsDao = db.timeRecordDao()
-        val recordsDb = recordsDao.queryAll()
+        val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
         for (record in recordsDb) {
             recordsDbById[record.id] = record
@@ -349,11 +346,11 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val recordsToInsert = ArrayList<TimeRecord>()
         val recordsToUpdate = ArrayList<TimeRecord>()
-        var recordDb: TimeRecordEntity
+        //var recordDb: TimeRecordEntity
         for (record in records) {
             val recordId = record.id
             if (recordsDbById.containsKey(recordId)) {
-                recordDb = recordsDbById[recordId]!!
+                //recordDb = recordsDbById[recordId]!!
                 //record.dbId = recordDb.dbId
                 recordsToUpdate.add(record)
             } else {
@@ -380,7 +377,7 @@ abstract class TimeFormActivity : InternetActivity() {
         loadProjects(db)
         loadTasks(db)
         loadProjectTaskKeys(db)
-        loadRecords(db)
+        loadRecords(db, date)
     }
 
     private fun loadProjects(db: TrackerDatabase) {
@@ -416,12 +413,30 @@ abstract class TimeFormActivity : InternetActivity() {
         }
     }
 
-    private fun loadRecords(db: TrackerDatabase) {
-        val recordsDao = db.timeRecordDao()
-        val recordsDb = recordsDao.queryAll()
+    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
+        val recordsDb = queryRecords(db, day)
         records.clear()
         records.addAll(recordsDb.map { toTimeRecord(it, user, projects, tasks) })
         //TODO this.record = records.firstOrNull { it.isEmpty() } ?: record
     }
 
+    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
+        val recordsDao = db.timeRecordDao()
+        return if (day == null) {
+            recordsDao.queryAll()
+        } else {
+            val cal = day.clone() as Calendar
+            cal.hourOfDay = 0
+            cal.minute = 0
+            cal.second = 0
+            cal.millis = 0
+            val start = cal.timeInMillis
+            cal.hourOfDay = cal.getMaximum(Calendar.HOUR_OF_DAY)
+            cal.minute = cal.getMaximum(Calendar.MINUTE)
+            cal.second = cal.getMaximum(Calendar.SECOND)
+            cal.millis = cal.getMaximum(Calendar.MILLISECOND)
+            val finish = cal.timeInMillis
+            recordsDao.queryByDate(start, finish)
+        }
+    }
 }

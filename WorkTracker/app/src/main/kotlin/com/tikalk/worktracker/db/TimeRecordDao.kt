@@ -70,7 +70,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return all records between the dates.
      */
     @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
-    fun queryByDay(start: Long, finish: Long): List<TimeRecordEntity>
+    fun queryByDate(start: Long, finish: Long): List<TimeRecordEntity>
 
     /**
      * Select all records from the table by date.
@@ -78,7 +78,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return all records between the dates.
      */
     @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
-    fun queryByDaySingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
+    fun queryByDateSingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
 
     /**
      * Delete all records.

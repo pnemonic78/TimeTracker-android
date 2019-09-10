@@ -31,7 +31,6 @@
  */
 package com.tikalk.worktracker.model
 
-import android.provider.BaseColumns
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
@@ -50,7 +49,7 @@ abstract class TikalEntity(
      */
     @ColumnInfo(name = "id")
     @PrimaryKey(autoGenerate = false)
-    open var id: Long = 0
+    open var id: Long = ID_NONE
 ) {
     /**
      * SQLite table id.
@@ -62,6 +61,10 @@ abstract class TikalEntity(
      */
     @ColumnInfo(name = "version")
     var version: Int = 0
+
+    companion object {
+        const val ID_NONE = 0L
+    }
 }
 
 open class Converters {

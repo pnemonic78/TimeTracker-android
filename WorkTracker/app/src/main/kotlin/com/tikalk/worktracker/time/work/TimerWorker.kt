@@ -48,6 +48,7 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -312,7 +313,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         project.id = projectId
         val task = ProjectTask(taskName)
         task.id = taskId
-        val record = TimeRecord(User.EMPTY.copy(), project, task)
+        val record = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), project, task)
         record.startTime = startTime
         record.finishTime = finishTime
         return record

@@ -277,7 +277,7 @@ class TimeEditActivity : TimeFormActivity() {
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
-                record = TimeRecord(user, project, task)
+                record = TimeRecord(id, user, project, task)
                 if (startTime > 0L) {
                     record.startTime = startTime
                 } else {
