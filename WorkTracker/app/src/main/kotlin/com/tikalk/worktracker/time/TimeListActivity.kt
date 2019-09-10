@@ -85,7 +85,6 @@ class TimeListActivity : TimeFormActivity(),
 
         private const val STATE_DATE = "date"
         private const val STATE_RECORD = "record"
-        private const val STATE_LIST = "records"
         private const val STATE_TOTALS = "totals"
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
@@ -271,8 +270,10 @@ class TimeListActivity : TimeFormActivity(),
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
         date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
 
-        this.records.clear()
-        this.records.addAll(records)
+        if (records !== this.records) {
+            this.records.clear()
+            this.records.addAll(records)
+        }
         listAdapter.submitList(records)
     }
 
@@ -358,7 +359,6 @@ class TimeListActivity : TimeFormActivity(),
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_RECORD, record)
-        outState.putParcelableArrayList(STATE_LIST, records)
         outState.putParcelable(STATE_TOTALS, totals)
     }
 
@@ -366,7 +366,6 @@ class TimeListActivity : TimeFormActivity(),
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
-        val list = savedInstanceState.getParcelableArrayList<TimeRecord>(STATE_LIST)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
 
         if (recordParcel != null) {
@@ -375,9 +374,6 @@ class TimeListActivity : TimeFormActivity(),
             record.start = recordParcel.start
             populateForm(record)
             bindForm(record)
-        }
-        if (list != null) {
-            bindList(date, list)
         }
         if (totals != null) {
             this.totals = totals
@@ -736,6 +732,7 @@ class TimeListActivity : TimeFormActivity(),
                 .subscribe({
                     populateForm(record)
                     bindForm(record)
+                    bindList(date, records)
                     showProgress(false)
                 }, { err ->
                     Timber.e(err, "Error loading page: ${err.message}")
