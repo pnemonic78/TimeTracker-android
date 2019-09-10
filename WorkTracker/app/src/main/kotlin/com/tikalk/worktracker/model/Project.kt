@@ -49,10 +49,13 @@ data class Project(
 ) : TikalEntity() {
 
     @Ignore
-    val tasks: MutableMap<Long, ProjectTask> = HashMap()
+    val tasksById: MutableMap<Long, ProjectTask> = HashMap()
 
     val taskIds: Set<Long>
-        get() = tasks.keys
+        get() = tasksById.keys
+
+    val tasks: List<ProjectTask>
+        get() = tasksById.values.sortedBy { task -> task.name }
 
     override fun toString(): String {
         return name
@@ -63,11 +66,11 @@ data class Project(
     }
 
     fun clearTasks() {
-        tasks.clear()
+        tasksById.clear()
     }
 
     fun addTask(task: ProjectTask) {
-        tasks[task.id] = task
+        tasksById[task.id] = task
     }
 
     fun addTasks(tasks: Collection<ProjectTask>) {

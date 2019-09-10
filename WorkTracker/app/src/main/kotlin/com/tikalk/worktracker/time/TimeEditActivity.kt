@@ -535,7 +535,7 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun filterTasks(project: Project) {
-        val filtered = tasks.filter { it.id in project.taskIds }
+        val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)

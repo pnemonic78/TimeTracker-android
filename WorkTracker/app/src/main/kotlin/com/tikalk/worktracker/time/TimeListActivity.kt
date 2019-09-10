@@ -520,7 +520,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun parseRecordTask(project: Project, name: String): ProjectTask? {
-        return tasks.find { (it.id in project.taskIds) && (name == it.name) }
+        return project.tasks.find { task -> (task.name == name) }
     }
 
     private fun parseRecordTime(text: String): Calendar? {
@@ -688,7 +688,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun filterTasks(project: Project) {
-        val filtered = tasks.filter { it.id in project.taskIds }
+        val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)

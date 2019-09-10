@@ -301,7 +301,7 @@ abstract class TimeFormActivity : InternetActivity() {
 
     private fun saveProjectTaskKeys(db: TrackerDatabase) {
         val keys: List<ProjectTaskKey> = projects.flatMap { project ->
-            project.tasks.values.map { task -> ProjectTaskKey(project.id, task.id) }
+            project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
         }
 
         val projectTasksDao = db.projectTaskKeyDao()
