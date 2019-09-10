@@ -50,6 +50,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
@@ -204,7 +205,7 @@ class TimeEditActivity : TimeFormActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
-        val fetcher: Single<Response<String>> = if (id == 0L) {
+        val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
             service.fetchTimes(dateFormatted)
         } else {
             service.fetchTimes(id)
@@ -260,7 +261,7 @@ class TimeEditActivity : TimeFormActivity() {
         record.finish = parseSystemTime(date, finishValue)
         record.note = inputNote?.text() ?: ""
 
-        if (id == 0L) {
+        if (id == TikalEntity.ID_NONE) {
             val projectFavorite = prefs.getFavoriteProject()
             val taskFavorite = prefs.getFavoriteTask()
 
@@ -271,8 +272,8 @@ class TimeEditActivity : TimeFormActivity() {
                 val startTime = extras.getLong(EXTRA_START_TIME)
                 val finishTime = extras.getLong(EXTRA_FINISH_TIME)
 
-                if (projectId == 0L) projectId = projectFavorite
-                if (taskId == 0L) taskId = taskFavorite
+                if (projectId == TikalEntity.ID_NONE) projectId = projectFavorite
+                if (taskId == TikalEntity.ID_NONE) taskId = taskFavorite
 
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
@@ -389,7 +390,7 @@ class TimeEditActivity : TimeFormActivity() {
         }
         bindRecord(record)
 
-        if (record.id == 0L) {
+        if (record.id == TikalEntity.ID_NONE) {
             val splits = record.split()
             val size = splits.size
             val lastIndex = size - 1
@@ -412,7 +413,7 @@ class TimeEditActivity : TimeFormActivity() {
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
-        val submitter: Single<Response<String>> = if (record.id == 0L) {
+        val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             service.addTime(record.project.id,
                 record.task.id,
                 formatSystemDate(record.start),
@@ -566,7 +567,7 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun deleteRecord() {
-        if (record.id == 0L) {
+        if (record.id == TikalEntity.ID_NONE) {
             setResult(RESULT_OK)
             finish()
         } else {

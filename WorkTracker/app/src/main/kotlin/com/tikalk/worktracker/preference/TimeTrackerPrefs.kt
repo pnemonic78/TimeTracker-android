@@ -118,13 +118,13 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun getStartedRecord(): TimeRecord? {
-        val projectId = prefs.getLong(PROJECT_ID, 0L)
-        if (projectId <= 0L) return null
+        val projectId = prefs.getLong(PROJECT_ID, TikalEntity.ID_NONE)
+        if (projectId == TikalEntity.ID_NONE) return null
 
         val projectName = prefs.getString(PROJECT_NAME, null) ?: return null
 
-        val taskId = prefs.getLong(TASK_ID, 0L)
-        if (taskId <= 0L) return null
+        val taskId = prefs.getLong(TASK_ID, TikalEntity.ID_NONE)
+        if (taskId == TikalEntity.ID_NONE) return null
 
         val taskName = prefs.getString(TASK_NAME, null) ?: return null
 
@@ -171,10 +171,10 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun getFavoriteProject(): Long {
-        return prefs.getLong(PROJECT_FAVORITE, 0L)
+        return prefs.getLong(PROJECT_FAVORITE, TikalEntity.ID_NONE)
     }
 
     fun getFavoriteTask(): Long {
-        return prefs.getLong(TASK_FAVORITE, 0L)
+        return prefs.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
     }
 }

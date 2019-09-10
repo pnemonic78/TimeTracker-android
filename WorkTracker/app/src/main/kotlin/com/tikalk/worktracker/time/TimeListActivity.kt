@@ -429,10 +429,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun addTime() {
-        showProgress(true)
-        val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
-        startActivityForResult(intent, REQUEST_EDIT)
+        editRecord(record)
     }
 
     /**
@@ -537,14 +534,13 @@ class TimeListActivity : TimeFormActivity(),
     private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
         showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
-        if ((record.id == 0L) && !record.isEmpty()) {
-            intent.putExtra(TimeEditActivity.EXTRA_DATE, record.startTime)
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
+        if (record.id == TikalEntity.ID_NONE) {
             intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, record.project.id)
             intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, record.task.id)
             intent.putExtra(TimeEditActivity.EXTRA_START_TIME, record.startTime)
             intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, record.finishTime)
         } else {
-            intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
             intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
         }
         startActivityForResult(intent, requestId)
@@ -607,11 +603,11 @@ class TimeListActivity : TimeFormActivity(),
         Timber.v("populateForm $recordStarted")
         if (recordStarted.isNullOrEmpty()) {
             val projectFavorite = prefs.getFavoriteProject()
-            if (projectFavorite != 0L) {
+            if (projectFavorite != TikalEntity.ID_NONE) {
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
             }
             val taskFavorite = prefs.getFavoriteTask()
-            if (taskFavorite != 0L) {
+            if (taskFavorite != TikalEntity.ID_NONE) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
         } else {
@@ -713,12 +709,12 @@ class TimeListActivity : TimeFormActivity(),
     private fun projectItemSelected(project: Project) {
         record.project = project
         filterTasks(project)
-        action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
-        action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {

@@ -73,8 +73,7 @@ data class TimeRecord(
         }
 
     fun isEmpty(): Boolean {
-        return user.isEmpty()
-            || project.isEmpty()
+        return project.isEmpty()
             || task.isEmpty()
             || (startTime <= 0L)
     }
@@ -82,8 +81,6 @@ data class TimeRecord(
     constructor(parcel: Parcel) : this(ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
         id = parcel.readLong()
         version = parcel.readInt()
-
-        user = User.CREATOR.createFromParcel(parcel)
         project.id = parcel.readLong()
         task.id = parcel.readLong()
         startTime = parcel.readLong()
@@ -95,8 +92,6 @@ data class TimeRecord(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
         parcel.writeInt(version)
-
-        parcel.writeParcelable(user, flags)
         parcel.writeLong(project.id)
         parcel.writeLong(task.id)
         parcel.writeLong(startTime)
