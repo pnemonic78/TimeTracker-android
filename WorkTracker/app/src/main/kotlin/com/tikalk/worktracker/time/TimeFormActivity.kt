@@ -180,7 +180,6 @@ abstract class TimeFormActivity : InternetActivity() {
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
         val scriptText = findScript(doc, tokenStart, tokenEnd)
-        val pairs = ArrayList<ProjectTaskKey>()
 
         for (project in projects) {
             project.clearTasks()
@@ -193,14 +192,14 @@ abstract class TimeFormActivity : InternetActivity() {
                 val matcher = pattern.matcher(line)
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
+                    val project = projects.find { it.id == projectId }
+
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    val project = projects.find { it.id == projectId }
-                    project?.apply {
-                        addTasks(taskIds)
-                        pairs.addAll(tasks.values)
-                    }
+                    val tasks = this.tasks.filter { it.id in taskIds }
+
+                    project?.addTasks(tasks)
                 }
             }
         }
@@ -301,8 +300,9 @@ abstract class TimeFormActivity : InternetActivity() {
     }
 
     private fun saveProjectTaskKeys(db: TrackerDatabase) {
-        val keys = ArrayList<ProjectTaskKey>()
-        projects.map { project -> keys.addAll(project.tasks.values) }
+        val keys: List<ProjectTaskKey> = projects.flatMap { project ->
+            project.tasks.values.map { task -> ProjectTaskKey(project.id, task.id) }
+        }
 
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
@@ -400,12 +400,18 @@ abstract class TimeFormActivity : InternetActivity() {
     }
 
     private fun loadProjectTaskKeys(db: TrackerDatabase) {
+        val projectsById: Map<Long, Project> = projects.map { project -> (project.id to project) }.toMap()
+        val tasksById: Map<Long, ProjectTask> = tasks.map { task -> (task.id to task) }.toMap()
+        projects.forEach { project -> project.clearTasks() }
+
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
-        if (projects.isNotEmpty()) {
-            projects.forEach { project ->
-                val pairsForProject = keysDb.filter { it.projectId == project.id }
-                project.addKeys(pairsForProject)
+
+        keysDb.forEach { key ->
+            val project = projectsById[key.projectId]
+            val task = tasksById[key.taskId]
+            if ((project != null) && (task != null)) {
+                project.addTask(task)
             }
         }
     }

@@ -36,7 +36,6 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
@@ -132,13 +131,13 @@ class TimeTrackerPrefs(context: Context) {
         if (startTime <= 0L) return null
 
         val user = User(userCredentials.login)
-        val project = Project("")
+        val project = Project.EMPTY.copy()
         project.id = projectId
         project.name = projectName
-        project.tasks[taskId] = ProjectTaskKey(projectId, taskId)
-        val task = ProjectTask("")
+        val task = ProjectTask.EMPTY.copy()
         task.id = taskId
         task.name = taskName
+        project.addTask(task)
         val start = Calendar.getInstance()
         start.timeInMillis = startTime
 

@@ -34,7 +34,6 @@ package com.tikalk.worktracker.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
-import com.tikalk.worktracker.db.ProjectTaskKey
 
 /**
  * Project entity.
@@ -49,17 +48,8 @@ data class Project(
     var description: String? = null
 ) : TikalEntity() {
 
-    override var id: Long
-        get() = super.id
-        set(value) {
-            super.id = value
-            for (task in tasks.values) {
-                task.projectId = value
-            }
-        }
-
     @Ignore
-    val tasks: MutableMap<Long, ProjectTaskKey> = HashMap()
+    val tasks: MutableMap<Long, ProjectTask> = HashMap()
 
     val taskIds: Set<Long>
         get() = tasks.keys
@@ -76,24 +66,13 @@ data class Project(
         tasks.clear()
     }
 
-    fun addTask(taskId: Long) {
-        addKey(ProjectTaskKey(id, taskId))
+    fun addTask(task: ProjectTask) {
+        tasks[task.id] = task
     }
 
-    fun addTasks(taskIds: List<Long>) {
-        for (id in taskIds) {
-            addTask(id)
-        }
-    }
-
-    fun addKey(key: ProjectTaskKey) {
-        if (key.projectId <= 0L) key.projectId = id
-        tasks[key.taskId] = key
-    }
-
-    fun addKeys(keys: List<ProjectTaskKey>) {
-        for (key in keys) {
-            addKey(key)
+    fun addTasks(tasks: Collection<ProjectTask>) {
+        for (task in tasks) {
+            addTask(task)
         }
     }
 
