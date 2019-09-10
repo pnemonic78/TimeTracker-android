@@ -33,13 +33,22 @@ package com.tikalk.worktracker.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 
 /**
  * Project-Task relational ID entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "project_task_key")
+@Entity(tableName = "project_task_key",
+    foreignKeys = [
+        ForeignKey(entity = Project::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("project_id")),
+        ForeignKey(entity = ProjectTask::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("task_id"))
+    ])
 data class ProjectTaskKey(
     @ColumnInfo(name = "project_id")
     var projectId: Long,
