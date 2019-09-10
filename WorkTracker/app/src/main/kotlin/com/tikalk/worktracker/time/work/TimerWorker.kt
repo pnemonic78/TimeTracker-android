@@ -312,7 +312,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         project.id = projectId
         val task = ProjectTask(taskName)
         task.id = taskId
-        val record = TimeRecord(User(""), project, task)
+        val record = TimeRecord(User.EMPTY.copy(), project, task)
         record.startTime = startTime
         record.finishTime = finishTime
         return record

@@ -56,7 +56,7 @@ abstract class TimeFormActivity : InternetActivity() {
 
     protected val disposables = CompositeDisposable()
     protected var date = Calendar.getInstance()
-    protected var user = User("")
+    protected var user = User.EMPTY.copy()
     protected var record = TimeRecord(user, Project(""), ProjectTask(""))
     protected val projects = ArrayList<Project>()
     protected val tasks = ArrayList<ProjectTask>()

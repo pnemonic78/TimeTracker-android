@@ -73,18 +73,18 @@ data class TimeRecord(
         }
 
     fun isEmpty(): Boolean {
-        return user.username.isEmpty()
-            || (project.id <= 0L)
-            || (task.id <= 0L)
+        return user.isEmpty()
+            || project.isEmpty()
+            || task.isEmpty()
             || (startTime <= 0L)
     }
 
-    constructor(parcel: Parcel) : this(User("", ""), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
+    constructor(parcel: Parcel) : this(User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
         id = parcel.readLong()
         dbId = parcel.readLong()
         version = parcel.readInt()
 
-        user = User.createFromParcel(parcel)
+        user = User.CREATOR.createFromParcel(parcel)
         project.id = parcel.readLong()
         task.id = parcel.readLong()
         startTime = parcel.readLong()

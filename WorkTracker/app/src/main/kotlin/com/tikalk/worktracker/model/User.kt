@@ -34,7 +34,6 @@ package com.tikalk.worktracker.model
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.room.Entity
 import com.tikalk.net.createUriFromParcel
 
 /**
@@ -42,7 +41,6 @@ import com.tikalk.net.createUriFromParcel
  *
  * @author Moshe Waisberg.
  */
-@Entity
 data class User(
     /**
      * Unique username.
@@ -90,13 +88,22 @@ data class User(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<User> {
-        override fun createFromParcel(parcel: Parcel): User {
-            return User(parcel)
-        }
+    fun isEmpty(): Boolean {
+        return username.isEmpty()
+    }
 
-        override fun newArray(size: Int): Array<User?> {
-            return arrayOfNulls(size)
+    companion object {
+        val EMPTY = User("")
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<User> {
+            override fun createFromParcel(parcel: Parcel): User {
+                return User(parcel)
+            }
+
+            override fun newArray(size: Int): Array<User?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 }

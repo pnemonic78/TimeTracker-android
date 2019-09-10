@@ -89,14 +89,14 @@ fun toTimeRecordEntity(value: TimeRecord): TimeRecordEntity =
         value.status
     )
 
-fun toTimeRecord(value: TimeRecordEntity, user: User? = null, projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+fun toTimeRecord(value: TimeRecordEntity, user: User = User.EMPTY.copy(), projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
     val project = projects?.firstOrNull { it.id == value.projectId }
         ?: Project.EMPTY.copy().apply { id = value.projectId }
     val task = tasks?.firstOrNull { it.id == value.taskId }
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
     return TimeRecord(
-        user ?: User(""),
+        user,
         project,
         task,
         value.start,
