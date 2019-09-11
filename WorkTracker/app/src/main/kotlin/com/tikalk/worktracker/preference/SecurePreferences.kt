@@ -249,10 +249,12 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
             return this
         }
 
-        override fun putStringSet(key: String, value: Set<String>): SharedPreferences.Editor {
+        override fun putStringSet(key: String, value: Set<String>?): SharedPreferences.Editor {
             val items = LinkedHashSet<String>()
-            for (item in value) {
-                items.add(encrypt(key, item))
+            if (value != null) {
+                for (item in value) {
+                    items.add(encrypt(key, item))
+                }
             }
             delegate.putStringSet(hashKey(key), items)
             return this

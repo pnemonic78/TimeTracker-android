@@ -34,7 +34,6 @@ package com.tikalk.worktracker.model.time
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.format.DateUtils
-import androidx.room.Entity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -47,16 +46,15 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-@Entity
 data class TimeRecord(
+    override var id: Long = ID_NONE,
     var user: User,
     var project: Project,
     var task: ProjectTask,
     var start: Calendar? = null,
     var finish: Calendar? = null,
     var note: String = "",
-    var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
-    override var id: Long = 0
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
 ) : TikalEntity(id), Parcelable {
 
     var startTime: Long
@@ -75,20 +73,16 @@ data class TimeRecord(
         }
 
     fun isEmpty(): Boolean {
-        return user.username.isEmpty()
-            || (project.id <= 0L)
-            || (task.id <= 0L)
+        return project.isEmpty()
+            || task.isEmpty()
             || (startTime <= 0L)
     }
 
-    constructor(parcel: Parcel) : this(User("", ""), Project.EMPTY, ProjectTask.EMPTY) {
+    constructor(parcel: Parcel) : this(ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
         id = parcel.readLong()
-        dbId = parcel.readLong()
         version = parcel.readInt()
-
-        user = User.createFromParcel(parcel)
-        project = Project.CREATOR.createFromParcel(parcel)
-        task = ProjectTask.CREATOR.createFromParcel(parcel)
+        project.id = parcel.readLong()
+        task.id = parcel.readLong()
         startTime = parcel.readLong()
         finishTime = parcel.readLong()
         note = parcel.readString() ?: ""
@@ -97,12 +91,9 @@ data class TimeRecord(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
-        parcel.writeLong(dbId)
         parcel.writeInt(version)
-
-        parcel.writeParcelable(user, flags)
-        parcel.writeParcelable(project, flags)
-        parcel.writeParcelable(task, flags)
+        parcel.writeLong(project.id)
+        parcel.writeLong(task.id)
         parcel.writeLong(startTime)
         parcel.writeLong(finishTime)
         parcel.writeString(note)
@@ -113,13 +104,16 @@ data class TimeRecord(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<TimeRecord> {
-        override fun createFromParcel(parcel: Parcel): TimeRecord {
-            return TimeRecord(parcel)
-        }
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<TimeRecord> {
+            override fun createFromParcel(parcel: Parcel): TimeRecord {
+                return TimeRecord(parcel)
+            }
 
-        override fun newArray(size: Int): Array<TimeRecord?> {
-            return arrayOfNulls(size)
+            override fun newArray(size: Int): Array<TimeRecord?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 }
@@ -140,10 +134,10 @@ fun TimeRecord.split(): List<TimeRecord> {
         // The first day.
         val startFirst = start
         val finishFirst = startFirst.clone() as Calendar
-        finishFirst.hourOfDay = 23
-        finishFirst.minute = 59
-        finishFirst.second = 59
-        finishFirst.millis = 999
+        finishFirst.hourOfDay = finishFirst.getMaximum(Calendar.HOUR_OF_DAY)
+        finishFirst.minute = finishFirst.getMaximum(Calendar.MINUTE)
+        finishFirst.second = finishFirst.getMaximum(Calendar.SECOND)
+        finishFirst.millis = finishFirst.getMaximum(Calendar.MILLISECOND)
         results.add(this.copy(start = startFirst, finish = finishFirst))
         diffMillis -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
 
@@ -158,10 +152,10 @@ fun TimeRecord.split(): List<TimeRecord> {
             startDay.second = 0
             startDay.millis = 0
             finishDay = startDay.clone() as Calendar
-            finishDay.hourOfDay = 23
-            finishDay.minute = 59
-            finishDay.second = 59
-            finishDay.millis = 999
+            finishDay.hourOfDay = finishDay.getMaximum(Calendar.HOUR_OF_DAY)
+            finishDay.minute = finishDay.getMaximum(Calendar.MINUTE)
+            finishDay.second = finishDay.getMaximum(Calendar.SECOND)
+            finishDay.millis = finishDay.getMaximum(Calendar.MILLISECOND)
             results.add(this.copy(start = startDay, finish = finishDay))
             diffMillis -= DateUtils.DAY_IN_MILLIS
         }
@@ -179,6 +173,7 @@ fun TimeRecord.split(): List<TimeRecord> {
     return results
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun TimeRecord?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }

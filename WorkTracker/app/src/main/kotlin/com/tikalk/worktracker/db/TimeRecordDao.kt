@@ -33,41 +33,56 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.tikalk.worktracker.model.ProjectTask
 import io.reactivex.Maybe
 import io.reactivex.Single
 
 /**
- * Project Task entity DAO.
+ * Time record entity DAO.
  */
 @Dao
-interface ProjectTaskDao : BaseDao<ProjectTask> {
+interface TimeRecordDao : BaseDao<TimeRecordEntity> {
 
     /**
-     * Select all tasks from the table.
+     * Select all records from the table.
      *
-     * @return all tasks.
+     * @return all records.
      */
-    @Query("SELECT * FROM project_task")
-    fun queryAll(): List<ProjectTask>
+    @Query("SELECT * FROM record")
+    fun queryAll(): List<TimeRecordEntity>
 
     /**
-     * Select all tasks from the table.
+     * Select all records from the table.
      *
-     * @return all tasks.
+     * @return all records.
      */
-    @Query("SELECT * FROM project_task")
-    fun queryAllSingle(): Single<List<ProjectTask>>
+    @Query("SELECT * FROM record")
+    fun queryAllSingle(): Single<List<TimeRecordEntity>>
 
     /**
-     * Select a task by its id.
+     * Select a record by its id.
      */
-    @Query("SELECT * FROM project_task WHERE id = :taskId")
-    fun queryById(taskId: Long): Maybe<ProjectTask>
+    @Query("SELECT * FROM record WHERE id = :recordId")
+    fun queryById(recordId: Long): Maybe<TimeRecordEntity>
 
     /**
-     * Delete all tasks.
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
      */
-    @Query("DELETE FROM project_task")
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDate(start: Long, finish: Long): List<TimeRecordEntity>
+
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDateSingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
+
+    /**
+     * Delete all records.
+     */
+    @Query("DELETE FROM record")
     fun deleteAll(): Int
 }

@@ -32,6 +32,7 @@
 package com.tikalk.worktracker.time
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.text.format.DateUtils
 import android.view.View
@@ -43,7 +44,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 
 class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
-        View.OnClickListener {
+    View.OnClickListener {
 
     private val projectView: TextView = itemView.findViewById(R.id.project)
     private val taskView: TextView = itemView.findViewById(R.id.task)
@@ -53,6 +54,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
 
     private val timeBuffer = StringBuilder(20)
     private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+    private val night = (itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
     var record: TimeRecord? = null
         set(value) {
@@ -107,7 +109,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         val r = redBits * 24 //*32 => some colors too bright
         val g = greenBits * 24 //*32 => some colors too bright
         val b = blueBits * 24 //*32 => some colors too bright
-        val color = Color.rgb(r, g, b)
+        val color = if (night) Color.rgb(255 - r, 255 - g, 255 - b) else Color.rgb(r, g, b)
 
         projectView.setTextColor(color)
         taskView.setTextColor(color)

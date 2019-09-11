@@ -41,12 +41,14 @@ import android.content.Intent.*
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.*
+import androidx.work.Data
+import androidx.work.ListenableWorker.Result
 import com.tikalk.graphics.drawableToBitmap
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -54,7 +56,7 @@ import com.tikalk.worktracker.time.TimeListActivity
 import com.tikalk.worktracker.time.TimeReceiver
 import timber.log.Timber
 
-class TimerWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
+class TimerWorker(private val context: Context, private val workerParams: Data) {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
@@ -92,11 +94,9 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, true)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
 
         fun hideNotification(context: Context) {
@@ -105,11 +105,9 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
 
         fun startTimer(context: Context, record: TimeRecord) {
@@ -123,11 +121,9 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putLong(EXTRA_START_TIME, record.startTime)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
 
         fun stopTimer(context: Context, intent: Intent? = null) {
@@ -140,19 +136,17 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putLong(EXTRA_START_TIME, extras?.getLong(EXTRA_START_TIME) ?: 0L)
                 .putBoolean(EXTRA_EDIT, extras?.getBoolean(EXTRA_EDIT) ?: false)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
     }
 
     private val prefs: TimeTrackerPrefs = TimeTrackerPrefs(context)
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    override fun doWork(): Result {
-        val data = workerParams.inputData
+    fun doWork(): Result {
+        val data = workerParams
         return when (data.getString(EXTRA_ACTION)) {
             ACTION_START -> startTimer(data)
             ACTION_STOP -> stopTimer(data)
@@ -319,7 +313,7 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
         project.id = projectId
         val task = ProjectTask(taskName)
         task.id = taskId
-        val record = TimeRecord(User(""), project, task)
+        val record = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), project, task)
         record.startTime = startTime
         record.finishTime = finishTime
         return record

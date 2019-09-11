@@ -37,16 +37,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
 
 /**
  * Work Tracker database.
  */
-@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class], version = 1, exportSchema = false)
+@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class, TimeRecordEntity::class], version = 2, exportSchema = false)
 abstract class TrackerDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao
     abstract fun taskDao(): ProjectTaskDao
     abstract fun projectTaskKeyDao(): ProjectTaskKeyDao
+    abstract fun timeRecordDao(): TimeRecordDao
 
     companion object {
         @Volatile
@@ -57,7 +57,9 @@ abstract class TrackerDatabase : RoomDatabase() {
                 synchronized(TrackerDatabase::class.java) {
                     if (instance == null) {
                         // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db").build()
+                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
+                            .fallbackToDestructiveMigration()
+                            .build()
                     }
                 }
             }

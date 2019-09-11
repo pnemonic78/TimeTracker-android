@@ -48,6 +48,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -84,7 +85,6 @@ class TimeListActivity : TimeFormActivity(),
 
         private const val STATE_DATE = "date"
         private const val STATE_RECORD = "record"
-        private const val STATE_LIST = "records"
         private const val STATE_TOTALS = "totals"
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
@@ -102,7 +102,6 @@ class TimeListActivity : TimeFormActivity(),
     private var datePickerDialog: DatePickerDialog? = null
 
     private val listAdapter = TimeListAdapter(this)
-    private val listItems = ArrayList<TimeRecord>()
     private var timer: Disposable? = null
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
@@ -223,6 +222,7 @@ class TimeListActivity : TimeFormActivity(),
                             val body = response.body()!!
                             populateForm(body, date)
                             populateList(body, date)
+                            savePage()
                             showProgressMain(false)
                         } else {
                             authenticate(true)
@@ -270,8 +270,10 @@ class TimeListActivity : TimeFormActivity(),
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
         date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
 
-        listItems.clear()
-        listItems.addAll(records)
+        if (records !== this.records) {
+            this.records.clear()
+            this.records.addAll(records)
+        }
         listAdapter.submitList(records)
     }
 
@@ -357,7 +359,6 @@ class TimeListActivity : TimeFormActivity(),
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_RECORD, record)
-        outState.putParcelableArrayList(STATE_LIST, listItems)
         outState.putParcelable(STATE_TOTALS, totals)
     }
 
@@ -365,7 +366,6 @@ class TimeListActivity : TimeFormActivity(),
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
-        val list = savedInstanceState.getParcelableArrayList<TimeRecord>(STATE_LIST)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
 
         if (recordParcel != null) {
@@ -374,9 +374,6 @@ class TimeListActivity : TimeFormActivity(),
             record.start = recordParcel.start
             populateForm(record)
             bindForm(record)
-        }
-        if (list != null) {
-            bindList(date, list)
         }
         if (totals != null) {
             this.totals = totals
@@ -432,10 +429,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun addTime() {
-        showProgress(true)
-        val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
-        startActivityForResult(intent, REQUEST_EDIT)
+        editRecord(record)
     }
 
     /**
@@ -512,7 +506,7 @@ class TimeListActivity : TimeFormActivity(),
         val editLink = tdEdit.child(0).attr("href")
         val id = parseRecordId(editLink)
 
-        return TimeRecord(user, project, task, start, finish, note, TaskRecordStatus.CURRENT, id)
+        return TimeRecord(id, user, project, task, start, finish, note, TaskRecordStatus.CURRENT)
     }
 
     private fun parseRecordProject(name: String): Project? {
@@ -520,7 +514,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun parseRecordTask(project: Project, name: String): ProjectTask? {
-        return tasks.find { (it.id in project.taskIds) && (name == it.name) }
+        return project.tasks.find { task -> (task.name == name) }
     }
 
     private fun parseRecordTime(text: String): Calendar? {
@@ -540,14 +534,13 @@ class TimeListActivity : TimeFormActivity(),
     private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
         showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
-        if ((record.id == 0L) && !record.isEmpty()) {
-            intent.putExtra(TimeEditActivity.EXTRA_DATE, record.startTime)
+        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
+        if (record.id == TikalEntity.ID_NONE) {
             intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, record.project.id)
             intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, record.task.id)
             intent.putExtra(TimeEditActivity.EXTRA_START_TIME, record.startTime)
             intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, record.finishTime)
         } else {
-            intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
             intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
         }
         startActivityForResult(intent, requestId)
@@ -570,6 +563,7 @@ class TimeListActivity : TimeFormActivity(),
                         val body = response.body()!!
                         populateForm(body, date)
                         populateList(body, date)
+                        savePage()
                         showProgressMain(false)
                     } else {
                         authenticate(true)
@@ -600,8 +594,6 @@ class TimeListActivity : TimeFormActivity(),
 
         populateTaskIds(doc, projects)
 
-        savePage()
-
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
         runOnUiThread { bindForm(record) }
@@ -611,11 +603,11 @@ class TimeListActivity : TimeFormActivity(),
         Timber.v("populateForm $recordStarted")
         if (recordStarted.isNullOrEmpty()) {
             val projectFavorite = prefs.getFavoriteProject()
-            if (projectFavorite != 0L) {
+            if (projectFavorite != TikalEntity.ID_NONE) {
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
             }
             val taskFavorite = prefs.getFavoriteTask()
-            if (taskFavorite != 0L) {
+            if (taskFavorite != TikalEntity.ID_NONE) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
         } else {
@@ -689,7 +681,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun filterTasks(project: Project) {
-        val filtered = tasks.filter { it.id in project.taskIds }
+        val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)
@@ -717,12 +709,12 @@ class TimeListActivity : TimeFormActivity(),
     private fun projectItemSelected(project: Project) {
         record.project = project
         filterTasks(project)
-        action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
-        action_start.isEnabled = (record.project.id > 0L) && (record.task.id > 0L)
+        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
@@ -736,6 +728,7 @@ class TimeListActivity : TimeFormActivity(),
                 .subscribe({
                     populateForm(record)
                     bindForm(record)
+                    bindList(date, records)
                     showProgress(false)
                 }, { err ->
                     Timber.e(err, "Error loading page: ${err.message}")
@@ -768,7 +761,7 @@ class TimeListActivity : TimeFormActivity(),
             val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
             val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
-            val record = TimeRecord(user, project, task)
+            val record = TimeRecord(TikalEntity.ID_NONE, user, project, task)
             if (startTime > 0L) {
                 record.startTime = startTime
             }

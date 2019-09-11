@@ -32,10 +32,10 @@
 package com.tikalk.worktracker.time
 
 import android.os.Bundle
-import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
@@ -53,12 +53,13 @@ abstract class TimeFormActivity : InternetActivity() {
 
     protected val disposables = CompositeDisposable()
     protected var date = Calendar.getInstance()
-    protected var user = User("")
-    protected var record = TimeRecord(user, Project(""), ProjectTask(""))
+    protected var user = User.EMPTY.copy()
+    protected var record = TimeRecord(TikalEntity.ID_NONE, user, Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
     protected val projects = ArrayList<Project>()
     protected val tasks = ArrayList<ProjectTask>()
     protected var projectEmpty: Project = Project.EMPTY
     protected var taskEmpty: ProjectTask = ProjectTask.EMPTY
+    protected val records = ArrayList<TimeRecord>()
 
     protected lateinit var prefs: TimeTrackerPrefs
 
@@ -176,7 +177,6 @@ abstract class TimeFormActivity : InternetActivity() {
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
         val scriptText = findScript(doc, tokenStart, tokenEnd)
-        val pairs = ArrayList<ProjectTaskKey>()
 
         for (project in projects) {
             project.clearTasks()
@@ -189,14 +189,14 @@ abstract class TimeFormActivity : InternetActivity() {
                 val matcher = pattern.matcher(line)
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
+                    val project = projects.find { it.id == projectId }
+
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    val project = projects.find { it.id == projectId }
-                    project?.apply {
-                        addTasks(taskIds)
-                        pairs.addAll(tasks.values)
-                    }
+                    val tasks = this.tasks.filter { it.id in taskIds }
+
+                    project?.addTasks(tasks)
                 }
             }
         }
@@ -223,6 +223,7 @@ abstract class TimeFormActivity : InternetActivity() {
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
+        saveRecords(db, date)
     }
 
     private fun saveProjects(db: TrackerDatabase) {
@@ -236,12 +237,12 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val projectsToInsert = ArrayList<Project>()
         val projectsToUpdate = ArrayList<Project>()
-        var projectDb: Project
+        //var projectDb: Project
         for (project in projects) {
             val projectId = project.id
             if (projectsDbById.containsKey(projectId)) {
-                projectDb = projectsDbById[projectId]!!
-                project.dbId = projectDb.dbId
+                //projectDb = projectsDbById[projectId]!!
+                //project.dbId = projectDb.dbId
                 projectsToUpdate.add(project)
             } else {
                 projectsToInsert.add(project)
@@ -253,9 +254,9 @@ abstract class TimeFormActivity : InternetActivity() {
         projectsDao.delete(projectsToDelete)
 
         val projectIds = projectsDao.insert(projectsToInsert)
-        for (i in 0 until projectIds.size) {
-            projectsToInsert[i].dbId = projectIds[i]
-        }
+        //for (i in projectIds.indices) {
+        //    projectsToInsert[i].dbId = projectIds[i]
+        //}
 
         projectsDao.update(projectsToUpdate)
     }
@@ -271,12 +272,12 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val tasksToInsert = ArrayList<ProjectTask>()
         val tasksToUpdate = ArrayList<ProjectTask>()
-        var taskDb: ProjectTask
+        //var taskDb: ProjectTask
         for (task in tasks) {
             val taskId = task.id
             if (tasksDbById.containsKey(taskId)) {
-                taskDb = tasksDbById[taskId]!!
-                task.dbId = taskDb.dbId
+                //taskDb = tasksDbById[taskId]!!
+                //task.dbId = taskDb.dbId
                 tasksToUpdate.add(task)
             } else {
                 tasksToInsert.add(task)
@@ -288,16 +289,17 @@ abstract class TimeFormActivity : InternetActivity() {
         tasksDao.delete(tasksToDelete)
 
         val taskIds = tasksDao.insert(tasksToInsert)
-        for (i in 0 until taskIds.size) {
-            tasksToInsert[i].dbId = taskIds[i]
-        }
+        //for (i in taskIds.indices) {
+        //    tasksToInsert[i].dbId = taskIds[i]
+        //}
 
         tasksDao.update(tasksToUpdate)
     }
 
     private fun saveProjectTaskKeys(db: TrackerDatabase) {
-        val keys = ArrayList<ProjectTaskKey>()
-        projects.map { project -> keys.addAll(project.tasks.values) }
+        val keys: List<ProjectTaskKey> = projects.flatMap { project ->
+            project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
+        }
 
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
@@ -314,7 +316,7 @@ abstract class TimeFormActivity : InternetActivity() {
                 }
             }
             if (keyDbFound != null) {
-                key.dbId = keyDbFound.dbId
+                //key.dbId = keyDbFound.dbId
                 keysToUpdate.add(key)
                 keysDbMutable.remove(keyDbFound)
             } else {
@@ -326,11 +328,46 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.delete(keysToDelete)
 
         val keyIds = projectTasksDao.insert(keysToInsert)
-        for (i in 0 until keyIds.size) {
-            keysToInsert[i].dbId = keyIds[i]
-        }
+        //for (i in keyIds.indices) {
+        //    keysToInsert[i].dbId = keyIds[i]
+        //}
 
         projectTasksDao.update(keysToUpdate)
+    }
+
+    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
+        val records = this.records
+        val recordsDao = db.timeRecordDao()
+        val recordsDb = queryRecords(db, day)
+        val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
+        for (record in recordsDb) {
+            recordsDbById[record.id] = record
+        }
+
+        val recordsToInsert = ArrayList<TimeRecord>()
+        val recordsToUpdate = ArrayList<TimeRecord>()
+        //var recordDb: TimeRecordEntity
+        for (record in records) {
+            val recordId = record.id
+            if (recordsDbById.containsKey(recordId)) {
+                //recordDb = recordsDbById[recordId]!!
+                //record.dbId = recordDb.dbId
+                recordsToUpdate.add(record)
+            } else {
+                recordsToInsert.add(record)
+            }
+            recordsDbById.remove(recordId)
+        }
+
+        val recordsToDelete = recordsDbById.values
+        recordsDao.delete(recordsToDelete)
+
+        val recordIds = recordsDao.insert(recordsToInsert.map { toTimeRecordEntity(it) })
+        //for (i in recordIds.indices) {
+        //    recordsToInsert[i].dbId = recordIds[i]
+        //}
+
+        recordsDao.update(recordsToUpdate.map { toTimeRecordEntity(it) })
     }
 
     protected fun loadFormFromDb() {
@@ -340,6 +377,7 @@ abstract class TimeFormActivity : InternetActivity() {
         loadProjects(db)
         loadTasks(db)
         loadProjectTaskKeys(db)
+        loadRecords(db, date)
     }
 
     private fun loadProjects(db: TrackerDatabase) {
@@ -359,14 +397,46 @@ abstract class TimeFormActivity : InternetActivity() {
     }
 
     private fun loadProjectTaskKeys(db: TrackerDatabase) {
+        val projectsById: Map<Long, Project> = projects.map { project -> (project.id to project) }.toMap()
+        val tasksById: Map<Long, ProjectTask> = tasks.map { task -> (task.id to task) }.toMap()
+        projects.forEach { project -> project.clearTasks() }
+
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
-        if (projects.isNotEmpty()) {
-            projects.forEach { project ->
-                val pairsForProject = keysDb.filter { it.projectId == project.id }
-                project.addKeys(pairsForProject)
+
+        keysDb.forEach { key ->
+            val project = projectsById[key.projectId]
+            val task = tasksById[key.taskId]
+            if ((project != null) && (task != null)) {
+                project.addTask(task)
             }
         }
     }
 
+    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
+        val recordsDb = queryRecords(db, day)
+        records.clear()
+        records.addAll(recordsDb.map { toTimeRecord(it, user, projects, tasks) })
+        //TODO this.record = records.firstOrNull { it.isEmpty() } ?: record
+    }
+
+    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
+        val recordsDao = db.timeRecordDao()
+        return if (day == null) {
+            recordsDao.queryAll()
+        } else {
+            val cal = day.clone() as Calendar
+            cal.hourOfDay = 0
+            cal.minute = 0
+            cal.second = 0
+            cal.millis = 0
+            val start = cal.timeInMillis
+            cal.hourOfDay = cal.getMaximum(Calendar.HOUR_OF_DAY)
+            cal.minute = cal.getMaximum(Calendar.MINUTE)
+            cal.second = cal.getMaximum(Calendar.SECOND)
+            cal.millis = cal.getMaximum(Calendar.MILLISECOND)
+            val finish = cal.timeInMillis
+            recordsDao.queryByDate(start, finish)
+        }
+    }
 }

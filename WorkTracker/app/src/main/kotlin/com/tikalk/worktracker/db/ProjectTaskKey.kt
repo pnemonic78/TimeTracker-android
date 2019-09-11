@@ -29,61 +29,56 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.db
 
-import android.os.Parcel
-import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 
 /**
  * Project-Task relational ID entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "project_task_key")
+@Entity(tableName = "project_task_key",
+    foreignKeys = [
+        ForeignKey(entity = Project::class,
+            parentColumns = ["id"],
+            childColumns = ["project_id"]),
+        ForeignKey(entity = ProjectTask::class,
+            parentColumns = ["id"],
+            childColumns = ["task_id"])
+    ])
 data class ProjectTaskKey(
     @ColumnInfo(name = "project_id")
-    var projectId: Long,
+    private var _projectId: Long,
     @ColumnInfo(name = "task_id")
+    private var _taskId: Long
+) : TikalEntity() {
+
+    init {
+        updateId()
+    }
+
+    var projectId: Long
+        get() = _projectId
+        set(value) {
+            _projectId = value
+            updateId()
+        }
+
     var taskId: Long
-) : TikalEntity(), Parcelable {
-
-    constructor(parcel: Parcel) : this(0, 0) {
-        id = parcel.readLong()
-        dbId = parcel.readLong()
-        version = parcel.readInt()
-        projectId = parcel.readLong()
-        taskId = parcel.readLong()
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id)
-        parcel.writeLong(dbId)
-        parcel.writeInt(version)
-        parcel.writeLong(projectId)
-        parcel.writeLong(taskId)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
+        get() = _taskId
+        set(value) {
+            _taskId = value
+            updateId()
+        }
 
     fun isEmpty(): Boolean {
-        return (id == 0L) || (projectId == 0L) || (taskId == 0L)
-    }
-
-    companion object {
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<ProjectTaskKey> {
-            override fun createFromParcel(parcel: Parcel): ProjectTaskKey {
-                return ProjectTaskKey(parcel)
-            }
-
-            override fun newArray(size: Int): Array<ProjectTaskKey?> {
-                return arrayOfNulls(size)
-            }
-        }
+        return (projectId == ID_NONE) || (taskId == ID_NONE)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -92,8 +87,13 @@ data class ProjectTaskKey(
         }
         return super.equals(other)
     }
+
+    private fun updateId() {
+        id = ((projectId and 0xFFFFFFFF) shl 32) + (taskId and 0xFFFFFFFF)
+    }
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun ProjectTaskKey?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }
