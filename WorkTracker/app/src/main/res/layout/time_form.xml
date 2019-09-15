@@ -14,10 +14,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/project_label"
-        app:srcCompat="@drawable/ic_business"
         app:layout_constraintBottom_toBottomOf="@+id/project_input"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/project_input" />
+        app:layout_constraintTop_toTopOf="@+id/project_input"
+        app:srcCompat="@drawable/ic_business" />
 
     <Spinner
         android:id="@+id/project_input"
@@ -36,10 +36,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/task_label"
-        app:srcCompat="@drawable/ic_folder"
         app:layout_constraintBottom_toBottomOf="@+id/task_input"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/task_input" />
+        app:layout_constraintTop_toTopOf="@+id/task_input"
+        app:srcCompat="@drawable/ic_folder" />
 
     <Spinner
         android:id="@+id/task_input"
@@ -58,10 +58,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/start_label"
-        app:srcCompat="@drawable/ic_timer_normal"
         app:layout_constraintBottom_toBottomOf="@+id/start_input"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/start_input" />
+        app:layout_constraintTop_toTopOf="@+id/start_input"
+        app:srcCompat="@drawable/ic_timer_normal" />
 
     <Button
         android:id="@+id/start_input"
@@ -79,10 +79,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/finish_label"
-        app:srcCompat="@drawable/ic_timer_off"
         app:layout_constraintBottom_toBottomOf="@+id/finish_input"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/finish_input" />
+        app:layout_constraintTop_toTopOf="@+id/finish_input"
+        app:srcCompat="@drawable/ic_timer_off" />
 
     <Button
         android:id="@+id/finish_input"
@@ -100,10 +100,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/note_hint"
-        app:srcCompat="@drawable/ic_note"
         app:layout_constraintBottom_toBottomOf="@+id/note_input"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/note_input" />
+        app:layout_constraintTop_toTopOf="@+id/note_input"
+        app:srcCompat="@drawable/ic_note" />
 
     <EditText
         android:id="@+id/note_input"
