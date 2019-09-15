@@ -317,7 +317,6 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        showProgressMain(true)
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
@@ -532,7 +531,6 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
-        showProgress(true)
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
         if (record.id == TikalEntity.ID_NONE) {

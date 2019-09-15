@@ -149,19 +149,24 @@ class TimeEditActivity : TimeFormActivity() {
         }
         if (savedInstanceState != null) {
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, now)
-            record.id = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
-            loadPage()
-                .subscribe({
-                    populateForm(record)
-                    showProgress(false)
-                }, { err ->
-                    Timber.e(err, "Error loading page: ${err.message}")
-                    showProgress(false)
-                })
-                .addTo(disposables)
-        } else {
-            fetchPage(date, recordId)
+            recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
+            record.id = recordId
         }
+        loadPage()
+            .subscribe({
+                val recordDb = records.firstOrNull { it.id == recordId }
+                if (recordDb != null) {
+                    record = recordDb
+                }
+                populateForm(record)
+                if (projects.isEmpty() or tasks.isEmpty()) {
+                    fetchPage(date, recordId)
+                }
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
+            })
+            .addTo(disposables)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -199,9 +204,6 @@ class TimeEditActivity : TimeFormActivity() {
         Timber.d("fetchPage $dateFormatted")
         // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
-
-        // Fetch from local database.
-        //FIXME loadPage()
 
         val authToken = prefs.basicCredentials.authToken()
         val service = TimeTrackerServiceFactory.createPlain(this, authToken)
@@ -342,7 +344,6 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        showProgressMain(true)
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
