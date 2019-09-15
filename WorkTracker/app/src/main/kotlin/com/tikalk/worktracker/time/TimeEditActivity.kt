@@ -48,6 +48,7 @@ import android.widget.TextView
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -618,5 +619,9 @@ class TimeEditActivity : TimeFormActivity() {
 
     private fun savePage() {
         return saveFormToDb()
+    }
+
+    override fun saveRecords(db: TrackerDatabase, day: Calendar?) {
+        // Records irrelevant.
     }
 }

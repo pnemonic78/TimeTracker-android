@@ -216,7 +216,7 @@ abstract class TimeFormActivity : InternetActivity() {
         runOnUiThread { showProgress(show) }
     }
 
-    protected fun saveFormToDb() {
+    protected open fun saveFormToDb() {
         Timber.v("saveFormToDb")
         val db = TrackerDatabase.getDatabase(this)
 
@@ -226,7 +226,7 @@ abstract class TimeFormActivity : InternetActivity() {
         saveRecords(db, date)
     }
 
-    private fun saveProjects(db: TrackerDatabase) {
+    protected open fun saveProjects(db: TrackerDatabase) {
         val projects = this.projects
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
@@ -261,7 +261,7 @@ abstract class TimeFormActivity : InternetActivity() {
         projectsDao.update(projectsToUpdate)
     }
 
-    private fun saveTasks(db: TrackerDatabase) {
+    protected open fun saveTasks(db: TrackerDatabase) {
         val tasks = this.tasks
         val tasksDao = db.taskDao()
         val tasksDb = tasksDao.queryAll()
@@ -296,7 +296,7 @@ abstract class TimeFormActivity : InternetActivity() {
         tasksDao.update(tasksToUpdate)
     }
 
-    private fun saveProjectTaskKeys(db: TrackerDatabase) {
+    protected open fun saveProjectTaskKeys(db: TrackerDatabase) {
         val keys: List<ProjectTaskKey> = projects.flatMap { project ->
             project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
         }
@@ -335,7 +335,7 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.update(keysToUpdate)
     }
 
-    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
+    protected open fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
         val records = this.records
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
