@@ -53,7 +53,6 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
-import com.tikalk.worktracker.time.TimeReceiver
 import timber.log.Timber
 
 class TimerWorker(private val context: Context, private val workerParams: Data) {
