@@ -392,7 +392,7 @@ abstract class TimeFormFragment : TikalFragment() {
         }
     }
 
-    fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
+    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
         records.clear()
         records.addAll(recordsDb.map { toTimeRecord(it, user, projects, tasks) })
@@ -422,4 +422,24 @@ abstract class TimeFormFragment : TikalFragment() {
     abstract fun populateForm(html: String, date: Calendar)
 
     abstract fun bindForm(record: TimeRecord)
+
+    /**
+     * Find the first error table element.
+     */
+    protected fun findError(doc: Document): String? {
+        val body = doc.body()
+        val tables = body.select("table")
+        if (tables.isEmpty()) {
+            return body.text()
+        }
+
+        for (table in tables) {
+            val errorNode = table.selectFirst("td[class='error']")
+            if (errorNode != null) {
+                return errorNode.text()
+            }
+        }
+
+        return null
+    }
 }

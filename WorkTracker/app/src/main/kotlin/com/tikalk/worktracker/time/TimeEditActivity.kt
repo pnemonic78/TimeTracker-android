@@ -33,26 +33,18 @@ package com.tikalk.worktracker.time
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.text.format.DateUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.TextView
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
@@ -60,16 +52,11 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_time_edit.*
 import kotlinx.android.synthetic.main.progress.*
 import kotlinx.android.synthetic.main.time_form.*
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.math.max
 
 class TimeEditActivity : TimeFormActivity() {
 
@@ -88,17 +75,14 @@ class TimeEditActivity : TimeFormActivity() {
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
 
-        private const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
+        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 
     private val context: Context = this
 
     // UI references
     private var submitMenuItem: MenuItem? = null
-    private var startPickerDialog: TimePickerDialog? = null
-    private var finishPickerDialog: TimePickerDialog? = null
-
-    private var errorMessage: String = ""
+    private lateinit var editFragment: TimeEditFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,28 +90,8 @@ class TimeEditActivity : TimeFormActivity() {
         // Set up the form.
         setContentView(R.layout.activity_time_edit)
 
-        project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                projectItemSelected(projectEmpty)
-            }
-
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val project = adapterView.adapter.getItem(position) as Project
-                projectItemSelected(project)
-            }
-        }
-        task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                taskItemSelected(taskEmpty)
-            }
-
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = adapterView.adapter.getItem(position) as ProjectTask
-                taskItemSelected(task)
-            }
-        }
-        start_input.setOnClickListener { pickStartTime() }
-        finish_input.setOnClickListener { pickFinishTime() }
+        formFragment = supportFragmentManager.findFragmentById(R.id.fragment_form) as TimeFormFragment
+        editFragment = formFragment as TimeEditFragment
 
         handleIntent(intent, savedInstanceState)
     }
@@ -234,113 +198,15 @@ class TimeEditActivity : TimeFormActivity() {
 
     /** Populate the record and then bind the form. */
     private fun populateForm(html: String, date: Calendar, id: Long) {
-        val doc: Document = Jsoup.parse(html)
-
-        record.id = id
-
-        errorMessage = findError(doc)?.trim() ?: ""
-
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
-
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
-        populateTasks(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
-
-        val inputStart = form.selectFirst("input[name='start']") ?: return
-        val startValue = inputStart.attr("value")
-
-        val inputFinish = form.selectFirst("input[name='finish']") ?: return
-        val finishValue = inputFinish.attr("value")
-
-        val inputNote = form.selectFirst("textarea[name='note']")
-
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
-        record.start = parseSystemTime(date, startValue)
-        record.finish = parseSystemTime(date, finishValue)
-        record.note = inputNote?.text() ?: ""
-
-        if (id == TikalEntity.ID_NONE) {
-            val projectFavorite = prefs.getFavoriteProject()
-            val taskFavorite = prefs.getFavoriteTask()
-
-            val extras = intent.extras
-            if (extras != null) {
-                var projectId = extras.getLong(EXTRA_PROJECT_ID)
-                var taskId = extras.getLong(EXTRA_TASK_ID)
-                val startTime = extras.getLong(EXTRA_START_TIME)
-                val finishTime = extras.getLong(EXTRA_FINISH_TIME)
-
-                if (projectId == TikalEntity.ID_NONE) projectId = projectFavorite
-                if (taskId == TikalEntity.ID_NONE) taskId = taskFavorite
-
-                val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
-                val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
-
-                record = TimeRecord(id, user, project, task)
-                if (startTime > 0L) {
-                    record.startTime = startTime
-                } else {
-                    record.start = null
-                }
-                if (finishTime > 0L) {
-                    record.finishTime = finishTime
-                } else {
-                    record.finish = null
-                }
-            } else {
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
-            }
-        } else {
-            record.status = TaskRecordStatus.CURRENT
-        }
-
-        runOnUiThread { bindForm(record) }
+        editFragment.populateForm(html, date, id)
     }
 
     private fun populateForm(record: TimeRecord) {
-        Timber.v("populateForm $record")
-        bindForm(record)
-    }
-
-    private fun bindForm(record: TimeRecord) {
-        error_label.text = errorMessage
-        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        if (projects.isNotEmpty()) {
-            project_input.setSelection(max(0, projects.indexOf(record.project)))
-        }
-        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
-        if (tasks.isNotEmpty()) {
-            task_input.setSelection(max(0, tasks.indexOf(record.task)))
-        }
-        project_input.requestFocus()
-
-        val startTime = record.startTime
-        start_input.text = if (startTime > 0L)
-            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
-        else
-            ""
-        start_input.error = null
-        startPickerDialog = null
-
-        val finishTime = record.finishTime
-        finish_input.text = if (finishTime > 0L)
-            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
-        else
-            ""
-        finish_input.error = null
-        finishPickerDialog = null
-
-        note_input.setText(record.note)
+        editFragment.populateForm(record)
     }
 
     private fun bindRecord(record: TimeRecord) {
-        record.note = note_input.text.toString()
+        editFragment.bindRecord(record)
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -460,102 +326,23 @@ class TimeEditActivity : TimeFormActivity() {
             .addTo(disposables)
     }
 
-    private fun pickStartTime() {
-        if (startPickerDialog == null) {
-            val cal = getCalendar(record.start)
-            val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
-                record.start = cal
-                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
-                start_input.error = null
-            }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val minute = cal.get(Calendar.MINUTE)
-            startPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
-        }
-        startPickerDialog!!.show()
-    }
-
-    private fun pickFinishTime() {
-        if (finishPickerDialog == null) {
-            val cal = getCalendar(record.finish)
-            val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
-                record.finish = cal
-                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
-                finish_input.error = null
-            }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val minute = cal.get(Calendar.MINUTE)
-            finishPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
-        }
-        finishPickerDialog!!.show()
-    }
-
-    private fun getCalendar(cal: Calendar?): Calendar {
-        if (cal == null) {
-            val calDate = Calendar.getInstance()
-            calDate.timeInMillis = date.timeInMillis
-            return calDate
-        }
-        return cal
-    }
-
     private fun validateForm(record: TimeRecord): Boolean {
-        var valid = true
-
-        if (record.project.id <= 0) {
-            valid = false
-            (project_input.selectedView as TextView).error = getString(R.string.error_field_required)
-        } else {
-            (project_input.selectedView as TextView).error = null
-        }
-        if (record.task.id <= 0) {
-            valid = false
-            (task_input.selectedView as TextView).error = getString(R.string.error_field_required)
-        } else {
-            (task_input.selectedView as TextView).error = null
-        }
-        if (record.start == null) {
-            valid = false
-            start_input.error = getString(R.string.error_field_required)
-        } else {
-            start_input.error = null
-        }
-        if (record.finish == null) {
-            valid = false
-            finish_input.error = getString(R.string.error_field_required)
-        } else if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
-            valid = false
-            finish_input.error = getString(R.string.error_finish_time_before_start_time)
-        } else {
-            finish_input.error = null
-        }
-
-        return valid
-    }
-
-    private fun filterTasks(project: Project) {
-        val filtered = project.tasks
-        val options = ArrayList<ProjectTask>(filtered.size + 1)
-        options.add(taskEmpty)
-        options.addAll(filtered)
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
-        task_input.setSelection(options.indexOf(record.task))
+        return editFragment.validateForm(record)
     }
 
     override fun showProgress(show: Boolean) {
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
-        time_form.visibility = if (show) View.GONE else View.VISIBLE
-        time_form.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                time_form.visibility = if (show) View.GONE else View.VISIBLE
-            }
-        })
+        val form = editFragment.view
+        if (form != null) {
+            form.visibility = if (show) View.GONE else View.VISIBLE
+            form.animate().setDuration(shortAnimTime).alpha(
+                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    form.visibility = if (show) View.GONE else View.VISIBLE
+                }
+            })
+        }
 
         progress.visibility = if (show) View.VISIBLE else View.GONE
         progress.animate().setDuration(shortAnimTime).alpha(
@@ -601,15 +388,6 @@ class TimeEditActivity : TimeFormActivity() {
                 showProgress(false)
             })
             .addTo(disposables)
-    }
-
-    private fun projectItemSelected(project: Project) {
-        record.project = project
-        filterTasks(project)
-    }
-
-    private fun taskItemSelected(task: ProjectTask) {
-        record.task = task
     }
 
     private fun loadPage(): Single<Unit> {

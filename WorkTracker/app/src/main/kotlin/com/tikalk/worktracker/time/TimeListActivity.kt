@@ -102,7 +102,7 @@ class TimeListActivity : TimeFormActivity(),
         // Set up the form.
         setContentView(R.layout.activity_time_list)
 
-        formFragment = supportFragmentManager.findFragmentById(R.id.fragment_timer) as TimerFragment
+        formFragment = supportFragmentManager.findFragmentById(R.id.fragment_timer) as TimeFormFragment
         timerFragment = formFragment as TimerFragment
         date_input.setOnClickListener { pickDate() }
         fab_add.setOnClickListener { addTime() }
