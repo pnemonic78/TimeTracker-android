@@ -6,98 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".time.TimeListActivity">
 
-    <ImageView
-        android:id="@+id/project_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:contentDescription="@string/project_label"
-        app:srcCompat="@drawable/ic_business"
-        app:layout_constraintBottom_toBottomOf="@+id/project_input"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/project_input" />
-
-    <Spinner
-        android:id="@+id/project_input"
+    <fragment
+        android:id="@+id/fragment_timer"
+        android:name="com.tikalk.worktracker.time.TimerFragment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:prompt="@string/project_label"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/project_icon"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@android:layout/simple_list_item_1" />
-
-    <ImageView
-        android:id="@+id/task_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:contentDescription="@string/task_label"
-        app:srcCompat="@drawable/ic_folder"
-        app:layout_constraintBottom_toBottomOf="@+id/task_input"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/task_input" />
-
-    <Spinner
-        android:id="@+id/task_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:prompt="@string/task_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/task_icon"
-        app:layout_constraintTop_toBottomOf="@+id/project_input"
-        tools:listitem="@android:layout/simple_list_item_1" />
-
-    <ViewSwitcher
-        android:id="@+id/action_switcher"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/task_input">
-
-        <Button
-            android:id="@+id/action_start"
-            style="@style/Widget.Button.Start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="@string/action_start"
-            android:theme="@style/Widget.Button.Start" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/action_stop"
-                style="@style/Widget.Button.Stop"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="@string/action_stop"
-                android:theme="@style/Widget.Button.Stop" />
-
-            <TextView
-                android:id="@+id/timer_text"
-                style="@style/Widget.TextView.Timer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="@string/timer_0" />
-        </LinearLayout>
-    </ViewSwitcher>
+        tools:layout="@layout/fragment_timer" />
 
     <View
         android:id="@+id/time_form_divider"
@@ -107,7 +27,7 @@
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/action_switcher" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_timer" />
 
     <Button
         android:id="@+id/date_input"
@@ -161,9 +81,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        app:srcCompat="@drawable/ic_action_add"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_action_add" />
 
     <!-- Progress indicator -->
     <include

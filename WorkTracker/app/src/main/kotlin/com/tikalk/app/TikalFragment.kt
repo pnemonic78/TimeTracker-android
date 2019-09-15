@@ -32,22 +32,23 @@
 
 package com.tikalk.app
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
 
-abstract class TikalActivity : AppCompatActivity() {
+open class TikalFragment : Fragment() {
 
     protected val disposables = CompositeDisposable()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
-    }
 
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
+    }
+
+    protected fun runOnUiThread(action: Runnable) {
+        activity!!.runOnUiThread(action)
+    }
+
+    protected fun runOnUiThread(action: () -> Unit) {
+        activity!!.runOnUiThread(action)
     }
 }

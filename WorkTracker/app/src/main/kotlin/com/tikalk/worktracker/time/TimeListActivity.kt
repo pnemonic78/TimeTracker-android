@@ -40,8 +40,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -52,13 +50,9 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.model.time.isNullOrEmpty
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.time.work.TimerWorker
-import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_time_list.*
@@ -70,18 +64,16 @@ import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.math.abs
-import kotlin.math.max
 
 class TimeListActivity : TimeFormActivity(),
     TimeListAdapter.OnTimeListListener {
 
     companion object {
         private const val REQUEST_AUTHENTICATE = 0x109
-        private const val REQUEST_EDIT = 0xED17
-        private const val REQUEST_STOPPED = 0x5706
+        const val REQUEST_EDIT = 0xED17
+        const val REQUEST_STOPPED = 0x5706
 
         private const val STATE_DATE = "date"
         private const val STATE_RECORD = "record"
@@ -96,13 +88,11 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private val context: Context = this
-    private var intentLater: Intent? = null
 
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
-
+    private lateinit var timerFragment: TimerFragment
     private val listAdapter = TimeListAdapter(this)
-    private var timer: Disposable? = null
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
 
@@ -112,36 +102,12 @@ class TimeListActivity : TimeFormActivity(),
         // Set up the form.
         setContentView(R.layout.activity_time_list)
 
-        project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                projectItemSelected(projectEmpty)
-            }
-
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val project = adapterView.adapter.getItem(position) as Project
-                projectItemSelected(project)
-            }
-        }
-        task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                taskItemSelected(taskEmpty)
-            }
-
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = adapterView.adapter.getItem(position) as ProjectTask
-                taskItemSelected(task)
-            }
-        }
+        formFragment = supportFragmentManager.findFragmentById(R.id.fragment_timer) as TimerFragment
+        timerFragment = formFragment as TimerFragment
         date_input.setOnClickListener { pickDate() }
-        action_start.setOnClickListener { startTimer() }
-        action_stop.setOnClickListener { stopTimer() }
         fab_add.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
-        // Disable swiping on item in favour of swiping days.
-        //val swipeHandler = TimeListSwipeHandler(this)
-        //val itemTouchHelper = ItemTouchHelper(swipeHandler)
-        //itemTouchHelper.attachToRecyclerView(list)
         gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
                 val vx = abs(velocityX)
@@ -575,148 +541,24 @@ class TimeListActivity : TimeFormActivity(),
             .addTo(disposables)
     }
 
-    /** Populate the record and then bind the form. */
     private fun populateForm(html: String, date: Calendar) {
-        val doc: Document = Jsoup.parse(html)
-
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
-
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
-        populateTasks(inputTasks, tasks)
-
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
-
-        val recordStarted = getStartedRecord()
-        populateForm(recordStarted)
-        runOnUiThread { bindForm(record) }
+        formFragment.populateForm(html, date)
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
-        Timber.v("populateForm $recordStarted")
-        if (recordStarted.isNullOrEmpty()) {
-            val projectFavorite = prefs.getFavoriteProject()
-            if (projectFavorite != TikalEntity.ID_NONE) {
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
-            }
-            val taskFavorite = prefs.getFavoriteTask()
-            if (taskFavorite != TikalEntity.ID_NONE) {
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
-            }
-        } else {
-            record.project = projects.firstOrNull { it.id == recordStarted!!.project.id }
-                ?: projectEmpty
-            record.task = tasks.firstOrNull { it.id == recordStarted!!.task.id } ?: taskEmpty
-            record.start = recordStarted!!.start
-        }
+        timerFragment.populateForm(recordStarted)
     }
 
-    @MainThread
     private fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm record=$record")
-        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        if (projects.isNotEmpty()) {
-            project_input.setSelection(max(0, projects.indexOf(record.project)))
-        }
-        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
-        if (tasks.isNotEmpty()) {
-            task_input.setSelection(max(0, tasks.indexOf(record.task)))
-        }
-        project_input.requestFocus()
-
-        val startTime = record.startTime
-        if (startTime <= 0L) {
-            project_input.isEnabled = true
-            task_input.isEnabled = true
-            action_switcher.displayedChild = 0
-        } else {
-            project_input.isEnabled = false
-            task_input.isEnabled = false
-            action_switcher.displayedChild = 1
-
-            maybeStartTimer()
-            maybeStopTimer()
-        }
-    }
-
-    private fun startTimer() {
-        Timber.v("startTimer")
-        val now = System.currentTimeMillis()
-        record.startTime = now
-
-        val context: Context = this
-        TimerWorker.startTimer(context, record)
-
-        bindForm(record)
-    }
-
-    private fun stopTimer() {
-        Timber.v("stopTimer")
-        val now = System.currentTimeMillis()
-        if (record.finish == null) {
-            record.finishTime = now
-        }
-
-        val context: Context = this
-        TimerWorker.stopTimer(context)
-
-        editRecord(record, REQUEST_STOPPED)
+        formFragment.bindForm(record)
     }
 
     private fun stopTimerCommit() {
-        Timber.v("stopTimerCommit")
-        timer?.dispose()
-
-        record.start = null
-        record.finish = null
-        prefs.stopRecord()
-        bindForm(record)
-    }
-
-    private fun filterTasks(project: Project) {
-        val filtered = project.tasks
-        val options = ArrayList<ProjectTask>(filtered.size + 1)
-        options.add(taskEmpty)
-        options.addAll(filtered)
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
-        task_input.setSelection(options.indexOf(record.task))
-    }
-
-    private fun maybeStartTimer() {
-        val timer = this.timer
-        if ((timer == null) || timer.isDisposed) {
-            this.timer = Observable.interval(1L, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { updateTimer() }
-                .addTo(disposables)
-        }
-        updateTimer()
-    }
-
-    private fun updateTimer() {
-        val now = System.currentTimeMillis()
-        val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
-        timer_text.text = DateUtils.formatElapsedTime(elapsedSeconds)
-    }
-
-    private fun projectItemSelected(project: Project) {
-        record.project = project
-        filterTasks(project)
-        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
-    }
-
-    private fun taskItemSelected(task: ProjectTask) {
-        record.task = task
-        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
+        timerFragment.stopTimerCommit()
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        intentLater = if (intent.action == ACTION_STOP) intent else null
+        timerFragment.later(if (intent.action == ACTION_STOP) intent else null)
 
         if (savedInstanceState == null) {
             fetchPage(date)
@@ -736,42 +578,6 @@ class TimeListActivity : TimeFormActivity(),
         }
     }
 
-    private fun maybeStopTimer() {
-        if (intentLater?.action == ACTION_STOP) {
-            intentLater = null
-            stopTimer()
-        }
-    }
-
-    private fun getStartedRecord(): TimeRecord? {
-        val started = prefs.getStartedRecord()
-        if (started != null) {
-            return started
-        }
-
-        val extras = intentLater?.extras
-        if (extras != null) {
-            val projectId = extras.getLong(EXTRA_PROJECT_ID)
-            val taskId = extras.getLong(EXTRA_TASK_ID)
-            val startTime = extras.getLong(EXTRA_START_TIME)
-            val finishTime = extras.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
-
-            val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
-            val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
-
-            val record = TimeRecord(TikalEntity.ID_NONE, user, project, task)
-            if (startTime > 0L) {
-                record.startTime = startTime
-            }
-            if (finishTime > 0L) {
-                record.finishTime = finishTime
-            }
-            return record
-        }
-
-        return null
-    }
-
     private fun navigateTomorrow() {
         val cal = date
         cal.add(Calendar.DATE, 1)
@@ -787,7 +593,6 @@ class TimeListActivity : TimeFormActivity(),
     private fun isLocaleRTL(): Boolean {
         return Locale.getDefault().language == "iw"
     }
-
 
     private fun populateTotals(doc: Document, parent: Element?, totals: TimeTotals) {
         totals.clear(true)
@@ -857,6 +662,6 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun savePage() {
-        return saveFormToDb()
+        return formFragment.saveFormToDb()
     }
 }
