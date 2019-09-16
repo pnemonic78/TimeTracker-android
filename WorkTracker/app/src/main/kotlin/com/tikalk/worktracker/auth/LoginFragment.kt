@@ -64,8 +64,6 @@ class LoginFragment : InternetFragment() {
 
     private lateinit var prefs: TimeTrackerPrefs
 
-    private var passwordImeActionId = 109
-
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -88,19 +86,19 @@ class LoginFragment : InternetFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        email.setText(prefs.userCredentials.login)
+        emailInput.setText(prefs.userCredentials.login)
 
-        passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        password.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
+        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
             if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
             }
             false
         })
-        password.setText(prefs.userCredentials.password)
+        passwordInput.setText(prefs.userCredentials.password)
 
-        emailSignIn.setOnClickListener { attemptLogin() }
+        actionSignIn.setOnClickListener { attemptLogin() }
     }
 
     override fun handleIntent(intent: Intent) {
@@ -108,11 +106,11 @@ class LoginFragment : InternetFragment() {
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_EMAIL)) {
-            email.setText(extras.getString(EXTRA_EMAIL))
-            password.text = null
+            emailInput.setText(extras.getString(EXTRA_EMAIL))
+            passwordInput.text = null
 
             if (extras.containsKey(EXTRA_PASSWORD)) {
-                password.setText(extras.getString(EXTRA_PASSWORD))
+                passwordInput.setText(extras.getString(EXTRA_PASSWORD))
             }
         }
         if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
@@ -126,42 +124,42 @@ class LoginFragment : InternetFragment() {
      * errors are presented and no actual login attempt is made.
      */
     fun attemptLogin() {
-        if (!emailSignIn.isEnabled) {
+        if (!actionSignIn.isEnabled) {
             return
         }
 
         val context: Context = this.context ?: return
 
         // Reset errors.
-        email.error = null
-        password.error = null
+        emailInput.error = null
+        passwordInput.error = null
 
         // Store values at the time of the login attempt.
-        val emailValue = email.text.toString()
-        val passwordValue = password.text.toString()
+        val emailValue = emailInput.text.toString()
+        val passwordValue = passwordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid password, if the user entered one.
         if (passwordValue.isEmpty()) {
-            password.error = getString(R.string.error_field_required)
-            focusView = password
+            passwordInput.error = getString(R.string.error_field_required)
+            focusView = passwordInput
             cancel = true
         } else if (!isPasswordValid(passwordValue)) {
-            password.error = getString(R.string.error_invalid_password)
-            focusView = password
+            passwordInput.error = getString(R.string.error_invalid_password)
+            focusView = passwordInput
             cancel = true
         }
 
         // Check for a valid email address.
         if (emailValue.isEmpty()) {
-            email.error = getString(R.string.error_field_required)
-            focusView = email
+            emailInput.error = getString(R.string.error_field_required)
+            focusView = emailInput
             cancel = true
         } else if (!isEmailValid(emailValue)) {
-            email.error = getString(R.string.error_invalid_email)
-            focusView = email
+            emailInput.error = getString(R.string.error_invalid_email)
+            focusView = emailInput
             cancel = true
         }
 
@@ -173,7 +171,7 @@ class LoginFragment : InternetFragment() {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true)
-            emailSignIn.isEnabled = false
+            actionSignIn.isEnabled = false
 
             prefs.userCredentials = UserCredentials(emailValue, passwordValue)
 
@@ -186,7 +184,7 @@ class LoginFragment : InternetFragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
                     showProgress(false)
-                    emailSignIn.isEnabled = true
+                    actionSignIn.isEnabled = true
 
                     if (isValidResponse(response)) {
                         val body = response.body()!!
@@ -196,16 +194,16 @@ class LoginFragment : InternetFragment() {
                             activity?.setResult(AppCompatActivity.RESULT_OK)
                             activity?.finish()
                         } else {
-                            email.error = errorMessage
+                            emailInput.error = errorMessage
                         }
                     } else {
-                        password.requestFocus()
+                        passwordInput.requestFocus()
                         authenticate(emailValue, response.raw())
                     }
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
                     showProgress(false)
-                    emailSignIn.isEnabled = true
+                    actionSignIn.isEnabled = true
                 })
         }
     }

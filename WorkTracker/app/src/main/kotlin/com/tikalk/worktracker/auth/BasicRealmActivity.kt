@@ -37,14 +37,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import kotlinx.android.synthetic.main.activity_basic_realm.*
+import kotlinx.android.synthetic.main.progress.*
 
 /**
  * An authentication screen for Basic Realm via email/password.
@@ -58,17 +58,8 @@ class BasicRealmActivity : InternetActivity() {
         const val EXTRA_SUBMIT = "submit"
     }
 
-    // UI references.
-    private lateinit var realmView: TextView
-    private lateinit var usernameView: EditText
-    private lateinit var passwordView: EditText
-    private lateinit var progressView: View
-    private lateinit var loginFormView: View
-    private lateinit var authButton: Button
-
     private lateinit var prefs: TimeTrackerPrefs
     private var realmName = "(realm)"
-    private var passwordImeActionId = 109
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,28 +74,21 @@ class BasicRealmActivity : InternetActivity() {
         setContentView(R.layout.activity_basic_realm)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        realmView = findViewById(R.id.realmTitle)
-        realmView.text = getString(R.string.authentication_basic_realm, realmName)
+        realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
 
-        usernameView = findViewById(R.id.username)
-        usernameView.setText(userName)
+        usernameInput.setText(userName)
 
-        passwordView = findViewById(R.id.password)
-        passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordView.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
+        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
             if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
             }
             false
         })
-        passwordView.setText(password)
+        passwordInput.setText(password)
 
-        authButton = findViewById(R.id.realmAuthenticate)
-        authButton.setOnClickListener { attemptLogin() }
-
-        loginFormView = findViewById(R.id.realmForm)
-        progressView = findViewById(R.id.progress)
+        actionAuthenticate.setOnClickListener { attemptLogin() }
 
         handleIntent(intent)
     }
@@ -134,18 +118,18 @@ class BasicRealmActivity : InternetActivity() {
 
         if (extras.containsKey(EXTRA_REALM)) {
             realmName = extras.getString(EXTRA_REALM) ?: "?"
-            realmView.text = getString(R.string.authentication_basic_realm, realmName)
+            realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
         }
         if (extras.containsKey(EXTRA_USER)) {
             val username = extras.getString(EXTRA_USER)
-            usernameView.setText(username)
+            usernameInput.setText(username)
 
             val credentials = prefs.basicCredentials
 
             when {
-                extras.containsKey(EXTRA_PASSWORD) -> passwordView.setText(extras.getString(EXTRA_PASSWORD))
-                username == credentials.username -> passwordView.setText(credentials.password)
-                else -> passwordView.text = null
+                extras.containsKey(EXTRA_PASSWORD) -> passwordInput.setText(extras.getString(EXTRA_PASSWORD))
+                username == credentials.username -> passwordInput.setText(credentials.password)
+                else -> passwordInput.text = null
             }
         }
         if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
@@ -159,40 +143,40 @@ class BasicRealmActivity : InternetActivity() {
      * errors are presented and no actual login attempt is made.
      */
     private fun attemptLogin() {
-        if (!authButton.isEnabled) {
+        if (!actionAuthenticate.isEnabled) {
             return
         }
 
         // Reset errors.
-        usernameView.error = null
-        passwordView.error = null
+        usernameInput.error = null
+        passwordInput.error = null
 
         // Store values at the time of the login attempt.
-        val username = usernameView.text.toString()
-        val password = passwordView.text.toString()
+        val username = usernameInput.text.toString()
+        val password = passwordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid name.
         if (username.isEmpty()) {
-            usernameView.error = getString(R.string.error_field_required)
-            focusView = usernameView
+            usernameInput.error = getString(R.string.error_field_required)
+            focusView = usernameInput
             cancel = true
         } else if (!isUsernameValid(username)) {
-            usernameView.error = getString(R.string.error_invalid_email)
-            focusView = usernameView
+            usernameInput.error = getString(R.string.error_invalid_email)
+            focusView = usernameInput
             cancel = true
         }
 
         // Check for a valid password, if the user entered one.
         if (password.isEmpty()) {
-            passwordView.error = getString(R.string.error_field_required)
-            focusView = passwordView
+            passwordInput.error = getString(R.string.error_field_required)
+            focusView = passwordInput
             cancel = true
         } else if (!isPasswordValid(password)) {
-            passwordView.error = getString(R.string.error_invalid_password)
-            focusView = passwordView
+            passwordInput.error = getString(R.string.error_invalid_password)
+            focusView = passwordInput
             cancel = true
         }
 
@@ -204,7 +188,7 @@ class BasicRealmActivity : InternetActivity() {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true)
-            authButton.isEnabled = false
+            actionAuthenticate.isEnabled = false
 
             prefs.basicCredentials = BasicCredentials(realmName, username, password)
             showProgress(false)
@@ -225,8 +209,8 @@ class BasicRealmActivity : InternetActivity() {
      * Shows the progress UI and hides the login form.
      */
     private fun showProgress(show: Boolean) {
-        loginFormView.showAnimated(show.not())
-        progressView.showAnimated(show)
+        realmForm.showAnimated(show.not())
+        progress.showAnimated(show)
     }
 }
 
