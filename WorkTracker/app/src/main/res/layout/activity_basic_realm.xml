@@ -71,5 +71,7 @@
     </LinearLayout>
 
     <!-- Progress indicator -->
-    <include layout="@layout/progress" />
+    <include
+        layout="@layout/progress"
+        tools:visibility="gone" />
 </FrameLayout>

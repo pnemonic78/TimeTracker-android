@@ -40,10 +40,6 @@ import android.util.Patterns
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -54,6 +50,8 @@ import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_login.*
+import kotlinx.android.synthetic.main.progress.*
 import okhttp3.Response
 import timber.log.Timber
 
@@ -73,20 +71,12 @@ class LoginActivity : InternetActivity() {
     private val context: Context = this
 
     private lateinit var prefs: TimeTrackerPrefs
+    private lateinit var loginFragment: LoginFragment
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private var authTask: Disposable? = null
-
-    // UI references.
-    private lateinit var emailView: EditText
-    private lateinit var passwordView: EditText
-    private lateinit var progressView: View
-    private lateinit var loginFormView: View
-    private lateinit var emailSignInButton: Button
-
-    private var passwordImeActionId = 109
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,25 +86,7 @@ class LoginActivity : InternetActivity() {
         setContentView(R.layout.activity_login)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        emailView = findViewById(R.id.email)
-        emailView.setText(prefs.userCredentials.login)
-
-        passwordView = findViewById(R.id.password)
-        passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordView.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
-            if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
-                attemptLogin()
-                return@OnEditorActionListener true
-            }
-            false
-        })
-        passwordView.setText(prefs.userCredentials.password)
-
-        emailSignInButton = findViewById(R.id.email_sign_in_button)
-        emailSignInButton.setOnClickListener { attemptLogin() }
-
-        loginFormView = findViewById(R.id.login_form)
-        progressView = findViewById(R.id.progress)
+        loginFragment = supportFragmentManager.findFragmentById(R.id.login_form) as LoginFragment
 
         handleIntent(intent)
     }
@@ -148,11 +120,11 @@ class LoginActivity : InternetActivity() {
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_EMAIL)) {
-            emailView.setText(extras.getString(EXTRA_EMAIL))
-            passwordView.text = null
+            email.setText(extras.getString(EXTRA_EMAIL))
+            password.text = null
 
             if (extras.containsKey(EXTRA_PASSWORD)) {
-                passwordView.setText(extras.getString(EXTRA_PASSWORD))
+                password.setText(extras.getString(EXTRA_PASSWORD))
             }
         }
         if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
@@ -171,35 +143,35 @@ class LoginActivity : InternetActivity() {
         }
 
         // Reset errors.
-        emailView.error = null
-        passwordView.error = null
+        email.error = null
+        password.error = null
 
         // Store values at the time of the login attempt.
-        val email = emailView.text.toString()
-        val password = passwordView.text.toString()
+        val emailValue = email.text.toString()
+        val passwordValue = password.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid password, if the user entered one.
-        if (password.isEmpty()) {
-            passwordView.error = getString(R.string.error_field_required)
-            focusView = passwordView
+        if (passwordValue.isEmpty()) {
+            password.error = getString(R.string.error_field_required)
+            focusView = password
             cancel = true
-        } else if (!isPasswordValid(password)) {
-            passwordView.error = getString(R.string.error_invalid_password)
-            focusView = passwordView
+        } else if (!isPasswordValid(passwordValue)) {
+            password.error = getString(R.string.error_invalid_password)
+            focusView = password
             cancel = true
         }
 
         // Check for a valid email address.
-        if (email.isEmpty()) {
-            emailView.error = getString(R.string.error_field_required)
-            focusView = emailView
+        if (emailValue.isEmpty()) {
+            email.error = getString(R.string.error_field_required)
+            focusView = email
             cancel = true
-        } else if (!isEmailValid(email)) {
-            emailView.error = getString(R.string.error_invalid_email)
-            focusView = emailView
+        } else if (!isEmailValid(emailValue)) {
+            email.error = getString(R.string.error_invalid_email)
+            focusView = email
             cancel = true
         }
 
@@ -213,37 +185,37 @@ class LoginActivity : InternetActivity() {
             showProgress(true)
             emailSignInButton.isEnabled = false
 
-            prefs.userCredentials = UserCredentials(email, password)
+            prefs.userCredentials = UserCredentials(emailValue, passwordValue)
 
             val authToken = prefs.basicCredentials.authToken()
             val service = TimeTrackerServiceFactory.createPlain(this, authToken)
 
             val today = formatSystemDate()
-            authTask = service.login(email, password, today)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ response ->
-                        showProgress(false)
-                        emailSignInButton.isEnabled = true
+            authTask = service.login(emailValue, passwordValue, today)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ response ->
+                    showProgress(false)
+                    emailSignInButton.isEnabled = true
 
-                        if (isValidResponse(response)) {
-                            val body = response.body()!!
-                            val errorMessage = getResponseError(body)
-                            if (errorMessage.isNullOrEmpty()) {
-                                setResult(RESULT_OK)
-                                finish()
-                            } else {
-                                emailView.error = errorMessage
-                            }
+                    if (isValidResponse(response)) {
+                        val body = response.body()!!
+                        val errorMessage = getResponseError(body)
+                        if (errorMessage.isNullOrEmpty()) {
+                            setResult(RESULT_OK)
+                            finish()
                         } else {
-                            passwordView.requestFocus()
-                            authenticate(email, response.raw())
+                            email.error = errorMessage
                         }
-                    }, { err ->
-                        Timber.e(err, "Error signing in: ${err.message}")
-                        showProgress(false)
-                        emailSignInButton.isEnabled = true
-                    })
+                    } else {
+                        password.requestFocus()
+                        authenticate(emailValue, response.raw())
+                    }
+                }, { err ->
+                    Timber.e(err, "Error signing in: ${err.message}")
+                    showProgress(false)
+                    emailSignInButton.isEnabled = true
+                })
         }
     }
 
@@ -261,19 +233,19 @@ class LoginActivity : InternetActivity() {
     private fun showProgress(show: Boolean) {
         val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
 
-        loginFormView.visibility = if (show) View.GONE else View.VISIBLE
-        loginFormView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
+        login_form.visibility = if (show) View.GONE else View.VISIBLE
+        login_form.animate().setDuration(shortAnimTime).alpha(
+            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                loginFormView.visibility = if (show) View.GONE else View.VISIBLE
+                login_form.visibility = if (show) View.GONE else View.VISIBLE
             }
         })
 
-        progressView.visibility = if (show) View.VISIBLE else View.GONE
-        progressView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
+        progress.visibility = if (show) View.VISIBLE else View.GONE
+        progress.animate().setDuration(shortAnimTime).alpha(
+            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                progressView.visibility = if (show) View.VISIBLE else View.GONE
+                progress.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
     }
