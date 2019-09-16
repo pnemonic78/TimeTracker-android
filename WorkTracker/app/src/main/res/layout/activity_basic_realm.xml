@@ -5,73 +5,82 @@
     android:layout_height="match_parent"
     tools:context="com.tikalk.worktracker.auth.BasicRealmActivity">
 
-    <LinearLayout
+    <androidx.cardview.widget.CardView
         android:id="@+id/realmForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:orientation="vertical"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin">
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        app:cardCornerRadius="@dimen/card_cornerRadius">
 
-        <TextView
-            android:id="@+id/realmTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/authentication_basic_realm"
-            android:textAppearance="?android:textAppearanceMedium" />
+            android:layout_gravity="center"
+            android:layout_margin="4dp"
+            android:orientation="vertical">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:endIconDrawable="@drawable/ic_person_black"
-            app:endIconMode="custom">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/usernameInput"
+            <TextView
+                android:id="@+id/realmTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/prompt_username"
-                android:inputType="text"
-                android:maxLines="1"
-                android:singleLine="true" />
+                android:gravity="center_horizontal"
+                android:text="@string/authentication_basic_realm"
+                android:textAppearance="?android:textAppearanceMedium" />
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:endIconMode="password_toggle">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/passwordInput"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/prompt_password"
-                android:imeActionId="@integer/password_imeActionId"
-                android:imeActionLabel="@string/action_sign_in"
-                android:imeOptions="actionGo"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:singleLine="true" />
+                android:layout_marginTop="16dp"
+                app:endIconDrawable="@drawable/ic_person_black"
+                app:endIconMode="custom">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/usernameInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_username"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:singleLine="true" />
 
-        <Button
-            android:id="@+id/actionAuthenticate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:drawableEnd="@drawable/ic_lock_open"
-            android:text="@string/action_authenticate">
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <requestFocus />
-        </Button>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:endIconMode="password_toggle">
 
-    </LinearLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/passwordInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_password"
+                    android:imeActionId="@integer/password_imeActionId"
+                    android:imeActionLabel="@string/action_sign_in"
+                    android:imeOptions="actionGo"
+                    android:inputType="textPassword"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/actionAuthenticate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:drawableEnd="@drawable/ic_lock_open"
+                android:text="@string/action_authenticate">
+
+                <requestFocus />
+            </Button>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <!-- Progress indicator -->
     <include
