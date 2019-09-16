@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.auth
 
+import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -235,6 +236,17 @@ class LoginFragment : InternetFragment() {
             }
         }
         return false
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_AUTHENTICATE) {
+            if (resultCode == RESULT_OK) {
+                attemptLogin()
+                return
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
