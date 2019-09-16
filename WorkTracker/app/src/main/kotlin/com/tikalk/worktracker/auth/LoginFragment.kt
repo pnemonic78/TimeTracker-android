@@ -32,8 +32,6 @@
 
 package com.tikalk.worktracker.auth
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -44,6 +42,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -219,16 +218,7 @@ class LoginFragment : InternetFragment() {
     }
 
     private fun showProgress(show: Boolean) {
-        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-
-        login_form.visibility = if (show) View.GONE else View.VISIBLE
-        login_form.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                login_form.visibility = if (show) View.GONE else View.VISIBLE
-            }
-        })
-
+        login_form.showAnimated(show.not())
         (activity as LoginActivity).showProgress(show)
     }
 

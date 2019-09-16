@@ -31,8 +31,6 @@
  */
 package com.tikalk.worktracker.time
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -41,6 +39,7 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
+import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -367,23 +366,8 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     override fun showProgress(show: Boolean) {
-        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-
-        list.visibility = if (show) View.GONE else View.VISIBLE
-        list.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                list.visibility = if (show) View.GONE else View.VISIBLE
-            }
-        })
-
-        progress.visibility = if (show) View.VISIBLE else View.GONE
-        progress.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                progress.visibility = if (show) View.VISIBLE else View.GONE
-            }
-        })
+        list.showAnimated(show.not())
+        progress.showAnimated(show)
 
         fab_add.isEnabled = !show
     }

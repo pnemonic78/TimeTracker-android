@@ -31,13 +31,11 @@
  */
 package com.tikalk.worktracker.auth
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
+import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
@@ -89,15 +87,7 @@ class LoginActivity : InternetActivity() {
      * Shows the progress UI and hides the login form.
      */
     fun showProgress(show: Boolean) {
-        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-
-        progress.visibility = if (show) View.VISIBLE else View.GONE
-        progress.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                progress.visibility = if (show) View.VISIBLE else View.GONE
-            }
-        })
+        progress.showAnimated(show)
     }
 }
 

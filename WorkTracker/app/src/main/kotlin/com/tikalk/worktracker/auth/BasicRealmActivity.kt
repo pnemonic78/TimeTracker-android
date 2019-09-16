@@ -31,8 +31,6 @@
  */
 package com.tikalk.worktracker.auth
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -42,6 +40,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetActivity
@@ -226,23 +225,8 @@ class BasicRealmActivity : InternetActivity() {
      * Shows the progress UI and hides the login form.
      */
     private fun showProgress(show: Boolean) {
-        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-
-        loginFormView.visibility = if (show) View.GONE else View.VISIBLE
-        loginFormView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                loginFormView.visibility = if (show) View.GONE else View.VISIBLE
-            }
-        })
-
-        progressView.visibility = if (show) View.VISIBLE else View.GONE
-        progressView.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                progressView.visibility = if (show) View.VISIBLE else View.GONE
-            }
-        })
+        loginFormView.showAnimated(show.not())
+        progressView.showAnimated(show)
     }
 }
 

@@ -31,15 +31,13 @@
  */
 package com.tikalk.worktracker.time
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
+import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
@@ -332,26 +330,8 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     override fun showProgress(show: Boolean) {
-        val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-
-        val form = editFragment.view
-        if (form != null) {
-            form.visibility = if (show) View.GONE else View.VISIBLE
-            form.animate().setDuration(shortAnimTime).alpha(
-                (if (show) 0 else 1).toFloat()).setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    form.visibility = if (show) View.GONE else View.VISIBLE
-                }
-            })
-        }
-
-        progress.visibility = if (show) View.VISIBLE else View.GONE
-        progress.animate().setDuration(shortAnimTime).alpha(
-            (if (show) 1 else 0).toFloat()).setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                progress.visibility = if (show) View.VISIBLE else View.GONE
-            }
-        })
+        editFragment.view?.showAnimated(show.not())
+        progress.showAnimated(show)
 
         submitMenuItem?.isEnabled = !show
     }
