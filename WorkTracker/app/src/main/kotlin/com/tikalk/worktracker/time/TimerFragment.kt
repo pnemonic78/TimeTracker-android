@@ -278,14 +278,14 @@ class TimerFragment : TimeFormFragment() {
 
     fun editRecord(record: TimeRecord, requestCode: Int = TimeListActivity.REQUEST_EDIT) {
         val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
+        intent.putExtra(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
         if (record.id == TikalEntity.ID_NONE) {
-            intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, record.project.id)
-            intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, record.task.id)
-            intent.putExtra(TimeEditActivity.EXTRA_START_TIME, record.startTime)
-            intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, record.finishTime)
+            intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
         } else {
-            intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
+            intent.putExtra(TimeEditFragment.EXTRA_RECORD, record.id)
         }
         startActivityForResult(intent, requestCode)
     }

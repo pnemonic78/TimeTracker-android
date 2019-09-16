@@ -80,10 +80,10 @@ class TimeListActivity : TimeFormActivity(),
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
-        const val EXTRA_PROJECT_ID = TimeEditActivity.EXTRA_PROJECT_ID
-        const val EXTRA_TASK_ID = TimeEditActivity.EXTRA_TASK_ID
-        const val EXTRA_START_TIME = TimeEditActivity.EXTRA_START_TIME
-        const val EXTRA_FINISH_TIME = TimeEditActivity.EXTRA_FINISH_TIME
+        const val EXTRA_PROJECT_ID = TimeEditFragment.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
     }
 
     private val context: Context = this
@@ -101,8 +101,8 @@ class TimeListActivity : TimeFormActivity(),
         // Set up the form.
         setContentView(R.layout.activity_time_list)
 
-        formFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeFormFragment
-        timerFragment = formFragment as TimerFragment
+        timerFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimerFragment
+        formFragment = timerFragment
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
 

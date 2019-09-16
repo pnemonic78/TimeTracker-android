@@ -34,11 +34,9 @@ package com.tikalk.worktracker.time
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.Menu
 import android.view.MenuItem
 import com.tikalk.view.showAnimated
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
@@ -47,6 +45,11 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.time.TimeEditFragment.Companion.EXTRA_RECORD
+import com.tikalk.worktracker.time.TimeEditFragment.Companion.REQUEST_AUTHENTICATE
+import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_DATE
+import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD
+import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD_ID
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -58,24 +61,6 @@ import timber.log.Timber
 import java.util.*
 
 class TimeEditActivity : TimeFormActivity() {
-
-    companion object {
-        private const val REQUEST_AUTHENTICATE = 1
-
-        private const val STATE_DATE = "date"
-        private const val STATE_RECORD_ID = "record_id"
-        private const val STATE_RECORD = "record"
-
-        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
-        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
-
-        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
-        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
-        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
-        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
-
-        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
-    }
 
     private val context: Context = this
 
@@ -89,8 +74,8 @@ class TimeEditActivity : TimeFormActivity() {
         // Set up the form.
         setContentView(R.layout.activity_time_edit)
 
-        formFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeFormFragment
-        editFragment = formFragment as TimeEditFragment
+        editFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeEditFragment
+        formFragment = editFragment
 
         handleIntent(intent, savedInstanceState)
     }
@@ -217,7 +202,7 @@ class TimeEditActivity : TimeFormActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == REQUEST_AUTHENTICATE) {
+        if ((requestCode and 0xFFFF) == REQUEST_AUTHENTICATE) {
             if (resultCode == RESULT_OK) {
                 fetchPage(date, record.id)
             } else {

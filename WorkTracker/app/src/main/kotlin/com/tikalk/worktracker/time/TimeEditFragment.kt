@@ -45,6 +45,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.tikalk.app.runOnUiThread
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -133,10 +134,10 @@ class TimeEditFragment : TimeFormFragment() {
 
             val args = arguments
             if (args != null) {
-                var projectId = args.getLong(TimeEditActivity.EXTRA_PROJECT_ID)
-                var taskId = args.getLong(TimeEditActivity.EXTRA_TASK_ID)
-                val startTime = args.getLong(TimeEditActivity.EXTRA_START_TIME)
-                val finishTime = args.getLong(TimeEditActivity.EXTRA_FINISH_TIME)
+                var projectId = args.getLong(EXTRA_PROJECT_ID)
+                var taskId = args.getLong(EXTRA_TASK_ID)
+                val startTime = args.getLong(EXTRA_START_TIME)
+                val finishTime = args.getLong(EXTRA_FINISH_TIME)
 
                 if (projectId == TikalEntity.ID_NONE) projectId = projectFavorite
                 if (taskId == TikalEntity.ID_NONE) taskId = taskFavorite
@@ -187,7 +188,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val startTime = record.startTime
         startInput.text = if (startTime > 0L)
-            DateUtils.formatDateTime(context, startTime, TimeEditActivity.FORMAT_DATE_BUTTON)
+            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
         else
             ""
         startInput.error = null
@@ -195,7 +196,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val finishTime = record.finishTime
         finishInput.text = if (finishTime > 0L)
-            DateUtils.formatDateTime(context, finishTime, TimeEditActivity.FORMAT_DATE_BUTTON)
+            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
         else
             ""
         finishInput.error = null
@@ -215,7 +216,7 @@ class TimeEditFragment : TimeFormFragment() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.start = cal
-                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, TimeEditActivity.FORMAT_DATE_BUTTON)
+                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 startInput.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -232,7 +233,7 @@ class TimeEditFragment : TimeFormFragment() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.finish = cal
-                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, TimeEditActivity.FORMAT_DATE_BUTTON)
+                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 finishInput.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -304,13 +305,31 @@ class TimeEditFragment : TimeFormFragment() {
         record.task = task
     }
 
-     override fun handleIntent(intent: Intent) {
+    override fun handleIntent(intent: Intent) {
         super.handleIntent(intent)
         val args = arguments ?: Bundle()
         if (intent.extras != null) {
             args.putAll(intent.extras)
         }
         arguments = args
-        date.timeInMillis = args.getLong(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
+        date.timeInMillis = args.getLong(EXTRA_DATE, date.timeInMillis)
+    }
+
+    companion object {
+        const val REQUEST_AUTHENTICATE = 1
+
+        const val STATE_DATE = "date"
+        const val STATE_RECORD_ID = "record_id"
+        const val STATE_RECORD = "record"
+
+        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
+        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
+
+        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
+        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
+        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
+        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
+
+        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }
