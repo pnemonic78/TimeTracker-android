@@ -33,13 +33,13 @@
 package com.tikalk.worktracker.time
 
 import android.content.Context
-import com.tikalk.app.TikalFragment
 import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -48,7 +48,7 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
-abstract class TimeFormFragment : TikalFragment() {
+abstract class TimeFormFragment : InternetFragment() {
 
     var date = Calendar.getInstance()
     var user = User.EMPTY.copy()
@@ -419,24 +419,4 @@ abstract class TimeFormFragment : TikalFragment() {
     }
 
     abstract fun bindForm(record: TimeRecord)
-
-    /**
-     * Find the first error table element.
-     */
-    protected fun findError(doc: Document): String? {
-        val body = doc.body()
-        val tables = body.select("table")
-        if (tables.isEmpty()) {
-            return body.text()
-        }
-
-        for (table in tables) {
-            val errorNode = table.selectFirst("td[class='error']")
-            if (errorNode != null) {
-                return errorNode.text()
-            }
-        }
-
-        return null
-    }
 }

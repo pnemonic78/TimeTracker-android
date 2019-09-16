@@ -43,6 +43,7 @@ import android.view.View
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
+import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -211,7 +212,7 @@ class TimeEditActivity : TimeFormActivity() {
 
     private fun authenticate(immediate: Boolean = false) {
         val intent = Intent(context, LoginActivity::class.java)
-        intent.putExtra(LoginActivity.EXTRA_SUBMIT, immediate)
+        intent.putExtra(LoginFragment.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
     }
 
