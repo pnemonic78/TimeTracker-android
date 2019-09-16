@@ -40,23 +40,20 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_PASSWORD
+import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_REALM
+import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_SUBMIT
+import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_USER
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import kotlinx.android.synthetic.main.activity_basic_realm.*
+import kotlinx.android.synthetic.main.fragment_basic_realm.*
 import kotlinx.android.synthetic.main.progress.*
 
 /**
  * An authentication screen for Basic Realm via email/password.
  */
 class BasicRealmActivity : InternetActivity() {
-
-    companion object {
-        const val EXTRA_REALM = "realm"
-        const val EXTRA_USER = "user"
-        const val EXTRA_PASSWORD = "password"
-        const val EXTRA_SUBMIT = "submit"
-    }
 
     private lateinit var prefs: TimeTrackerPrefs
     private var realmName = "(realm)"

@@ -228,8 +228,8 @@ class LoginFragment : InternetFragment() {
                 val indexAt = email.indexOf('@')
                 val username = if (indexAt < 0) email else email.substring(0, indexAt)
                 val intent = Intent(context, BasicRealmActivity::class.java)
-                intent.putExtra(BasicRealmActivity.EXTRA_REALM, challenge.realm())
-                intent.putExtra(BasicRealmActivity.EXTRA_USER, username)
+                intent.putExtra(BasicRealmFragment.EXTRA_REALM, challenge.realm())
+                intent.putExtra(BasicRealmFragment.EXTRA_USER, username)
                 startActivityForResult(intent, REQUEST_AUTHENTICATE)
                 return true
             }

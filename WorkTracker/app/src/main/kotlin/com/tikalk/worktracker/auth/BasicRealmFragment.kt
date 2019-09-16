@@ -29,65 +29,25 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.tikalk.worktracker.auth
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import com.tikalk.view.showAnimated
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.net.InternetActivity
-import kotlinx.android.synthetic.main.progress.*
+import com.tikalk.worktracker.net.InternetFragment
 
 /**
- * A login screen that offers login via email/password.
+ * An authentication screen for Basic Realm via email/password.
  */
-class LoginActivity : InternetActivity() {
+class BasicRealmFragment : InternetFragment() {
 
-    private lateinit var loginFragment: LoginFragment
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Set up the login form.
-        setContentView(R.layout.activity_login)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        loginFragment = supportFragmentManager.findFragmentById(R.id.loginFragment) as LoginFragment
-
-        handleIntent(intent)
+    override fun handleIntent(intent: Intent) {
+        super.handleIntent(intent)
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        this.intent = intent
-        handleIntent(intent)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menu.clear()
-        menuInflater.inflate(R.menu.authenticate, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> onBackPressed()
-            R.id.menu_authenticate -> loginFragment.attemptLogin()
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun handleIntent(intent: Intent) {
-        loginFragment.handleIntent(intent)
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    fun showProgress(show: Boolean) {
-        progress.showAnimated(show)
+    companion object {
+        const val EXTRA_REALM = "realm"
+        const val EXTRA_USER = "user"
+        const val EXTRA_PASSWORD = "password"
+        const val EXTRA_SUBMIT = "submit"
     }
 }
-
