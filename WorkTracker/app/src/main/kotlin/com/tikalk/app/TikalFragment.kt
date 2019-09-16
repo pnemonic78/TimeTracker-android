@@ -32,6 +32,7 @@
 
 package com.tikalk.app
 
+import android.content.Intent
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
 
@@ -42,6 +43,9 @@ open class TikalFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
+    }
+
+    open fun handleIntent(intent: Intent) {
     }
 }
 

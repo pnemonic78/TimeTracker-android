@@ -103,7 +103,8 @@ class LoginFragment : InternetFragment() {
         emailSignInButton.setOnClickListener { attemptLogin() }
     }
 
-    fun handleIntent(intent: Intent) {
+    override fun handleIntent(intent: Intent) {
+        super.handleIntent(intent)
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_EMAIL)) {

@@ -304,7 +304,8 @@ class TimeEditFragment : TimeFormFragment() {
         record.task = task
     }
 
-    fun handleIntent(intent: Intent) {
+     override fun handleIntent(intent: Intent) {
+        super.handleIntent(intent)
         val args = arguments ?: Bundle()
         if (intent.extras != null) {
             args.putAll(intent.extras)
