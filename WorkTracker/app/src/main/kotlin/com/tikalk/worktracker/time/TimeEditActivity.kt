@@ -108,7 +108,7 @@ class TimeEditActivity : TimeFormActivity() {
 
         val extras = intent.extras
         if (extras != null) {
-            date.timeInMillis = extras.getLong(EXTRA_DATE, now)
+            editFragment.handleIntent(extras)
             recordId = extras.getLong(EXTRA_RECORD, recordId)
         }
         if (savedInstanceState != null) {
@@ -123,7 +123,7 @@ class TimeEditActivity : TimeFormActivity() {
                     record = recordDb
                 }
                 populateForm(record)
-                if (projects.isEmpty() or tasks.isEmpty()) {
+                if (projects.isEmpty() or tasks.isEmpty() or record.isEmpty()) {
                     fetchPage(date, recordId)
                 }
             }, { err ->

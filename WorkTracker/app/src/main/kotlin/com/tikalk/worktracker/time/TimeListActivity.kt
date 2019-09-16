@@ -291,7 +291,7 @@ class TimeListActivity : TimeFormActivity(),
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        when (requestCode) {
+        when (requestCode and 0xFFFF) {
             REQUEST_AUTHENTICATE -> if (resultCode == RESULT_OK) {
                 user.username = prefs.userCredentials.login
                 user.email = user.username
@@ -299,23 +299,18 @@ class TimeListActivity : TimeFormActivity(),
                 // Fetch the list for the user.
                 fetchPage(date)
             } else {
-                showProgress(false)
                 finish()
             }
             REQUEST_EDIT -> if (resultCode == RESULT_OK) {
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
-            } else {
-                showProgress(false)
             }
             REQUEST_STOPPED -> if (resultCode == RESULT_OK) {
                 stopTimerCommit()
                 intent.action = null
                 // Refresh the list with the edited item.
                 fetchPage(date)
-            } else {
-                showProgress(false)
             }
         }
     }
@@ -496,18 +491,8 @@ class TimeListActivity : TimeFormActivity(),
         return id.toLong()
     }
 
-    private fun editRecord(record: TimeRecord, requestId: Int = REQUEST_EDIT) {
-        val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
-        if (record.id == TikalEntity.ID_NONE) {
-            intent.putExtra(TimeEditActivity.EXTRA_PROJECT_ID, record.project.id)
-            intent.putExtra(TimeEditActivity.EXTRA_TASK_ID, record.task.id)
-            intent.putExtra(TimeEditActivity.EXTRA_START_TIME, record.startTime)
-            intent.putExtra(TimeEditActivity.EXTRA_FINISH_TIME, record.finishTime)
-        } else {
-            intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
-        }
-        startActivityForResult(intent, requestId)
+    private fun editRecord(record: TimeRecord, requestCode: Int = REQUEST_EDIT) {
+        timerFragment.editRecord(record, requestCode)
     }
 
     private fun deleteRecord(record: TimeRecord) {
@@ -542,7 +527,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun populateForm(html: String, date: Calendar) {
-        formFragment.populateForm(html, date)
+        timerFragment.populateForm(html, date)
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
@@ -550,7 +535,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun bindForm(record: TimeRecord) {
-        formFragment.bindForm(record)
+        timerFragment.bindForm(record)
     }
 
     private fun stopTimerCommit() {

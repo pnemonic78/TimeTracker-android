@@ -143,10 +143,7 @@ class TimerFragment : TimeFormFragment() {
     private fun stopTimer() {
         Timber.v("stopTimer")
         val context: Context = this.context ?: return
-        val now = System.currentTimeMillis()
-        if (record.finish == null) {
-            record.finishTime = now
-        }
+        record.finishTime = System.currentTimeMillis()
 
         TimerWorker.stopTimer(context)
 
@@ -237,7 +234,8 @@ class TimerFragment : TimeFormFragment() {
         return null
     }
 
-    override fun populateForm(html: String, date: Calendar) {
+    /** Populate the record and then bind the form. */
+    fun populateForm(html: String, date: Calendar) {
         val doc: Document = Jsoup.parse(html)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
@@ -281,7 +279,7 @@ class TimerFragment : TimeFormFragment() {
         this.intentLater = intent
     }
 
-    private fun editRecord(record: TimeRecord, requestId: Int = TimeListActivity.REQUEST_EDIT) {
+    fun editRecord(record: TimeRecord, requestCode: Int = TimeListActivity.REQUEST_EDIT) {
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
         if (record.id == TikalEntity.ID_NONE) {
@@ -292,6 +290,6 @@ class TimerFragment : TimeFormFragment() {
         } else {
             intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
         }
-        startActivityForResult(intent, requestId)
+        startActivityForResult(intent, requestCode)
     }
 }

@@ -94,12 +94,8 @@ class TimeEditFragment : TimeFormFragment() {
         finish_input.setOnClickListener { pickFinishTime() }
     }
 
-    override fun populateForm(html: String, date: Calendar) {
-    }
-
     /** Populate the record and then bind the form. */
     fun populateForm(html: String, date: Calendar, id: Long) {
-        populateForm(html, date)
         val doc: Document = Jsoup.parse(html)
 
         record.id = id
@@ -288,7 +284,7 @@ class TimeEditFragment : TimeFormFragment() {
         return valid
     }
 
-    fun filterTasks(project: Project) {
+    private fun filterTasks(project: Project) {
         val context: Context = this.context ?: return
         val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
@@ -305,5 +301,10 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
+    }
+
+    fun handleIntent(args: Bundle) {
+        arguments = args
+        date.timeInMillis = args.getLong(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
     }
 }

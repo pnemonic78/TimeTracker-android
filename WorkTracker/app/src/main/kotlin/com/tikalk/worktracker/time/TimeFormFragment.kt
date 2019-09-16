@@ -418,9 +418,6 @@ abstract class TimeFormFragment : TikalFragment() {
         }
     }
 
-    /** Populate the record and then bind the form. */
-    abstract fun populateForm(html: String, date: Calendar)
-
     abstract fun bindForm(record: TimeRecord)
 
     /**
