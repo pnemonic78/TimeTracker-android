@@ -31,22 +31,16 @@
  */
 package com.tikalk.worktracker.time
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginActivity
-import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.EXTRA_RECORD
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.REQUEST_AUTHENTICATE
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_DATE
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD_ID
@@ -58,11 +52,8 @@ import kotlinx.android.synthetic.main.progress.*
 import kotlinx.android.synthetic.main.time_form.*
 import retrofit2.Response
 import timber.log.Timber
-import java.util.*
 
 class TimeEditActivity : TimeFormActivity() {
-
-    private val context: Context = this
 
     // UI references
     private var submitMenuItem: MenuItem? = null
@@ -89,32 +80,6 @@ class TimeEditActivity : TimeFormActivity() {
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
         editFragment.handleIntent(intent)
 
-        var recordId = record.id
-
-        val extras = intent.extras
-        if (extras != null) {
-            recordId = extras.getLong(EXTRA_RECORD, recordId)
-        }
-        if (savedInstanceState != null) {
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
-            recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
-            record.id = recordId
-        }
-        loadPage()
-            .subscribe({
-                val recordDb = records.firstOrNull { it.id == recordId }
-                if (recordDb != null) {
-                    record = recordDb
-                }
-                populateForm(record)
-                if (projects.isEmpty() or tasks.isEmpty() or record.isEmpty()) {
-                    fetchPage(date, recordId)
-                }
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-            })
-            .addTo(disposables)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -147,44 +112,6 @@ class TimeEditActivity : TimeFormActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun fetchPage(date: Calendar, id: Long) {
-        val dateFormatted = formatSystemDate(date)
-        Timber.d("fetchPage $dateFormatted")
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
-        showProgress(true)
-
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
-
-        val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
-            service.fetchTimes(dateFormatted)
-        } else {
-            service.fetchTimes(id)
-        }
-        fetcher
-            .subscribeOn(Schedulers.io())
-            .subscribe({ response ->
-                this.date = date
-                if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    populateForm(body, date, id)
-                    savePage()
-                    showProgressMain(false)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                showProgressMain(false)
-            })
-            .addTo(disposables)
-    }
-
-    /** Populate the record and then bind the form. */
-    private fun populateForm(html: String, date: Calendar, id: Long) {
-        editFragment.populateForm(html, date, id)
-    }
-
     private fun populateForm(record: TimeRecord) {
         editFragment.populateForm(record)
     }
@@ -194,22 +121,7 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        val intent = Intent(context, LoginActivity::class.java)
-        intent.putExtra(LoginFragment.EXTRA_SUBMIT, immediate)
-        startActivityForResult(intent, REQUEST_AUTHENTICATE)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if ((requestCode and 0xFFFF) == REQUEST_AUTHENTICATE) {
-            if (resultCode == RESULT_OK) {
-                fetchPage(date, record.id)
-            } else {
-                showProgress(false)
-                finish()
-            }
-        }
+        editFragment.authenticate(immediate)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -354,19 +266,5 @@ class TimeEditActivity : TimeFormActivity() {
                 showProgress(false)
             })
             .addTo(disposables)
-    }
-
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadFormFromDb() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-    }
-
-    private fun savePage() {
-        return saveFormToDb()
-    }
-
-    override fun saveRecords(db: TrackerDatabase, day: Calendar?) {
-        // Records irrelevant.
     }
 }

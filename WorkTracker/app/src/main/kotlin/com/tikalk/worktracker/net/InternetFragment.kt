@@ -88,4 +88,16 @@ open class InternetFragment : TikalFragment() {
 
         return null
     }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     * @param show visible?
+     */
+    protected fun showProgress(show: Boolean) {
+        (activity as InternetActivity).showProgress(show)
+    }
+
+    protected fun showProgressMain(show: Boolean) {
+        (activity as InternetActivity).showProgressMain(show)
+    }
 }

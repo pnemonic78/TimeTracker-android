@@ -136,4 +136,14 @@ abstract class InternetActivity : TikalActivity() {
 
         return null
     }
+
+    /**
+     * Shows the progress UI and hides the form.
+     * @param show visible?
+     */
+    abstract fun showProgress(show: Boolean)
+
+    fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
+    }
 }

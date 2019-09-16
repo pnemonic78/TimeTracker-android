@@ -290,8 +290,8 @@ class TimerFragment : TimeFormFragment() {
         startActivityForResult(intent, requestCode)
     }
 
-    override fun handleIntent(intent: Intent) {
-        super.handleIntent(intent)
+    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
+        super.handleIntent(intent, savedInstanceState)
         val args = arguments ?: Bundle()
         if (intent.extras != null) {
             args.putAll(intent.extras)

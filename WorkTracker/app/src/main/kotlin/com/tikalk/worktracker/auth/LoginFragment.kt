@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.auth
 
-import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -43,7 +42,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -102,8 +100,8 @@ class LoginFragment : InternetFragment() {
         actionSignIn.setOnClickListener { attemptLogin() }
     }
 
-    override fun handleIntent(intent: Intent) {
-        super.handleIntent(intent)
+    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
+        super.handleIntent(intent, savedInstanceState)
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_EMAIL)) {
@@ -217,11 +215,6 @@ class LoginFragment : InternetFragment() {
         return password.trim().length > 4
     }
 
-    private fun showProgress(show: Boolean) {
-        loginForm.showAnimated(show.not())
-        (activity as LoginActivity).showProgress(show)
-    }
-
     private fun authenticate(email: String, response: Response): Boolean {
         val challenges = response.challenges()
         for (challenge in challenges) {
@@ -240,7 +233,7 @@ class LoginFragment : InternetFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_AUTHENTICATE) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == AppCompatActivity.RESULT_OK) {
                 attemptLogin()
                 return
             }

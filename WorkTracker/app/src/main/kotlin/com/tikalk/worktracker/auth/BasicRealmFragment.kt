@@ -89,8 +89,8 @@ class BasicRealmFragment : InternetFragment() {
         actionAuthenticate.setOnClickListener { attemptLogin() }
     }
 
-    override fun handleIntent(intent: Intent) {
-        super.handleIntent(intent)
+    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
+        super.handleIntent(intent, savedInstanceState)
         val extras = intent.extras ?: return
 
         if (extras.containsKey(EXTRA_REALM)) {

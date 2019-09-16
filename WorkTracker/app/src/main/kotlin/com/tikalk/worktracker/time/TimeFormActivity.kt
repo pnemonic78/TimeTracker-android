@@ -73,16 +73,6 @@ abstract class TimeFormActivity : InternetActivity() {
         prefs.setFavorite(record)
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     * @param show visible?
-     */
-    abstract fun showProgress(show: Boolean)
-
-    protected fun showProgressMain(show: Boolean) {
-        runOnUiThread { showProgress(show) }
-    }
-
     protected open fun saveFormToDb() {
         formFragment.saveFormToDb()
     }

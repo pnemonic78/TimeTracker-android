@@ -35,8 +35,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
+import kotlinx.android.synthetic.main.progress.*
 
 /**
  * An authentication screen for Basic Realm via email/password.
@@ -79,6 +81,10 @@ class BasicRealmActivity : InternetActivity() {
 
     private fun handleIntent(intent: Intent) {
         loginFragment.handleIntent(intent)
+    }
+
+    override fun showProgress(show: Boolean) {
+       progress.showAnimated(show)
     }
 }
 

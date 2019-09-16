@@ -83,10 +83,7 @@ class LoginActivity : InternetActivity() {
         loginFragment.handleIntent(intent)
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    fun showProgress(show: Boolean) {
+    override fun showProgress(show: Boolean) {
         progress.showAnimated(show)
     }
 }

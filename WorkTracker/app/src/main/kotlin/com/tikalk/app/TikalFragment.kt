@@ -33,6 +33,7 @@
 package com.tikalk.app
 
 import android.content.Intent
+import android.os.Bundle
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
 
@@ -45,7 +46,7 @@ open class TikalFragment : Fragment() {
         disposables.dispose()
     }
 
-    open fun handleIntent(intent: Intent) {
+    open fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
     }
 }
 
