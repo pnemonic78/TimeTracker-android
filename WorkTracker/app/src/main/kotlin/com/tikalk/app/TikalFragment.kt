@@ -43,12 +43,12 @@ open class TikalFragment : Fragment() {
         super.onDestroy()
         disposables.dispose()
     }
+}
 
-    protected fun runOnUiThread(action: Runnable) {
-        activity!!.runOnUiThread(action)
-    }
+fun Fragment.runOnUiThread(action: Runnable) {
+    activity!!.runOnUiThread(action)
+}
 
-    protected fun runOnUiThread(action: () -> Unit) {
-        activity!!.runOnUiThread(action)
-    }
+fun Fragment.runOnUiThread(action: () -> Unit) {
+    activity!!.runOnUiThread(action)
 }

@@ -43,6 +43,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
