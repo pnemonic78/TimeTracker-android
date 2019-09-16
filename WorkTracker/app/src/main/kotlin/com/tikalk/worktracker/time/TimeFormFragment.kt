@@ -50,14 +50,14 @@ import kotlin.collections.ArrayList
 
 abstract class TimeFormFragment : InternetFragment() {
 
-    var date = Calendar.getInstance()
-    var user = User.EMPTY.copy()
-    var record = TimeRecord(TikalEntity.ID_NONE, user, Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
-    val projects = ArrayList<Project>()
-    val tasks = ArrayList<ProjectTask>()
+    var date: Calendar = Calendar.getInstance()
+    var user: User = User.EMPTY.copy()
+    var record: TimeRecord = TimeRecord(TikalEntity.ID_NONE, user, Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
+    val projects: MutableList<Project> = ArrayList()
+    val tasks: MutableList<ProjectTask> = ArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
-    val records = ArrayList<TimeRecord>()
+    val records: MutableList<TimeRecord> = ArrayList()
     protected lateinit var prefs: TimeTrackerPrefs
 
     override fun onAttach(context: Context) {
