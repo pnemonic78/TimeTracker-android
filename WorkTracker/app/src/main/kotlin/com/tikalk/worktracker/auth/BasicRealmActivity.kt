@@ -35,11 +35,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
-import kotlinx.android.synthetic.main.fragment_basic_realm.*
-import kotlinx.android.synthetic.main.progress.*
 
 /**
  * An authentication screen for Basic Realm via email/password.
@@ -75,25 +72,13 @@ class BasicRealmActivity : InternetActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> onBackPressed()
-            R.id.menu_authenticate -> attemptLogin()
+            R.id.menu_authenticate -> loginFragment.attemptLogin()
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun handleIntent(intent: Intent) {
         loginFragment.handleIntent(intent)
-    }
-
-    private fun attemptLogin() {
-        loginFragment.attemptLogin()
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    private fun showProgress(show: Boolean) {
-        realmForm.showAnimated(show.not())
-        progress.showAnimated(show)
     }
 }
 
