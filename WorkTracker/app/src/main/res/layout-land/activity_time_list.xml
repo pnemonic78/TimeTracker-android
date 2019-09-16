@@ -7,7 +7,7 @@
     tools:context=".time.TimeListActivity">
 
     <fragment
-        android:id="@+id/fragment_timer"
+        android:id="@+id/fragment_form"
         android:name="com.tikalk.worktracker.time.TimerFragment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
