@@ -35,18 +35,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_PASSWORD
-import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_REALM
-import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_SUBMIT
-import com.tikalk.worktracker.auth.BasicRealmFragment.Companion.EXTRA_USER
-import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import kotlinx.android.synthetic.main.fragment_basic_realm.*
 import kotlinx.android.synthetic.main.progress.*
 
@@ -55,37 +46,16 @@ import kotlinx.android.synthetic.main.progress.*
  */
 class BasicRealmActivity : InternetActivity() {
 
-    private lateinit var prefs: TimeTrackerPrefs
-    private var realmName = "(realm)"
+    private lateinit var loginFragment: BasicRealmFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
-
-        val credentials = prefs.basicCredentials
-        realmName = credentials.realm
-        val userName = credentials.username
-        val password = credentials.password
 
         // Set up the login form.
         setContentView(R.layout.activity_basic_realm)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
-
-        usernameInput.setText(userName)
-
-        val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
-            if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
-                attemptLogin()
-                return@OnEditorActionListener true
-            }
-            false
-        })
-        passwordInput.setText(password)
-
-        actionAuthenticate.setOnClickListener { attemptLogin() }
+        loginFragment = supportFragmentManager.findFragmentById(R.id.realmFragment) as BasicRealmFragment
 
         handleIntent(intent)
     }
@@ -111,95 +81,11 @@ class BasicRealmActivity : InternetActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
-        val extras = intent.extras ?: return
-
-        if (extras.containsKey(EXTRA_REALM)) {
-            realmName = extras.getString(EXTRA_REALM) ?: "?"
-            realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
-        }
-        if (extras.containsKey(EXTRA_USER)) {
-            val username = extras.getString(EXTRA_USER)
-            usernameInput.setText(username)
-
-            val credentials = prefs.basicCredentials
-
-            when {
-                extras.containsKey(EXTRA_PASSWORD) -> passwordInput.setText(extras.getString(EXTRA_PASSWORD))
-                username == credentials.username -> passwordInput.setText(credentials.password)
-                else -> passwordInput.text = null
-            }
-        }
-        if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
-            attemptLogin()
-        }
+        loginFragment.handleIntent(intent)
     }
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     private fun attemptLogin() {
-        if (!actionAuthenticate.isEnabled) {
-            return
-        }
-
-        // Reset errors.
-        usernameInput.error = null
-        passwordInput.error = null
-
-        // Store values at the time of the login attempt.
-        val username = usernameInput.text.toString()
-        val password = passwordInput.text.toString()
-
-        var cancel = false
-        var focusView: View? = null
-
-        // Check for a valid name.
-        if (username.isEmpty()) {
-            usernameInput.error = getString(R.string.error_field_required)
-            focusView = usernameInput
-            cancel = true
-        } else if (!isUsernameValid(username)) {
-            usernameInput.error = getString(R.string.error_invalid_email)
-            focusView = usernameInput
-            cancel = true
-        }
-
-        // Check for a valid password, if the user entered one.
-        if (password.isEmpty()) {
-            passwordInput.error = getString(R.string.error_field_required)
-            focusView = passwordInput
-            cancel = true
-        } else if (!isPasswordValid(password)) {
-            passwordInput.error = getString(R.string.error_invalid_password)
-            focusView = passwordInput
-            cancel = true
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView!!.requestFocus()
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true)
-            actionAuthenticate.isEnabled = false
-
-            prefs.basicCredentials = BasicCredentials(realmName, username, password)
-            showProgress(false)
-            setResult(RESULT_OK)
-            finish()
-        }
-    }
-
-    private fun isUsernameValid(username: String): Boolean {
-        return username.length > 1
-    }
-
-    private fun isPasswordValid(password: String): Boolean {
-        return password.trim().length > 4
+        loginFragment.attemptLogin()
     }
 
     /**
