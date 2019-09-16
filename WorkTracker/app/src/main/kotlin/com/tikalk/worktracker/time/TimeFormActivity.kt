@@ -33,12 +33,8 @@ package com.tikalk.worktracker.time
 
 import android.os.Bundle
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import java.util.*
 
 abstract class TimeFormActivity : InternetActivity() {
@@ -62,16 +58,6 @@ abstract class TimeFormActivity : InternetActivity() {
         get() = formFragment.projects
     protected val tasks
         get() = formFragment.tasks
-    protected var projectEmpty
-        get() = formFragment.projectEmpty
-        set(value) {
-            formFragment.projectEmpty = value
-        }
-    protected var taskEmpty
-        get() = formFragment.taskEmpty
-        set(value) {
-            formFragment.taskEmpty = value
-        }
     protected val records
         get() = formFragment.records
     protected lateinit var formFragment: TimeFormFragment
@@ -81,26 +67,6 @@ abstract class TimeFormActivity : InternetActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = TimeTrackerPrefs(this)
-    }
-
-    protected fun findSelectedProject(project: Element, projects: List<Project>): Project {
-        return formFragment.findSelectedProject(project, projects)
-    }
-
-    protected fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
-        return formFragment.findSelectedTask(task, tasks)
-    }
-
-    protected fun populateProjects(select: Element, target: MutableList<Project>) {
-        formFragment.populateProjects(select, target)
-    }
-
-    protected fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
-        formFragment.populateTasks(select, target)
-    }
-
-    protected fun populateTaskIds(doc: Document, projects: List<Project>) {
-        formFragment.populateTaskIds(doc, projects)
     }
 
     protected fun markFavorite() {
