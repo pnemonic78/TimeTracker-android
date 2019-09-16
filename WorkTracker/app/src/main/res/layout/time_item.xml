@@ -21,7 +21,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/time_range"
+            app:layout_constraintEnd_toStartOf="@+id/timeRange"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/project_label" />
@@ -37,7 +37,7 @@
             tools:text="@string/task_label" />
 
         <TextView
-            android:id="@+id/time_range"
+            android:id="@+id/timeRange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
@@ -45,12 +45,12 @@
             tools:text="@tools:sample/date/hhmmss" />
 
         <TextView
-            android:id="@+id/time_duration"
+            android:id="@+id/timeDuration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/time_range"
+            app:layout_constraintTop_toBottomOf="@+id/timeRange"
             tools:text="@tools:sample/date/hhmm" />
 
         <TextView

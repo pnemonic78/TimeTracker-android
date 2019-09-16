@@ -71,7 +71,7 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 projectItemSelected(projectEmpty)
             }
@@ -81,7 +81,7 @@ class TimeEditFragment : TimeFormFragment() {
                 projectItemSelected(project)
             }
         }
-        task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 taskItemSelected(taskEmpty)
             }
@@ -91,8 +91,8 @@ class TimeEditFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        start_input.setOnClickListener { pickStartTime() }
-        finish_input.setOnClickListener { pickFinishTime() }
+        startInput.setOnClickListener { pickStartTime() }
+        finishInput.setOnClickListener { pickFinishTime() }
     }
 
     /** Populate the record and then bind the form. */
@@ -174,38 +174,38 @@ class TimeEditFragment : TimeFormFragment() {
     override fun bindForm(record: TimeRecord) {
         val context: Context = this.context ?: return
 
-        error_label.text = errorMessage
-        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        errorLabel.text = errorMessage
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         if (projects.isNotEmpty()) {
-            project_input.setSelection(max(0, projects.indexOf(record.project)))
+            projectInput.setSelection(max(0, projects.indexOf(record.project)))
         }
-        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         if (tasks.isNotEmpty()) {
-            task_input.setSelection(max(0, tasks.indexOf(record.task)))
+            taskInput.setSelection(max(0, tasks.indexOf(record.task)))
         }
-        project_input.requestFocus()
+        projectInput.requestFocus()
 
         val startTime = record.startTime
-        start_input.text = if (startTime > 0L)
+        startInput.text = if (startTime > 0L)
             DateUtils.formatDateTime(context, startTime, TimeEditActivity.FORMAT_DATE_BUTTON)
         else
             ""
-        start_input.error = null
+        startInput.error = null
         startPickerDialog = null
 
         val finishTime = record.finishTime
-        finish_input.text = if (finishTime > 0L)
+        finishInput.text = if (finishTime > 0L)
             DateUtils.formatDateTime(context, finishTime, TimeEditActivity.FORMAT_DATE_BUTTON)
         else
             ""
-        finish_input.error = null
+        finishInput.error = null
         finishPickerDialog = null
 
-        note_input.setText(record.note)
+        noteInput.setText(record.note)
     }
 
     fun bindRecord(record: TimeRecord) {
-        record.note = note_input.text.toString()
+        record.note = noteInput.text.toString()
     }
 
     private fun pickStartTime() {
@@ -215,8 +215,8 @@ class TimeEditFragment : TimeFormFragment() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.start = cal
-                start_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, TimeEditActivity.FORMAT_DATE_BUTTON)
-                start_input.error = null
+                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, TimeEditActivity.FORMAT_DATE_BUTTON)
+                startInput.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
             val minute = cal.get(Calendar.MINUTE)
@@ -232,8 +232,8 @@ class TimeEditFragment : TimeFormFragment() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.finish = cal
-                finish_input.text = DateUtils.formatDateTime(context, cal.timeInMillis, TimeEditActivity.FORMAT_DATE_BUTTON)
-                finish_input.error = null
+                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, TimeEditActivity.FORMAT_DATE_BUTTON)
+                finishInput.error = null
             }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
             val minute = cal.get(Calendar.MINUTE)
@@ -256,30 +256,30 @@ class TimeEditFragment : TimeFormFragment() {
 
         if (record.project.id <= 0) {
             valid = false
-            (project_input.selectedView as TextView).error = getString(R.string.error_field_required)
+            (projectInput.selectedView as TextView).error = getString(R.string.error_field_required)
         } else {
-            (project_input.selectedView as TextView).error = null
+            (projectInput.selectedView as TextView).error = null
         }
         if (record.task.id <= 0) {
             valid = false
-            (task_input.selectedView as TextView).error = getString(R.string.error_field_required)
+            (taskInput.selectedView as TextView).error = getString(R.string.error_field_required)
         } else {
-            (task_input.selectedView as TextView).error = null
+            (taskInput.selectedView as TextView).error = null
         }
         if (record.start == null) {
             valid = false
-            start_input.error = getString(R.string.error_field_required)
+            startInput.error = getString(R.string.error_field_required)
         } else {
-            start_input.error = null
+            startInput.error = null
         }
         if (record.finish == null) {
             valid = false
-            finish_input.error = getString(R.string.error_field_required)
+            finishInput.error = getString(R.string.error_field_required)
         } else if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
             valid = false
-            finish_input.error = getString(R.string.error_finish_time_before_start_time)
+            finishInput.error = getString(R.string.error_finish_time_before_start_time)
         } else {
-            finish_input.error = null
+            finishInput.error = null
         }
 
         return valid
@@ -291,8 +291,8 @@ class TimeEditFragment : TimeFormFragment() {
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
-        task_input.setSelection(options.indexOf(record.task))
+        taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
+        taskInput.setSelection(options.indexOf(record.task))
     }
 
     private fun projectItemSelected(project: Project) {

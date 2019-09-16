@@ -100,7 +100,7 @@ class LoginFragment : InternetFragment() {
         })
         password.setText(prefs.userCredentials.password)
 
-        emailSignInButton.setOnClickListener { attemptLogin() }
+        emailSignIn.setOnClickListener { attemptLogin() }
     }
 
     override fun handleIntent(intent: Intent) {
@@ -126,7 +126,7 @@ class LoginFragment : InternetFragment() {
      * errors are presented and no actual login attempt is made.
      */
     fun attemptLogin() {
-        if (!emailSignInButton.isEnabled) {
+        if (!emailSignIn.isEnabled) {
             return
         }
 
@@ -173,7 +173,7 @@ class LoginFragment : InternetFragment() {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true)
-            emailSignInButton.isEnabled = false
+            emailSignIn.isEnabled = false
 
             prefs.userCredentials = UserCredentials(emailValue, passwordValue)
 
@@ -186,7 +186,7 @@ class LoginFragment : InternetFragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
                     showProgress(false)
-                    emailSignInButton.isEnabled = true
+                    emailSignIn.isEnabled = true
 
                     if (isValidResponse(response)) {
                         val body = response.body()!!
@@ -205,7 +205,7 @@ class LoginFragment : InternetFragment() {
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
                     showProgress(false)
-                    emailSignInButton.isEnabled = true
+                    emailSignIn.isEnabled = true
                 })
         }
     }
@@ -219,7 +219,7 @@ class LoginFragment : InternetFragment() {
     }
 
     private fun showProgress(show: Boolean) {
-        login_form.showAnimated(show.not())
+        loginForm.showAnimated(show.not())
         (activity as LoginActivity).showProgress(show)
     }
 

@@ -5,7 +5,7 @@
     tools:context="com.tikalk.worktracker.auth.LoginActivity">
 
     <fragment
-        android:id="@+id/login_form"
+        android:id="@+id/loginForm"
         android:name="com.tikalk.worktracker.auth.LoginFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

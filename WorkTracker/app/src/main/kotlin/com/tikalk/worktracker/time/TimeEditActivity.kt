@@ -89,7 +89,7 @@ class TimeEditActivity : TimeFormActivity() {
         // Set up the form.
         setContentView(R.layout.activity_time_edit)
 
-        formFragment = supportFragmentManager.findFragmentById(R.id.fragment_form) as TimeFormFragment
+        formFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeFormFragment
         editFragment = formFragment as TimeEditFragment
 
         handleIntent(intent, savedInstanceState)
@@ -274,7 +274,7 @@ class TimeEditActivity : TimeFormActivity() {
         // perform the user login attempt.
         if (first) {
             showProgress(true)
-            error_label.text = ""
+            errorLabel.text = ""
         }
 
         val authToken = prefs.basicCredentials.authToken()
@@ -313,7 +313,7 @@ class TimeEditActivity : TimeFormActivity() {
                             finish()
                         }
                     } else {
-                        error_label.text = errorMessage
+                        errorLabel.text = errorMessage
                     }
                 } else {
                     authenticate(true)

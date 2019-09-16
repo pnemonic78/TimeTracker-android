@@ -75,7 +75,7 @@ class TimerFragment : TimeFormFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        project_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 projectItemSelected(projectEmpty)
             }
@@ -85,7 +85,7 @@ class TimerFragment : TimeFormFragment() {
                 projectItemSelected(project)
             }
         }
-        task_input.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 taskItemSelected(taskEmpty)
             }
@@ -96,33 +96,33 @@ class TimerFragment : TimeFormFragment() {
             }
         }
 
-        action_start.setOnClickListener { startTimer() }
-        action_stop.setOnClickListener { stopTimer() }
+        actionStart.setOnClickListener { startTimer() }
+        actionStop.setOnClickListener { stopTimer() }
     }
 
     @MainThread
     override fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
         val context: Context = this.context ?: return
-        project_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         if (projects.isNotEmpty()) {
-            project_input.setSelection(max(0, projects.indexOf(record.project)))
+            projectInput.setSelection(max(0, projects.indexOf(record.project)))
         }
-        task_input.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         if (tasks.isNotEmpty()) {
-            task_input.setSelection(max(0, tasks.indexOf(record.task)))
+            taskInput.setSelection(max(0, tasks.indexOf(record.task)))
         }
-        project_input.requestFocus()
+        projectInput.requestFocus()
 
         val startTime = record.startTime
         if (startTime <= 0L) {
-            project_input.isEnabled = true
-            task_input.isEnabled = true
-            action_switcher.displayedChild = 0
+            projectInput.isEnabled = true
+            taskInput.isEnabled = true
+            actionSwitcher.displayedChild = 0
         } else {
-            project_input.isEnabled = false
-            task_input.isEnabled = false
-            action_switcher.displayedChild = 1
+            projectInput.isEnabled = false
+            taskInput.isEnabled = false
+            actionSwitcher.displayedChild = 1
 
             maybeStartTimer()
             maybeStopTimer()
@@ -166,8 +166,8 @@ class TimerFragment : TimeFormFragment() {
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)
-        task_input.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
-        task_input.setSelection(options.indexOf(record.task))
+        taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
+        taskInput.setSelection(options.indexOf(record.task))
     }
 
     private fun maybeStartTimer() {
@@ -192,18 +192,18 @@ class TimerFragment : TimeFormFragment() {
     private fun updateTimer() {
         val now = System.currentTimeMillis()
         val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
-        timer_text.text = DateUtils.formatElapsedTime(elapsedSeconds)
+        timerText.text = DateUtils.formatElapsedTime(elapsedSeconds)
     }
 
     private fun projectItemSelected(project: Project) {
         record.project = project
         filterTasks(project)
-        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
+        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         record.task = task
-        action_start.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
+        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun getStartedRecord(): TimeRecord? {

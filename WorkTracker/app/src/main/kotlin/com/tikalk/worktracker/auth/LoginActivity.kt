@@ -54,7 +54,7 @@ class LoginActivity : InternetActivity() {
         setContentView(R.layout.activity_login)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        loginFragment = supportFragmentManager.findFragmentById(R.id.login_form) as LoginFragment
+        loginFragment = supportFragmentManager.findFragmentById(R.id.loginForm) as LoginFragment
 
         handleIntent(intent)
     }

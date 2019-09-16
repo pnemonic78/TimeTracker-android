@@ -6,7 +6,7 @@
     tools:context="com.tikalk.worktracker.time.TimeEditActivity">
 
     <fragment
-        android:id="@+id/fragment_form"
+        android:id="@+id/fragmentForm"
         android:name="com.tikalk.worktracker.time.TimeEditFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

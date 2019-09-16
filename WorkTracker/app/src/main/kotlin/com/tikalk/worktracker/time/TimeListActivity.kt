@@ -101,10 +101,10 @@ class TimeListActivity : TimeFormActivity(),
         // Set up the form.
         setContentView(R.layout.activity_time_list)
 
-        formFragment = supportFragmentManager.findFragmentById(R.id.fragment_form) as TimeFormFragment
+        formFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeFormFragment
         timerFragment = formFragment as TimerFragment
-        date_input.setOnClickListener { pickDate() }
-        fab_add.setOnClickListener { addTime() }
+        dateInput.setOnClickListener { pickDate() }
+        recordAdd.setOnClickListener { addTime() }
 
         list.adapter = listAdapter
         gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
@@ -233,7 +233,7 @@ class TimeListActivity : TimeFormActivity(),
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
-        date_input.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
+        dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
 
         if (records !== this.records) {
             this.records.clear()
@@ -249,35 +249,35 @@ class TimeListActivity : TimeFormActivity(),
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
         if (totals.daily == TimeTotals.UNKNOWN) {
-            day_total_label.visibility = View.INVISIBLE
-            day_total.text = null
+            dayTotalLabel.visibility = View.INVISIBLE
+            dayTotal.text = null
         } else {
-            day_total_label.visibility = View.VISIBLE
-            day_total.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
+            dayTotalLabel.visibility = View.VISIBLE
+            dayTotal.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
         }
         if (totals.weekly == TimeTotals.UNKNOWN) {
-            week_total_label.visibility = View.INVISIBLE
-            week_total.text = null
+            weekTotalLabel.visibility = View.INVISIBLE
+            weekTotal.text = null
         } else {
             timeBuffer.setLength(0)
-            week_total_label.visibility = View.VISIBLE
-            week_total.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
+            weekTotalLabel.visibility = View.VISIBLE
+            weekTotal.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
         }
         if (totals.monthly == TimeTotals.UNKNOWN) {
-            month_total_label.visibility = View.INVISIBLE
-            month_total.text = null
+            monthTotalLabel.visibility = View.INVISIBLE
+            monthTotal.text = null
         } else {
             timeBuffer.setLength(0)
-            month_total_label.visibility = View.VISIBLE
-            month_total.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
+            monthTotalLabel.visibility = View.VISIBLE
+            monthTotal.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
         }
         if (totals.remaining == TimeTotals.UNKNOWN) {
-            remaining_quota_label.visibility = View.INVISIBLE
-            remaining_quota.text = null
+            remainingQuotaLabel.visibility = View.INVISIBLE
+            remainingQuota.text = null
         } else {
             timeBuffer.setLength(0)
-            remaining_quota_label.visibility = View.VISIBLE
-            remaining_quota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
+            remainingQuotaLabel.visibility = View.VISIBLE
+            remainingQuota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
         }
     }
 
@@ -369,7 +369,7 @@ class TimeListActivity : TimeFormActivity(),
         list.showAnimated(show.not())
         progress.showAnimated(show)
 
-        fab_add.isEnabled = !show
+        recordAdd.isEnabled = !show
     }
 
     private fun addTime() {

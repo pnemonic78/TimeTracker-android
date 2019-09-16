@@ -83,7 +83,7 @@ class BasicRealmActivity : InternetActivity() {
         setContentView(R.layout.activity_basic_realm)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        realmView = findViewById(R.id.realm_title)
+        realmView = findViewById(R.id.realmTitle)
         realmView.text = getString(R.string.authentication_basic_realm, realmName)
 
         usernameView = findViewById(R.id.username)
@@ -100,10 +100,10 @@ class BasicRealmActivity : InternetActivity() {
         })
         passwordView.setText(password)
 
-        authButton = findViewById(R.id.realm_auth_button)
+        authButton = findViewById(R.id.realmAuthenticate)
         authButton.setOnClickListener { attemptLogin() }
 
-        loginFormView = findViewById(R.id.auth_form)
+        loginFormView = findViewById(R.id.realmForm)
         progressView = findViewById(R.id.progress)
 
         handleIntent(intent)

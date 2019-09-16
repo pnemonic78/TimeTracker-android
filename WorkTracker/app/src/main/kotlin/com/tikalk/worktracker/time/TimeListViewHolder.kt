@@ -48,8 +48,8 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
 
     private val projectView: TextView = itemView.findViewById(R.id.project)
     private val taskView: TextView = itemView.findViewById(R.id.task)
-    private val timeRangeView: TextView = itemView.findViewById(R.id.time_range)
-    private val timeDurationView: TextView = itemView.findViewById(R.id.time_duration)
+    private val timeRangeView: TextView = itemView.findViewById(R.id.timeRange)
+    private val timeDurationView: TextView = itemView.findViewById(R.id.timeDuration)
     private val noteView: TextView = itemView.findViewById(R.id.note)
 
     private val timeBuffer = StringBuilder(20)
