@@ -37,20 +37,13 @@ import android.graphics.Color
 import android.text.format.DateUtils
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
+import kotlinx.android.synthetic.main.time_item.view.*
 
 class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
     View.OnClickListener {
-
-    private val projectView: TextView = itemView.findViewById(R.id.project)
-    private val taskView: TextView = itemView.findViewById(R.id.task)
-    private val timeRangeView: TextView = itemView.findViewById(R.id.timeRange)
-    private val timeDurationView: TextView = itemView.findViewById(R.id.timeDuration)
-    private val noteView: TextView = itemView.findViewById(R.id.note)
 
     private val timeBuffer = StringBuilder(20)
     private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
@@ -74,27 +67,27 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
 
     private fun bind(record: TimeRecord) {
         val context: Context = itemView.context
-        projectView.text = record.project.name
-        taskView.text = record.task.name
+        itemView.project.text = record.project.name
+        itemView.task.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
         timeBuffer.setLength(0)
         val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
-        timeRangeView.text = formatterRange.out() as CharSequence
+        itemView.timeRange.text = formatterRange.out() as CharSequence
         timeBuffer.setLength(0)
         val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
-        timeDurationView.text = formatterElapsed.out() as CharSequence
-        noteView.text = record.note
+        itemView.timeDuration.text = formatterElapsed.out() as CharSequence
+        itemView.note.text = record.note
 
         bindColors(record)
     }
 
     private fun clear() {
-        projectView.text = ""
-        taskView.text = ""
-        timeRangeView.text = ""
-        timeDurationView.text = ""
-        noteView.text = ""
+        itemView.project.text = ""
+        itemView.task.text = ""
+        itemView.timeRange.text = ""
+        itemView.timeDuration.text = ""
+        itemView.note.text = ""
     }
 
     private fun bindColors(record: TimeRecord) {
@@ -111,9 +104,9 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         val b = blueBits * 24 //*32 => some colors too bright
         val color = if (night) Color.rgb(255 - r, 255 - g, 255 - b) else Color.rgb(r, g, b)
 
-        projectView.setTextColor(color)
-        taskView.setTextColor(color)
-        noteView.setTextColor(color)
+        itemView.project.setTextColor(color)
+        itemView.task.setTextColor(color)
+        itemView.note.setTextColor(color)
     }
 
     override fun onClick(v: View) {
