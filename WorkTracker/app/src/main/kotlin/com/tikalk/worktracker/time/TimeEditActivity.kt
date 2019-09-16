@@ -103,16 +103,16 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        val now = date.timeInMillis
+        editFragment.handleIntent(intent)
+
         var recordId = record.id
 
         val extras = intent.extras
         if (extras != null) {
-            editFragment.handleIntent(extras)
             recordId = extras.getLong(EXTRA_RECORD, recordId)
         }
         if (savedInstanceState != null) {
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, now)
+            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
             recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
             record.id = recordId
         }

@@ -46,7 +46,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -543,7 +542,8 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        timerFragment.later(if (intent.action == ACTION_STOP) intent else null)
+        timerFragment.handleIntent(intent)
+        intent.action = null
 
         if (savedInstanceState == null) {
             fetchPage(date)

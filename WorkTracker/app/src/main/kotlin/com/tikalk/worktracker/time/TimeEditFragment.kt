@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 
 import android.app.TimePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
@@ -303,7 +304,11 @@ class TimeEditFragment : TimeFormFragment() {
         record.task = task
     }
 
-    fun handleIntent(args: Bundle) {
+    fun handleIntent(intent: Intent) {
+        val args = arguments ?: Bundle()
+        if (intent.extras != null) {
+            args.putAll(intent.extras)
+        }
         arguments = args
         date.timeInMillis = args.getLong(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
     }

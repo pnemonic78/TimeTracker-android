@@ -43,6 +43,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
 import com.tikalk.app.runOnUiThread
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -66,7 +67,6 @@ import kotlin.math.max
 class TimerFragment : TimeFormFragment() {
 
     private var timer: Disposable? = null
-    private var intentLater: Intent? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
@@ -182,8 +182,9 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun maybeStopTimer() {
-        if (intentLater?.action == TimeListActivity.ACTION_STOP) {
-            intentLater = null
+        val action = arguments?.getString(EXTRA_INTENT_ACTION)
+        if (action == TimeListActivity.ACTION_STOP) {
+            arguments?.remove(EXTRA_INTENT_ACTION)
             stopTimer()
         }
     }
@@ -275,10 +276,6 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
-    fun later(intent: Intent?) {
-        this.intentLater = intent
-    }
-
     fun editRecord(record: TimeRecord, requestCode: Int = TimeListActivity.REQUEST_EDIT) {
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(TimeEditActivity.EXTRA_DATE, date.timeInMillis)
@@ -291,5 +288,18 @@ class TimerFragment : TimeFormFragment() {
             intent.putExtra(TimeEditActivity.EXTRA_RECORD, record.id)
         }
         startActivityForResult(intent, requestCode)
+    }
+
+    fun handleIntent(intent: Intent) {
+        val args = arguments ?: Bundle()
+        if (intent.extras != null) {
+            args.putAll(intent.extras)
+        }
+        args.putString(EXTRA_INTENT_ACTION, intent.action)
+        arguments = args
+    }
+
+    companion object {
+        const val EXTRA_INTENT_ACTION = BuildConfig.APPLICATION_ID + ".INTENT_ACTION"
     }
 }
