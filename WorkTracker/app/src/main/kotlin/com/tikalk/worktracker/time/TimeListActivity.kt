@@ -75,7 +75,6 @@ class TimeListActivity : TimeFormActivity(),
         const val REQUEST_STOPPED = 0x5706
 
         private const val STATE_DATE = "date"
-        private const val STATE_RECORD = "record"
         private const val STATE_TOTALS = "totals"
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
@@ -317,14 +316,14 @@ class TimeListActivity : TimeFormActivity(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putParcelable(STATE_RECORD, record)
+        prefs.saveRecord(record)
         outState.putParcelable(STATE_TOTALS, totals)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val recordParcel = prefs.readRecord()
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
 
         if (recordParcel != null) {

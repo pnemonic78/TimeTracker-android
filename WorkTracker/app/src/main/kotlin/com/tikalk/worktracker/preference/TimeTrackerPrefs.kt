@@ -64,6 +64,7 @@ class TimeTrackerPrefs(context: Context) {
         private const val TASK_NAME = "task.name"
         private const val TASK_FAVORITE = "task.favorite"
         private const val START_TIME = "start.time"
+        private const val NOTE = "note"
     }
 
     var basicCredentials: BasicCredentials = BasicCredentials("", "", "")
@@ -99,25 +100,27 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long) {
+    fun saveRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, note: String? = null) {
         prefs.edit()
             .putLong(PROJECT_ID, projectId)
             .putString(PROJECT_NAME, projectName)
             .putLong(TASK_ID, taskId)
             .putString(TASK_NAME, taskName)
             .putLong(START_TIME, startTime)
+            .putString(NOTE, note)
             .apply()
     }
 
-    fun startRecord(record: TimeRecord) {
-        startRecord(record.project.id,
+    fun saveRecord(record: TimeRecord) {
+        saveRecord(record.project.id,
             record.project.name,
             record.task.id,
             record.task.name,
-            record.startTime)
+            record.startTime,
+            record.note)
     }
 
-    fun getStartedRecord(): TimeRecord? {
+    fun readRecord(): TimeRecord? {
         val projectId = prefs.getLong(PROJECT_ID, TikalEntity.ID_NONE)
         if (projectId == TikalEntity.ID_NONE) return null
 

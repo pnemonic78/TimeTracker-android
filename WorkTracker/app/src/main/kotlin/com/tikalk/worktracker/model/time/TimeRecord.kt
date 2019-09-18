@@ -31,8 +31,6 @@
  */
 package com.tikalk.worktracker.model.time
 
-import android.os.Parcel
-import android.os.Parcelable
 import android.text.format.DateUtils
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -55,7 +53,7 @@ data class TimeRecord(
     var finish: Calendar? = null,
     var note: String = "",
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
-) : TikalEntity(id), Parcelable {
+) : TikalEntity(id) {
 
     var startTime: Long
         get() = start?.timeInMillis ?: 0L
@@ -76,45 +74,6 @@ data class TimeRecord(
         return project.isEmpty()
             || task.isEmpty()
             || (startTime <= 0L)
-    }
-
-    constructor(parcel: Parcel) : this(ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
-        id = parcel.readLong()
-        version = parcel.readInt()
-        project.id = parcel.readLong()
-        task.id = parcel.readLong()
-        startTime = parcel.readLong()
-        finishTime = parcel.readLong()
-        note = parcel.readString() ?: ""
-        status = TaskRecordStatus.values()[parcel.readInt()]
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id)
-        parcel.writeInt(version)
-        parcel.writeLong(project.id)
-        parcel.writeLong(task.id)
-        parcel.writeLong(startTime)
-        parcel.writeLong(finishTime)
-        parcel.writeString(note)
-        parcel.writeInt(status.ordinal)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object {
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<TimeRecord> {
-            override fun createFromParcel(parcel: Parcel): TimeRecord {
-                return TimeRecord(parcel)
-            }
-
-            override fun newArray(size: Int): Array<TimeRecord?> {
-                return arrayOfNulls(size)
-            }
-        }
     }
 }
 

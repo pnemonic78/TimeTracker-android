@@ -42,7 +42,6 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_DATE
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD_ID
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -130,13 +129,13 @@ class TimeEditActivity : TimeFormActivity() {
 
         bindRecord(record)
         outState.putLong(STATE_RECORD_ID, record.id)
-        outState.putParcelable(STATE_RECORD, record)
+        prefs.saveRecord(record)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val recordParcel = prefs.readRecord()
 
         if (recordParcel != null) {
             record = recordParcel

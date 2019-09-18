@@ -207,7 +207,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun getStartedRecord(): TimeRecord? {
-        val started = prefs.getStartedRecord()
+        val started = prefs.readRecord()
         if (started != null) {
             return started
         }

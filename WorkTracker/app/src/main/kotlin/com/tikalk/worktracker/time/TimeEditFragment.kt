@@ -424,7 +424,6 @@ class TimeEditFragment : TimeFormFragment() {
 
         const val STATE_DATE = "date"
         const val STATE_RECORD_ID = "record_id"
-        const val STATE_RECORD = "record"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
         const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"

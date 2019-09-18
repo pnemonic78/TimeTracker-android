@@ -80,7 +80,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         fun maybeShowNotification(context: Context) {
             Timber.v("maybeShowNotification")
             val prefs = TimeTrackerPrefs(context)
-            val record = prefs.getStartedRecord() ?: return
+            val record = prefs.readRecord() ?: return
             Timber.v("maybeShowNotification record=$record")
             if (!record.isEmpty()) {
                 showNotification(context)
@@ -158,7 +158,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         Timber.v("startTimer")
         val record = createRecord(extras) ?: return Result.failure()
 
-        prefs.startRecord(record)
+        prefs.saveRecord(record)
 
         if (extras.getBoolean(EXTRA_NOTIFICATION, true)) {
             val nm = NotificationManagerCompat.from(context)
@@ -171,7 +171,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
     private fun stopTimer(extras: Data): Result {
         Timber.v("stopTimer")
         if (extras.getBoolean(EXTRA_EDIT, false)) {
-            val record = prefs.getStartedRecord()
+            val record = prefs.readRecord()
             val projectId = extras.getLong(EXTRA_PROJECT_ID, record?.project?.id ?: 0L)
             val taskId = extras.getLong(EXTRA_TASK_ID, record?.task?.id ?: 0L)
             val startTime = extras.getLong(EXTRA_START_TIME, record?.startTime ?: 0L)
@@ -276,7 +276,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
         Timber.v("showNotification visible=$visible")
         if (visible) {
-            val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return Result.failure()
+            val record = createRecord(extras) ?: prefs.readRecord() ?: return Result.failure()
             Timber.v("showNotification record=$record")
             val nm = NotificationManagerCompat.from(context)
             nm.notify(ID_NOTIFY, createNotification(record))
