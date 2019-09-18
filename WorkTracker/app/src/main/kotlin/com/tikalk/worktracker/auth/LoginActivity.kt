@@ -56,7 +56,7 @@ class LoginActivity : InternetActivity() {
 
         loginFragment = supportFragmentManager.findFragmentById(R.id.loginFragment) as LoginFragment
 
-        handleIntent(intent)
+        handleIntent(intent, savedInstanceState)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -79,8 +79,8 @@ class LoginActivity : InternetActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun handleIntent(intent: Intent) {
-        loginFragment.handleIntent(intent)
+    private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
+        loginFragment.handleIntent(intent, savedInstanceState)
     }
 
     override fun showProgress(show: Boolean) {

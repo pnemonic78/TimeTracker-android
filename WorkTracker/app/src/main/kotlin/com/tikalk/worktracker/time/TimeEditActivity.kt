@@ -78,8 +78,7 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        editFragment.handleIntent(intent)
-
+        editFragment.handleIntent(intent, savedInstanceState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
