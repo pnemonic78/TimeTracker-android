@@ -35,6 +35,7 @@ import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.tikalk.worktracker.time.toCalendar
 import java.util.*
 
 /**
@@ -75,12 +76,8 @@ open class Converters {
     fun toTimestamp(value: Date?): Long? = value?.time
 
     @TypeConverter
-    fun fromCalendar(value: Long?): Calendar? = value?.let {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = it
-        return@let cal
-    }
+    fun fromCalendar(value: Long?): Calendar? = value?.toCalendar()
 
     @TypeConverter
-    fun toCalendar(value: Calendar?): Long? = value?.time?.time
+    fun toCalendar(value: Calendar?): Long? = value?.timeInMillis
 }

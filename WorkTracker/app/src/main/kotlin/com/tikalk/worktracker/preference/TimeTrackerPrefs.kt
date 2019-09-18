@@ -39,7 +39,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.*
+import com.tikalk.worktracker.time.toCalendar
 
 /**
  * Time Tracker preferences.
@@ -139,8 +139,7 @@ class TimeTrackerPrefs(context: Context) {
         task.id = taskId
         task.name = taskName
         project.addTask(task)
-        val start = Calendar.getInstance()
-        start.timeInMillis = startTime
+        val start = startTime.toCalendar()
 
         return TimeRecord(TikalEntity.ID_NONE, user, project, task, start)
     }
