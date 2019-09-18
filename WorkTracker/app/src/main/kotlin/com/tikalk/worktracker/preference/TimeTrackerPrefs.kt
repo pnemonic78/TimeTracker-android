@@ -39,7 +39,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.*
+import com.tikalk.worktracker.time.toCalendar
 
 /**
  * Time Tracker preferences.
@@ -57,14 +57,17 @@ class TimeTrackerPrefs(context: Context) {
         private const val USER_CREDENTIALS_LOGIN = "user.login"
         private const val USER_CREDENTIALS_PASSWORD = "user.password"
 
-        private const val PROJECT_ID = "project.id"
-        private const val PROJECT_NAME = "project.name"
         private const val PROJECT_FAVORITE = "project.favorite"
-        private const val TASK_ID = "task.id"
-        private const val TASK_NAME = "task.name"
         private const val TASK_FAVORITE = "task.favorite"
-        private const val START_TIME = "start.time"
-        private const val NOTE = "note"
+
+        private const val RECORD_ID = "record.id"
+        private const val RECORD_PROJECT_ID = "project.id"
+        private const val RECORD_PROJECT_NAME = "project.name"
+        private const val RECORD_TASK_ID = "task.id"
+        private const val RECORD_TASK_NAME = "task.name"
+        private const val RECORD_START_TIME = "start.time"
+        private const val RECORD_FINISH_TIME = "finish.time"
+        private const val RECORD_NOTE = "note"
     }
 
     var basicCredentials: BasicCredentials = BasicCredentials("", "", "")
@@ -100,39 +103,48 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun saveRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, note: String? = null) {
+    fun saveRecord(recordId: Long = TikalEntity.ID_NONE, projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, finishTime: Long? = null, note: String? = null) {
         prefs.edit()
-            .putLong(PROJECT_ID, projectId)
-            .putString(PROJECT_NAME, projectName)
-            .putLong(TASK_ID, taskId)
-            .putString(TASK_NAME, taskName)
-            .putLong(START_TIME, startTime)
-            .putString(NOTE, note)
+            .putLong(RECORD_ID, recordId)
+            .putLong(RECORD_PROJECT_ID, projectId)
+            .putString(RECORD_PROJECT_NAME, projectName)
+            .putLong(RECORD_TASK_ID, taskId)
+            .putString(RECORD_TASK_NAME, taskName)
+            .putLong(RECORD_START_TIME, startTime)
+            .putLong(RECORD_FINISH_TIME, finishTime ?: 0L)
+            .putString(RECORD_NOTE, note ?: "")
             .apply()
     }
 
     fun saveRecord(record: TimeRecord) {
-        saveRecord(record.project.id,
+        saveRecord(record.id,
+            record.project.id,
             record.project.name,
             record.task.id,
             record.task.name,
             record.startTime,
+            record.finishTime,
             record.note)
     }
 
     fun readRecord(): TimeRecord? {
-        val projectId = prefs.getLong(PROJECT_ID, TikalEntity.ID_NONE)
+        val recordId = prefs.getLong(RECORD_ID, TikalEntity.ID_NONE)
+
+        val projectId = prefs.getLong(RECORD_PROJECT_ID, TikalEntity.ID_NONE)
         if (projectId == TikalEntity.ID_NONE) return null
 
-        val projectName = prefs.getString(PROJECT_NAME, null) ?: return null
+        val projectName = prefs.getString(RECORD_PROJECT_NAME, null) ?: return null
 
-        val taskId = prefs.getLong(TASK_ID, TikalEntity.ID_NONE)
+        val taskId = prefs.getLong(RECORD_TASK_ID, TikalEntity.ID_NONE)
         if (taskId == TikalEntity.ID_NONE) return null
 
-        val taskName = prefs.getString(TASK_NAME, null) ?: return null
+        val taskName = prefs.getString(RECORD_TASK_NAME, null) ?: return null
 
-        val startTime = prefs.getLong(START_TIME, 0L)
+        val startTime = prefs.getLong(RECORD_START_TIME, 0L)
         if (startTime <= 0L) return null
+
+        val finishTime = prefs.getLong(RECORD_FINISH_TIME, 0L)
+        val note: String = prefs.getString(RECORD_NOTE, null) ?: ""
 
         val user = User(userCredentials.login)
         val project = Project.EMPTY.copy()
@@ -142,19 +154,22 @@ class TimeTrackerPrefs(context: Context) {
         task.id = taskId
         task.name = taskName
         project.addTask(task)
-        val start = Calendar.getInstance()
-        start.timeInMillis = startTime
+        val start = startTime.toCalendar()
+        val finish = finishTime.toCalendar()
 
-        return TimeRecord(TikalEntity.ID_NONE, user, project, task, start)
+        return TimeRecord(recordId, user, project, task, start, finish, note)
     }
 
     fun stopRecord() {
         prefs.edit()
-            .remove(PROJECT_ID)
-            .remove(PROJECT_NAME)
-            .remove(TASK_ID)
-            .remove(TASK_NAME)
-            .remove(START_TIME)
+            .remove(RECORD_ID)
+            .remove(RECORD_PROJECT_ID)
+            .remove(RECORD_PROJECT_NAME)
+            .remove(RECORD_TASK_ID)
+            .remove(RECORD_TASK_NAME)
+            .remove(RECORD_START_TIME)
+            .remove(RECORD_FINISH_TIME)
+            .remove(RECORD_NOTE)
             .apply()
     }
 

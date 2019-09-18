@@ -173,6 +173,12 @@ fun Calendar.isSameDay(that: Calendar): Boolean {
         && (this.dayOfMonth == that.dayOfMonth)
 }
 
+fun Long.toCalendar(): Calendar {
+    val cal = Calendar.getInstance()
+    cal.timeInMillis = this
+    return cal
+}
+
 private var sElapsedFormatHMM: String? = null
 
 fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): Formatter {

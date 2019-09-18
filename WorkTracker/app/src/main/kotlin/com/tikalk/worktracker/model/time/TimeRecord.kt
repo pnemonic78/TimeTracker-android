@@ -134,5 +134,5 @@ fun TimeRecord.split(): List<TimeRecord> {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun TimeRecord?.isNullOrEmpty(): Boolean {
-    return this == null || this.isEmpty()
+    return (this == null) || isEmpty()
 }
