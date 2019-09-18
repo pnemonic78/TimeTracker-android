@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="Theme.WorkTracker" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <style name="Base.Theme.WorkTracker" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -10,6 +10,9 @@
         <item name="android:progressBarStyle">@style/Widget.ProgressBar</item>
         <item name="android:progressBarStyleLarge">@style/Widget.ProgressBar.Large</item>
         <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar</item>
+    </style>
+
+    <style name="Theme.WorkTracker" parent="Base.Theme.WorkTracker">
     </style>
 
     <style name="Theme.WorkTracker.NoActionBar">
