@@ -56,6 +56,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -417,6 +418,120 @@ class TimeEditFragment : TimeFormFragment() {
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginFragment.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
+    }
+
+    fun submit() {
+        val record = this.record
+
+        if (!validateForm(record)) {
+            return
+        }
+        bindRecord(record)
+
+        if (record.id == TikalEntity.ID_NONE) {
+            val splits = record.split()
+            val size = splits.size
+            val lastIndex = size - 1
+            for (i in 0 until size) {
+                submit(splits[i], i == 0, i == lastIndex)
+            }
+        } else {
+            submit(record, true, true)
+        }
+    }
+
+    private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
+        // Show a progress spinner, and kick off a background task to
+        // perform the user login attempt.
+        if (first) {
+            showProgress(true)
+            errorLabel.text = ""
+        }
+
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+
+        val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
+            service.addTime(record.project.id,
+                record.task.id,
+                formatSystemDate(record.start),
+                formatSystemTime(record.start),
+                formatSystemTime(record.finish),
+                record.note)
+        } else {
+            service.editTime(record.id,
+                record.project.id,
+                record.task.id,
+                formatSystemDate(record.start),
+                formatSystemTime(record.start),
+                formatSystemTime(record.finish),
+                record.note)
+        }
+        submitter
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                if (last) {
+                    showProgress(false)
+                }
+
+                if (isValidResponse(response)) {
+                    val body = response.body()!!
+                    val errorMessage = getResponseError(body)
+                    if (errorMessage.isNullOrEmpty()) {
+                        if (last) {
+                            //FIXME call listener
+                            activity?.setResult(AppCompatActivity.RESULT_OK)
+                            activity?.finish()
+                        }
+                    } else {
+                        errorLabel.text = errorMessage
+                    }
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error saving record: ${err.message}")
+                showProgress(false)
+            })
+            .addTo(disposables)
+    }
+
+    fun deleteRecord() {
+        if (record.id == TikalEntity.ID_NONE) {
+            //FIXME call listener
+            activity?.setResult(AppCompatActivity.RESULT_OK)
+            activity?.finish()
+        } else {
+            deleteRecord(record)
+        }
+    }
+
+    private fun deleteRecord(record: TimeRecord) {
+        // Show a progress spinner, and kick off a background task to
+        // perform the user login attempt.
+        showProgress(true)
+
+        val authToken = prefs.basicCredentials.authToken()
+        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+
+        service.deleteTime(record.id)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                if (isValidResponse(response)) {
+                    showProgress(false)
+                    //FIXME call listener
+                    activity?.setResult(AppCompatActivity.RESULT_OK)
+                    activity?.finish()
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error deleting record: ${err.message}")
+                showProgress(false)
+            })
+            .addTo(disposables)
     }
 
     companion object {
