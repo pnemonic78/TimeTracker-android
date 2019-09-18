@@ -56,7 +56,7 @@ class BasicRealmActivity : InternetActivity() {
 
         loginFragment = supportFragmentManager.findFragmentById(R.id.realmFragment) as BasicRealmFragment
 
-        handleIntent(intent)
+        handleIntent(intent, savedInstanceState)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -79,8 +79,8 @@ class BasicRealmActivity : InternetActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun handleIntent(intent: Intent) {
-        loginFragment.handleIntent(intent)
+    private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
+        loginFragment.handleIntent(intent, savedInstanceState)
     }
 
     override fun showProgress(show: Boolean) {

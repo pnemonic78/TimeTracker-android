@@ -526,7 +526,7 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        timerFragment.handleIntent(intent)
+        timerFragment.handleIntent(intent, savedInstanceState)
         intent.action = null
 
         if (savedInstanceState == null) {

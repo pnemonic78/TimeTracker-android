@@ -329,11 +329,14 @@ class TimeEditFragment : TimeFormFragment() {
         val extras = intent.extras
         if (extras != null) {
             recordId = extras.getLong(EXTRA_RECORD, recordId)
+            record.id = recordId
         }
         if (savedInstanceState != null) {
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
-            recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
-            record.id = recordId
+            val recordPrefs = prefs.readRecord()
+            if (recordPrefs != null) {
+                record = recordPrefs
+            }
         }
         loadPage()
             .subscribe({
@@ -423,7 +426,6 @@ class TimeEditFragment : TimeFormFragment() {
         const val REQUEST_AUTHENTICATE = 1
 
         const val STATE_DATE = "date"
-        const val STATE_RECORD_ID = "record_id"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
         const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"

@@ -42,7 +42,6 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_DATE
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD_ID
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -77,8 +76,7 @@ class TimeEditActivity : TimeFormActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        editFragment.handleIntent(intent)
-
+        editFragment.handleIntent(intent, savedInstanceState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -128,7 +126,6 @@ class TimeEditActivity : TimeFormActivity() {
         outState.putLong(STATE_DATE, date.timeInMillis)
 
         bindRecord(record)
-        outState.putLong(STATE_RECORD_ID, record.id)
         prefs.saveRecord(record)
     }
 
@@ -140,8 +137,6 @@ class TimeEditActivity : TimeFormActivity() {
         if (recordParcel != null) {
             record = recordParcel
             populateForm(record)
-        } else {
-            record.id = savedInstanceState.getLong(STATE_RECORD_ID)
         }
     }
 
