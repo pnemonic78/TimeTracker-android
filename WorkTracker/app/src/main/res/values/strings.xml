@@ -36,8 +36,6 @@
     <!-- Time recorder -->
     <string name="action_start">Start</string>
     <string name="action_stop">Stop</string>
-    <string name="title_service" translatable="false">@string/activity_time</string>
-    <string name="notification_description" translatable="false">%1$s (%2$s)</string>
     <string name="timer_0" translatable="false">0:00</string>
 
     <!-- Favourite / Favorite -->

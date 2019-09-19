@@ -229,8 +229,8 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
             Timber.v("createNotification channel=$channel")
         }
 
-        val title = res.getText(R.string.title_service)
-        val text = res.getString(R.string.notification_description, record.project.name, record.task.name)
+        val title = record.project.name
+        val text = record.task.name
         // The PendingIntent to launch our activity if the user selects this notification.
         val contentIntent = createActivityIntent(context)
 
@@ -248,7 +248,6 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
             .setUsesChronometer(true)
             .setShowWhen(true)
             .setContentText(text)  // the contents of the entry
-            .setTicker(text)  // the status text
             .setWhen(record.startTime)  // the time stamp
             .addAction(stopAction)
             .build()
