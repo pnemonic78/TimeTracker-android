@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.auth
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -44,7 +43,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import kotlinx.android.synthetic.main.fragment_basic_realm.*
 
 /**
@@ -52,13 +50,7 @@ import kotlinx.android.synthetic.main.fragment_basic_realm.*
  */
 class BasicRealmFragment : InternetFragment() {
 
-    private lateinit var prefs: TimeTrackerPrefs
     private var realmName = "(realm)"
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        prefs = TimeTrackerPrefs(context)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_basic_realm, container, false)
@@ -67,7 +59,7 @@ class BasicRealmFragment : InternetFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val credentials = prefs.basicCredentials
+        val credentials = preferences.basicCredentials
         realmName = credentials.realm
         val username = credentials.username
         val password = credentials.password
@@ -101,7 +93,7 @@ class BasicRealmFragment : InternetFragment() {
             val username = extras.getString(EXTRA_USER)
             usernameInput.setText(username)
 
-            val credentials = prefs.basicCredentials
+            val credentials = preferences.basicCredentials
 
             when {
                 extras.containsKey(EXTRA_PASSWORD) -> passwordInput.setText(extras.getString(EXTRA_PASSWORD))
@@ -166,7 +158,7 @@ class BasicRealmFragment : InternetFragment() {
             // perform the user login attempt.
             actionAuthenticate.isEnabled = false
 
-            prefs.basicCredentials = BasicCredentials(realmName, username, password)
+            preferences.basicCredentials = BasicCredentials(realmName, username, password)
             //FIXME call OnLoginListener.onSuccess()
             activity?.setResult(AppCompatActivity.RESULT_OK)
             activity?.finish()

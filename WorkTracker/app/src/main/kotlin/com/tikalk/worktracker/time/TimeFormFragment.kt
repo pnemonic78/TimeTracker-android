@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.content.Context
 import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -40,7 +39,6 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -51,21 +49,12 @@ import kotlin.collections.ArrayList
 abstract class TimeFormFragment : InternetFragment() {
 
     var date: Calendar = Calendar.getInstance()
-    var user: User = User.EMPTY
     var record: TimeRecord = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
     val projects: MutableList<Project> = ArrayList()
     val tasks: MutableList<ProjectTask> = ArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
     val records: MutableList<TimeRecord> = ArrayList()
-    protected lateinit var prefs: TimeTrackerPrefs
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        prefs = TimeTrackerPrefs(context)
-        user = prefs.user
-    }
 
     private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
@@ -417,4 +406,8 @@ abstract class TimeFormFragment : InternetFragment() {
     }
 
     abstract fun bindForm(record: TimeRecord)
+
+    fun markFavorite() {
+        preferences.setFavorite(record)
+    }
 }

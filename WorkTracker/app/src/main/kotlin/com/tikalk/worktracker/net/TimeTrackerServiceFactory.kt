@@ -34,6 +34,7 @@ package com.tikalk.worktracker.net
 import android.content.Context
 import com.tikalk.net.PersistentCookieStore
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -101,6 +102,11 @@ class TimeTrackerServiceFactory {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
             return retrofit.create(TimeTrackerService::class.java)
+        }
+
+        fun createPlain(context: Context?, preferences: TimeTrackerPrefs): TimeTrackerService {
+            val authToken = preferences.basicCredentials.authToken()
+            return createPlain(context, authToken)
         }
     }
 }

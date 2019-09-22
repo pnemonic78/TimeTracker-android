@@ -32,7 +32,7 @@
 
 package com.tikalk.worktracker.net
 
-import com.tikalk.app.TikalFragment
+import com.tikalk.worktracker.TrackerFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import retrofit2.Response
@@ -40,7 +40,7 @@ import retrofit2.Response
 /**
  * Fragment that is Internet-aware.
  */
-open class InternetFragment : TikalFragment() {
+open class InternetFragment : TrackerFragment() {
 
     protected fun isValidResponse(response: Response<String>): Boolean {
         val body = response.body()

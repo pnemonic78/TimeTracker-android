@@ -140,8 +140,8 @@ class TimeEditFragment : TimeFormFragment() {
         record.note = inputNote?.text() ?: ""
 
         if (id == TikalEntity.ID_NONE) {
-            val projectFavorite = prefs.getFavoriteProject()
-            val taskFavorite = prefs.getFavoriteTask()
+            val projectFavorite = preferences.getFavoriteProject()
+            val taskFavorite = preferences.getFavoriteTask()
 
             val args = arguments
             if (args != null) {
@@ -373,8 +373,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
 
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
         val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
             service.fetchTimes(dateFormatted)
@@ -448,8 +447,7 @@ class TimeEditFragment : TimeFormFragment() {
             errorLabel.text = ""
         }
 
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             service.addTime(record.project.id,
@@ -512,8 +510,7 @@ class TimeEditFragment : TimeFormFragment() {
         // perform the user login attempt.
         showProgress(true)
 
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())

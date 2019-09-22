@@ -156,7 +156,7 @@ class TimerFragment : TimeFormFragment() {
 
         record.start = null
         record.finish = null
-        prefs.stopRecord()
+        preferences.stopRecord()
         bindForm(record)
     }
 
@@ -207,7 +207,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun getStartedRecord(): TimeRecord? {
-        val started = prefs.getStartedRecord()
+        val started = preferences.getStartedRecord()
         if (started != null) {
             return started
         }
@@ -260,11 +260,11 @@ class TimerFragment : TimeFormFragment() {
     fun populateForm(recordStarted: TimeRecord?) {
         Timber.v("populateForm $recordStarted")
         if (recordStarted.isNullOrEmpty()) {
-            val projectFavorite = prefs.getFavoriteProject()
+            val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
             }
-            val taskFavorite = prefs.getFavoriteTask()
+            val taskFavorite = preferences.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }

@@ -37,20 +37,16 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
-import com.tikalk.app.TikalActivity
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
+import com.tikalk.worktracker.TrackerActivity
 import retrofit2.Response
 
 /**
  * Activity that is Internet-aware.
  */
-abstract class InternetActivity : TikalActivity() {
+abstract class InternetActivity : TrackerActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(receiver, filter)
@@ -109,32 +105,6 @@ abstract class InternetActivity : TikalActivity() {
             return true
         }
         return false
-    }
-
-    protected fun getResponseError(html: String?): String? {
-        if (html == null) return null
-        val doc: Document = Jsoup.parse(html)
-        return findError(doc)
-    }
-
-    /**
-     * Find the first error table element.
-     */
-    protected fun findError(doc: Document): String? {
-        val body = doc.body()
-        val tables = body.select("table")
-        if (tables.isEmpty()) {
-            return body.text()
-        }
-
-        for (table in tables) {
-            val errorNode = table.selectFirst("td[class='error']")
-            if (errorNode != null) {
-                return errorNode.text()
-            }
-        }
-
-        return null
     }
 
     /**

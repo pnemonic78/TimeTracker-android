@@ -38,16 +38,37 @@ import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_DATE
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD
 import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD_ID
 import kotlinx.android.synthetic.main.progress.*
 
-class TimeEditActivity : TimeFormActivity() {
+class TimeEditActivity : InternetActivity() {
 
     // UI references
     private var submitMenuItem: MenuItem? = null
     private lateinit var editFragment: TimeEditFragment
+
+    private var date
+        get() = editFragment.date
+        set(value) {
+            editFragment.date = value
+        }
+    private var user
+        get() = editFragment.user
+        set(value) {
+            editFragment.user = value
+        }
+    private var record
+        get() = editFragment.record
+        set(value) {
+            editFragment.record = value
+        }
+    private val projects
+        get() = editFragment.projects
+    private val tasks
+        get() = editFragment.tasks
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +77,6 @@ class TimeEditActivity : TimeFormActivity() {
         setContentView(R.layout.activity_time_edit)
 
         editFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeEditFragment
-        formFragment = editFragment
 
         handleIntent(intent, savedInstanceState)
     }
@@ -144,5 +164,9 @@ class TimeEditActivity : TimeFormActivity() {
 
     private fun deleteRecord() {
         editFragment.deleteRecord()
+    }
+
+    private fun markFavorite() {
+        editFragment.markFavorite()
     }
 }

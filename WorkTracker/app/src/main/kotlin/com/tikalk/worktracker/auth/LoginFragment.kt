@@ -47,7 +47,6 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -61,17 +60,10 @@ import timber.log.Timber
  */
 class LoginFragment : InternetFragment() {
 
-    private lateinit var prefs: TimeTrackerPrefs
-
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private var authTask: Disposable? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        prefs = TimeTrackerPrefs(context)
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -85,7 +77,7 @@ class LoginFragment : InternetFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        emailInput.setText(prefs.userCredentials.login)
+        emailInput.setText(preferences.userCredentials.login)
 
         val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
         passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
@@ -95,7 +87,7 @@ class LoginFragment : InternetFragment() {
             }
             false
         })
-        passwordInput.setText(prefs.userCredentials.password)
+        passwordInput.setText(preferences.userCredentials.password)
 
         actionSignIn.setOnClickListener { attemptLogin() }
     }
@@ -172,10 +164,9 @@ class LoginFragment : InternetFragment() {
             showProgress(true)
             actionSignIn.isEnabled = false
 
-            prefs.userCredentials = UserCredentials(emailValue, passwordValue)
+            preferences.userCredentials = UserCredentials(emailValue, passwordValue)
 
-            val authToken = prefs.basicCredentials.authToken()
-            val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+            val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
             val today = formatSystemDate()
             authTask = service.login(emailValue, passwordValue, today)

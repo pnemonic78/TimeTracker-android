@@ -29,61 +29,22 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time
+
+package com.tikalk.worktracker
 
 import android.content.Context
-import android.os.Bundle
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.InternetActivity
+import com.tikalk.app.TikalFragment
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import java.util.*
 
-abstract class TimeFormActivity : InternetActivity() {
+abstract class TrackerFragment : TikalFragment() {
 
-    protected var date
-        get() = formFragment.date
-        set(value) {
-            formFragment.date = value
-        }
-    protected var user
-        get() = formFragment.user
-        set(value) {
-            formFragment.user = value
-        }
-    protected var record
-        get() = formFragment.record
-        set(value) {
-            formFragment.record = value
-        }
-    protected val projects
-        get() = formFragment.projects
-    protected val tasks
-        get() = formFragment.tasks
-    protected val records
-        get() = formFragment.records
-    protected lateinit var formFragment: TimeFormFragment
+    protected lateinit var preferences: TimeTrackerPrefs
+    var user: User = User.EMPTY
 
-    protected lateinit var prefs: TimeTrackerPrefs
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val context: Context = this
-        prefs = TimeTrackerPrefs(context)
-    }
-
-    protected fun markFavorite() {
-        prefs.setFavorite(record)
-    }
-
-    protected open fun saveFormToDb() {
-        formFragment.saveFormToDb()
-    }
-
-    protected fun loadFormFromDb() {
-        formFragment.loadFormFromDb()
-    }
-
-    protected open fun saveRecords(db: TrackerDatabase, day: Calendar?) {
-        formFragment.saveRecords(db, day)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        preferences = TimeTrackerPrefs(context)
+        user = preferences.user
     }
 }

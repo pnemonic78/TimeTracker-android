@@ -49,6 +49,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -66,7 +67,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class TimeListActivity : TimeFormActivity(),
+class TimeListActivity : InternetActivity(),
     TimeListAdapter.OnTimeListListener {
 
     companion object {
@@ -95,6 +96,28 @@ class TimeListActivity : TimeFormActivity(),
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
 
+    private var date
+        get() = timerFragment.date
+        set(value) {
+            timerFragment.date = value
+        }
+    private var user
+        get() = timerFragment.user
+        set(value) {
+            timerFragment.user = value
+        }
+    private var record
+        get() = timerFragment.record
+        set(value) {
+            timerFragment.record = value
+        }
+    private val projects
+        get() = timerFragment.projects
+    private val tasks
+        get() = timerFragment.tasks
+    private val records
+        get() = timerFragment.records
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -102,7 +125,6 @@ class TimeListActivity : TimeFormActivity(),
         setContentView(R.layout.activity_time_list)
 
         timerFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimerFragment
-        formFragment = timerFragment
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
 
@@ -175,8 +197,7 @@ class TimeListActivity : TimeFormActivity(),
 
                 // Fetch from remote server.
                 val context: Context = this
-                val authToken = prefs.basicCredentials.authToken()
-                val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+                val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
@@ -293,7 +314,7 @@ class TimeListActivity : TimeFormActivity(),
 
         when (requestCode and 0xFFFF) {
             REQUEST_AUTHENTICATE -> if (resultCode == RESULT_OK) {
-                user = prefs.user
+                user = preferences.user
                 record.user = user
                 // Fetch the list for the user.
                 fetchPage(date)
@@ -485,8 +506,7 @@ class TimeListActivity : TimeFormActivity(),
         showProgress(true)
 
         val context: Context = this
-        val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
+        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
@@ -627,12 +647,16 @@ class TimeListActivity : TimeFormActivity(),
     }
 
     private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadFormFromDb() }
+        return Single.fromCallable { timerFragment.loadFormFromDb() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun savePage() {
-        return formFragment.saveFormToDb()
+        timerFragment.saveFormToDb()
+    }
+
+    private fun markFavorite() {
+        timerFragment.markFavorite()
     }
 }
