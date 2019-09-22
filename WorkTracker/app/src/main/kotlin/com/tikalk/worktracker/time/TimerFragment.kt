@@ -48,8 +48,8 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.time.isNullOrEmpty
 import com.tikalk.worktracker.time.work.TimerWorker
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -259,7 +259,7 @@ class TimerFragment : TimeFormFragment() {
 
     fun populateForm(recordStarted: TimeRecord?) {
         Timber.v("populateForm $recordStarted")
-        if (recordStarted.isNullOrEmpty()) {
+        if ((recordStarted == null) or (recordStarted?.project.isNullOrEmpty() and recordStarted?.task.isNullOrEmpty())) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
@@ -302,6 +302,25 @@ class TimerFragment : TimeFormFragment() {
 
     fun savePage() {
         saveFormToDb()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(STATE_RECORD, record)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if (savedInstanceState != null) {
+            val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+            if (recordParcel != null) {
+                record.project = recordParcel.project
+                record.task = recordParcel.task
+                record.start = recordParcel.start
+                populateForm(record)
+                bindForm(record)
+            }
+        }
     }
 
     companion object {

@@ -46,8 +46,8 @@ open class TikalFragment : Fragment() {
         disposables.dispose()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
         onRestoreInstanceState(savedInstanceState)
     }
 

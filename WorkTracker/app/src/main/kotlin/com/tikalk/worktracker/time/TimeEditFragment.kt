@@ -46,13 +46,13 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
@@ -107,7 +107,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     /** Populate the record and then bind the form. */
-    fun populateForm(html: String, date: Calendar, id: Long) {
+    private fun populateForm(html: String, date: Calendar, id: Long) {
         val doc: Document = Jsoup.parse(html)
 
         record.id = id
@@ -139,18 +139,12 @@ class TimeEditFragment : TimeFormFragment() {
         record.note = inputNote?.text() ?: ""
 
         if (id == TikalEntity.ID_NONE) {
-            val projectFavorite = preferences.getFavoriteProject()
-            val taskFavorite = preferences.getFavoriteTask()
-
             val args = arguments
             if (args != null) {
-                var projectId = args.getLong(EXTRA_PROJECT_ID)
-                var taskId = args.getLong(EXTRA_TASK_ID)
+                val projectId = args.getLong(EXTRA_PROJECT_ID)
+                val taskId = args.getLong(EXTRA_TASK_ID)
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME)
-
-                if (projectId == TikalEntity.ID_NONE) projectId = projectFavorite
-                if (taskId == TikalEntity.ID_NONE) taskId = taskFavorite
 
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
@@ -166,15 +160,26 @@ class TimeEditFragment : TimeFormFragment() {
                 } else {
                     record.finish = null
                 }
-            } else {
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
         } else {
             record.status = TaskRecordStatus.CURRENT
         }
 
+        populateForm(record)
         runOnUiThread { bindForm(record) }
+    }
+
+    private fun populateForm(record: TimeRecord) {
+        if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
+            val projectFavorite = preferences.getFavoriteProject()
+            if (projectFavorite != TikalEntity.ID_NONE) {
+                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+            }
+            val taskFavorite = preferences.getFavoriteTask()
+            if (taskFavorite != TikalEntity.ID_NONE) {
+                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
+            }
+        }
     }
 
     override fun bindForm(record: TimeRecord) {
@@ -333,12 +338,9 @@ class TimeEditFragment : TimeFormFragment() {
         }
         loadPage()
             .subscribe({
-//                val recordDb = records.firstOrNull { it.id == recordId }
-//                if (recordDb != null) {
-//                    record = recordDb
-//                }
+                populateForm(record)
                 bindForm(record)
-                if (projects.isEmpty() or tasks.isEmpty() or record.isEmpty()) {
+                if (projects.isEmpty() or tasks.isEmpty() or (record.id != recordId)) {
                     fetchPage(date, recordId)
                 }
             }, { err ->
@@ -400,7 +402,7 @@ class TimeEditFragment : TimeFormFragment() {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-     fun savePage() {
+    fun savePage() {
         return saveFormToDb()
     }
 

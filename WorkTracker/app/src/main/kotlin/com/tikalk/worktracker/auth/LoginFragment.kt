@@ -226,8 +226,8 @@ class LoginFragment : InternetFragment() {
         if (requestCode == REQUEST_AUTHENTICATE) {
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 attemptLogin()
-                return
             }
+            return
         }
 
         super.onActivityResult(requestCode, resultCode, data)
