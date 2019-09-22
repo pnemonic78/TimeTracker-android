@@ -63,7 +63,10 @@ class TimeEditActivity : InternetActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        editFragment.handleIntent(intent, savedInstanceState)
+        if (savedInstanceState == null) {
+            editFragment.arguments = intent.extras
+        }
+        editFragment.run()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

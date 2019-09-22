@@ -316,26 +316,12 @@ class TimeEditFragment : TimeFormFragment() {
         record.task = task
     }
 
-    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
-        super.handleIntent(intent, savedInstanceState)
+    fun run() {
         val args = arguments ?: Bundle()
-        if (intent.extras != null) {
-            args.putAll(intent.extras)
-        }
-        arguments = args
         date.timeInMillis = args.getLong(EXTRA_DATE, date.timeInMillis)
 
-        var recordId = record.id
+        val recordId = args.getLong(EXTRA_RECORD, record.id)
 
-        val extras = intent.extras
-        if (extras != null) {
-            recordId = extras.getLong(EXTRA_RECORD, recordId)
-        }
-        if (savedInstanceState != null) {
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
-            recordId = savedInstanceState.getLong(STATE_RECORD_ID, recordId)
-            record.id = recordId
-        }
         loadPage()
             .subscribe({
                 populateForm(record)
