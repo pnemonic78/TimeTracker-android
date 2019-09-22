@@ -62,7 +62,13 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * Select a record by its id.
      */
     @Query("SELECT * FROM record WHERE id = :recordId")
-    fun queryById(recordId: Long): Maybe<TimeRecordEntity>
+    fun queryById(recordId: Long): TimeRecordEntity?
+
+    /**
+     * Select a record by its id.
+     */
+    @Query("SELECT * FROM record WHERE id = :recordId")
+    fun queryByIdMaybe(recordId: Long): Maybe<TimeRecordEntity>
 
     /**
      * Select all records from the table by date.

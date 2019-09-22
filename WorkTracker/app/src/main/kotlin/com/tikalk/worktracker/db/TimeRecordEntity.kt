@@ -80,19 +80,20 @@ open class TimeRecordConverters : Converters() {
     fun toRecordStatus(value: Int): TaskRecordStatus = TaskRecordStatus.values()[value]
 }
 
-fun toTimeRecordEntity(value: TimeRecord): TimeRecordEntity =
+fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
     TimeRecordEntity(
-        value.id,
-        value.user.id,
-        value.project.id,
-        value.task.id,
-        value.start,
-        value.finish,
-        value.note,
-        value.status
+        this.id,
+        this.user.id,
+        this.project.id,
+        this.task.id,
+        this.start,
+        this.finish,
+        this.note,
+        this.status
     )
 
-fun toTimeRecord(value: TimeRecordEntity, user: User = User.EMPTY.copy(), projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+fun TimeRecordEntity.toTimeRecord(user: User = User.EMPTY.copy(), projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+    val value: TimeRecordEntity = this
     val project = projects?.firstOrNull { it.id == value.projectId }
         ?: Project.EMPTY.copy().apply { id = value.projectId }
     val task = tasks?.firstOrNull { it.id == value.taskId }

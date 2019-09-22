@@ -339,12 +339,12 @@ abstract class TimeFormFragment : InternetFragment() {
         val recordsToDelete = recordsDbById.values
         recordsDao.delete(recordsToDelete)
 
-        val recordIds = recordsDao.insert(recordsToInsert.map { toTimeRecordEntity(it) })
+        val recordIds = recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
         //for (i in recordIds.indices) {
         //    recordsToInsert[i].dbId = recordIds[i]
         //}
 
-        recordsDao.update(recordsToUpdate.map { toTimeRecordEntity(it) })
+        recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
     }
 
     fun loadFormFromDb() {
@@ -393,7 +393,7 @@ abstract class TimeFormFragment : InternetFragment() {
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
         records.clear()
-        records.addAll(recordsDb.map { toTimeRecord(it, user, projects, tasks) })
+        records.addAll(recordsDb.map { it.toTimeRecord(user, projects, tasks) })
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
