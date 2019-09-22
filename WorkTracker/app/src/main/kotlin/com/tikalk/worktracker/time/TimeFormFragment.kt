@@ -51,8 +51,8 @@ import kotlin.collections.ArrayList
 abstract class TimeFormFragment : InternetFragment() {
 
     var date: Calendar = Calendar.getInstance()
-    var user: User = User.EMPTY.copy()
-    var record: TimeRecord = TimeRecord(TikalEntity.ID_NONE, user, Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
+    var user: User = User.EMPTY
+    var record: TimeRecord = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
     val projects: MutableList<Project> = ArrayList()
     val tasks: MutableList<ProjectTask> = ArrayList()
     var projectEmpty: Project = Project.EMPTY
@@ -64,9 +64,7 @@ abstract class TimeFormFragment : InternetFragment() {
         super.onAttach(context)
 
         prefs = TimeTrackerPrefs(context)
-
-        user.username = prefs.userCredentials.login
-        user.email = user.username
+        user = prefs.user
     }
 
     private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {

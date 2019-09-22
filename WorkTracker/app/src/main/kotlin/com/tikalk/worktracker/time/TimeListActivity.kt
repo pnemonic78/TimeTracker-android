@@ -174,8 +174,9 @@ class TimeListActivity : TimeFormActivity(),
                 bindForm(record)
 
                 // Fetch from remote server.
+                val context: Context = this
                 val authToken = prefs.basicCredentials.authToken()
-                val service = TimeTrackerServiceFactory.createPlain(this, authToken)
+                val service = TimeTrackerServiceFactory.createPlain(context, authToken)
 
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
@@ -292,8 +293,7 @@ class TimeListActivity : TimeFormActivity(),
 
         when (requestCode and 0xFFFF) {
             REQUEST_AUTHENTICATE -> if (resultCode == RESULT_OK) {
-                user.username = prefs.userCredentials.login
-                user.email = user.username
+                user = prefs.user
                 record.user = user
                 // Fetch the list for the user.
                 fetchPage(date)
@@ -484,8 +484,9 @@ class TimeListActivity : TimeFormActivity(),
         // perform the user login attempt.
         showProgress(true)
 
+        val context: Context = this
         val authToken = prefs.basicCredentials.authToken()
-        val service = TimeTrackerServiceFactory.createPlain(this, authToken)
+        val service = TimeTrackerServiceFactory.createPlain(context, authToken)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())

@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.time
 
+import android.content.Context
 import android.os.Bundle
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.InternetActivity
@@ -66,7 +67,8 @@ abstract class TimeFormActivity : InternetActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
+        val context: Context = this
+        prefs = TimeTrackerPrefs(context)
     }
 
     protected fun markFavorite() {

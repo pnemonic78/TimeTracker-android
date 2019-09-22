@@ -176,4 +176,15 @@ class TimeTrackerPrefs(context: Context) {
     fun getFavoriteTask(): Long {
         return prefs.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
     }
+
+    private var _user: User? = null
+
+    val user: User
+        get() {
+            if (_user == null) {
+                val username = userCredentials.login
+                _user = User(username, username)
+            }
+            return _user!!
+        }
 }
