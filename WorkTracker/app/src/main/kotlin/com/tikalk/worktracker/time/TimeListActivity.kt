@@ -726,9 +726,9 @@ class TimeListActivity : InternetActivity(),
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
-        const val EXTRA_PROJECT_ID = TimeEditFragment.EXTRA_PROJECT_ID
-        const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
-        const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
-        const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
+        const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
     }
 }

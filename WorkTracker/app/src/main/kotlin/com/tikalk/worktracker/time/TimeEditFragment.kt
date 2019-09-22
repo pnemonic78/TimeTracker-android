@@ -524,19 +524,5 @@ class TimeEditFragment : TimeFormFragment() {
 
     companion object {
         const val REQUEST_AUTHENTICATE = 1
-
-        const val STATE_DATE = "date"
-        const val STATE_RECORD_ID = "record_id"
-        const val STATE_RECORD = "record"
-
-        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
-        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
-
-        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
-        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
-        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
-        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
-
-        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }

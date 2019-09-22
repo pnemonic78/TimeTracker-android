@@ -39,9 +39,8 @@ import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_DATE
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD
-import com.tikalk.worktracker.time.TimeEditFragment.Companion.STATE_RECORD_ID
+import com.tikalk.worktracker.time.TimeFormFragment.Companion.STATE_RECORD
+import com.tikalk.worktracker.time.TimeFormFragment.Companion.STATE_RECORD_ID
 import kotlinx.android.synthetic.main.progress.*
 
 class TimeEditActivity : InternetActivity() {
@@ -49,11 +48,6 @@ class TimeEditActivity : InternetActivity() {
     private var submitMenuItem: MenuItem? = null
     private lateinit var editFragment: TimeEditFragment
 
-    private var date
-        get() = editFragment.date
-        set(value) {
-            editFragment.date = value
-        }
     private var record
         get() = editFragment.record
         set(value) {
@@ -121,7 +115,6 @@ class TimeEditActivity : InternetActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(STATE_DATE, date.timeInMillis)
 
         bindRecord(record)
         outState.putLong(STATE_RECORD_ID, record.id)
@@ -130,7 +123,6 @@ class TimeEditActivity : InternetActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
 
         if (recordParcel != null) {

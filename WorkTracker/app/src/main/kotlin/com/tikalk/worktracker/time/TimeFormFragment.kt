@@ -32,12 +32,13 @@
 
 package com.tikalk.worktracker.time
 
+import android.os.Bundle
+import android.text.format.DateUtils
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import org.jsoup.nodes.Document
@@ -50,7 +51,7 @@ import kotlin.collections.ArrayList
 abstract class TimeFormFragment : InternetFragment() {
 
     var date: Calendar = Calendar.getInstance()
-    var record: TimeRecord = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy())
+    var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projects: MutableList<Project> = ArrayList()
     val tasks: MutableList<ProjectTask> = ArrayList()
     var projectEmpty: Project = Project.EMPTY
@@ -346,5 +347,33 @@ abstract class TimeFormFragment : InternetFragment() {
 
     fun markFavorite() {
         preferences.setFavorite(record)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong(STATE_DATE, date.timeInMillis)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if (savedInstanceState != null) {
+            date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
+        }
+    }
+
+    companion object {
+        const val STATE_DATE = "date"
+        const val STATE_RECORD_ID = "record_id"
+        const val STATE_RECORD = "record"
+
+        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
+        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
+
+        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
+        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
+        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
+        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
+
+        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }
