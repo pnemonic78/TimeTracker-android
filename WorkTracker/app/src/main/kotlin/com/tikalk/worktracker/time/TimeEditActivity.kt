@@ -37,7 +37,6 @@ import android.view.Menu
 import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
 
@@ -95,14 +94,6 @@ class TimeEditActivity : InternetActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun bindForm(record: TimeRecord) {
-        editFragment.bindForm(record)
-    }
-
-    private fun bindRecord(record: TimeRecord) {
-        editFragment.bindRecord(record)
     }
 
     private fun submit() {

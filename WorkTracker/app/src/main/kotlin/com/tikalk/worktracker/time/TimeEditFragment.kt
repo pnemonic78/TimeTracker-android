@@ -216,7 +216,7 @@ class TimeEditFragment : TimeFormFragment() {
         noteInput.setText(record.note)
     }
 
-    fun bindRecord(record: TimeRecord) {
+    private fun bindRecord(record: TimeRecord) {
         record.note = noteInput.text.toString()
     }
 
@@ -363,7 +363,7 @@ class TimeEditFragment : TimeFormFragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    fun fetchPage(date: Calendar, id: Long) {
+    private fun fetchPage(date: Calendar, id: Long) {
         val context: Context = requireContext()
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted")
@@ -402,11 +402,11 @@ class TimeEditFragment : TimeFormFragment() {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun savePage() {
+    private fun savePage() {
         return saveFormToDb()
     }
 
-    fun authenticate(immediate: Boolean = false) {
+    private fun authenticate(immediate: Boolean = false) {
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(LoginFragment.EXTRA_SUBMIT, immediate)
         startActivityForResult(intent, REQUEST_AUTHENTICATE)
@@ -545,6 +545,6 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     companion object {
-        const val REQUEST_AUTHENTICATE = 0xAECA
+        private const val REQUEST_AUTHENTICATE = 0xAECA
     }
 }
