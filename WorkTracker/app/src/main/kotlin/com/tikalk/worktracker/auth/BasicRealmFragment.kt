@@ -32,13 +32,13 @@
 
 package com.tikalk.worktracker.auth
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
@@ -81,27 +81,27 @@ class BasicRealmFragment : InternetFragment() {
         actionAuthenticate.setOnClickListener { attemptLogin() }
     }
 
-    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
-        super.handleIntent(intent, savedInstanceState)
-        val extras = intent.extras ?: return
+    @MainThread
+    fun run() {
+        val args = this.arguments ?: return
 
-        if (extras.containsKey(EXTRA_REALM)) {
-            realmName = extras.getString(EXTRA_REALM) ?: "?"
+        if (args.containsKey(EXTRA_REALM)) {
+            realmName = args.getString(EXTRA_REALM) ?: "?"
             realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
         }
-        if (extras.containsKey(EXTRA_USER)) {
-            val username = extras.getString(EXTRA_USER)
+        if (args.containsKey(EXTRA_USER)) {
+            val username = args.getString(EXTRA_USER)
             usernameInput.setText(username)
 
             val credentials = preferences.basicCredentials
 
             when {
-                extras.containsKey(EXTRA_PASSWORD) -> passwordInput.setText(extras.getString(EXTRA_PASSWORD))
+                args.containsKey(EXTRA_PASSWORD) -> passwordInput.setText(args.getString(EXTRA_PASSWORD))
                 username == credentials.username -> passwordInput.setText(credentials.password)
                 else -> passwordInput.text = null
             }
         }
-        if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
+        if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
             attemptLogin()
         }
     }

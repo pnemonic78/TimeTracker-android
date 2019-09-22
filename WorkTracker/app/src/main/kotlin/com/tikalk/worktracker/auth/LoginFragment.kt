@@ -41,6 +41,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
@@ -92,6 +93,7 @@ class LoginFragment : InternetFragment() {
         actionSignIn.setOnClickListener { attemptLogin() }
     }
 
+    @MainThread
     fun run() {
         val args = this.arguments ?: return
 
