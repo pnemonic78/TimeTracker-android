@@ -73,8 +73,14 @@ class LoginActivity : InternetActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> onBackPressed()
-            R.id.menu_authenticate -> loginFragment.attemptLogin()
+            android.R.id.home -> {
+                onBackPressed()
+                return true
+            }
+            R.id.menu_authenticate -> {
+                loginFragment.attemptLogin()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }

@@ -323,6 +323,6 @@ class TimerFragment : TimeFormFragment() {
     }
 
     companion object {
-        const val EXTRA_INTENT_ACTION = BuildConfig.APPLICATION_ID + ".INTENT_ACTION"
+        private const val EXTRA_INTENT_ACTION = BuildConfig.APPLICATION_ID + ".INTENT_ACTION"
     }
 }
