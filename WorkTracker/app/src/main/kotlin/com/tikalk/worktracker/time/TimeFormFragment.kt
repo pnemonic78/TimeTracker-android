@@ -32,7 +32,8 @@
 
 package com.tikalk.worktracker.time
 
-import com.tikalk.worktracker.db.*
+import com.tikalk.worktracker.db.ProjectTaskKey
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -54,7 +55,6 @@ abstract class TimeFormFragment : InternetFragment() {
     val tasks: MutableList<ProjectTask> = ArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
-    val records: MutableList<TimeRecord> = ArrayList()
 
     private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
@@ -184,12 +184,11 @@ abstract class TimeFormFragment : InternetFragment() {
 
     open fun saveFormToDb() {
         Timber.v("saveFormToDb")
-        val db = TrackerDatabase.getDatabase(context!!)
+        val db = TrackerDatabase.getDatabase(requireContext())
 
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
-        saveRecords(db, date)
     }
 
     protected open fun saveProjects(db: TrackerDatabase) {
@@ -301,49 +300,13 @@ abstract class TimeFormFragment : InternetFragment() {
         projectTasksDao.update(keysToUpdate)
     }
 
-    open fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val records = this.records
-        val recordsDao = db.timeRecordDao()
-        val recordsDb = queryRecords(db, day)
-        val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
-        for (record in recordsDb) {
-            recordsDbById[record.id] = record
-        }
-
-        val recordsToInsert = ArrayList<TimeRecord>()
-        val recordsToUpdate = ArrayList<TimeRecord>()
-        //var recordDb: TimeRecordEntity
-        for (record in records) {
-            val recordId = record.id
-            if (recordsDbById.containsKey(recordId)) {
-                //recordDb = recordsDbById[recordId]!!
-                //record.dbId = recordDb.dbId
-                recordsToUpdate.add(record)
-            } else {
-                recordsToInsert.add(record)
-            }
-            recordsDbById.remove(recordId)
-        }
-
-        val recordsToDelete = recordsDbById.values
-        recordsDao.delete(recordsToDelete)
-
-        val recordIds = recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
-        //for (i in recordIds.indices) {
-        //    recordsToInsert[i].dbId = recordIds[i]
-        //}
-
-        recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
-    }
-
     fun loadFormFromDb() {
         Timber.v("loadFormFromDb")
-        val db = TrackerDatabase.getDatabase(context!!)
+        val db = TrackerDatabase.getDatabase(requireContext())
 
         loadProjects(db)
         loadTasks(db)
         loadProjectTaskKeys(db)
-        loadRecords(db, date)
     }
 
     private fun loadProjects(db: TrackerDatabase) {
@@ -376,32 +339,6 @@ abstract class TimeFormFragment : InternetFragment() {
             if ((project != null) && (task != null)) {
                 project.addTask(task)
             }
-        }
-    }
-
-    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val recordsDb = queryRecords(db, day)
-        records.clear()
-        records.addAll(recordsDb.map { it.toTimeRecord(user, projects, tasks) })
-    }
-
-    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
-        val recordsDao = db.timeRecordDao()
-        return if (day == null) {
-            recordsDao.queryAll()
-        } else {
-            val cal = day.clone() as Calendar
-            cal.hourOfDay = 0
-            cal.minute = 0
-            cal.second = 0
-            cal.millis = 0
-            val start = cal.timeInMillis
-            cal.hourOfDay = cal.getMaximum(Calendar.HOUR_OF_DAY)
-            cal.minute = cal.getMaximum(Calendar.MINUTE)
-            cal.second = cal.getMaximum(Calendar.SECOND)
-            cal.millis = cal.getMaximum(Calendar.MILLISECOND)
-            val finish = cal.timeInMillis
-            recordsDao.queryByDate(start, finish)
         }
     }
 

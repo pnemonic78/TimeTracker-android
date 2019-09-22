@@ -50,7 +50,6 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -338,10 +337,10 @@ class TimeEditFragment : TimeFormFragment() {
         }
         loadPage()
             .subscribe({
-                val recordDb = records.firstOrNull { it.id == recordId }
-                if (recordDb != null) {
-                    record = recordDb
-                }
+//                val recordDb = records.firstOrNull { it.id == recordId }
+//                if (recordDb != null) {
+//                    record = recordDb
+//                }
                 populateForm(record)
                 if (projects.isEmpty() or tasks.isEmpty() or record.isEmpty()) {
                     fetchPage(date, recordId)
@@ -405,12 +404,8 @@ class TimeEditFragment : TimeFormFragment() {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun savePage() {
+     fun savePage() {
         return saveFormToDb()
-    }
-
-    override fun saveRecords(db: TrackerDatabase, day: Calendar?) {
-        // Records irrelevant.
     }
 
     fun authenticate(immediate: Boolean = false) {

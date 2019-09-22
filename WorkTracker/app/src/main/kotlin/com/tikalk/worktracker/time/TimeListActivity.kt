@@ -44,6 +44,10 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.db.TimeRecordEntity
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.toTimeRecord
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TaskRecordStatus
@@ -94,8 +98,9 @@ class TimeListActivity : InternetActivity(),
         }
     private val projects
         get() = timerFragment.projects
-    private val records
-        get() = timerFragment.records
+    private val tasks
+        get() = timerFragment.tasks
+    private val records: MutableList<TimeRecord> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -628,18 +633,87 @@ class TimeListActivity : InternetActivity(),
         return null
     }
 
+    private fun markFavorite() {
+        timerFragment.markFavorite()
+    }
+
     private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { timerFragment.loadFormFromDb() }
+        return Single.fromCallable {
+            timerFragment.loadFormFromDb()
+
+            val db = TrackerDatabase.getDatabase(context)
+            loadRecords(db, date)
+        }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun savePage() {
-        timerFragment.saveFormToDb()
+        timerFragment.savePage()
+
+        val db = TrackerDatabase.getDatabase(requireContext())
+        saveRecords(db, date)
     }
 
-    private fun markFavorite() {
-        timerFragment.markFavorite()
+    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
+        val records = this.records
+        val recordsDao = db.timeRecordDao()
+        val recordsDb = queryRecords(db, day)
+        val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
+        for (record in recordsDb) {
+            recordsDbById[record.id] = record
+        }
+
+        val recordsToInsert = ArrayList<TimeRecord>()
+        val recordsToUpdate = ArrayList<TimeRecord>()
+        //var recordDb: TimeRecordEntity
+        for (record in records) {
+            val recordId = record.id
+            if (recordsDbById.containsKey(recordId)) {
+                //recordDb = recordsDbById[recordId]!!
+                //record.dbId = recordDb.dbId
+                recordsToUpdate.add(record)
+            } else {
+                recordsToInsert.add(record)
+            }
+            recordsDbById.remove(recordId)
+        }
+
+        val recordsToDelete = recordsDbById.values
+        recordsDao.delete(recordsToDelete)
+
+        val recordIds = recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
+        //for (i in recordIds.indices) {
+        //    recordsToInsert[i].dbId = recordIds[i]
+        //}
+
+        recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
+    }
+
+    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
+        val recordsDb = queryRecords(db, day)
+        records.clear()
+        records.addAll(recordsDb.map { it.toTimeRecord(user, projects, tasks) })
+    }
+
+    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
+        val recordsDao = db.timeRecordDao()
+        return if (day == null) {
+            recordsDao.queryAll()
+        } else {
+            val cal = day.clone() as Calendar
+            cal.hourOfDay = 0
+            cal.minute = 0
+            cal.second = 0
+            cal.millis = 0
+            val start = cal.timeInMillis
+            cal.hourOfDay = cal.getMaximum(Calendar.HOUR_OF_DAY)
+            cal.minute = cal.getMaximum(Calendar.MINUTE)
+            cal.second = cal.getMaximum(Calendar.SECOND)
+            cal.millis = cal.getMaximum(Calendar.MILLISECOND)
+            val finish = cal.timeInMillis
+            recordsDao.queryByDate(start, finish)
+        }
     }
 
     companion object {

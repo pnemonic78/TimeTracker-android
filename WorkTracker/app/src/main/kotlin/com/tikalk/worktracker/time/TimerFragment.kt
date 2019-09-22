@@ -300,6 +300,10 @@ class TimerFragment : TimeFormFragment() {
         arguments = args
     }
 
+    fun savePage() {
+        saveFormToDb()
+    }
+
     companion object {
         const val EXTRA_INTENT_ACTION = BuildConfig.APPLICATION_ID + ".INTENT_ACTION"
     }
