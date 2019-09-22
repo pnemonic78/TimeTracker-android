@@ -46,7 +46,6 @@ import kotlinx.android.synthetic.main.progress.*
 
 class TimeEditActivity : InternetActivity() {
 
-    // UI references
     private var submitMenuItem: MenuItem? = null
     private lateinit var editFragment: TimeEditFragment
 
@@ -112,8 +111,8 @@ class TimeEditActivity : InternetActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun populateForm(record: TimeRecord) {
-        editFragment.populateForm(record)
+    private fun bindForm(record: TimeRecord) {
+        editFragment.bindForm(record)
     }
 
     private fun bindRecord(record: TimeRecord) {
@@ -136,7 +135,7 @@ class TimeEditActivity : InternetActivity() {
 
         if (recordParcel != null) {
             record = recordParcel
-            populateForm(record)
+            bindForm(record)
         } else {
             record.id = savedInstanceState.getLong(STATE_RECORD_ID)
         }

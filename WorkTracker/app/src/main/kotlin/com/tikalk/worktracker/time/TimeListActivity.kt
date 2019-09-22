@@ -74,7 +74,6 @@ import kotlin.math.abs
 class TimeListActivity : InternetActivity(),
     TimeListAdapter.OnTimeListListener {
 
-    // UI references
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment
     private val listAdapter = TimeListAdapter(this)
@@ -381,7 +380,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun addTime() {
-        editRecord(record)
+        editRecord(TimeRecord.EMPTY)
     }
 
     /**

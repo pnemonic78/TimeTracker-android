@@ -177,12 +177,8 @@ class TimeEditFragment : TimeFormFragment() {
         runOnUiThread { bindForm(record) }
     }
 
-    fun populateForm(record: TimeRecord) {
-        Timber.v("populateForm $record")
-        bindForm(record)
-    }
-
     override fun bindForm(record: TimeRecord) {
+        Timber.v("bindForm $record")
         val context: Context = requireContext()
 
         errorLabel.text = errorMessage
@@ -341,7 +337,7 @@ class TimeEditFragment : TimeFormFragment() {
 //                if (recordDb != null) {
 //                    record = recordDb
 //                }
-                populateForm(record)
+                bindForm(record)
                 if (projects.isEmpty() or tasks.isEmpty() or record.isEmpty()) {
                     fetchPage(date, recordId)
                 }

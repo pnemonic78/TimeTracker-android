@@ -105,6 +105,8 @@ data class TimeRecord(
     }
 
     companion object {
+        val EMPTY: TimeRecord = TimeRecord(ID_NONE, User.EMPTY, Project.EMPTY, ProjectTask.EMPTY)
+
         @JvmField
         val CREATOR = object : Parcelable.Creator<TimeRecord> {
             override fun createFromParcel(parcel: Parcel): TimeRecord {
