@@ -336,6 +336,11 @@ class TimeEditFragment : TimeFormFragment() {
             .addTo(disposables)
     }
 
+    override fun onStart() {
+        super.onStart()
+        run()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_AUTHENTICATE) {
             if (resultCode == AppCompatActivity.RESULT_OK) {
@@ -524,6 +529,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             record = recordParcel
+            populateForm(record)
             bindForm(record)
         } else {
             record.id = savedInstanceState.getLong(STATE_RECORD_ID)
