@@ -48,10 +48,12 @@ open class TikalFragment : Fragment() {
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        onRestoreInstanceState(savedInstanceState)
+        if (savedInstanceState != null) {
+            onRestoreInstanceState(savedInstanceState)
+        }
     }
 
-    protected open fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) {
     }
 
     open fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {

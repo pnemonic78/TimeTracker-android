@@ -39,20 +39,12 @@ import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.time.TimeFormFragment.Companion.STATE_RECORD
-import com.tikalk.worktracker.time.TimeFormFragment.Companion.STATE_RECORD_ID
 import kotlinx.android.synthetic.main.progress.*
 
 class TimeEditActivity : InternetActivity() {
 
     private var submitMenuItem: MenuItem? = null
     private lateinit var editFragment: TimeEditFragment
-
-    private var record
-        get() = editFragment.record
-        set(value) {
-            editFragment.record = value
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,26 +103,6 @@ class TimeEditActivity : InternetActivity() {
 
     private fun bindRecord(record: TimeRecord) {
         editFragment.bindRecord(record)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        bindRecord(record)
-        outState.putLong(STATE_RECORD_ID, record.id)
-        outState.putParcelable(STATE_RECORD, record)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
-
-        if (recordParcel != null) {
-            record = recordParcel
-            bindForm(record)
-        } else {
-            record.id = savedInstanceState.getLong(STATE_RECORD_ID)
-        }
     }
 
     private fun submit() {

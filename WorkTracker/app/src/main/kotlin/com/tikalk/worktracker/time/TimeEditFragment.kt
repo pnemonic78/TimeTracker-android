@@ -524,7 +524,27 @@ class TimeEditFragment : TimeFormFragment() {
             .addTo(disposables)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        bindRecord(record)
+        outState.putLong(STATE_RECORD_ID, record.id)
+        outState.putParcelable(STATE_RECORD, record)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+
+        if (recordParcel != null) {
+            record = recordParcel
+            bindForm(record)
+        } else {
+            record.id = savedInstanceState.getLong(STATE_RECORD_ID)
+        }
+    }
+
     companion object {
-        const val REQUEST_AUTHENTICATE = 1
+        const val REQUEST_AUTHENTICATE = 0xAECA
     }
 }

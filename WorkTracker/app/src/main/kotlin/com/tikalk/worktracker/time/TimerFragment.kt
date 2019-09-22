@@ -309,17 +309,16 @@ class TimerFragment : TimeFormFragment() {
         outState.putParcelable(STATE_RECORD, record)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        if (savedInstanceState != null) {
-            val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
-            if (recordParcel != null) {
-                record.project = recordParcel.project
-                record.task = recordParcel.task
-                record.start = recordParcel.start
-                populateForm(record)
-                bindForm(record)
-            }
+        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+
+        if (recordParcel != null) {
+            record.project = recordParcel.project
+            record.task = recordParcel.task
+            record.start = recordParcel.start
+            populateForm(record)
+            bindForm(record)
         }
     }
 

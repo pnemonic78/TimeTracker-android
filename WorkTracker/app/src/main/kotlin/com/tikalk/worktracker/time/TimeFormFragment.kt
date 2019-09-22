@@ -354,11 +354,9 @@ abstract class TimeFormFragment : InternetFragment() {
         outState.putLong(STATE_DATE, date.timeInMillis)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        if (savedInstanceState != null) {
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        }
+        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
     }
 
     companion object {
