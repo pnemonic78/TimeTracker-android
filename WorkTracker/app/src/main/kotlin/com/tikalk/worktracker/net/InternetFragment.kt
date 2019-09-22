@@ -32,7 +32,7 @@
 
 package com.tikalk.worktracker.net
 
-import com.tikalk.worktracker.TrackerFragment
+import com.tikalk.worktracker.app.TrackerFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import retrofit2.Response

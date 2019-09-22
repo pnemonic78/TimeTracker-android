@@ -37,7 +37,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
-import com.tikalk.worktracker.TrackerActivity
+import com.tikalk.worktracker.app.TrackerActivity
 import retrofit2.Response
 
 /**

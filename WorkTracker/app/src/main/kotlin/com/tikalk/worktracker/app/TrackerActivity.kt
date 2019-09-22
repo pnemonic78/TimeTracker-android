@@ -29,65 +29,19 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker
 
-import android.app.Activity
-import android.app.Application
+package com.tikalk.worktracker.app
+
 import android.os.Bundle
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.time.work.TimerWorker
-import timber.log.Timber
-import kotlin.math.max
+import com.tikalk.app.TikalActivity
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
-/**
- * Time tracker application.
- */
-class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
+abstract class TrackerActivity : TikalActivity() {
 
-    private var active = 0
+    protected lateinit var preferences: TimeTrackerPrefs
 
-    override fun onCreate() {
-        super.onCreate()
-
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
-
-        registerActivityLifecycleCallbacks(this)
-    }
-
-    override fun onTerminate() {
-        super.onTerminate()
-        unregisterActivityLifecycleCallbacks(this)
-        TrackerDatabase.getDatabase(this).close()
-    }
-
-    override fun onActivityPaused(activity: Activity) {
-    }
-
-    override fun onActivityResumed(activity: Activity) {
-    }
-
-    override fun onActivityStarted(activity: Activity) {
-        active++
-        Timber.v("onActivityStarted $activity $active")
-        TimerWorker.hideNotification(this)
-    }
-
-    override fun onActivityDestroyed(activity: Activity) {
-    }
-
-    override fun onActivitySaveInstanceState(activity: Activity, state: Bundle?) {
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-        active = max(0, active - 1)
-        Timber.v("onActivityStopped $activity $active")
-        if (active == 0) {
-            TimerWorker.maybeShowNotification(this)
-        }
-    }
-
-    override fun onActivityCreated(activity: Activity, state: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        preferences = TimeTrackerPrefs(context)
     }
 }

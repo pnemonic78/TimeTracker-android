@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker
+package com.tikalk.worktracker.app
 
 import android.content.Context
 import com.tikalk.app.TikalFragment
