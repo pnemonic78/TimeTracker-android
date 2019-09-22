@@ -32,6 +32,7 @@
 
 package com.tikalk.app
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -40,6 +41,7 @@ import io.reactivex.disposables.CompositeDisposable
 abstract class TikalActivity : AppCompatActivity() {
 
     protected val disposables = CompositeDisposable()
+    protected val context: Context = this
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -31,16 +31,13 @@
  */
 package com.tikalk.worktracker.start
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.tikalk.app.TikalActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.time.TimeListActivity
 
-class SplashActivity : AppCompatActivity() {
-
-    private val context: Context = this
+class SplashActivity : TikalActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

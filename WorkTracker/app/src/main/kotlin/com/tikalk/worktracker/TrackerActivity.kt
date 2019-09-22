@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker
 
-import android.content.Context
 import android.os.Bundle
 import com.tikalk.app.TikalActivity
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -43,7 +42,6 @@ abstract class TrackerActivity : TikalActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val context: Context = this
         preferences = TimeTrackerPrefs(context)
     }
 }

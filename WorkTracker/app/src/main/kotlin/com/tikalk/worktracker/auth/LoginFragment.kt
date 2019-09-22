@@ -119,7 +119,7 @@ class LoginFragment : InternetFragment() {
             return
         }
 
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
 
         // Reset errors.
         emailInput.error = null

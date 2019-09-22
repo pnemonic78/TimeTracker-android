@@ -55,20 +55,11 @@ class TimeEditActivity : InternetActivity() {
         set(value) {
             editFragment.date = value
         }
-    private var user
-        get() = editFragment.user
-        set(value) {
-            editFragment.user = value
-        }
     private var record
         get() = editFragment.record
         set(value) {
             editFragment.record = value
         }
-    private val projects
-        get() = editFragment.projects
-    private val tasks
-        get() = editFragment.tasks
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

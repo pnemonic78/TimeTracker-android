@@ -103,7 +103,7 @@ class TimerFragment : TimeFormFragment() {
     @MainThread
     override fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         if (projects.isNotEmpty()) {
             projectInput.setSelection(max(0, projects.indexOf(record.project)))
@@ -131,7 +131,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun startTimer() {
         Timber.v("startTimer")
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
         val now = System.currentTimeMillis()
         record.startTime = now
 
@@ -142,7 +142,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun stopTimer() {
         Timber.v("stopTimer")
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
         record.finishTime = System.currentTimeMillis()
 
         TimerWorker.stopTimer(context)
@@ -161,7 +161,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun filterTasks(project: Project) {
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
         val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)

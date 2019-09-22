@@ -184,7 +184,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun bindForm(record: TimeRecord) {
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
 
         errorLabel.text = errorMessage
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
@@ -298,7 +298,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun filterTasks(project: Project) {
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
         val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
@@ -367,7 +367,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun fetchPage(date: Calendar, id: Long) {
-        val context: Context = this.context ?: return
+        val context: Context = requireContext()
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted")
         // Show a progress spinner, and kick off a background task to perform the user login attempt.

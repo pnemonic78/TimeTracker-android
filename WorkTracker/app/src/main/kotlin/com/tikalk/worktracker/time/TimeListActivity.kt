@@ -70,25 +70,6 @@ import kotlin.math.abs
 class TimeListActivity : InternetActivity(),
     TimeListAdapter.OnTimeListListener {
 
-    companion object {
-        private const val REQUEST_AUTHENTICATE = 0x109
-        const val REQUEST_EDIT = 0xED17
-        const val REQUEST_STOPPED = 0x5706
-
-        private const val STATE_DATE = "date"
-        private const val STATE_RECORD = "record"
-        private const val STATE_TOTALS = "totals"
-
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
-
-        const val EXTRA_PROJECT_ID = TimeEditFragment.EXTRA_PROJECT_ID
-        const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
-        const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
-        const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
-    }
-
-    private val context: Context = this
-
     // UI references
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment
@@ -113,8 +94,6 @@ class TimeListActivity : InternetActivity(),
         }
     private val projects
         get() = timerFragment.projects
-    private val tasks
-        get() = timerFragment.tasks
     private val records
         get() = timerFragment.records
 
@@ -196,7 +175,6 @@ class TimeListActivity : InternetActivity(),
                 bindForm(record)
 
                 // Fetch from remote server.
-                val context: Context = this
                 val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
                 service.fetchTimes(dateFormatted)
@@ -266,7 +244,7 @@ class TimeListActivity : InternetActivity(),
 
     @MainThread
     private fun bindTotals(totals: TimeTotals) {
-        val context: Context = this
+        val context: Context = requireContext()
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
@@ -301,6 +279,10 @@ class TimeListActivity : InternetActivity(),
             remainingQuotaLabel.visibility = View.VISIBLE
             remainingQuota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
         }
+    }
+
+    private fun requireContext(): Context {
+        return this
     }
 
     private fun authenticate(immediate: Boolean = false) {
@@ -505,7 +487,7 @@ class TimeListActivity : InternetActivity(),
         // perform the user login attempt.
         showProgress(true)
 
-        val context: Context = this
+        val context: Context = requireContext()
         val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
         service.deleteTime(record.id)
@@ -658,5 +640,22 @@ class TimeListActivity : InternetActivity(),
 
     private fun markFavorite() {
         timerFragment.markFavorite()
+    }
+
+    companion object {
+        private const val REQUEST_AUTHENTICATE = 0x109
+        const val REQUEST_EDIT = 0xED17
+        const val REQUEST_STOPPED = 0x5706
+
+        private const val STATE_DATE = "date"
+        private const val STATE_RECORD = "record"
+        private const val STATE_TOTALS = "totals"
+
+        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
+
+        const val EXTRA_PROJECT_ID = TimeEditFragment.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
     }
 }
