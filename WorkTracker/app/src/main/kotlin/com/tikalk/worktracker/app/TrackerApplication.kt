@@ -34,6 +34,7 @@ package com.tikalk.worktracker.app
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import com.tikalk.app.TikalApplication
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.work.TimerWorker
@@ -43,7 +44,7 @@ import kotlin.math.max
 /**
  * Time tracker application.
  */
-class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
+class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
 
@@ -83,8 +84,8 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
 
     override fun onActivityStopped(activity: Activity) {
         active = max(0, active - 1)
-        Timber.v("onActivityStopped $activity $active")
-        if (active == 0) {
+        Timber.v("onActivityStopped $activity $active isFinishing=${activity.isFinishing}")
+        if ((active == 0) && activity.isFinishing) {
             TimerWorker.maybeShowNotification(this)
         }
     }
