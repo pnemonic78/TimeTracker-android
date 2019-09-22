@@ -50,7 +50,7 @@ import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_login.*
 import okhttp3.Response
@@ -60,16 +60,6 @@ import timber.log.Timber
  * A login screen that offers login via email/password.
  */
 class LoginFragment : InternetFragment() {
-
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private var authTask: Disposable? = null
-
-    override fun onDestroy() {
-        super.onDestroy()
-        authTask?.dispose()
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_login, container, false)
@@ -170,7 +160,7 @@ class LoginFragment : InternetFragment() {
             val service = TimeTrackerServiceFactory.createPlain(context, preferences)
 
             val today = formatSystemDate()
-            authTask = service.login(emailValue, passwordValue, today)
+            service.login(emailValue, passwordValue, today)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -196,6 +186,7 @@ class LoginFragment : InternetFragment() {
                     showProgress(false)
                     actionSignIn.isEnabled = true
                 })
+                .addTo(disposables)
         }
     }
 
