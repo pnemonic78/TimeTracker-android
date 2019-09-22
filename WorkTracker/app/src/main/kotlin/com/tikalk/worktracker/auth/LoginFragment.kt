@@ -92,19 +92,18 @@ class LoginFragment : InternetFragment() {
         actionSignIn.setOnClickListener { attemptLogin() }
     }
 
-    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
-        super.handleIntent(intent, savedInstanceState)
-        val extras = intent.extras ?: return
+    fun run() {
+        val args = this.arguments ?: return
 
-        if (extras.containsKey(EXTRA_EMAIL)) {
-            emailInput.setText(extras.getString(EXTRA_EMAIL))
+        if (args.containsKey(EXTRA_EMAIL)) {
+            emailInput.setText(args.getString(EXTRA_EMAIL))
             passwordInput.text = null
 
-            if (extras.containsKey(EXTRA_PASSWORD)) {
-                passwordInput.setText(extras.getString(EXTRA_PASSWORD))
+            if (args.containsKey(EXTRA_PASSWORD)) {
+                passwordInput.setText(args.getString(EXTRA_PASSWORD))
             }
         }
-        if (extras.containsKey(EXTRA_SUBMIT) && extras.getBoolean(EXTRA_SUBMIT)) {
+        if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
             attemptLogin()
         }
     }

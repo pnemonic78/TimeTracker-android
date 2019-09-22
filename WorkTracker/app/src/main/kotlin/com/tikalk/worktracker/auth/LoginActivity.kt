@@ -86,7 +86,10 @@ class LoginActivity : InternetActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        loginFragment.handleIntent(intent, savedInstanceState)
+        if (savedInstanceState==null) {
+            loginFragment.arguments = intent.extras
+        }
+        loginFragment.run()
     }
 
     override fun showProgress(show: Boolean) {
