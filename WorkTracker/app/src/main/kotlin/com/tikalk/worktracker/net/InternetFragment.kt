@@ -94,10 +94,10 @@ open class InternetFragment : TrackerFragment() {
      * @param show visible?
      */
     protected fun showProgress(show: Boolean) {
-        (activity as InternetActivity).showProgress(show)
+        (activity as InternetActivity?)?.showProgress(show)
     }
 
     protected fun showProgressMain(show: Boolean) {
-        (activity as InternetActivity).showProgressMain(show)
+        (activity as InternetActivity?)?.showProgressMain(show)
     }
 }

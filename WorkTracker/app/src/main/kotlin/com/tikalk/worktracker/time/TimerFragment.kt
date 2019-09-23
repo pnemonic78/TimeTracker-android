@@ -310,6 +310,10 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        parentFragment?.onActivityResult(requestCode, resultCode, data)
+    }
+
     companion object {
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
