@@ -152,10 +152,12 @@ class TimeEditFragment : TimeFormFragment() {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
                     record.project = projects.firstOrNull { it.id == projectId } ?: record.project
+                    args.remove(EXTRA_PROJECT_ID)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     record.task = tasks.firstOrNull { it.id == taskId } ?: record.task
+                    args.remove(EXTRA_TASK_ID)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -164,6 +166,7 @@ class TimeEditFragment : TimeFormFragment() {
                     } else {
                         record.start = null
                     }
+                    args.remove(EXTRA_START_TIME)
                 }
                 if (args.containsKey(EXTRA_FINISH_TIME)) {
                     val finishTime = args.getLong(EXTRA_FINISH_TIME)
@@ -172,6 +175,7 @@ class TimeEditFragment : TimeFormFragment() {
                     } else {
                         record.finish = null
                     }
+                    args.remove(EXTRA_FINISH_TIME)
                 }
             }
         }
@@ -552,7 +556,6 @@ class TimeEditFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             record = recordParcel
-            populateForm(record)
             bindForm(record)
         } else {
             record.id = savedInstanceState.getLong(STATE_RECORD_ID)
