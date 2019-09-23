@@ -474,7 +474,7 @@ class TimeListFragment : InternetFragment(),
         timerFragment.bindForm(record)
     }
 
-    private fun stopTimer() {
+    fun stopTimer() {
         timerFragment.stopTimer()
     }
 
@@ -634,6 +634,17 @@ class TimeListFragment : InternetFragment(),
         }
     }
 
+    override fun setArguments(args: Bundle?) {
+        super.setArguments(args)
+
+        if (isAdded) {
+            if ((childFragmentManager.fragments.size > 0)) {
+                timerFragment.arguments = arguments
+                timerFragment.run()
+            }
+        }
+    }
+
     @MainThread
     fun run() {
         showProgress(true)
@@ -642,6 +653,9 @@ class TimeListFragment : InternetFragment(),
                 populateForm(record)
                 bindForm(record)
                 bindList(date, records)
+                if (projects.isEmpty() or tasks.isEmpty()) {
+                    fetchPage(date)
+                }
                 showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -653,45 +667,6 @@ class TimeListFragment : InternetFragment(),
     override fun onStart() {
         super.onStart()
         run()
-    }
-
-    fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        if (savedInstanceState == null) {
-            timerFragment.arguments = intent.extras
-            timerFragment.run()
-
-            if (intent.action == TimeListActivity.ACTION_STOP) {
-                showProgress(true)
-                loadPage()
-                    .subscribe({
-                        populateForm(record)
-                        bindForm(record)
-                        bindList(date, records)
-                        stopTimer()
-                        showProgress(false)
-                    }, { err ->
-                        Timber.e(err, "Error loading page: ${err.message}")
-                        showProgress(false)
-                    })
-                    .addTo(disposables)
-            } else {
-                fetchPage(date)
-            }
-        } else {
-            showProgress(true)
-            date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
-            loadPage()
-                .subscribe({
-                    populateForm(record)
-                    bindForm(record)
-                    bindList(date, records)
-                    showProgress(false)
-                }, { err ->
-                    Timber.e(err, "Error loading page: ${err.message}")
-                    showProgress(false)
-                })
-                .addTo(disposables)
-        }
     }
 
     fun markFavorite() {

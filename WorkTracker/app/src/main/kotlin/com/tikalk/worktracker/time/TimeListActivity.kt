@@ -88,7 +88,15 @@ class TimeListActivity : InternetActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        mainFragment.handleIntent(intent, savedInstanceState)
+        if (savedInstanceState == null) {
+            mainFragment.arguments = intent.extras
+            mainFragment.run()
+
+            if (intent.action == ACTION_STOP) {
+                intent.action = null
+                mainFragment.stopTimer()
+            }
+        }
         intent.action = null
     }
 
