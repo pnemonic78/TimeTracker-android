@@ -138,7 +138,24 @@ class TimeEditFragment : TimeFormFragment() {
         record.finish = parseSystemTime(date, finishValue)
         record.note = inputNote?.text() ?: ""
 
-        if (id == TikalEntity.ID_NONE) {
+        populateForm(record)
+        runOnUiThread { bindForm(record) }
+    }
+
+    private fun populateForm(record: TimeRecord) {
+        if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
+            val projectFavorite = preferences.getFavoriteProject()
+            if (projectFavorite != TikalEntity.ID_NONE) {
+                record.project = projects.firstOrNull { it.id == projectFavorite } ?: projectEmpty
+            }
+            val taskFavorite = preferences.getFavoriteTask()
+            if (taskFavorite != TikalEntity.ID_NONE) {
+                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: taskEmpty
+            }
+        }
+
+        val recordId = record.id
+        if (recordId == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
                 val projectId = args.getLong(EXTRA_PROJECT_ID)
@@ -146,10 +163,9 @@ class TimeEditFragment : TimeFormFragment() {
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME)
 
-                val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
-                val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
+                record.project = projects.firstOrNull { it.id == projectId } ?: record.project
+                record.task = tasks.firstOrNull { it.id == taskId } ?: record.task
 
-                record = TimeRecord(id, user, project, task)
                 if (startTime > 0L) {
                     record.startTime = startTime
                 } else {
@@ -163,22 +179,6 @@ class TimeEditFragment : TimeFormFragment() {
             }
         } else {
             record.status = TaskRecordStatus.CURRENT
-        }
-
-        populateForm(record)
-        runOnUiThread { bindForm(record) }
-    }
-
-    private fun populateForm(record: TimeRecord) {
-        if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
-            val projectFavorite = preferences.getFavoriteProject()
-            if (projectFavorite != TikalEntity.ID_NONE) {
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
-            }
-            val taskFavorite = preferences.getFavoriteTask()
-            if (taskFavorite != TikalEntity.ID_NONE) {
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
-            }
         }
     }
 
