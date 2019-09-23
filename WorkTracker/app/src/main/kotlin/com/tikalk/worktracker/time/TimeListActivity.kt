@@ -519,17 +519,38 @@ class TimeListActivity : InternetActivity(),
         timerFragment.bindForm(record)
     }
 
+    private fun stopTimer() {
+        timerFragment.stopTimer()
+    }
+
     private fun stopTimerCommit() {
         timerFragment.stopTimerCommit()
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        timerFragment.handleIntent(intent, savedInstanceState)
-        intent.action = null
-
         if (savedInstanceState == null) {
-            fetchPage(date)
+            timerFragment.arguments = intent.extras
+            timerFragment.run()
+
+            if (intent.action == ACTION_STOP) {
+                showProgress(true)
+                loadPage()
+                    .subscribe({
+                        populateForm(record)
+                        bindForm(record)
+                        bindList(date, records)
+                        stopTimer()
+                        showProgress(false)
+                    }, { err ->
+                        Timber.e(err, "Error loading page: ${err.message}")
+                        showProgress(false)
+                    })
+                    .addTo(disposables)
+            } else {
+                fetchPage(date)
+            }
         } else {
+            showProgress(true)
             date.timeInMillis = savedInstanceState.getLong(STATE_DATE, date.timeInMillis)
             loadPage()
                 .subscribe({
@@ -628,7 +649,7 @@ class TimeListActivity : InternetActivity(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
-            timerFragment.loadFormFromDb()
+            timerFragment.loadForm()
 
             val db = TrackerDatabase.getDatabase(context)
             loadRecords(db, date)
@@ -706,7 +727,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = 0x109
+        private const val REQUEST_AUTHENTICATE = TimeFormFragment.REQUEST_AUTHENTICATE
         const val REQUEST_EDIT = 0xED17
         const val REQUEST_STOPPED = 0x5706
 
@@ -715,9 +736,9 @@ class TimeListActivity : InternetActivity(),
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
-        const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
-        const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
-        const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
-        const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
+        const val EXTRA_PROJECT_ID = TimeEditFragment.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
     }
 }

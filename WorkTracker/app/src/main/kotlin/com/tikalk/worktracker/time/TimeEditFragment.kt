@@ -537,6 +537,12 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = 0xAECA
+        private const val REQUEST_AUTHENTICATE = TimeFormFragment.REQUEST_AUTHENTICATE
+
+        const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
+        const val EXTRA_RECORD = TimeFormFragment.EXTRA_RECORD
     }
 }

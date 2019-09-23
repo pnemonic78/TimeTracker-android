@@ -43,7 +43,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
 import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -125,7 +124,6 @@ class TimerFragment : TimeFormFragment() {
             actionSwitcher.displayedChild = 1
 
             maybeStartTimer()
-            maybeStopTimer()
         }
     }
 
@@ -140,7 +138,7 @@ class TimerFragment : TimeFormFragment() {
         bindForm(record)
     }
 
-    private fun stopTimer() {
+    fun stopTimer() {
         Timber.v("stopTimer")
         val context: Context = requireContext()
         record.finishTime = System.currentTimeMillis()
@@ -181,14 +179,6 @@ class TimerFragment : TimeFormFragment() {
         updateTimer()
     }
 
-    private fun maybeStopTimer() {
-        val action = arguments?.getString(EXTRA_INTENT_ACTION)
-        if (action == TimeListActivity.ACTION_STOP) {
-            arguments?.remove(EXTRA_INTENT_ACTION)
-            stopTimer()
-        }
-    }
-
     private fun updateTimer() {
         val now = System.currentTimeMillis()
         val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
@@ -214,10 +204,10 @@ class TimerFragment : TimeFormFragment() {
 
         val args = arguments
         if (args != null) {
-            val projectId = args.getLong(TimeListActivity.EXTRA_PROJECT_ID)
-            val taskId = args.getLong(TimeListActivity.EXTRA_TASK_ID)
-            val startTime = args.getLong(TimeListActivity.EXTRA_START_TIME)
-            val finishTime = args.getLong(TimeListActivity.EXTRA_FINISH_TIME, System.currentTimeMillis())
+            val projectId = args.getLong(EXTRA_PROJECT_ID)
+            val taskId = args.getLong(EXTRA_TASK_ID)
+            val startTime = args.getLong(EXTRA_START_TIME)
+            val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
 
             val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
             val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
@@ -280,24 +270,23 @@ class TimerFragment : TimeFormFragment() {
         val intent = Intent(context, TimeEditActivity::class.java)
         intent.putExtra(EXTRA_DATE, date.timeInMillis)
         if (record.id == TikalEntity.ID_NONE) {
-            intent.putExtra(EXTRA_PROJECT_ID, record.project.id)
-            intent.putExtra(EXTRA_TASK_ID, record.task.id)
-            intent.putExtra(EXTRA_START_TIME, record.startTime)
-            intent.putExtra(EXTRA_FINISH_TIME, record.finishTime)
+            intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
         } else {
-            intent.putExtra(EXTRA_RECORD, record.id)
+            intent.putExtra(TimeEditFragment.EXTRA_RECORD, record.id)
         }
         startActivityForResult(intent, requestCode)
     }
 
-    override fun handleIntent(intent: Intent, savedInstanceState: Bundle?) {
-        super.handleIntent(intent, savedInstanceState)
-        val args = arguments ?: Bundle()
-        if (intent.extras != null) {
-            args.putAll(intent.extras)
-        }
-        args.putString(EXTRA_INTENT_ACTION, intent.action)
-        arguments = args
+
+    fun run() {
+    }
+
+    override fun onStart() {
+        super.onStart()
+        run()
     }
 
     fun savePage() {
@@ -323,6 +312,9 @@ class TimerFragment : TimeFormFragment() {
     }
 
     companion object {
-        private const val EXTRA_INTENT_ACTION = BuildConfig.APPLICATION_ID + ".INTENT_ACTION"
+        const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
+        const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
+        const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
+        const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
     }
 }

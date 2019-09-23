@@ -231,7 +231,7 @@ class LoginFragment : InternetFragment() {
     }
 
     companion object {
-        const val REQUEST_AUTHENTICATE = 0xAECA
+        private const val REQUEST_AUTHENTICATE = 0x109
 
         const val EXTRA_EMAIL = "email"
         const val EXTRA_PASSWORD = "password"

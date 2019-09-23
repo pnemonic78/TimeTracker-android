@@ -301,7 +301,16 @@ abstract class TimeFormFragment : InternetFragment() {
         projectTasksDao.update(keysToUpdate)
     }
 
-    fun loadFormFromDb() {
+    fun loadForm() {
+        loadFormFromDb()
+
+        val recordStarted = preferences.getStartedRecord()
+        if (recordStarted != null) {
+            record = recordStarted
+        }
+    }
+
+    protected fun loadFormFromDb() {
         Timber.v("loadFormFromDb")
         val db = TrackerDatabase.getDatabase(requireContext())
 
@@ -364,14 +373,16 @@ abstract class TimeFormFragment : InternetFragment() {
         const val STATE_RECORD_ID = "record_id"
         const val STATE_RECORD = "record"
 
-        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
-        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".RECORD_ID"
+        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".form.DATE"
+        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".form.RECORD_ID"
 
-        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
-        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
-        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
-        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
+        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".form.PROJECT_ID"
+        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
+        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
+        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
 
         const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
+
+        const val REQUEST_AUTHENTICATE = 0xAECA
     }
 }
