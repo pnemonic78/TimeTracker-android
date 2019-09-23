@@ -49,6 +49,8 @@ import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -137,12 +139,43 @@ class TimeEditFragment : TimeFormFragment() {
         record.start = parseSystemTime(date, startValue)
         record.finish = parseSystemTime(date, finishValue)
         record.note = inputNote?.text() ?: ""
+        record.status = TaskRecordStatus.CURRENT
 
         populateForm(record)
         runOnUiThread { bindForm(record) }
     }
 
     private fun populateForm(record: TimeRecord) {
+        if (record.id == TikalEntity.ID_NONE) {
+            val args = arguments
+            if (args != null) {
+                if (args.containsKey(EXTRA_PROJECT_ID)) {
+                    val projectId = args.getLong(EXTRA_PROJECT_ID)
+                    record.project = projects.firstOrNull { it.id == projectId } ?: record.project
+                }
+                if (args.containsKey(EXTRA_TASK_ID)) {
+                    val taskId = args.getLong(EXTRA_TASK_ID)
+                    record.task = tasks.firstOrNull { it.id == taskId } ?: record.task
+                }
+                if (args.containsKey(EXTRA_START_TIME)) {
+                    val startTime = args.getLong(EXTRA_START_TIME)
+                    if (startTime > 0L) {
+                        record.startTime = startTime
+                    } else {
+                        record.start = null
+                    }
+                }
+                if (args.containsKey(EXTRA_FINISH_TIME)) {
+                    val finishTime = args.getLong(EXTRA_FINISH_TIME)
+                    if (finishTime > 0L) {
+                        record.finishTime = finishTime
+                    } else {
+                        record.finish = null
+                    }
+                }
+            }
+        }
+
         if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
@@ -152,33 +185,6 @@ class TimeEditFragment : TimeFormFragment() {
             if (taskFavorite != TikalEntity.ID_NONE) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: taskEmpty
             }
-        }
-
-        val recordId = record.id
-        if (recordId == TikalEntity.ID_NONE) {
-            val args = arguments
-            if (args != null) {
-                val projectId = args.getLong(EXTRA_PROJECT_ID)
-                val taskId = args.getLong(EXTRA_TASK_ID)
-                val startTime = args.getLong(EXTRA_START_TIME)
-                val finishTime = args.getLong(EXTRA_FINISH_TIME)
-
-                record.project = projects.firstOrNull { it.id == projectId } ?: record.project
-                record.task = tasks.firstOrNull { it.id == taskId } ?: record.task
-
-                if (startTime > 0L) {
-                    record.startTime = startTime
-                } else {
-                    record.start = null
-                }
-                if (finishTime > 0L) {
-                    record.finishTime = finishTime
-                } else {
-                    record.finish = null
-                }
-            }
-        } else {
-            record.status = TaskRecordStatus.CURRENT
         }
     }
 
@@ -322,7 +328,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val recordId = args.getLong(EXTRA_RECORD, record.id)
 
-        loadPage()
+        loadPage(recordId)
             .subscribe({
                 populateForm(record)
                 bindForm(record)
@@ -387,10 +393,27 @@ class TimeEditFragment : TimeFormFragment() {
             .addTo(disposables)
     }
 
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadFormFromDb() }
+    private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
+        return Single.fromCallable { loadFormFromDb(recordId) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun loadFormFromDb(recordId: Long = TikalEntity.ID_NONE) {
+        val db = TrackerDatabase.getDatabase(requireContext())
+        loadFormFromDb(db)
+        loadRecord(recordId)
+    }
+
+    private fun loadRecord(recordId: Long) {
+        if (recordId != TikalEntity.ID_NONE) {
+            val db = TrackerDatabase.getDatabase(requireContext())
+            val recordsDao = db.timeRecordDao()
+            val recordEntity = recordsDao.queryById(recordId)
+            if (recordEntity != null) {
+                record = recordEntity.toTimeRecord(user, projects, tasks)
+            }
+        }
     }
 
     private fun savePage() {

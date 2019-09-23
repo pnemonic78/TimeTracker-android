@@ -313,7 +313,11 @@ abstract class TimeFormFragment : InternetFragment() {
     protected fun loadFormFromDb() {
         Timber.v("loadFormFromDb")
         val db = TrackerDatabase.getDatabase(requireContext())
+        loadFormFromDb(db)
+    }
 
+    protected open fun loadFormFromDb(db: TrackerDatabase) {
+        Timber.v("loadFormFromDb")
         loadProjects(db)
         loadTasks(db)
         loadProjectTaskKeys(db)

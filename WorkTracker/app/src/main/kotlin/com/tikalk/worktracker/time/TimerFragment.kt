@@ -280,7 +280,6 @@ class TimerFragment : TimeFormFragment() {
         startActivityForResult(intent, requestCode)
     }
 
-
     fun run() {
     }
 
