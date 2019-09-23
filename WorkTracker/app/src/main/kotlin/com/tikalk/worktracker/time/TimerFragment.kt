@@ -42,6 +42,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
@@ -155,6 +156,14 @@ class TimerFragment : TimeFormFragment() {
         record.start = null
         record.finish = null
         preferences.stopRecord()
+        val args = arguments
+        if (args != null) {
+            args.remove(EXTRA_PROJECT_ID)
+            args.remove(EXTRA_TASK_ID)
+            args.remove(EXTRA_START_TIME)
+            args.remove(EXTRA_FINISH_TIME)
+        }
+
         bindForm(record)
     }
 
@@ -204,22 +213,24 @@ class TimerFragment : TimeFormFragment() {
 
         val args = arguments
         if (args != null) {
-            val projectId = args.getLong(EXTRA_PROJECT_ID)
-            val taskId = args.getLong(EXTRA_TASK_ID)
-            val startTime = args.getLong(EXTRA_START_TIME)
-            val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
+            if (args.containsKey(EXTRA_PROJECT_ID) and args.containsKey(EXTRA_TASK_ID)) {
+                val projectId = args.getLong(EXTRA_PROJECT_ID)
+                val taskId = args.getLong(EXTRA_TASK_ID)
+                val startTime = args.getLong(EXTRA_START_TIME)
+                val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
 
-            val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
-            val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
+                val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
+                val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
-            val record = TimeRecord(TikalEntity.ID_NONE, user, project, task)
-            if (startTime > 0L) {
-                record.startTime = startTime
+                val record = TimeRecord(TikalEntity.ID_NONE, user, project, task)
+                if (startTime > 0L) {
+                    record.startTime = startTime
+                }
+                if (finishTime > 0L) {
+                    record.finishTime = finishTime
+                }
+                return record
             }
-            if (finishTime > 0L) {
-                record.finishTime = finishTime
-            }
-            return record
         }
 
         return null
@@ -311,6 +322,11 @@ class TimerFragment : TimeFormFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            TimeListFragment.REQUEST_STOPPED -> if (resultCode == AppCompatActivity.RESULT_OK) {
+                stopTimerCommit()
+            }
+        }
         parentFragment?.onActivityResult(requestCode, resultCode, data)
     }
 

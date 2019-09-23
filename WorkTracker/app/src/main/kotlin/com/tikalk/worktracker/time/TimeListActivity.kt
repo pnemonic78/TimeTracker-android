@@ -89,6 +89,7 @@ class TimeListActivity : InternetActivity() {
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
         mainFragment.handleIntent(intent, savedInstanceState)
+        intent.action = null
     }
 
     companion object {

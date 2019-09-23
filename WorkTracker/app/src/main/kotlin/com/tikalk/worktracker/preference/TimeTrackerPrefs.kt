@@ -131,13 +131,11 @@ class TimeTrackerPrefs(context: Context) {
         val startTime = prefs.getLong(START_TIME, 0L)
         if (startTime <= 0L) return null
 
-        val user = User(userCredentials.login)
-        val project = Project.EMPTY.copy()
+        val user = this.user
+        val project = Project(projectName, "")
         project.id = projectId
-        project.name = projectName
-        val task = ProjectTask.EMPTY.copy()
+        val task = ProjectTask(taskName, "")
         task.id = taskId
-        task.name = taskName
         project.addTask(task)
         val start = startTime.toCalendar()
 

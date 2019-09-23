@@ -283,7 +283,6 @@ class TimeListFragment : InternetFragment(),
                 fetchPage(date)
             }
             REQUEST_STOPPED -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                stopTimerCommit()
                 // Refresh the list with the edited item.
                 fetchPage(date)
             }
@@ -475,12 +474,8 @@ class TimeListFragment : InternetFragment(),
         timerFragment.bindForm(record)
     }
 
-    fun stopTimer() {
+    private fun stopTimer() {
         timerFragment.stopTimer()
-    }
-
-    fun stopTimerCommit() {
-        timerFragment.stopTimerCommit()
     }
 
     private fun navigateTomorrow() {
@@ -639,8 +634,20 @@ class TimeListFragment : InternetFragment(),
         }
     }
 
+    @MainThread
     fun run() {
-
+        showProgress(true)
+        loadPage()
+            .subscribe({
+                populateForm(record)
+                bindForm(record)
+                bindList(date, records)
+                showProgress(false)
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
+            })
+            .addTo(disposables)
     }
 
     override fun onStart() {
