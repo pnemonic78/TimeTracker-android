@@ -386,7 +386,5 @@ abstract class TimeFormFragment : InternetFragment() {
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
 
         const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
-
-        const val REQUEST_AUTHENTICATE = 0xAECA
     }
 }

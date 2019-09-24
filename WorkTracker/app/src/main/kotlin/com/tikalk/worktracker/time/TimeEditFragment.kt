@@ -563,7 +563,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = TimeFormFragment.REQUEST_AUTHENTICATE
+        private const val REQUEST_AUTHENTICATE = 0xAECA
 
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID

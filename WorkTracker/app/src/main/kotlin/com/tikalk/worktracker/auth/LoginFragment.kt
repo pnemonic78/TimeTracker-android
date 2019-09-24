@@ -62,6 +62,8 @@ import timber.log.Timber
  */
 class LoginFragment : InternetFragment() {
 
+    var listener: OnLoginListener? = null
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setTitle(R.string.activity_login)
@@ -131,6 +133,7 @@ class LoginFragment : InternetFragment() {
         // Store values at the time of the login attempt.
         val emailValue = emailInput.text.toString()
         val passwordValue = passwordInput.text.toString()
+        val fragment: LoginFragment = this
 
         var cancel = false
         var focusView: View? = null
@@ -183,11 +186,10 @@ class LoginFragment : InternetFragment() {
                         val body = response.body()!!
                         val errorMessage = getResponseError(body)
                         if (errorMessage.isNullOrEmpty()) {
-                            //FIXME call OnLoginListener.onSuccess()
-                            activity?.setResult(AppCompatActivity.RESULT_OK)
-                            activity?.finish()
+                            listener?.onLoginSuccess(fragment, emailValue)
                         } else {
                             emailInput.error = errorMessage
+                            listener?.onLoginFailure(fragment, emailValue, errorMessage)
                         }
                     } else {
                         passwordInput.requestFocus()
@@ -225,10 +227,12 @@ class LoginFragment : InternetFragment() {
         val indexAt = email.indexOf('@')
         val username = if (indexAt < 0) email else email.substring(0, indexAt)
 
-        val intent = Intent(context, BasicRealmActivity::class.java)
-        intent.putExtra(BasicRealmFragment.EXTRA_REALM, realm)
-        intent.putExtra(BasicRealmFragment.EXTRA_USER, username)
-        startActivityForResult(intent, REQUEST_AUTHENTICATE)
+        val args = Bundle()
+        args.putString(BasicRealmFragment.EXTRA_REALM, realm)
+        args.putString(BasicRealmFragment.EXTRA_USER, username)
+        val fragment = BasicRealmFragment()
+        fragment.arguments = args
+        fragment.show(requireFragmentManager(), "basic_realm")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -240,6 +244,26 @@ class LoginFragment : InternetFragment() {
         }
 
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    /**
+     * Listener for login callbacks.
+     */
+    interface OnLoginListener {
+        /**
+         * Login was successful.
+         * @param fragment the login fragment.
+         * @param email the user's email that was used.
+         */
+        fun onLoginSuccess(fragment: LoginFragment, email: String)
+
+        /**
+         * Login failed.
+         * @param fragment the login fragment.
+         * @param email the user's email that was used.
+         * @param reason the failure reason.
+         */
+        fun onLoginFailure(fragment: LoginFragment, email: String, reason: String)
     }
 
     companion object {

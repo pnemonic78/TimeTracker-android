@@ -44,7 +44,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -73,7 +72,8 @@ import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 class TimeListFragment : InternetFragment(),
-    TimeListAdapter.OnTimeListListener {
+    TimeListAdapter.OnTimeListListener,
+    LoginFragment.OnLoginListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment
@@ -263,21 +263,16 @@ class TimeListFragment : InternetFragment(),
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        val intent = Intent(context, LoginActivity::class.java)
-        intent.putExtra(LoginFragment.EXTRA_SUBMIT, immediate)
-        startActivityForResult(intent, REQUEST_AUTHENTICATE)
+        val args = Bundle()
+        args.putBoolean(LoginFragment.EXTRA_SUBMIT, immediate)
+        val fragment = LoginFragment()
+        fragment.arguments = args
+        fragment.listener = this
+        fragment.show(requireFragmentManager(), "login")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
-            REQUEST_AUTHENTICATE -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                user = preferences.user
-                record.user = user
-                // Fetch the list for the user.
-                fetchPage(date)
-            } else {
-                activity?.finish()
-            }
             REQUEST_EDIT -> if (resultCode == AppCompatActivity.RESULT_OK) {
                 // Refresh the list with the edited item.
                 fetchPage(date)
@@ -673,8 +668,20 @@ class TimeListFragment : InternetFragment(),
         timerFragment.markFavorite()
     }
 
+    override fun onLoginSuccess(fragment: LoginFragment, email: String) {
+        Timber.i("login success")
+        fragment.dismissAllowingStateLoss()
+        user = preferences.user
+        record.user = user
+        // Fetch the list for the user.
+        fetchPage(date)
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
+        Timber.e("login failure: $reason")
+    }
+
     companion object {
-        private const val REQUEST_AUTHENTICATE = TimeFormFragment.REQUEST_AUTHENTICATE
         const val REQUEST_EDIT = 0xED17
         const val REQUEST_STOPPED = 0x5706
 
