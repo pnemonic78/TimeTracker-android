@@ -34,7 +34,6 @@ package com.tikalk.worktracker.auth
 
 import android.app.Dialog
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -43,7 +42,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -60,7 +58,8 @@ import timber.log.Timber
 /**
  * A login screen that offers login via email/password.
  */
-class LoginFragment : InternetFragment() {
+class LoginFragment : InternetFragment(),
+    BasicRealmFragment.OnBasicRealmListener {
 
     var listener: OnLoginListener? = null
 
@@ -223,27 +222,27 @@ class LoginFragment : InternetFragment() {
         return false
     }
 
-    private fun authenticateBasicRealm(email: String, realm: String) {
-        val indexAt = email.indexOf('@')
-        val username = if (indexAt < 0) email else email.substring(0, indexAt)
+    private fun authenticateBasicRealm(username: String, realm: String) {
+        val indexAt = username.indexOf('@')
+        val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
         val args = Bundle()
         args.putString(BasicRealmFragment.EXTRA_REALM, realm)
-        args.putString(BasicRealmFragment.EXTRA_USER, username)
+        args.putString(BasicRealmFragment.EXTRA_USER, userClean)
         val fragment = BasicRealmFragment()
         fragment.arguments = args
+        fragment.listener = this
         fragment.show(requireFragmentManager(), "basic_realm")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_AUTHENTICATE) {
-            if (resultCode == AppCompatActivity.RESULT_OK) {
-                attemptLogin()
-            }
-            return
-        }
+    override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
+        Timber.i("basic realm success for \"$realm\"")
+        fragment.dismissAllowingStateLoss()
+        attemptLogin()
+    }
 
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String) {
+        Timber.e("basic realm failure for \"$realm\": $reason")
     }
 
     /**
@@ -267,8 +266,6 @@ class LoginFragment : InternetFragment() {
     }
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = 0x109
-
         const val EXTRA_EMAIL = "email"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"

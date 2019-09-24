@@ -40,7 +40,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetFragment
@@ -51,7 +50,12 @@ import kotlinx.android.synthetic.main.fragment_basic_realm.*
  */
 class BasicRealmFragment : InternetFragment() {
 
-    private var realmName = "(realm)"
+    var realmName = "(realm)"
+        set(value) {
+            field = value
+            realmTitle?.text = getString(R.string.authentication_basic_realm, value)
+        }
+    var listener: OnBasicRealmListener? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -70,8 +74,6 @@ class BasicRealmFragment : InternetFragment() {
         realmName = credentials.realm
         val username = credentials.username
         val password = credentials.password
-
-        realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
 
         usernameInput.setText(username)
 
@@ -135,6 +137,7 @@ class BasicRealmFragment : InternetFragment() {
         // Store values at the time of the login attempt.
         val username = usernameInput.text.toString()
         val password = passwordInput.text.toString()
+        val fragment: BasicRealmFragment = this
 
         var cancel = false
         var focusView: View? = null
@@ -171,9 +174,7 @@ class BasicRealmFragment : InternetFragment() {
             actionAuthenticate.isEnabled = false
 
             preferences.basicCredentials = BasicCredentials(realmName, username, password)
-            //FIXME call OnLoginListener.onSuccess()
-            activity?.setResult(AppCompatActivity.RESULT_OK)
-            activity?.finish()
+            listener?.onBasicRealmSuccess(fragment, realmName, username)
         }
     }
 
@@ -183,6 +184,28 @@ class BasicRealmFragment : InternetFragment() {
 
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
+    }
+
+    /**
+     * Listener for basic realm login callbacks.
+     */
+    interface OnBasicRealmListener {
+        /**
+         * Login was successful.
+         * @param fragment the login fragment.
+         * @param realm the realm name that was used.
+         * @param username the user's name that was used.
+         */
+        fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String)
+
+        /**
+         * Login failed.
+         * @param fragment the login fragment.
+         * @param realm the realm name that was used.
+         * @param username the user's name that was used.
+         * @param reason the failure reason.
+         */
+        fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String)
     }
 
     companion object {

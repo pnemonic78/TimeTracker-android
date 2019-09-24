@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.auth
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -39,11 +40,13 @@ import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
+import timber.log.Timber
 
 /**
  * An authentication screen for Basic Realm via email/password.
  */
-class BasicRealmActivity : InternetActivity() {
+class BasicRealmActivity : InternetActivity(),
+    BasicRealmFragment.OnBasicRealmListener {
 
     private lateinit var loginFragment: BasicRealmFragment
 
@@ -55,6 +58,7 @@ class BasicRealmActivity : InternetActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         loginFragment = supportFragmentManager.findFragmentById(R.id.realmFragment) as BasicRealmFragment
+        loginFragment.listener = this
 
         handleIntent(intent, savedInstanceState)
     }
@@ -94,6 +98,19 @@ class BasicRealmActivity : InternetActivity() {
 
     override fun showProgress(show: Boolean) {
         progress.showAnimated(show)
+    }
+
+    override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
+        Timber.i("basic realm success for \"$realm\"")
+        val result = Intent()
+        result.putExtra(BasicRealmFragment.EXTRA_REALM, realm)
+        result.putExtra(BasicRealmFragment.EXTRA_USER, username)
+        setResult(Activity.RESULT_OK, result)
+        finish()
+    }
+
+    override fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String) {
+        Timber.e("basic realm failure for \"$realm\": $reason")
     }
 }
 
