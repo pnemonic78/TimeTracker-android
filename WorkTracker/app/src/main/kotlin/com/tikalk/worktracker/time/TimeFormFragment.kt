@@ -359,6 +359,10 @@ abstract class TimeFormFragment : InternetFragment() {
     abstract fun bindForm(record: TimeRecord)
 
     fun markFavorite() {
+        markFavorite(record)
+    }
+
+    protected open fun markFavorite(record: TimeRecord) {
         preferences.setFavorite(record)
     }
 

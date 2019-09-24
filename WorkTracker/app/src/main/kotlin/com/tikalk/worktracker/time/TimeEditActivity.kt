@@ -31,16 +31,20 @@
  */
 package com.tikalk.worktracker.time
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
+import timber.log.Timber
 
-class TimeEditActivity : InternetActivity() {
+class TimeEditActivity : InternetActivity(),
+    TimeEditFragment.OnEditRecordListener {
 
     private var submitMenuItem: MenuItem? = null
     private lateinit var editFragment: TimeEditFragment
@@ -52,6 +56,7 @@ class TimeEditActivity : InternetActivity() {
         setContentView(R.layout.activity_time_edit)
 
         editFragment = supportFragmentManager.findFragmentById(R.id.fragmentForm) as TimeEditFragment
+        editFragment.listener = this
 
         handleIntent(intent, savedInstanceState)
     }
@@ -116,5 +121,27 @@ class TimeEditActivity : InternetActivity() {
 
     private fun markFavorite() {
         editFragment.markFavorite()
+    }
+
+    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
+        Timber.i("record submitted: ${record.project} / ${record.task}")
+        if (last) {
+            setResult(Activity.RESULT_OK)
+            finish()
+        }
+    }
+
+    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
+        Timber.i("record deleted: ${record.project} / ${record.task}")
+        setResult(Activity.RESULT_OK)
+        finish()
+    }
+
+    override fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord) {
+        Timber.i("record favorited: ${record.project} / ${record.task}")
+    }
+
+    override fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String) {
+        Timber.e("record failure: $reason")
     }
 }

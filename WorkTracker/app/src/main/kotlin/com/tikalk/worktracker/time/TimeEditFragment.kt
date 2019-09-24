@@ -43,7 +43,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -71,6 +70,8 @@ import kotlin.math.max
 
 class TimeEditFragment : TimeFormFragment(),
     LoginFragment.OnLoginListener {
+
+    var listener: OnEditRecordListener? = null
 
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
@@ -488,13 +489,10 @@ class TimeEditFragment : TimeFormFragment(),
                     val body = response.body()!!
                     val errorMessage = getResponseError(body)
                     if (errorMessage.isNullOrEmpty()) {
-                        if (last) {
-                            //FIXME call listener
-                            activity?.setResult(AppCompatActivity.RESULT_OK)
-                            activity?.finish()
-                        }
+                        listener?.onRecordEditSubmitted(this, record, last)
                     } else {
                         errorLabel.text = errorMessage
+                        listener?.onRecordEditFailure(this, record, errorMessage)
                     }
                 } else {
                     authenticate(true)
@@ -508,9 +506,7 @@ class TimeEditFragment : TimeFormFragment(),
 
     fun deleteRecord() {
         if (record.id == TikalEntity.ID_NONE) {
-            //FIXME call listener
-            activity?.setResult(AppCompatActivity.RESULT_OK)
-            activity?.finish()
+            listener?.onRecordEditDeleted(this, record)
         } else {
             deleteRecord(record)
         }
@@ -529,9 +525,7 @@ class TimeEditFragment : TimeFormFragment(),
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     showProgress(false)
-                    //FIXME call listener
-                    activity?.setResult(AppCompatActivity.RESULT_OK)
-                    activity?.finish()
+                    listener?.onRecordEditDeleted(this, record)
                 } else {
                     authenticate(true)
                 }
@@ -560,6 +554,46 @@ class TimeEditFragment : TimeFormFragment(),
         } else {
             record.id = savedInstanceState.getLong(STATE_RECORD_ID)
         }
+    }
+
+    override fun markFavorite(record: TimeRecord) {
+        super.markFavorite(record)
+        listener?.onRecordEditFavorited(this, record)
+    }
+
+    /**
+     * Listener for editing a record callbacks.
+     */
+    interface OnEditRecordListener {
+        /**
+         * The record was submitted.
+         * @param fragment the editor fragment.
+         * @param record the record.
+         * @param last is this the last record in a series that was submitted?
+         */
+        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true)
+
+        /**
+         * The record was deleted.
+         * @param fragment the editor fragment.
+         * @param record the record.
+         */
+        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord)
+
+        /**
+         * The record was marked as favorite.
+         * @param fragment the editor fragment.
+         * @param record the record.
+         */
+        fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord)
+
+        /**
+         * Editing record failed.
+         * @param fragment the login fragment.
+         * @param record the record.
+         * @param reason the failure reason.
+         */
+        fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String)
     }
 
     companion object {
