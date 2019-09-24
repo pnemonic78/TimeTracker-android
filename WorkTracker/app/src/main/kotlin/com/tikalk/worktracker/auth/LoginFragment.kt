@@ -214,16 +214,21 @@ class LoginFragment : InternetFragment() {
         val challenges = response.challenges()
         for (challenge in challenges) {
             if (challenge.scheme() == BasicCredentials.SCHEME) {
-                val indexAt = email.indexOf('@')
-                val username = if (indexAt < 0) email else email.substring(0, indexAt)
-                val intent = Intent(context, BasicRealmActivity::class.java)
-                intent.putExtra(BasicRealmFragment.EXTRA_REALM, challenge.realm())
-                intent.putExtra(BasicRealmFragment.EXTRA_USER, username)
-                startActivityForResult(intent, REQUEST_AUTHENTICATE)
+                authenticateBasicRealm(email, challenge.realm())
                 return true
             }
         }
         return false
+    }
+
+    private fun authenticateBasicRealm(email: String, realm: String) {
+        val indexAt = email.indexOf('@')
+        val username = if (indexAt < 0) email else email.substring(0, indexAt)
+
+        val intent = Intent(context, BasicRealmActivity::class.java)
+        intent.putExtra(BasicRealmFragment.EXTRA_REALM, realm)
+        intent.putExtra(BasicRealmFragment.EXTRA_USER, username)
+        startActivityForResult(intent, REQUEST_AUTHENTICATE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

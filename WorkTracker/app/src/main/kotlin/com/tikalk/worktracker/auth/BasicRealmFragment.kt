@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.auth
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,6 +52,12 @@ import kotlinx.android.synthetic.main.fragment_basic_realm.*
 class BasicRealmFragment : InternetFragment() {
 
     private var realmName = "(realm)"
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setTitle(R.string.activity_basic_realm)
+        return dialog
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_basic_realm, container, false)
