@@ -34,7 +34,6 @@ package com.tikalk.worktracker.time
 
 import android.app.TimePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
@@ -47,7 +46,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginActivity
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
@@ -71,7 +69,8 @@ import timber.log.Timber
 import java.util.*
 import kotlin.math.max
 
-class TimeEditFragment : TimeFormFragment() {
+class TimeEditFragment : TimeFormFragment(),
+    LoginFragment.OnLoginListener {
 
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
@@ -351,17 +350,15 @@ class TimeEditFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_AUTHENTICATE) {
-            if (resultCode == AppCompatActivity.RESULT_OK) {
-                fetchPage(date, record.id)
-            } else {
-                activity?.finish()
-            }
-            return
-        }
+    override fun onLoginSuccess(fragment: LoginFragment, email: String) {
+        Timber.i("login success")
+        fragment.dismissAllowingStateLoss()
+        fetchPage(date, record.id)
+    }
 
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
+        Timber.e("login failure: $reason")
+        activity?.finish()
     }
 
     private fun fetchPage(date: Calendar, id: Long) {
@@ -425,9 +422,12 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun authenticate(immediate: Boolean = false) {
-        val intent = Intent(context, LoginActivity::class.java)
-        intent.putExtra(LoginFragment.EXTRA_SUBMIT, immediate)
-        startActivityForResult(intent, REQUEST_AUTHENTICATE)
+        val args = Bundle()
+        args.putBoolean(LoginFragment.EXTRA_SUBMIT, immediate)
+        val fragment = LoginFragment()
+        fragment.arguments = args
+        fragment.listener = this
+        fragment.show(requireFragmentManager(), "login")
     }
 
     fun submit() {
@@ -563,8 +563,6 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     companion object {
-        private const val REQUEST_AUTHENTICATE = 0xAECA
-
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
