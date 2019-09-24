@@ -35,11 +35,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
     android:paddingStart="@dimen/dialog_form_paddingBottom"
     android:paddingTop="@dimen/dialog_form_paddingTop"
     android:paddingEnd="@dimen/dialog_form_paddingEnd"
-    android:paddingBottom="@dimen/dialog_form_paddingBottom">
+    android:paddingBottom="@dimen/dialog_form_paddingBottom"
+    tools:context=".time.TimeListActivity">
 
     <ImageView
         android:id="@+id/projectIcon"

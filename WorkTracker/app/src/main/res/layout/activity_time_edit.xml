@@ -1,26 +1,31 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.tikalk.worktracker.time.TimeEditActivity">
 
-    <fragment
-        android:id="@+id/fragmentForm"
-        android:name="com.tikalk.worktracker.time.TimeEditFragment"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/fragmentFormCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout="@layout/time_form" />
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        app:cardCornerRadius="@dimen/card_cornerRadius">
+
+        <fragment
+            android:id="@+id/fragmentForm"
+            android:name="com.tikalk.worktracker.time.TimeEditFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/time_form" />
+    </androidx.cardview.widget.CardView>
 
     <!-- Progress indicator -->
     <include
         layout="@layout/progress"
         tools:visibility="gone" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
