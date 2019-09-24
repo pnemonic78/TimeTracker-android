@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.auth
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -39,11 +40,13 @@ import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
+import timber.log.Timber
 
 /**
  * A login screen that offers login via email/password.
  */
-class LoginActivity : InternetActivity() {
+class LoginActivity : InternetActivity(),
+    LoginFragment.OnLoginListener {
 
     private lateinit var loginFragment: LoginFragment
 
@@ -55,6 +58,7 @@ class LoginActivity : InternetActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         loginFragment = supportFragmentManager.findFragmentById(R.id.loginFragment) as LoginFragment
+        loginFragment.listener = this
 
         handleIntent(intent, savedInstanceState)
     }
@@ -86,7 +90,7 @@ class LoginActivity : InternetActivity() {
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-        if (savedInstanceState==null) {
+        if (savedInstanceState == null) {
             loginFragment.arguments = intent.extras
             loginFragment.run()
         }
@@ -94,6 +98,18 @@ class LoginActivity : InternetActivity() {
 
     override fun showProgress(show: Boolean) {
         progress.showAnimated(show)
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, email: String) {
+        Timber.i("login success")
+        val result = Intent()
+        result.putExtra(LoginFragment.EXTRA_EMAIL, email)
+        setResult(Activity.RESULT_OK, result)
+        finish()
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 }
 
