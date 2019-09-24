@@ -33,10 +33,11 @@
 package com.tikalk.app
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
 
-open class TikalFragment : Fragment() {
+open class TikalFragment : AppCompatDialogFragment() {
 
     protected val disposables = CompositeDisposable()
 

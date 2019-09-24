@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.auth
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -60,6 +61,12 @@ import timber.log.Timber
  * A login screen that offers login via email/password.
  */
 class LoginFragment : InternetFragment() {
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setTitle(R.string.activity_login)
+        return dialog
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_login, container, false)
