@@ -5,6 +5,7 @@
     android:id="@+id/loginForm"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:minWidth="@dimen/dialog_form_minWidth"
     app:cardCornerRadius="@dimen/card_cornerRadius"
     tools:context=".time.TimeEditActivity">
 

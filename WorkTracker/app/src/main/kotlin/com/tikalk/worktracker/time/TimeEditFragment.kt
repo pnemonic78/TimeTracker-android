@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.time
 
+import android.app.Dialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
@@ -76,6 +77,12 @@ class TimeEditFragment : TimeFormFragment(),
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
     private var errorMessage: String = ""
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setTitle(R.string.activity_time)
+        return dialog
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.time_form, container, false)
@@ -597,6 +604,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     companion object {
+        const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
