@@ -33,14 +33,12 @@
 package com.tikalk.worktracker.time
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
@@ -154,7 +152,7 @@ class TimerFragment : TimeFormFragment() {
         editRecord(record)
     }
 
-    private fun stopTimerCommit() {
+    fun stopTimerCommit() {
         Timber.v("stopTimerCommit")
         timer?.dispose()
 
@@ -298,10 +296,6 @@ class TimerFragment : TimeFormFragment() {
         run()
     }
 
-    fun savePage() {
-        saveFormToDb()
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable(STATE_RECORD, record)
@@ -318,15 +312,6 @@ class TimerFragment : TimeFormFragment() {
             populateForm(record)
             bindForm(record)
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            TimeListFragment.REQUEST_STOPPED -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                stopTimerCommit()
-            }
-        }
-        parentFragment?.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

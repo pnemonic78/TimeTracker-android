@@ -183,6 +183,10 @@ abstract class TimeFormFragment : InternetFragment() {
         }
     }
 
+    fun savePage() {
+        saveFormToDb()
+    }
+
     open fun saveFormToDb() {
         Timber.v("saveFormToDb")
         val db = TrackerDatabase.getDatabase(requireContext())

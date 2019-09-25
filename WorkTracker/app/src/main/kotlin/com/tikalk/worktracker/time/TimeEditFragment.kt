@@ -389,7 +389,7 @@ class TimeEditFragment : TimeFormFragment(),
                     savePage()
                     showProgressMain(false)
                 } else {
-                    authenticate(true)
+                    authenticate()
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
@@ -421,13 +421,9 @@ class TimeEditFragment : TimeFormFragment(),
         }
     }
 
-    private fun savePage() {
-        return saveFormToDb()
-    }
-
-    private fun authenticate(immediate: Boolean = false) {
+    private fun authenticate(submit: Boolean = false) {
         val args = Bundle()
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, immediate)
+        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
         val fragment = LoginFragment()
         fragment.arguments = args
         fragment.listener = this
@@ -529,11 +525,11 @@ class TimeEditFragment : TimeFormFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
+                showProgress(false)
                 if (isValidResponse(response)) {
-                    showProgress(false)
                     listener?.onRecordEditDeleted(this, record)
                 } else {
-                    authenticate(true)
+                    authenticate()
                 }
             }, { err ->
                 Timber.e(err, "Error deleting record: ${err.message}")
@@ -576,14 +572,11 @@ class TimeEditFragment : TimeFormFragment(),
         }
         args.clear()
         args.putLong(EXTRA_DATE, date.timeInMillis)
-        if (record.id == TikalEntity.ID_NONE) {
-            args.putLong(EXTRA_PROJECT_ID, record.project.id)
-            args.putLong(EXTRA_TASK_ID, record.task.id)
-            args.putLong(EXTRA_START_TIME, record.startTime)
-            args.putLong(EXTRA_FINISH_TIME, record.finishTime)
-        } else {
-            args.putLong(EXTRA_RECORD, record.id)
-        }
+        args.putLong(EXTRA_PROJECT_ID, record.project.id)
+        args.putLong(EXTRA_TASK_ID, record.task.id)
+        args.putLong(EXTRA_START_TIME, record.startTime)
+        args.putLong(EXTRA_FINISH_TIME, record.finishTime)
+        args.putLong(EXTRA_RECORD, record.id)
         run()
     }
 

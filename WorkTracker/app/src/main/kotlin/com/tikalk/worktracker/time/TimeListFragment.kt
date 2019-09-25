@@ -34,13 +34,11 @@ package com.tikalk.worktracker.time
 
 import android.app.DatePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -51,6 +49,7 @@ import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -143,6 +142,10 @@ class TimeListFragment : InternetFragment(),
             }
         })
         list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+
+        if (savedInstanceState == null) {
+            fetchPage(date, false)
+        }
     }
 
     override fun onRecordClick(record: TimeRecord) {
@@ -153,11 +156,11 @@ class TimeListFragment : InternetFragment(),
         deleteRecord(record)
     }
 
-    private fun fetchPage(date: Calendar) {
+    private fun fetchPage(date: Calendar, progress: Boolean = true) {
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted")
         // Show a progress spinner, and kick off a background task to perform the user login attempt.
-        showProgress(true)
+        if (progress) showProgress(true)
 
         // Fetch from local database first.
         loadPage()
@@ -175,24 +178,32 @@ class TimeListFragment : InternetFragment(),
                             this.date.timeInMillis = date.timeInMillis
                         }
                         if (isValidResponse(response)) {
-                            val body = response.body()!!
-                            populateForm(body, date)
-                            populateList(body, date)
-                            savePage()
-                            showProgressMain(false)
+                            val html = response.body()!!
+                            processPage(html, date, progress)
                         } else {
                             authenticate(true)
                         }
                     }, { err ->
                         Timber.e(err, "Error fetching page: ${err.message}")
-                        showProgressMain(false)
+                        if (progress) showProgressMain(false)
                     })
                     .addTo(disposables)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
+                if (progress) showProgress(false)
             })
             .addTo(disposables)
+    }
+
+    private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
+        populateForm(html, date)
+        populateList(html, date)
+        savePage()
+        runOnUiThread {
+            bindList(date, records)
+            bindTotals(totals)
+            if (progress) showProgressMain(false)
+        }
     }
 
     /** Populate the list. */
@@ -213,23 +224,16 @@ class TimeListFragment : InternetFragment(),
             }
         }
 
+        this.records.clear()
+        this.records.addAll(records)
+
         val form = doc.selectFirst("form[name='timeRecordForm']")
         populateTotals(doc, form, totals)
-
-        runOnUiThread {
-            bindList(date, records)
-            bindTotals(totals)
-        }
     }
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
-        dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY)
-
-        if (records !== this.records) {
-            this.records.clear()
-            this.records.addAll(records)
-        }
+        dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
     }
 
@@ -279,20 +283,6 @@ class TimeListFragment : InternetFragment(),
         fragment.arguments = args
         fragment.listener = this
         fragment.show(requireFragmentManager(), "login")
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            REQUEST_EDIT -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                // Refresh the list with the edited item.
-                fetchPage(date)
-            }
-            REQUEST_STOPPED -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                // Refresh the list with the edited item.
-                fetchPage(date)
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -451,13 +441,10 @@ class TimeListFragment : InternetFragment(),
             .subscribe(
                 { response ->
                     if (isValidResponse(response)) {
-                        val body = response.body()!!
-                        populateForm(body, date)
-                        populateList(body, date)
-                        savePage()
-                        showProgressMain(false)
+                        val html = response.body()!!
+                        processPage(html, date)
                     } else {
-                        authenticate(true)
+                        authenticate()
                     }
                 },
                 { err ->
@@ -563,7 +550,11 @@ class TimeListFragment : InternetFragment(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
-            timerFragment.loadForm()
+            if (isTimerShowing()) {
+                timerFragment.loadForm()
+            } else {
+                editFragment.loadForm()
+            }
 
             val db = TrackerDatabase.getDatabase(requireContext())
             loadRecords(db, date)
@@ -573,7 +564,11 @@ class TimeListFragment : InternetFragment(),
     }
 
     private fun savePage() {
-        timerFragment.savePage()
+        if (isTimerShowing()) {
+            timerFragment.savePage()
+        } else {
+            editFragment.savePage()
+        }
 
         val db = TrackerDatabase.getDatabase(requireContext())
         saveRecords(db, date)
@@ -690,14 +685,25 @@ class TimeListFragment : InternetFragment(),
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
         Timber.i("record submitted: ${record.project} / ${record.task}")
+        if (record.id == TikalEntity.ID_NONE) {
+            timerFragment.stopTimerCommit()
+        }
         if (last) {
             showTimer()
+            // Refresh the list with the edited item.
+            fetchPage(date)
         }
     }
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
         Timber.i("record deleted: ${record.project} / ${record.task}")
         showTimer()
+        if (record.id == TikalEntity.ID_NONE) {
+            timerFragment.stopTimerCommit()
+        } else {
+            // Refresh the list with the edited item.
+            fetchPage(date)
+        }
     }
 
     override fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord) {
@@ -754,9 +760,6 @@ class TimeListFragment : InternetFragment(),
     }
 
     companion object {
-        const val REQUEST_EDIT = 0xED17
-        const val REQUEST_STOPPED = 0x5706
-
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
 
@@ -766,5 +769,7 @@ class TimeListFragment : InternetFragment(),
         const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
+
+        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }
