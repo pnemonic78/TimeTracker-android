@@ -305,7 +305,10 @@ class PersistentCookieStore(context: Context) : CookieStore {
         prefs.all.forEach { (key, value) ->
             if (value is Collection<*>) {
                 val index = URI.create(key)
-                uriIndex[index] = value.flatMap { header -> HttpCookie.parse(header as String) }.toMutableList()
+                uriIndex[index] = value
+                    .flatMap { header -> HttpCookie.parse(header as String) }
+                    .filter { cookie -> !cookie.domain.isNullOrEmpty() }
+                    .toMutableList()
             }
         }
     }
