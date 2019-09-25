@@ -363,6 +363,7 @@ abstract class TimeFormFragment : InternetFragment() {
     }
 
     protected open fun markFavorite(record: TimeRecord) {
+        Timber.v("markFavorite $record")
         preferences.setFavorite(record)
     }
 

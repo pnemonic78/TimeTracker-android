@@ -46,7 +46,6 @@ import timber.log.Timber
 class TimeEditActivity : InternetActivity(),
     TimeEditFragment.OnEditRecordListener {
 
-    private var submitMenuItem: MenuItem? = null
     private lateinit var editFragment: TimeEditFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,8 +75,6 @@ class TimeEditActivity : InternetActivity(),
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
-        menuInflater.inflate(R.menu.time_edit, menu)
-        submitMenuItem = menu.findItem(R.id.menu_submit)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -88,39 +85,12 @@ class TimeEditActivity : InternetActivity(),
                 onBackPressed()
                 return true
             }
-            R.id.menu_delete -> {
-                deleteRecord()
-                return true
-            }
-            R.id.menu_submit -> {
-                submit()
-                return true
-            }
-            R.id.menu_favorite -> {
-                markFavorite()
-                return true
-            }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun submit() {
-        editFragment.submit()
-    }
-
     override fun showProgress(show: Boolean) {
-        editFragment.view?.showAnimated(show.not())
         progress.showAnimated(show)
-
-        submitMenuItem?.isEnabled = !show
-    }
-
-    private fun deleteRecord() {
-        editFragment.deleteRecord()
-    }
-
-    private fun markFavorite() {
-        editFragment.markFavorite()
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {

@@ -34,7 +34,6 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
-import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
@@ -62,29 +61,11 @@ class TimeListActivity : InternetActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
-        menuInflater.inflate(R.menu.time_list, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_date -> {
-                mainFragment.pickDate()
-                return true
-            }
-            R.id.menu_favorite -> {
-                mainFragment.markFavorite()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
     override fun showProgress(show: Boolean) {
-        mainFragment.view?.showAnimated(show.not())
         progress.showAnimated(show)
-
-        //recordAdd.isEnabled = !show
     }
 
     private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {

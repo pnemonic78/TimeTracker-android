@@ -36,9 +36,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
@@ -67,6 +65,11 @@ import kotlin.math.max
 class TimerFragment : TimeFormFragment() {
 
     private var timer: Disposable? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
@@ -119,10 +122,12 @@ class TimerFragment : TimeFormFragment() {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
             actionSwitcher.displayedChild = 0
+            activity?.invalidateOptionsMenu()
         } else {
             projectInput.isEnabled = false
             taskInput.isEnabled = false
             actionSwitcher.displayedChild = 1
+            activity?.invalidateOptionsMenu()
 
             maybeStartTimer()
         }
@@ -278,7 +283,9 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun editRecord(record: TimeRecord) {
-        (parentFragment as TimeListFragment).editRecord(record)
+        if (parentFragment is TimeListFragment) {
+            (parentFragment as TimeListFragment).editRecord(record)
+        }
     }
 
     fun run() {
@@ -320,6 +327,26 @@ class TimerFragment : TimeFormFragment() {
             }
         }
         parentFragment?.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        if (view?.visibility == View.VISIBLE) {
+            inflater.inflate(R.menu.timer, menu)
+        }
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (view?.visibility != View.VISIBLE) {
+            return false
+        }
+        when (item.itemId) {
+            R.id.menu_favorite -> {
+                markFavorite()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     companion object {

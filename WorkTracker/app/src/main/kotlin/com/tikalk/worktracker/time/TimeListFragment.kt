@@ -99,6 +99,11 @@ class TimeListFragment : InternetFragment(),
         get() = timerFragment.tasks
     private val records: MutableList<TimeRecord> = ArrayList()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_time_list, container, false)
     }
@@ -108,6 +113,8 @@ class TimeListFragment : InternetFragment(),
 
         timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
         editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
+        editFragment.listener = this
+
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
 
@@ -427,7 +434,7 @@ class TimeListFragment : InternetFragment(),
 
     fun editRecord(record: TimeRecord) {
         editFragment.editRecord(record, date)
-        switcherForm?.displayedChild = 1
+        showEditor()
     }
 
     private fun deleteRecord(record: TimeRecord) {
@@ -668,10 +675,6 @@ class TimeListFragment : InternetFragment(),
         run()
     }
 
-    fun markFavorite() {
-        timerFragment.markFavorite()
-    }
-
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
         fragment.dismissAllowingStateLoss()
@@ -687,10 +690,14 @@ class TimeListFragment : InternetFragment(),
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
         Timber.i("record submitted: ${record.project} / ${record.task}")
+        if (last) {
+            showTimer()
+        }
     }
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
         Timber.i("record deleted: ${record.project} / ${record.task}")
+        showTimer()
     }
 
     override fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord) {
@@ -711,7 +718,39 @@ class TimeListFragment : InternetFragment(),
     }
 
     private fun cancelEditRecord() {
+        showTimer()
+    }
+
+    private fun showTimer() {
         switcherForm?.displayedChild = 0
+        activity?.invalidateOptionsMenu()
+    }
+
+    private fun showEditor() {
+        switcherForm?.displayedChild = 1
+        activity?.invalidateOptionsMenu()
+    }
+
+    fun isTimerShowing() = (switcherForm?.displayedChild == 0)
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        if (view?.visibility == View.VISIBLE) {
+            inflater.inflate(R.menu.time_list, menu)
+        }
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (view?.visibility != View.VISIBLE) {
+            return false
+        }
+        when (item.itemId) {
+            R.id.menu_date -> {
+                pickDate()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     companion object {

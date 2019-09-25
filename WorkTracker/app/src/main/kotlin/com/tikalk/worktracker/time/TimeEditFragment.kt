@@ -37,9 +37,7 @@ import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -76,6 +74,11 @@ class TimeEditFragment : TimeFormFragment(),
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
     private var errorMessage: String = ""
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.time_form, container, false)
@@ -431,8 +434,9 @@ class TimeEditFragment : TimeFormFragment(),
         fragment.show(requireFragmentManager(), "login")
     }
 
-    fun submit() {
+    private fun submit() {
         val record = this.record
+        Timber.v("submit $record")
 
         if (!validateForm(record)) {
             return
@@ -452,6 +456,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
+        Timber.v("submit $record first=$first last=$last")
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         if (first) {
@@ -504,7 +509,7 @@ class TimeEditFragment : TimeFormFragment(),
             .addTo(disposables)
     }
 
-    fun deleteRecord() {
+    private fun deleteRecord() {
         if (record.id == TikalEntity.ID_NONE) {
             listener?.onRecordEditDeleted(this, record)
         } else {
@@ -513,6 +518,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     private fun deleteRecord(record: TimeRecord) {
+        Timber.v("deleteRecord $record")
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
@@ -579,6 +585,34 @@ class TimeEditFragment : TimeFormFragment(),
             args.putLong(EXTRA_RECORD, record.id)
         }
         run()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        if (view?.visibility == View.VISIBLE) {
+            inflater.inflate(R.menu.time_edit, menu)
+        }
+        return super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (view?.visibility != View.VISIBLE) {
+            return false
+        }
+        when (item.itemId) {
+            R.id.menu_delete -> {
+                deleteRecord()
+                return true
+            }
+            R.id.menu_submit -> {
+                submit()
+                return true
+            }
+            R.id.menu_favorite -> {
+                markFavorite()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     /**
