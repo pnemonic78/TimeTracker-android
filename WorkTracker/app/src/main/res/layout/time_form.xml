@@ -36,7 +36,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minWidth="@dimen/dialog_form_minWidth"
     android:paddingStart="@dimen/dialog_form_paddingStart"
     android:paddingTop="@dimen/dialog_form_paddingTop"
     android:paddingEnd="@dimen/dialog_form_paddingEnd"

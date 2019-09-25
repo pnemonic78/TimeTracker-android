@@ -41,22 +41,37 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/fragmentFormCard"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         app:cardCornerRadius="@dimen/card_cornerRadius"
+        app:layout_constraintBottom_toTopOf="@+id/totals_divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/time_form_divider"
         app:layout_constraintTop_toTopOf="parent">
 
-        <fragment
-            android:id="@+id/fragmentForm"
-            android:name="com.tikalk.worktracker.time.TimerFragment"
+        <ViewSwitcher
+            android:id="@+id/switcherForm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:layout="@layout/fragment_timer" />
+            android:measureAllChildren="false">
+
+            <fragment
+                android:id="@+id/fragmentTimer"
+                android:name="com.tikalk.worktracker.time.TimerFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:layout="@layout/fragment_timer" />
+
+            <fragment
+                android:id="@+id/fragmentEdit"
+                android:name="com.tikalk.worktracker.time.TimeEditFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:layout="@layout/time_form" />
+        </ViewSwitcher>
     </androidx.cardview.widget.CardView>
 
     <View
