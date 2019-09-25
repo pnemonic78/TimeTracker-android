@@ -73,10 +73,12 @@ import kotlin.math.abs
 
 class TimeListFragment : InternetFragment(),
     TimeListAdapter.OnTimeListListener,
-    LoginFragment.OnLoginListener {
+    LoginFragment.OnLoginListener,
+    TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment
+    private lateinit var editFragment: TimeEditFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
@@ -104,7 +106,8 @@ class TimeListFragment : InternetFragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        timerFragment = childFragmentManager.findFragmentById(R.id.fragmentForm) as TimerFragment
+        timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
+        editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
 
@@ -422,8 +425,9 @@ class TimeListFragment : InternetFragment(),
         return id.toLong()
     }
 
-    private fun editRecord(record: TimeRecord, requestCode: Int = TimeListActivity.REQUEST_EDIT) {
-        timerFragment.editRecord(record, requestCode)
+    fun editRecord(record: TimeRecord) {
+        editFragment.editRecord(record, date)
+        switcherForm?.displayedChild = 1
     }
 
     private fun deleteRecord(record: TimeRecord) {
@@ -679,6 +683,35 @@ class TimeListFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
         Timber.e("login failure: $reason")
+    }
+
+    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
+        Timber.i("record submitted: ${record.project} / ${record.task}")
+    }
+
+    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
+        Timber.i("record deleted: ${record.project} / ${record.task}")
+    }
+
+    override fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord) {
+        Timber.i("record favorited: ${record.project} / ${record.task}")
+    }
+
+    override fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String) {
+        Timber.e("record failure: $reason")
+    }
+
+    override fun onBackPressed(): Boolean {
+        val child = switcherForm?.displayedChild ?: -1
+        if (child == 1) {
+            cancelEditRecord()
+            return true
+        }
+        return super.onBackPressed()
+    }
+
+    private fun cancelEditRecord() {
+        switcherForm?.displayedChild = 0
     }
 
     companion object {

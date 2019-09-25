@@ -146,10 +146,10 @@ class TimerFragment : TimeFormFragment() {
 
         TimerWorker.stopTimer(context)
 
-        editRecord(record, TimeListActivity.REQUEST_STOPPED)
+        editRecord(record)
     }
 
-    fun stopTimerCommit() {
+    private fun stopTimerCommit() {
         Timber.v("stopTimerCommit")
         timer?.dispose()
 
@@ -191,7 +191,7 @@ class TimerFragment : TimeFormFragment() {
     private fun updateTimer() {
         val now = System.currentTimeMillis()
         val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
-        timerText.text = DateUtils.formatElapsedTime(elapsedSeconds)
+        timerText?.text = DateUtils.formatElapsedTime(elapsedSeconds)
     }
 
     private fun projectItemSelected(project: Project) {
@@ -277,21 +277,13 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
-    fun editRecord(record: TimeRecord, requestCode: Int = TimeListActivity.REQUEST_EDIT) {
-        val intent = Intent(context, TimeEditActivity::class.java)
-        intent.putExtra(EXTRA_DATE, date.timeInMillis)
-        if (record.id == TikalEntity.ID_NONE) {
-            intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-            intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-            intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-            intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-        } else {
-            intent.putExtra(TimeEditFragment.EXTRA_RECORD, record.id)
-        }
-        startActivityForResult(intent, requestCode)
+    private fun editRecord(record: TimeRecord) {
+        (parentFragment as TimeListFragment).editRecord(record)
     }
 
     fun run() {
+        populateForm(record)
+        bindForm(record)
     }
 
     override fun onStart() {

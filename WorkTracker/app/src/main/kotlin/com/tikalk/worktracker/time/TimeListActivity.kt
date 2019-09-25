@@ -100,10 +100,14 @@ class TimeListActivity : InternetActivity() {
         intent.action = null
     }
 
-    companion object {
-        const val REQUEST_EDIT = TimeListFragment.REQUEST_EDIT
-        const val REQUEST_STOPPED = TimeListFragment.REQUEST_STOPPED
+    override fun onBackPressed() {
+        if (mainFragment.onBackPressed()) {
+            return
+        }
+        super.onBackPressed()
+    }
 
+    companion object {
         const val ACTION_STOP = TimeListFragment.ACTION_STOP
 
         const val EXTRA_PROJECT_ID = TimeListFragment.EXTRA_PROJECT_ID

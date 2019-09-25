@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.app.Dialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
@@ -77,12 +76,6 @@ class TimeEditFragment : TimeFormFragment(),
     private var startPickerDialog: TimePickerDialog? = null
     private var finishPickerDialog: TimePickerDialog? = null
     private var errorMessage: String = ""
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setTitle(R.string.activity_time)
-        return dialog
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.time_form, container, false)
@@ -566,6 +559,26 @@ class TimeEditFragment : TimeFormFragment(),
     override fun markFavorite(record: TimeRecord) {
         super.markFavorite(record)
         listener?.onRecordEditFavorited(this, record)
+    }
+
+    fun editRecord(record: TimeRecord, date: Calendar) {
+        this.date = date
+        var args = arguments
+        if (args == null) {
+            args = Bundle()
+            arguments = args
+        }
+        args.clear()
+        args.putLong(EXTRA_DATE, date.timeInMillis)
+        if (record.id == TikalEntity.ID_NONE) {
+            args.putLong(EXTRA_PROJECT_ID, record.project.id)
+            args.putLong(EXTRA_TASK_ID, record.task.id)
+            args.putLong(EXTRA_START_TIME, record.startTime)
+            args.putLong(EXTRA_FINISH_TIME, record.finishTime)
+        } else {
+            args.putLong(EXTRA_RECORD, record.id)
+        }
+        run()
     }
 
     /**

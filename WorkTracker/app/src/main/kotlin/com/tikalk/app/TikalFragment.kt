@@ -55,6 +55,8 @@ open class TikalFragment : AppCompatDialogFragment() {
 
     protected open fun onRestoreInstanceState(savedInstanceState: Bundle) {
     }
+
+    open fun onBackPressed(): Boolean = false
 }
 
 fun Fragment.runOnUiThread(action: Runnable) {

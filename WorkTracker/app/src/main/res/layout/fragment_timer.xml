@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ BSD 3-Clause License
   ~
   ~ Copyright (c) 2019, Tikal Knowledge, Ltd.
@@ -35,7 +36,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="@dimen/dialog_form_paddingBottom"
+    android:minWidth="@dimen/dialog_form_minWidth"
+    android:paddingStart="@dimen/dialog_form_paddingStart"
     android:paddingTop="@dimen/dialog_form_paddingTop"
     android:paddingEnd="@dimen/dialog_form_paddingEnd"
     android:paddingBottom="@dimen/dialog_form_paddingBottom"
