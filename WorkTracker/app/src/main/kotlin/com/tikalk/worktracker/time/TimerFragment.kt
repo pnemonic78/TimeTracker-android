@@ -32,7 +32,9 @@
 
 package com.tikalk.worktracker.time
 
+import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
@@ -283,6 +285,18 @@ class TimerFragment : TimeFormFragment() {
     private fun editRecord(record: TimeRecord) {
         if (parentFragment is TimeListFragment) {
             (parentFragment as TimeListFragment).editRecord(record)
+        } else {
+            val intent = Intent(context, TimeEditActivity::class.java)
+            intent.putExtra(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
+            if (record.id == TikalEntity.ID_NONE) {
+                intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+                intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+                intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            } else {
+                intent.putExtra(TimeEditFragment.EXTRA_RECORD, record.id)
+            }
+            startActivityForResult(intent, REQUEST_EDIT)
         }
     }
 
@@ -334,10 +348,24 @@ class TimerFragment : TimeFormFragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_EDIT) {
+            if (resultCode == RESULT_OK) {
+                TODO("record submitted")
+            } else {
+                TODO("record edit cancelled")
+            }
+            return
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     companion object {
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
+
+        private const val REQUEST_EDIT = 0xED17
     }
 }
