@@ -295,16 +295,22 @@ class TimeListFragment : InternetFragment(),
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_TOTALS, totals)
+        outState.putInt(STATE_DISPLAYED_CHILD, switcherForm.displayedChild)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
+        val displayedChild = savedInstanceState.getInt(STATE_DISPLAYED_CHILD, -1)
 
         if (totals != null) {
             this.totals = totals
             bindTotals(totals)
+        }
+        when (displayedChild) {
+            CHILD_TIMER -> showTimer()
+            CHILD_EDITOR -> showEditor()
         }
     }
 
@@ -721,7 +727,7 @@ class TimeListFragment : InternetFragment(),
 
     override fun onBackPressed(): Boolean {
         val child = switcherForm?.displayedChild ?: -1
-        if (child == 1) {
+        if (child == CHILD_EDITOR) {
             cancelEditRecord()
             return true
         }
@@ -733,12 +739,12 @@ class TimeListFragment : InternetFragment(),
     }
 
     private fun showTimer() {
-        switcherForm?.displayedChild = 0
+        switcherForm?.displayedChild = CHILD_TIMER
         activity?.invalidateOptionsMenu()
     }
 
     private fun showEditor() {
-        switcherForm?.displayedChild = 1
+        switcherForm?.displayedChild = CHILD_EDITOR
         activity?.invalidateOptionsMenu()
     }
 
@@ -767,6 +773,7 @@ class TimeListFragment : InternetFragment(),
     companion object {
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
+        private const val STATE_DISPLAYED_CHILD = "switcher.displayedChild"
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
@@ -776,5 +783,8 @@ class TimeListFragment : InternetFragment(),
         const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
 
         const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+
+        private const val CHILD_TIMER = 0
+        private const val CHILD_EDITOR = 1
     }
 }
