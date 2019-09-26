@@ -96,7 +96,7 @@ class TimeListFragment : InternetFragment(),
         get() = timerFragment.projects
     private val tasks
         get() = timerFragment.tasks
-    private val records: MutableList<TimeRecord> = ArrayList()
+    private var records: List<TimeRecord> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -224,8 +224,7 @@ class TimeListFragment : InternetFragment(),
             }
         }
 
-        this.records.clear()
-        this.records.addAll(records)
+        this.records = records
 
         val form = doc.selectFirst("form[name='timeRecordForm']")
         populateTotals(doc, form, totals)
@@ -235,6 +234,9 @@ class TimeListFragment : InternetFragment(),
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
         dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
+        if (records === this.records) {
+            listAdapter.notifyDataSetChanged()
+        }
     }
 
     @MainThread
@@ -611,8 +613,7 @@ class TimeListFragment : InternetFragment(),
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
-        records.clear()
-        records.addAll(recordsDb.map { it.toTimeRecord(user, projects, tasks) })
+        records = recordsDb.map { it.toTimeRecord(user, projects, tasks) }
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -684,7 +685,7 @@ class TimeListFragment : InternetFragment(),
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
-        Timber.i("record submitted: ${record.project} / ${record.task}")
+        Timber.i("record submitted: ${record.id} / ${record.project} / ${record.task}")
         if (record.id == TikalEntity.ID_NONE) {
             timerFragment.stopTimerCommit()
         }
@@ -696,7 +697,7 @@ class TimeListFragment : InternetFragment(),
     }
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
-        Timber.i("record deleted: ${record.project} / ${record.task}")
+        Timber.i("record deleted: ${record.id} / ${record.project} / ${record.task}")
         showTimer()
         if (record.id == TikalEntity.ID_NONE) {
             timerFragment.stopTimerCommit()

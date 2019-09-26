@@ -94,7 +94,7 @@ class TimeEditActivity : InternetActivity(),
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
-        Timber.i("record submitted: ${record.project} / ${record.task}")
+        Timber.i("record submitted: ${record.id} / ${record.project} / ${record.task}")
         if (last) {
             setResult(Activity.RESULT_OK)
             finish()
@@ -102,7 +102,7 @@ class TimeEditActivity : InternetActivity(),
     }
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
-        Timber.i("record deleted: ${record.project} / ${record.task}")
+        Timber.i("record deleted: ${record.id} / ${record.project} / ${record.task}")
         setResult(Activity.RESULT_OK)
         finish()
     }
