@@ -54,6 +54,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_login.*
 import okhttp3.Response
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A login screen that offers login via email/password.
@@ -61,7 +62,7 @@ import timber.log.Timber
 class LoginFragment : InternetFragment(),
     BasicRealmFragment.OnBasicRealmListener {
 
-    var listener: OnLoginListener? = null
+    val listeners: MutableList<OnLoginListener> = CopyOnWriteArrayList<OnLoginListener>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -185,10 +186,14 @@ class LoginFragment : InternetFragment(),
                         val body = response.body()!!
                         val errorMessage = getResponseError(body)
                         if (errorMessage.isNullOrEmpty()) {
-                            listener?.onLoginSuccess(fragment, emailValue)
+                            for (listener in listeners) {
+                                listener.onLoginSuccess(fragment, emailValue)
+                            }
                         } else {
                             emailInput.error = errorMessage
-                            listener?.onLoginFailure(fragment, emailValue, errorMessage)
+                            for (listener in listeners) {
+                                listener.onLoginFailure(fragment, emailValue, errorMessage)
+                            }
                         }
                     } else {
                         passwordInput.requestFocus()

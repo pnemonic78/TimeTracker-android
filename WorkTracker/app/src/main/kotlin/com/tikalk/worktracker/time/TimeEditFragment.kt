@@ -422,11 +422,12 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     private fun authenticate(submit: Boolean = false) {
+        Timber.v("authenticate submit=$submit")
         val args = Bundle()
         args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
         val fragment = LoginFragment()
         fragment.arguments = args
-        fragment.listener = this
+        fragment.listeners.add(this)
         fragment.show(requireFragmentManager(), "login")
     }
 
