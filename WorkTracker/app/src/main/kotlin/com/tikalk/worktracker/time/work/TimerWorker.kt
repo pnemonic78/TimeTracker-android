@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -41,20 +41,21 @@ import android.content.Intent.*
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.*
+import androidx.work.Data
+import androidx.work.ListenableWorker.Result
 import com.tikalk.graphics.drawableToBitmap
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
-import com.tikalk.worktracker.time.TimeReceiver
 import timber.log.Timber
 
-class TimerWorker(private val context: Context, private val workerParams: WorkerParameters) : Worker(context, workerParams) {
+class TimerWorker(private val context: Context, private val workerParams: Data) {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
@@ -69,7 +70,7 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".FINISH_TIME"
         const val EXTRA_EDIT = BuildConfig.APPLICATION_ID + ".EDIT"
         const val EXTRA_NOTIFICATION = BuildConfig.APPLICATION_ID + ".NOTIFICATION"
-        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+        private const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
 
         private const val CHANNEL_ID = "timer"
         private const val ID_NOTIFY = R.string.action_start
@@ -92,11 +93,9 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, true)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
 
         fun hideNotification(context: Context) {
@@ -105,11 +104,9 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
 
         fun startTimer(context: Context, record: TimeRecord) {
@@ -123,11 +120,9 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putLong(EXTRA_START_TIME, record.startTime)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
 
         fun stopTimer(context: Context, intent: Intent? = null) {
@@ -140,19 +135,17 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
                 .putLong(EXTRA_START_TIME, extras?.getLong(EXTRA_START_TIME) ?: 0L)
                 .putBoolean(EXTRA_EDIT, extras?.getBoolean(EXTRA_EDIT) ?: false)
                 .build()
-            val workRequest = OneTimeWorkRequest.Builder(TimerWorker::class.java)
-                .setInputData(inputData)
-                .build()
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+            val worker = TimerWorker(context, inputData)
+            worker.doWork()
         }
     }
 
     private val prefs: TimeTrackerPrefs = TimeTrackerPrefs(context)
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    override fun doWork(): Result {
-        val data = workerParams.inputData
+    fun doWork(): Result {
+        val data = workerParams
         return when (data.getString(EXTRA_ACTION)) {
             ACTION_START -> startTimer(data)
             ACTION_STOP -> stopTimer(data)
@@ -236,8 +229,8 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
             Timber.v("createNotification channel=$channel")
         }
 
-        val title = res.getText(R.string.title_service)
-        val text = res.getString(R.string.notification_description, record.project.name, record.task.name)
+        val title = record.project.name
+        val text = record.task.name
         // The PendingIntent to launch our activity if the user selects this notification.
         val contentIntent = createActivityIntent(context)
 
@@ -255,7 +248,6 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
             .setUsesChronometer(true)
             .setShowWhen(true)
             .setContentText(text)  // the contents of the entry
-            .setTicker(text)  // the status text
             .setWhen(record.startTime)  // the time stamp
             .addAction(stopAction)
             .build()
@@ -319,7 +311,7 @@ class TimerWorker(private val context: Context, private val workerParams: Worker
         project.id = projectId
         val task = ProjectTask(taskName)
         task.id = taskId
-        val record = TimeRecord(User(""), project, task)
+        val record = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), project, task)
         record.startTime = startTime
         record.finishTime = finishTime
         return record

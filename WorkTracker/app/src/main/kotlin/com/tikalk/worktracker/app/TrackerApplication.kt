@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,12 +29,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker
+package com.tikalk.worktracker.app
 
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.crashlytics.android.Crashlytics
+import com.tikalk.app.TikalApplication
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.work.TimerWorker
 import io.fabric.sdk.android.Fabric
@@ -44,7 +46,7 @@ import kotlin.math.max
 /**
  * Time tracker application.
  */
-class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks {
+class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
 
@@ -85,8 +87,8 @@ class TrackerApplication : Application(), Application.ActivityLifecycleCallbacks
 
     override fun onActivityStopped(activity: Activity) {
         active = max(0, active - 1)
-        Timber.v("onActivityStopped $activity $active")
-        if (active == 0) {
+        Timber.v("onActivityStopped $activity $active isFinishing=${activity.isFinishing}")
+        if ((active == 0) && activity.isFinishing) {
             TimerWorker.maybeShowNotification(this)
         }
     }

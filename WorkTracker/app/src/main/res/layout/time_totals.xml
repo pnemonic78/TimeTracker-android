@@ -8,14 +8,14 @@
     <TableRow>
 
         <TextView
-            android:id="@+id/day_total_label"
+            android:id="@+id/dayTotalLabel"
             style="@style/Widget.TextView.Label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/day_total" />
 
         <TextView
-            android:id="@+id/day_total"
+            android:id="@+id/dayTotal"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
             tools:text="@tools:sample/date/hhmm" />
 
         <TextView
-            android:id="@+id/week_total_label"
+            android:id="@+id/weekTotalLabel"
             style="@style/Widget.TextView.Label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
             android:text="@string/week_total" />
 
         <TextView
-            android:id="@+id/week_total"
+            android:id="@+id/weekTotal"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -44,14 +44,14 @@
     <TableRow android:layout_marginTop="4dp">
 
         <TextView
-            android:id="@+id/month_total_label"
+            android:id="@+id/monthTotalLabel"
             style="@style/Widget.TextView.Label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/month_total" />
 
         <TextView
-            android:id="@+id/month_total"
+            android:id="@+id/monthTotal"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
             tools:text="@tools:sample/date/hhmm" />
 
         <TextView
-            android:id="@+id/remaining_quota_label"
+            android:id="@+id/remainingQuotaLabel"
             style="@style/Widget.TextView.Label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
             android:text="@string/remaining_quota" />
 
         <TextView
-            android:id="@+id/remaining_quota"
+            android:id="@+id/remainingQuota"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

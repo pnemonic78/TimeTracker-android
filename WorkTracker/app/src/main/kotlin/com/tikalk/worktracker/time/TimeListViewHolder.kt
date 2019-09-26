@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -32,27 +32,22 @@
 package com.tikalk.worktracker.time
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.text.format.DateUtils
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
+import kotlinx.android.synthetic.main.time_item.view.*
 
 class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
-        View.OnClickListener {
-
-    private val projectView: TextView = itemView.findViewById(R.id.project)
-    private val taskView: TextView = itemView.findViewById(R.id.task)
-    private val timeRangeView: TextView = itemView.findViewById(R.id.time_range)
-    private val timeDurationView: TextView = itemView.findViewById(R.id.time_duration)
-    private val noteView: TextView = itemView.findViewById(R.id.note)
+    View.OnClickListener {
 
     private val timeBuffer = StringBuilder(20)
     private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+    private val night = (itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
     var record: TimeRecord? = null
         set(value) {
@@ -72,27 +67,27 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
 
     private fun bind(record: TimeRecord) {
         val context: Context = itemView.context
-        projectView.text = record.project.name
-        taskView.text = record.task.name
+        itemView.project.text = record.project.name
+        itemView.task.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
         timeBuffer.setLength(0)
         val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
-        timeRangeView.text = formatterRange.out() as CharSequence
+        itemView.timeRange.text = formatterRange.out() as CharSequence
         timeBuffer.setLength(0)
         val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
-        timeDurationView.text = formatterElapsed.out() as CharSequence
-        noteView.text = record.note
+        itemView.timeDuration.text = formatterElapsed.out() as CharSequence
+        itemView.note.text = record.note
 
         bindColors(record)
     }
 
     private fun clear() {
-        projectView.text = ""
-        taskView.text = ""
-        timeRangeView.text = ""
-        timeDurationView.text = ""
-        noteView.text = ""
+        itemView.project.text = ""
+        itemView.task.text = ""
+        itemView.timeRange.text = ""
+        itemView.timeDuration.text = ""
+        itemView.note.text = ""
     }
 
     private fun bindColors(record: TimeRecord) {
@@ -107,11 +102,11 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         val r = redBits * 24 //*32 => some colors too bright
         val g = greenBits * 24 //*32 => some colors too bright
         val b = blueBits * 24 //*32 => some colors too bright
-        val color = Color.rgb(r, g, b)
+        val color = if (night) Color.rgb(255 - r, 255 - g, 255 - b) else Color.rgb(r, g, b)
 
-        projectView.setTextColor(color)
-        taskView.setTextColor(color)
-        noteView.setTextColor(color)
+        itemView.project.setTextColor(color)
+        itemView.task.setTextColor(color)
+        itemView.note.setTextColor(color)
     }
 
     override fun onClick(v: View) {

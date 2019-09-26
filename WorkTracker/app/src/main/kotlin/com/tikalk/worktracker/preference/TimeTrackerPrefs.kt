@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -36,10 +36,10 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.*
+import com.tikalk.worktracker.time.toCalendar
 
 /**
  * Time Tracker preferences.
@@ -118,31 +118,28 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun getStartedRecord(): TimeRecord? {
-        val projectId = prefs.getLong(PROJECT_ID, 0L)
-        if (projectId <= 0L) return null
+        val projectId = prefs.getLong(PROJECT_ID, TikalEntity.ID_NONE)
+        if (projectId == TikalEntity.ID_NONE) return null
 
         val projectName = prefs.getString(PROJECT_NAME, null) ?: return null
 
-        val taskId = prefs.getLong(TASK_ID, 0L)
-        if (taskId <= 0L) return null
+        val taskId = prefs.getLong(TASK_ID, TikalEntity.ID_NONE)
+        if (taskId == TikalEntity.ID_NONE) return null
 
         val taskName = prefs.getString(TASK_NAME, null) ?: return null
 
         val startTime = prefs.getLong(START_TIME, 0L)
         if (startTime <= 0L) return null
 
-        val user = User(userCredentials.login)
-        val project = Project("")
+        val user = this.user
+        val project = Project(projectName, "")
         project.id = projectId
-        project.name = projectName
-        project.tasks[taskId] = ProjectTaskKey(projectId, taskId)
-        val task = ProjectTask("")
+        val task = ProjectTask(taskName, "")
         task.id = taskId
-        task.name = taskName
-        val start = Calendar.getInstance()
-        start.timeInMillis = startTime
+        project.addTask(task)
+        val start = startTime.toCalendar()
 
-        return TimeRecord(user, project, task, start)
+        return TimeRecord(TikalEntity.ID_NONE, user, project, task, start)
     }
 
     fun stopRecord() {
@@ -171,10 +168,21 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun getFavoriteProject(): Long {
-        return prefs.getLong(PROJECT_FAVORITE, 0L)
+        return prefs.getLong(PROJECT_FAVORITE, TikalEntity.ID_NONE)
     }
 
     fun getFavoriteTask(): Long {
-        return prefs.getLong(TASK_FAVORITE, 0L)
+        return prefs.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
     }
+
+    private var _user: User? = null
+
+    val user: User
+        get() {
+            if (_user == null) {
+                val username = userCredentials.login
+                _user = User(username, username)
+            }
+            return _user!!
+        }
 }

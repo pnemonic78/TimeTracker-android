@@ -1,79 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:orientation="horizontal"
     tools:ignore="RtlHardcoded">
 
-    <TableRow>
+    <TextView
+        android:id="@+id/dayTotalLabel"
+        style="@style/Widget.TextView.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/day_total" />
 
-        <TextView
-            android:id="@+id/day_total_label"
-            style="@style/Widget.TextView.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/day_total" />
+    <TextView
+        android:id="@+id/dayTotal"
+        style="@style/Widget.TextView.Value.Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginStart="4dp"
+        tools:text="@tools:sample/date/hhmm" />
 
-        <TextView
-            android:id="@+id/day_total"
-            style="@style/Widget.TextView.Value.Time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:layout_marginStart="4dp"
-            tools:text="@tools:sample/date/hhmm" />
+    <TextView
+        android:id="@+id/weekTotalLabel"
+        style="@style/Widget.TextView.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/week_total" />
 
-        <TextView
-            android:id="@+id/week_total_label"
-            style="@style/Widget.TextView.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/week_total" />
+    <TextView
+        android:id="@+id/weekTotal"
+        style="@style/Widget.TextView.Value.Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginStart="4dp"
+        tools:text="@tools:sample/date/hhmm" />
 
-        <TextView
-            android:id="@+id/week_total"
-            style="@style/Widget.TextView.Value.Time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:layout_marginStart="4dp"
-            tools:text="@tools:sample/date/hhmm" />
+    <TextView
+        android:id="@+id/monthTotalLabel"
+        style="@style/Widget.TextView.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/month_total" />
 
-        <TextView
-            android:id="@+id/month_total_label"
-            style="@style/Widget.TextView.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/month_total" />
+    <TextView
+        android:id="@+id/monthTotal"
+        style="@style/Widget.TextView.Value.Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginStart="4dp"
+        tools:text="@tools:sample/date/hhmm" />
 
-        <TextView
-            android:id="@+id/month_total"
-            style="@style/Widget.TextView.Value.Time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:layout_marginStart="4dp"
-            tools:text="@tools:sample/date/hhmm" />
+    <TextView
+        android:id="@+id/remainingQuotaLabel"
+        style="@style/Widget.TextView.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/remaining_quota" />
 
-        <TextView
-            android:id="@+id/remaining_quota_label"
-            style="@style/Widget.TextView.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/remaining_quota" />
-
-        <TextView
-            android:id="@+id/remaining_quota"
-            style="@style/Widget.TextView.Value.Time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:layout_marginStart="4dp"
-            android:textColor="@color/red_xC0"
-            tools:text="@tools:sample/date/hhmm" />
-    </TableRow>
-
-</TableLayout>
+    <TextView
+        android:id="@+id/remainingQuota"
+        style="@style/Widget.TextView.Value.Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginStart="4dp"
+        android:textColor="@color/red_xC0"
+        tools:text="@tools:sample/date/hhmm" />
+</LinearLayout>

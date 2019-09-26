@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -37,15 +37,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
+import com.tikalk.worktracker.app.TrackerActivity
 import retrofit2.Response
 
 /**
  * Activity that is Internet-aware.
  */
-abstract class InternetActivity : AppCompatActivity() {
+abstract class InternetActivity : TrackerActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,29 +107,13 @@ abstract class InternetActivity : AppCompatActivity() {
         return false
     }
 
-    protected fun getResponseError(html: String?): String? {
-        if (html == null) return null
-        val doc: Document = Jsoup.parse(html)
-        return findError(doc)
-    }
-
     /**
-     * Find the first error table element.
+     * Shows the progress UI and hides the form.
+     * @param show visible?
      */
-    protected fun findError(doc: Document): String? {
-        val body = doc.body()
-        val tables = body.select("table")
-        if (tables.isEmpty()) {
-            return body.text()
-        }
+    abstract fun showProgress(show: Boolean)
 
-        for (table in tables) {
-            val errorNode = table.selectFirst("td[class='error']")
-            if (errorNode != null) {
-                return errorNode.text()
-            }
-        }
-
-        return null
+    fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
     }
 }

@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -305,7 +305,10 @@ class PersistentCookieStore(context: Context) : CookieStore {
         prefs.all.forEach { (key, value) ->
             if (value is Collection<*>) {
                 val index = URI.create(key)
-                uriIndex[index] = value.flatMap { header -> HttpCookie.parse(header as String) }.toMutableList()
+                uriIndex[index] = value
+                    .flatMap { header -> HttpCookie.parse(header as String) }
+                    .filter { cookie -> !cookie.domain.isNullOrEmpty() }
+                    .toMutableList()
             }
         }
     }

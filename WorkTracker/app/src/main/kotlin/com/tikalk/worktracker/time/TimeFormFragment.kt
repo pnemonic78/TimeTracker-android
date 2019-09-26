@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,51 +29,33 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.tikalk.worktracker.time
 
 import android.os.Bundle
+import android.text.format.DateUtils
+import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import io.reactivex.disposables.CompositeDisposable
+import com.tikalk.worktracker.net.InternetFragment
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
-abstract class TimeFormActivity : InternetActivity() {
+abstract class TimeFormFragment : InternetFragment() {
 
-    protected val disposables = CompositeDisposable()
-    protected var date = Calendar.getInstance()
-    protected var user = User("")
-    protected var record = TimeRecord(user, Project(""), ProjectTask(""))
-    protected val projects = ArrayList<Project>()
-    protected val tasks = ArrayList<ProjectTask>()
-    protected var projectEmpty: Project = Project.EMPTY
-    protected var taskEmpty: ProjectTask = ProjectTask.EMPTY
-
-    protected lateinit var prefs: TimeTrackerPrefs
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        prefs = TimeTrackerPrefs(this)
-
-        user.username = prefs.userCredentials.login
-        user.email = user.username
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
-    }
+    var date: Calendar = Calendar.getInstance()
+    var record: TimeRecord = TimeRecord.EMPTY.copy()
+    val projects: MutableList<Project> = ArrayList()
+    val tasks: MutableList<ProjectTask> = ArrayList()
+    var projectEmpty: Project = Project.EMPTY
+    var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
     private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
@@ -97,7 +79,7 @@ abstract class TimeFormActivity : InternetActivity() {
         return ""
     }
 
-    protected fun findSelectedProject(project: Element, projects: List<Project>): Project {
+    fun findSelectedProject(project: Element, projects: List<Project>): Project {
         for (option in project.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.attr("value")
@@ -111,7 +93,7 @@ abstract class TimeFormActivity : InternetActivity() {
         return projectEmpty
     }
 
-    protected fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
+    fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
         for (option in task.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.attr("value")
@@ -125,7 +107,7 @@ abstract class TimeFormActivity : InternetActivity() {
         return taskEmpty
     }
 
-    protected fun populateProjects(select: Element, target: MutableList<Project>) {
+    fun populateProjects(select: Element, target: MutableList<Project>) {
         Timber.v("populateProjects")
         val projects = ArrayList<Project>()
 
@@ -148,7 +130,7 @@ abstract class TimeFormActivity : InternetActivity() {
         target.addAll(projects)
     }
 
-    protected fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
+    fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
         Timber.v("populateTasks")
         val tasks = ArrayList<ProjectTask>()
 
@@ -171,12 +153,11 @@ abstract class TimeFormActivity : InternetActivity() {
         target.addAll(tasks)
     }
 
-    protected fun populateTaskIds(doc: Document, projects: List<Project>) {
+    fun populateTaskIds(doc: Document, projects: List<Project>) {
         Timber.v("populateTaskIds")
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
         val scriptText = findScript(doc, tokenStart, tokenEnd)
-        val pairs = ArrayList<ProjectTaskKey>()
 
         for (project in projects) {
             project.clearTasks()
@@ -189,43 +170,33 @@ abstract class TimeFormActivity : InternetActivity() {
                 val matcher = pattern.matcher(line)
                 if (matcher.find()) {
                     val projectId = matcher.group(1).toLong()
+                    val project = projects.find { it.id == projectId }
+
                     val taskIds: List<Long> = matcher.group(2)
                         .split(",")
                         .map { it.toLong() }
-                    val project = projects.find { it.id == projectId }
-                    project?.apply {
-                        addTasks(taskIds)
-                        pairs.addAll(tasks.values)
-                    }
+                    val tasks = this.tasks.filter { it.id in taskIds }
+
+                    project?.addTasks(tasks)
                 }
             }
         }
     }
 
-    protected fun markFavorite() {
-        prefs.setFavorite(record)
+    fun savePage() {
+        saveFormToDb()
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     * @param show visible?
-     */
-    abstract fun showProgress(show: Boolean)
-
-    protected fun showProgressMain(show: Boolean) {
-        runOnUiThread { showProgress(show) }
-    }
-
-    protected fun saveFormToDb() {
+    open fun saveFormToDb() {
         Timber.v("saveFormToDb")
-        val db = TrackerDatabase.getDatabase(this)
+        val db = TrackerDatabase.getDatabase(requireContext())
 
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
     }
 
-    private fun saveProjects(db: TrackerDatabase) {
+    protected open fun saveProjects(db: TrackerDatabase) {
         val projects = this.projects
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
@@ -236,12 +207,12 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val projectsToInsert = ArrayList<Project>()
         val projectsToUpdate = ArrayList<Project>()
-        var projectDb: Project
+        //var projectDb: Project
         for (project in projects) {
             val projectId = project.id
             if (projectsDbById.containsKey(projectId)) {
-                projectDb = projectsDbById[projectId]!!
-                project.dbId = projectDb.dbId
+                //projectDb = projectsDbById[projectId]!!
+                //project.dbId = projectDb.dbId
                 projectsToUpdate.add(project)
             } else {
                 projectsToInsert.add(project)
@@ -253,14 +224,14 @@ abstract class TimeFormActivity : InternetActivity() {
         projectsDao.delete(projectsToDelete)
 
         val projectIds = projectsDao.insert(projectsToInsert)
-        for (i in 0 until projectIds.size) {
-            projectsToInsert[i].dbId = projectIds[i]
-        }
+        //for (i in projectIds.indices) {
+        //    projectsToInsert[i].dbId = projectIds[i]
+        //}
 
         projectsDao.update(projectsToUpdate)
     }
 
-    private fun saveTasks(db: TrackerDatabase) {
+    protected open fun saveTasks(db: TrackerDatabase) {
         val tasks = this.tasks
         val tasksDao = db.taskDao()
         val tasksDb = tasksDao.queryAll()
@@ -271,12 +242,12 @@ abstract class TimeFormActivity : InternetActivity() {
 
         val tasksToInsert = ArrayList<ProjectTask>()
         val tasksToUpdate = ArrayList<ProjectTask>()
-        var taskDb: ProjectTask
+        //var taskDb: ProjectTask
         for (task in tasks) {
             val taskId = task.id
             if (tasksDbById.containsKey(taskId)) {
-                taskDb = tasksDbById[taskId]!!
-                task.dbId = taskDb.dbId
+                //taskDb = tasksDbById[taskId]!!
+                //task.dbId = taskDb.dbId
                 tasksToUpdate.add(task)
             } else {
                 tasksToInsert.add(task)
@@ -288,16 +259,17 @@ abstract class TimeFormActivity : InternetActivity() {
         tasksDao.delete(tasksToDelete)
 
         val taskIds = tasksDao.insert(tasksToInsert)
-        for (i in 0 until taskIds.size) {
-            tasksToInsert[i].dbId = taskIds[i]
-        }
+        //for (i in taskIds.indices) {
+        //    tasksToInsert[i].dbId = taskIds[i]
+        //}
 
         tasksDao.update(tasksToUpdate)
     }
 
-    private fun saveProjectTaskKeys(db: TrackerDatabase) {
-        val keys = ArrayList<ProjectTaskKey>()
-        projects.map { project -> keys.addAll(project.tasks.values) }
+    protected open fun saveProjectTaskKeys(db: TrackerDatabase) {
+        val keys: List<ProjectTaskKey> = projects.flatMap { project ->
+            project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
+        }
 
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
@@ -314,7 +286,7 @@ abstract class TimeFormActivity : InternetActivity() {
                 }
             }
             if (keyDbFound != null) {
-                key.dbId = keyDbFound.dbId
+                //key.dbId = keyDbFound.dbId
                 keysToUpdate.add(key)
                 keysDbMutable.remove(keyDbFound)
             } else {
@@ -326,17 +298,30 @@ abstract class TimeFormActivity : InternetActivity() {
         projectTasksDao.delete(keysToDelete)
 
         val keyIds = projectTasksDao.insert(keysToInsert)
-        for (i in 0 until keyIds.size) {
-            keysToInsert[i].dbId = keyIds[i]
-        }
+        //for (i in keyIds.indices) {
+        //    keysToInsert[i].dbId = keyIds[i]
+        //}
 
         projectTasksDao.update(keysToUpdate)
     }
 
+    fun loadForm() {
+        loadFormFromDb()
+
+        val recordStarted = preferences.getStartedRecord()
+        if (recordStarted != null) {
+            record = recordStarted
+        }
+    }
+
     protected fun loadFormFromDb() {
         Timber.v("loadFormFromDb")
-        val db = TrackerDatabase.getDatabase(this)
+        val db = TrackerDatabase.getDatabase(requireContext())
+        loadFormFromDb(db)
+    }
 
+    protected open fun loadFormFromDb(db: TrackerDatabase) {
+        Timber.v("loadFormFromDb")
         loadProjects(db)
         loadTasks(db)
         loadProjectTaskKeys(db)
@@ -359,14 +344,56 @@ abstract class TimeFormActivity : InternetActivity() {
     }
 
     private fun loadProjectTaskKeys(db: TrackerDatabase) {
+        val projectsById: Map<Long, Project> = projects.map { project -> (project.id to project) }.toMap()
+        val tasksById: Map<Long, ProjectTask> = tasks.map { task -> (task.id to task) }.toMap()
+        projects.forEach { project -> project.clearTasks() }
+
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
-        if (projects.isNotEmpty()) {
-            projects.forEach { project ->
-                val pairsForProject = keysDb.filter { it.projectId == project.id }
-                project.addKeys(pairsForProject)
+
+        keysDb.forEach { key ->
+            val project = projectsById[key.projectId]
+            val task = tasksById[key.taskId]
+            if ((project != null) && (task != null)) {
+                project.addTask(task)
             }
         }
     }
 
+    abstract fun bindForm(record: TimeRecord)
+
+    fun markFavorite() {
+        markFavorite(record)
+    }
+
+    protected open fun markFavorite(record: TimeRecord) {
+        Timber.v("markFavorite $record")
+        preferences.setFavorite(record)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong(STATE_DATE, date.timeInMillis)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
+    }
+
+    companion object {
+        const val STATE_DATE = "date"
+        const val STATE_RECORD_ID = "record_id"
+        const val STATE_RECORD = "record"
+
+        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".form.DATE"
+        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".form.RECORD_ID"
+
+        const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".form.PROJECT_ID"
+        const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
+        const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
+        const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
+
+        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
+    }
 }

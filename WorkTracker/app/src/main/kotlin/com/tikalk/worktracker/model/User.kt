@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -34,7 +34,6 @@ package com.tikalk.worktracker.model
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.room.Entity
 import com.tikalk.net.createUriFromParcel
 
 /**
@@ -42,7 +41,6 @@ import com.tikalk.net.createUriFromParcel
  *
  * @author Moshe Waisberg.
  */
-@Entity
 data class User(
     /**
      * Unique username.
@@ -90,13 +88,22 @@ data class User(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<User> {
-        override fun createFromParcel(parcel: Parcel): User {
-            return User(parcel)
-        }
+    fun isEmpty(): Boolean {
+        return username.isEmpty()
+    }
 
-        override fun newArray(size: Int): Array<User?> {
-            return arrayOfNulls(size)
+    companion object {
+        val EMPTY = User("")
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<User> {
+            override fun createFromParcel(parcel: Parcel): User {
+                return User(parcel)
+            }
+
+            override fun newArray(size: Int): Array<User?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 }

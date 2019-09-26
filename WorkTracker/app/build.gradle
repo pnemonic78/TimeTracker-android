@@ -32,6 +32,8 @@ android {
         versionCode versionMajor * 100 + versionMinor
         versionName versionMajor + '.' + versionMinor.toString().padLeft(2, '0')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables.useSupportLibrary true
     }
 
     signingConfigs {
@@ -72,8 +74,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     // Google Support
-    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
-    implementation 'com.google.android.material:material:1.1.0-alpha07'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha10'
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     implementation 'androidx.security:security-crypto:1.0.0-alpha02'
     implementation 'androidx.work:work-runtime-ktx:2.3.0-alpha01'

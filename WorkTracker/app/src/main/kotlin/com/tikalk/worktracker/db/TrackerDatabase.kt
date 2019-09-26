@@ -1,20 +1,20 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2017, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, this
+ * • Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  *
- * * Redistributions in binary form must reproduce the above copyright notice,
+ * • Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * * Neither the name of the copyright holder nor the names of its
+ * • Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -37,16 +37,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ProjectTaskKey
 
 /**
  * Work Tracker database.
  */
-@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class], version = 1, exportSchema = false)
+@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class, TimeRecordEntity::class], version = 2, exportSchema = false)
 abstract class TrackerDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao
     abstract fun taskDao(): ProjectTaskDao
     abstract fun projectTaskKeyDao(): ProjectTaskKeyDao
+    abstract fun timeRecordDao(): TimeRecordDao
 
     companion object {
         @Volatile
@@ -57,7 +57,9 @@ abstract class TrackerDatabase : RoomDatabase() {
                 synchronized(TrackerDatabase::class.java) {
                     if (instance == null) {
                         // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db").build()
+                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
+                            .fallbackToDestructiveMigration()
+                            .build()
                     }
                 }
             }
