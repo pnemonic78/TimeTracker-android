@@ -38,6 +38,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
+import android.view.animation.AnimationUtils
 import androidx.annotation.MainThread
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
@@ -113,6 +114,9 @@ class TimeListFragment : InternetFragment(),
         timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
         editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
         editFragment.listener = this
+
+        switcherForm.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_form)
+        switcherForm.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_form)
 
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
