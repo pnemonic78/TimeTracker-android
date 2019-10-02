@@ -547,7 +547,9 @@ class TimeEditFragment : TimeFormFragment(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        bindRecord(record)
+        if (view != null) {
+            bindRecord(record)
+        }
         outState.putLong(STATE_RECORD_ID, record.id)
         outState.putParcelable(STATE_RECORD, record)
     }
@@ -558,7 +560,10 @@ class TimeEditFragment : TimeFormFragment(),
 
         if (recordParcel != null) {
             record = recordParcel
-            bindForm(record)
+            // Is there a view?
+            if (view != null) {
+                bindForm(record)
+            }
         } else {
             record.id = savedInstanceState.getLong(STATE_RECORD_ID)
         }

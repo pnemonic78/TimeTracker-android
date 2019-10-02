@@ -47,4 +47,20 @@
     <string name="remaining_quota">Remaining quota</string>
     <string name="month_total">Month total</string>
     <string name="week_total">Week total</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+
+    <!-- Settings - Privacy -->
+    <string name="pref_privacy_security_title">Privacy &amp; security</string>
+    <string name="clear_user_data_text">Clear storage</string>
+    <string name="pref_clear_user_data" translatable="false">@string/clear_user_data_text</string>
+
+    <!-- Settings - About -->
+    <string name="pref_about_title">About</string>
+    <string name="pref_version_title">Application version</string>
+    <string name="support_url" translatable="false">http://pnemonic78.github.io/TimeTracker-android</string>
+    <string name="pref_issue_title">Issues</string>
+    <string name="pref_issue_summary">Report a problem, or request a new feature.</string>
+    <string name="pref_issue_url" translatable="false">mailto:pnemonic@gmail.com?subject=Halachic+Times</string>
 </resources>

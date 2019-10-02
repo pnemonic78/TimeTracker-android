@@ -34,9 +34,11 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
+import com.tikalk.worktracker.preference.TimeSettingsFragment
 import kotlinx.android.synthetic.main.progress.*
 
 class TimeListActivity : InternetActivity() {
@@ -73,6 +75,14 @@ class TimeListActivity : InternetActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_settings) {
+            showSettings()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun showProgress(show: Boolean) {
         progress.showAnimated(show)
     }
@@ -91,10 +101,23 @@ class TimeListActivity : InternetActivity() {
     }
 
     override fun onBackPressed() {
+        val settingsFragment = supportFragmentManager.findFragmentByTag(TAG_SETTINGS_FRAGMENT)
+        if (settingsFragment != null) {
+            supportFragmentManager.popBackStack()
+            return
+        }
         if (mainFragment.onBackPressed()) {
             return
         }
         super.onBackPressed()
+    }
+
+    private fun showSettings() {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, TimeSettingsFragment(), TAG_SETTINGS_FRAGMENT)
+            .addToBackStack(TAG_SETTINGS_FRAGMENT)
+            .commit()
     }
 
     companion object {
@@ -106,5 +129,6 @@ class TimeListActivity : InternetActivity() {
         const val EXTRA_FINISH_TIME = TimeListFragment.EXTRA_FINISH_TIME
 
         private const val TAG_MAIN_FRAGMENT = "main_list"
+        private const val TAG_SETTINGS_FRAGMENT = "settings"
     }
 }

@@ -6,4 +6,6 @@
     <color name="colorButtonNormal">#ffcc80</color>
 
     <color name="error">#ff0000</color>
+
+    <color name="ic_launcher_background">@color/white</color>
 </resources>
