@@ -51,9 +51,6 @@ data class Project(
     @Ignore
     val tasksById: MutableMap<Long, ProjectTask> = HashMap()
 
-    val taskIds: Set<Long>
-        get() = tasksById.keys
-
     val tasks: List<ProjectTask>
         get() = tasksById.values.sortedBy { task -> task.name }
 
