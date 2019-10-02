@@ -739,12 +739,22 @@ class TimeListFragment : InternetFragment(),
     }
 
     private fun showTimer() {
-        switcherForm?.displayedChild = CHILD_TIMER
+        val switcher = switcherForm
+        if (switcher != null) {
+            if (switcher.displayedChild != CHILD_TIMER) {
+                switcher.displayedChild = CHILD_TIMER
+            }
+        }
         activity?.invalidateOptionsMenu()
     }
 
     private fun showEditor() {
-        switcherForm?.displayedChild = CHILD_EDITOR
+        val switcher = switcherForm
+        if (switcher != null) {
+            if (switcher.displayedChild != CHILD_EDITOR) {
+                switcher.displayedChild = CHILD_EDITOR
+            }
+        }
         activity?.invalidateOptionsMenu()
     }
 
@@ -752,7 +762,7 @@ class TimeListFragment : InternetFragment(),
         showTimer()
     }
 
-    private fun isTimerShowing() = (switcherForm?.displayedChild == 0)
+    private fun isTimerShowing() = (switcherForm?.displayedChild == CHILD_TIMER)
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (view?.visibility == View.VISIBLE) {
