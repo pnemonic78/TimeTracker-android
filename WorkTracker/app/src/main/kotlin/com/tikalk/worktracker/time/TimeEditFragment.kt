@@ -53,6 +53,7 @@ import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
+import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -331,6 +332,15 @@ class TimeEditFragment : TimeFormFragment(),
 
     fun run() {
         val args = arguments ?: Bundle()
+        if (args.isEmpty) {
+            if (view?.visibility != View.VISIBLE) {
+                return
+            }
+            // The parent fragment should be responsible for authentication.
+            if (parentFragment is InternetFragment) {
+                return
+            }
+        }
         date.timeInMillis = args.getLong(EXTRA_DATE, date.timeInMillis)
 
         val recordId = args.getLong(EXTRA_RECORD, record.id)
@@ -422,12 +432,8 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     private fun authenticate(submit: Boolean = false) {
-        val args = Bundle()
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        val fragment = LoginFragment()
-        fragment.arguments = args
-        fragment.listener = this
-        fragment.show(requireFragmentManager(), "login")
+        Timber.v("authenticate submit=$submit")
+        LoginFragment.show(this, submit, "login", this)
     }
 
     private fun submit() {
