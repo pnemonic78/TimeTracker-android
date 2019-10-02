@@ -34,6 +34,7 @@ package com.tikalk.worktracker.auth
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -202,14 +203,10 @@ class LoginFragment() : InternetFragment(),
                         val body = response.body()!!
                         val errorMessage = getResponseError(body)
                         if (errorMessage.isNullOrEmpty()) {
-                            for (listener in listeners) {
-                                listener.onLoginSuccess(fragment, emailValue)
-                            }
+                            notifyLoginSuccess(emailValue)
                         } else {
                             emailInput.error = errorMessage
-                            for (listener in listeners) {
-                                listener.onLoginFailure(fragment, emailValue, errorMessage)
-                            }
+                            notifyLoginFailure(emailValue, errorMessage)
                         }
                     } else {
                         passwordInput.requestFocus()
@@ -264,6 +261,25 @@ class LoginFragment() : InternetFragment(),
 
     override fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String) {
         Timber.e("basic realm failure for \"$realm\": $reason")
+    }
+
+    private fun notifyLoginSuccess(email: String) {
+        val fragment: LoginFragment = this
+        for (listener in listeners) {
+            listener.onLoginSuccess(fragment, email)
+        }
+    }
+
+    private fun notifyLoginFailure(email: String, reason: String) {
+        val fragment: LoginFragment = this
+        for (listener in listeners) {
+            listener.onLoginFailure(fragment, email, reason)
+        }
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        notifyLoginFailure("", "onCancel")
     }
 
     /**

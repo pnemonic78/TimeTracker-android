@@ -688,6 +688,7 @@ class TimeListFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
         Timber.e("login failure: $reason")
+        activity?.finish()
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
