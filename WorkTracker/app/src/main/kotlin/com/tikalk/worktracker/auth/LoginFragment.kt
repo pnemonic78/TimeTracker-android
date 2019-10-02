@@ -42,6 +42,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.fragment.app.Fragment
+import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -288,5 +290,21 @@ class LoginFragment() : InternetFragment(),
         const val EXTRA_EMAIL = "email"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
+
+        @Synchronized
+        fun show(fragment: Fragment, submit: Boolean = false, tag: String = "login", listener: OnLoginListener) {
+            val topLevel = fragment.topLevel()
+            val fragmentManager = topLevel.requireFragmentManager()
+            val fragmentExisting = fragmentManager.findFragmentByTag(tag) as LoginFragment?
+            val fragmentLogin: LoginFragment = fragmentExisting ?: LoginFragment().apply {
+                val args = Bundle()
+                args.putBoolean(EXTRA_SUBMIT, submit)
+                arguments = args
+            }
+            fragmentLogin.addListener(listener)
+            if (fragmentExisting == null) {
+                fragmentLogin.show(fragmentManager, tag)
+            }
+        }
     }
 }

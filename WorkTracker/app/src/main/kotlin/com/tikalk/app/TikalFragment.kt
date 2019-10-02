@@ -32,8 +32,10 @@
 
 package com.tikalk.app
 
+import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
 
@@ -67,6 +69,14 @@ fun Fragment.runOnUiThread(action: () -> Unit) {
     activity!!.runOnUiThread(action)
 }
 
-fun Fragment.findTopLevel(): Fragment {
-    return parentFragment?.findTopLevel() ?: this
+fun Fragment.topLevel(): Fragment {
+    return parentFragment?.topLevel() ?: this
+}
+
+fun DialogFragment.isShowing(): Boolean {
+    val d: Dialog? = dialog
+    if (d != null) {
+        return (d.isShowing) and !isRemoving
+    }
+    return false
 }

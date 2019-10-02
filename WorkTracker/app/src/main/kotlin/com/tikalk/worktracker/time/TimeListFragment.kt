@@ -284,11 +284,7 @@ class TimeListFragment : InternetFragment(),
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        val args = Bundle()
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        val fragment = LoginFragment(args)
-        fragment.addListener(this)
-        fragment.show(requireFragmentManager(), "login")
+        LoginFragment.show(this, submit, "login", this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
