@@ -227,7 +227,7 @@ class TimerFragment : TimeFormFragment() {
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
-                val record = TimeRecord(TikalEntity.ID_NONE, user, project, task)
+                val record = TimeRecord(TikalEntity.ID_NONE, project, task)
                 if (startTime > 0L) {
                     record.startTime = startTime
                 }

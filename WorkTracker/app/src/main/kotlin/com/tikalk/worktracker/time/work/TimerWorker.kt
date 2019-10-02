@@ -311,7 +311,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         project.id = projectId
         val task = ProjectTask(taskName)
         task.id = taskId
-        val record = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), project, task)
+        val record = TimeRecord(TikalEntity.ID_NONE, project, task)
         record.startTime = startTime
         record.finishTime = finishTime
         return record
