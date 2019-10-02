@@ -66,3 +66,7 @@ fun Fragment.runOnUiThread(action: Runnable) {
 fun Fragment.runOnUiThread(action: () -> Unit) {
     activity!!.runOnUiThread(action)
 }
+
+fun Fragment.findTopLevel(): Fragment {
+    return parentFragment?.findTopLevel() ?: this
+}

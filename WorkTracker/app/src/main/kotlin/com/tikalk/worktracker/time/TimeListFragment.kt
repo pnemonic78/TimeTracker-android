@@ -286,9 +286,8 @@ class TimeListFragment : InternetFragment(),
         Timber.v("authenticate submit=$submit")
         val args = Bundle()
         args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        val fragment = LoginFragment()
-        fragment.arguments = args
-        fragment.listeners.add(this)
+        val fragment = LoginFragment(args)
+        fragment.addListener(this)
         fragment.show(requireFragmentManager(), "login")
     }
 

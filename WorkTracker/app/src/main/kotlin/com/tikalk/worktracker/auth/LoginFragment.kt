@@ -59,10 +59,24 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * A login screen that offers login via email/password.
  */
-class LoginFragment : InternetFragment(),
+class LoginFragment() : InternetFragment(),
     BasicRealmFragment.OnBasicRealmListener {
 
-    val listeners: MutableList<OnLoginListener> = CopyOnWriteArrayList<OnLoginListener>()
+    constructor(args: Bundle) : this() {
+        arguments = args
+    }
+
+    private val listeners: MutableList<OnLoginListener> = CopyOnWriteArrayList<OnLoginListener>()
+
+    fun addListener(listener: OnLoginListener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener)
+        }
+    }
+
+    fun removeListener(listener: OnLoginListener) {
+        listeners.remove(listener)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
