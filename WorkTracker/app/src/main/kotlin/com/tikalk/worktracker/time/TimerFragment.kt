@@ -265,6 +265,10 @@ class TimerFragment : TimeFormFragment() {
 
     fun populateForm(recordStarted: TimeRecord?) {
         Timber.v("populateForm $recordStarted")
+        // In case `this.projects` is modified while we loop through it.
+        val projects = this.projects.toList()
+        // In case `this.tasks` is modified while we loop through it.
+        val tasks = this.tasks.toList()
         if ((recordStarted == null) or (recordStarted?.project.isNullOrEmpty() and recordStarted?.task.isNullOrEmpty())) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
@@ -275,10 +279,12 @@ class TimerFragment : TimeFormFragment() {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
         } else {
-            record.project = projects.firstOrNull { it.id == recordStarted!!.project.id }
+            val recordStartedProjectId = recordStarted!!.project.id
+            val recordStartedTaskId = recordStarted.task.id
+            record.project = projects.firstOrNull { it.id == recordStartedProjectId }
                 ?: projectEmpty
-            record.task = tasks.firstOrNull { it.id == recordStarted!!.task.id } ?: taskEmpty
-            record.start = recordStarted!!.start
+            record.task = tasks.firstOrNull { it.id == recordStartedTaskId } ?: taskEmpty
+            record.start = recordStarted.start
         }
     }
 
