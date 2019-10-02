@@ -171,6 +171,7 @@ class TimeListFragment : InternetFragment(),
             .subscribe({
                 populateForm(record)
                 bindForm(record)
+                bindList(date, records)
 
                 // Fetch from remote server.
                 val service = TimeTrackerServiceFactory.createPlain(context, preferences)
