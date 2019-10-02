@@ -58,7 +58,7 @@ class LoginActivity : InternetActivity(),
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         loginFragment = supportFragmentManager.findFragmentById(R.id.loginFragment) as LoginFragment
-        loginFragment.listener = this
+        loginFragment.addListener(this)
 
         handleIntent(intent, savedInstanceState)
     }

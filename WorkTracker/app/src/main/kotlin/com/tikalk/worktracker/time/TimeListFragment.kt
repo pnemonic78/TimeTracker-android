@@ -282,13 +282,9 @@ class TimeListFragment : InternetFragment(),
         }
     }
 
-    private fun authenticate(immediate: Boolean = false) {
-        val args = Bundle()
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, immediate)
-        val fragment = LoginFragment()
-        fragment.arguments = args
-        fragment.listener = this
-        fragment.show(requireFragmentManager(), "login")
+    private fun authenticate(submit: Boolean = false) {
+        Timber.v("authenticate submit=$submit")
+        LoginFragment.show(this, submit, "login", this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -314,7 +310,7 @@ class TimeListFragment : InternetFragment(),
         }
     }
 
-    fun pickDate() {
+    private fun pickDate() {
         if (datePickerDialog == null) {
             val cal = date
             val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
@@ -322,6 +318,7 @@ class TimeListFragment : InternetFragment(),
                 cal.set(Calendar.MONTH, month)
                 cal.set(Calendar.DAY_OF_MONTH, day)
                 fetchPage(cal)
+                hideEditor()
             }
             val year = cal.get(Calendar.YEAR)
             val month = cal.get(Calendar.MONTH)
@@ -487,12 +484,14 @@ class TimeListFragment : InternetFragment(),
         val cal = date
         cal.add(Calendar.DATE, 1)
         fetchPage(cal)
+        hideEditor()
     }
 
     private fun navigateYesterday() {
         val cal = date
         cal.add(Calendar.DATE, -1)
         fetchPage(cal)
+        hideEditor()
     }
 
     private fun isLocaleRTL(): Boolean {
@@ -692,6 +691,7 @@ class TimeListFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
         Timber.e("login failure: $reason")
+        activity?.finish()
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
@@ -748,7 +748,11 @@ class TimeListFragment : InternetFragment(),
         activity?.invalidateOptionsMenu()
     }
 
-    fun isTimerShowing() = (switcherForm?.displayedChild == 0)
+    private fun hideEditor() {
+        showTimer()
+    }
+
+    private fun isTimerShowing() = (switcherForm?.displayedChild == 0)
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (view?.visibility == View.VISIBLE) {

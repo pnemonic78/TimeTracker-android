@@ -34,6 +34,7 @@ package com.tikalk.worktracker.auth
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -42,6 +43,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.fragment.app.Fragment
+import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -54,14 +57,29 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_login.*
 import okhttp3.Response
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A login screen that offers login via email/password.
  */
-class LoginFragment : InternetFragment(),
+class LoginFragment() : InternetFragment(),
     BasicRealmFragment.OnBasicRealmListener {
 
-    var listener: OnLoginListener? = null
+    constructor(args: Bundle) : this() {
+        arguments = args
+    }
+
+    private val listeners: MutableList<OnLoginListener> = CopyOnWriteArrayList<OnLoginListener>()
+
+    fun addListener(listener: OnLoginListener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener)
+        }
+    }
+
+    fun removeListener(listener: OnLoginListener) {
+        listeners.remove(listener)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -185,10 +203,10 @@ class LoginFragment : InternetFragment(),
                         val body = response.body()!!
                         val errorMessage = getResponseError(body)
                         if (errorMessage.isNullOrEmpty()) {
-                            listener?.onLoginSuccess(fragment, emailValue)
+                            notifyLoginSuccess(emailValue)
                         } else {
                             emailInput.error = errorMessage
-                            listener?.onLoginFailure(fragment, emailValue, errorMessage)
+                            notifyLoginFailure(emailValue, errorMessage)
                         }
                     } else {
                         passwordInput.requestFocus()
@@ -245,6 +263,25 @@ class LoginFragment : InternetFragment(),
         Timber.e("basic realm failure for \"$realm\": $reason")
     }
 
+    private fun notifyLoginSuccess(email: String) {
+        val fragment: LoginFragment = this
+        for (listener in listeners) {
+            listener.onLoginSuccess(fragment, email)
+        }
+    }
+
+    private fun notifyLoginFailure(email: String, reason: String) {
+        val fragment: LoginFragment = this
+        for (listener in listeners) {
+            listener.onLoginFailure(fragment, email, reason)
+        }
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        notifyLoginFailure("", "onCancel")
+    }
+
     /**
      * Listener for login callbacks.
      */
@@ -269,5 +306,21 @@ class LoginFragment : InternetFragment(),
         const val EXTRA_EMAIL = "email"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
+
+        @Synchronized
+        fun show(fragment: Fragment, submit: Boolean = false, tag: String = "login", listener: OnLoginListener) {
+            val topLevel = fragment.topLevel()
+            val fragmentManager = topLevel.requireFragmentManager()
+            val fragmentExisting = fragmentManager.findFragmentByTag(tag) as LoginFragment?
+            val fragmentLogin: LoginFragment = fragmentExisting ?: LoginFragment().apply {
+                val args = Bundle()
+                args.putBoolean(EXTRA_SUBMIT, submit)
+                arguments = args
+            }
+            fragmentLogin.addListener(listener)
+            if (fragmentExisting == null) {
+                fragmentLogin.show(fragmentManager, tag)
+            }
+        }
     }
 }
