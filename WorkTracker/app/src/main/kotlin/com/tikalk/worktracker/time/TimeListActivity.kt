@@ -48,7 +48,16 @@ class TimeListActivity : InternetActivity() {
 
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
-        mainFragment = supportFragmentManager.findFragmentById(R.id.fragmentFormAndList) as TimeListFragment
+        val mainFragmentExisting = supportFragmentManager.findFragmentByTag(TAG_MAIN_FRAGMENT) as TimeListFragment?
+        if (mainFragmentExisting != null) {
+            mainFragment = mainFragmentExisting
+        } else {
+            mainFragment = TimeListFragment()
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container, mainFragment, TAG_MAIN_FRAGMENT)
+                .commit()
+        }
 
         handleIntent(intent, savedInstanceState)
     }
@@ -95,5 +104,7 @@ class TimeListActivity : InternetActivity() {
         const val EXTRA_TASK_ID = TimeListFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeListFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeListFragment.EXTRA_FINISH_TIME
+
+        private const val TAG_MAIN_FRAGMENT = "main_list"
     }
 }
