@@ -171,6 +171,7 @@ class TimeListFragment : InternetFragment(),
             .subscribe({
                 populateForm(record)
                 bindForm(record)
+                bindList(date, records)
 
                 // Fetch from remote server.
                 val service = TimeTrackerServiceFactory.createPlain(context, preferences)
@@ -406,7 +407,7 @@ class TimeListFragment : InternetFragment(),
         val editLink = tdEdit.child(0).attr("href")
         val id = parseRecordId(editLink)
 
-        return TimeRecord(id, user, project, task, start, finish, note, TaskRecordStatus.CURRENT)
+        return TimeRecord(id, project, task, start, finish, note, TaskRecordStatus.CURRENT)
     }
 
     private fun parseRecordProject(name: String): Project? {
@@ -622,7 +623,7 @@ class TimeListFragment : InternetFragment(),
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
-        records = recordsDb.map { it.toTimeRecord(user, projects, tasks) }
+        records = recordsDb.map { it.toTimeRecord(projects, tasks) }
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -684,14 +685,15 @@ class TimeListFragment : InternetFragment(),
         Timber.i("login success")
         fragment.dismissAllowingStateLoss()
         user = preferences.user
-        record.user = user
         // Fetch the list for the user.
         fetchPage(date)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
         Timber.e("login failure: $reason")
-        activity?.finish()
+        if (email.isEmpty() or (reason == "onCancel")) {
+            activity?.finish()
+        }
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {

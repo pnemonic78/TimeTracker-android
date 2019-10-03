@@ -90,10 +90,5 @@ class TimeListActivity : InternetActivity() {
 
     companion object {
         const val ACTION_STOP = TimeListFragment.ACTION_STOP
-
-        const val EXTRA_PROJECT_ID = TimeListFragment.EXTRA_PROJECT_ID
-        const val EXTRA_TASK_ID = TimeListFragment.EXTRA_TASK_ID
-        const val EXTRA_START_TIME = TimeListFragment.EXTRA_START_TIME
-        const val EXTRA_FINISH_TIME = TimeListFragment.EXTRA_FINISH_TIME
     }
 }

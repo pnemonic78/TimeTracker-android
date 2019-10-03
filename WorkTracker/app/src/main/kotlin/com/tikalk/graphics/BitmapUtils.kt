@@ -45,11 +45,11 @@ fun drawableToBitmap(drawable: Drawable): Bitmap {
         return drawable.bitmap
     }
     val width = drawable.intrinsicWidth
-    val height = drawable.intrinsicHeight;
+    val height = drawable.intrinsicHeight
     val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bmp);
-    drawable.setBounds(0, 0, width, height);
-    drawable.draw(canvas);
+    val canvas = Canvas(bmp)
+    drawable.setBounds(0, 0, width, height)
+    drawable.draw(canvas)
     return bmp
 }
 

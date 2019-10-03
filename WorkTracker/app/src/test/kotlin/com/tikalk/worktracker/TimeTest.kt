@@ -1,9 +1,8 @@
-package com.tikalk.worktracker;
+package com.tikalk.worktracker
 
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.time.hourOfDay
@@ -22,8 +21,7 @@ import java.util.*
 class TimeTest {
     @Test
     fun splitRecords() {
-        val user = User("name")
-        val record = TimeRecord(TikalEntity.ID_NONE, user, Project.EMPTY.copy(), ProjectTask.EMPTY.copy(), null, null)
+        val record = TimeRecord(TikalEntity.ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy(), null, null)
         record.project.id = 1
         record.task.id = 1
         var splits: List<TimeRecord>

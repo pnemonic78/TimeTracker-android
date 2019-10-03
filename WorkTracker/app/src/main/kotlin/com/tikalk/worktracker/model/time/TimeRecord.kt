@@ -37,7 +37,6 @@ import android.text.format.DateUtils
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.time.*
 import java.util.*
 
@@ -48,7 +47,6 @@ import java.util.*
  */
 data class TimeRecord(
     override var id: Long = ID_NONE,
-    var user: User,
     var project: Project,
     var task: ProjectTask,
     var start: Calendar? = null,
@@ -78,7 +76,7 @@ data class TimeRecord(
             || (startTime <= 0L)
     }
 
-    constructor(parcel: Parcel) : this(ID_NONE, User.EMPTY.copy(), Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
+    constructor(parcel: Parcel) : this(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
         id = parcel.readLong()
         version = parcel.readInt()
         project.id = parcel.readLong()
@@ -105,7 +103,7 @@ data class TimeRecord(
     }
 
     companion object {
-        val EMPTY: TimeRecord = TimeRecord(ID_NONE, User.EMPTY, Project.EMPTY, ProjectTask.EMPTY)
+        val EMPTY: TimeRecord = TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<TimeRecord> {

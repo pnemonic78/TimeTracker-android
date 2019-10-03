@@ -49,7 +49,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
@@ -126,13 +125,10 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         }
 
         fun stopTimer(context: Context, intent: Intent? = null) {
-            Timber.v("stopTimer")
+            Timber.v("stopTimer $intent")
             val extras = intent?.extras
             val inputData = Data.Builder()
                 .putString(EXTRA_ACTION, ACTION_STOP)
-                .putLong(EXTRA_PROJECT_ID, extras?.getLong(EXTRA_PROJECT_ID) ?: 0L)
-                .putLong(EXTRA_TASK_ID, extras?.getLong(EXTRA_TASK_ID) ?: 0L)
-                .putLong(EXTRA_START_TIME, extras?.getLong(EXTRA_START_TIME) ?: 0L)
                 .putBoolean(EXTRA_EDIT, extras?.getBoolean(EXTRA_EDIT) ?: false)
                 .build()
 
@@ -147,15 +143,15 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
     fun doWork(): Result {
         val data = workerParams
         return when (data.getString(EXTRA_ACTION)) {
-            ACTION_START -> startTimer(data)
-            ACTION_STOP -> stopTimer(data)
+            ACTION_START -> startTimerAction(data)
+            ACTION_STOP -> stopTimerAction(data)
             ACTION_NOTIFY -> showNotification(data)
             else -> Result.failure()
         }
     }
 
-    private fun startTimer(extras: Data): Result {
-        Timber.v("startTimer")
+    private fun startTimerAction(extras: Data): Result {
+        Timber.v("startTimerAction")
         val record = createRecord(extras) ?: return Result.failure()
 
         prefs.startRecord(record)
@@ -168,21 +164,19 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         return Result.success()
     }
 
-    private fun stopTimer(extras: Data): Result {
-        Timber.v("stopTimer")
+    private fun stopTimerAction(extras: Data): Result {
+        Timber.v("stopTimerAction")
         if (extras.getBoolean(EXTRA_EDIT, false)) {
-            val record = prefs.getStartedRecord()
-            val projectId = extras.getLong(EXTRA_PROJECT_ID, record?.project?.id ?: 0L)
-            val taskId = extras.getLong(EXTRA_TASK_ID, record?.task?.id ?: 0L)
-            val startTime = extras.getLong(EXTRA_START_TIME, record?.startTime ?: 0L)
-            val finishTime = extras.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
+            val record = prefs.getStartedRecord() ?: return Result.failure()
+            val projectId = record.project.id
+            val taskId = record.task.id
+            val startTime = record.startTime
 
             if (projectId <= 0L) return Result.failure()
             if (taskId <= 0L) return Result.failure()
             if (startTime <= 0L) return Result.failure()
-            if (finishTime <= startTime) return Result.failure()
 
-            editRecord(projectId, taskId, startTime, finishTime)
+            editStartedRecord(record)
         }
 
         dismissNotification()
@@ -190,21 +184,13 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         return Result.success()
     }
 
-    private fun editRecord(projectId: Long, taskId: Long, startTime: Long, finishTime: Long) {
-        Timber.v("editRecord $projectId,$taskId,$startTime,$finishTime")
-        if (projectId <= 0L) return
-        if (taskId <= 0L) return
-        if (startTime <= 0L) return
-        if (finishTime <= startTime) return
+    private fun editStartedRecord(record: TimeRecord) {
+        Timber.v("editStartedRecord record=$record")
 
         val intent = Intent(context, TimeListActivity::class.java).apply {
             action = TimeListActivity.ACTION_STOP
             addFlags(FLAG_ACTIVITY_CLEAR_TOP)
             addFlags(FLAG_ACTIVITY_NEW_TASK)
-            putExtra(TimeListActivity.EXTRA_PROJECT_ID, projectId)
-            putExtra(TimeListActivity.EXTRA_TASK_ID, taskId)
-            putExtra(TimeListActivity.EXTRA_START_TIME, startTime)
-            putExtra(TimeListActivity.EXTRA_FINISH_TIME, finishTime)
         }
         context.startActivity(intent)
     }
@@ -311,7 +297,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         project.id = projectId
         val task = ProjectTask(taskName)
         task.id = taskId
-        val record = TimeRecord(TikalEntity.ID_NONE, User.EMPTY.copy(), project, task)
+        val record = TimeRecord(TikalEntity.ID_NONE, project, task)
         record.startTime = startTime
         record.finishTime = finishTime
         return record

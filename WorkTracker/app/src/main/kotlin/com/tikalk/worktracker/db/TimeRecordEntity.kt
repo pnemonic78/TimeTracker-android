@@ -56,8 +56,6 @@ import java.util.*
 data class TimeRecordEntity(
     @Ignore
     override var id: Long,
-    @ColumnInfo(name = "user_id")
-    var userId: Long,
     @ColumnInfo(name = "project_id")
     var projectId: Long,
     @ColumnInfo(name = "task_id")
@@ -83,7 +81,6 @@ open class TimeRecordConverters : Converters() {
 fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
     TimeRecordEntity(
         this.id,
-        this.user.id,
         this.project.id,
         this.task.id,
         this.start,
@@ -92,7 +89,7 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         this.status
     )
 
-fun TimeRecordEntity.toTimeRecord(user: User = User.EMPTY.copy(), projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
     val value: TimeRecordEntity = this
     val project = projects?.firstOrNull { it.id == value.projectId }
         ?: Project.EMPTY.copy().apply { id = value.projectId }
@@ -101,7 +98,6 @@ fun TimeRecordEntity.toTimeRecord(user: User = User.EMPTY.copy(), projects: Coll
 
     return TimeRecord(
         value.id,
-        user,
         project,
         task,
         value.start,

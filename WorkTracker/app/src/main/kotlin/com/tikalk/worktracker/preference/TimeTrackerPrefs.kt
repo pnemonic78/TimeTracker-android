@@ -131,7 +131,6 @@ class TimeTrackerPrefs(context: Context) {
         val startTime = prefs.getLong(START_TIME, 0L)
         if (startTime <= 0L) return null
 
-        val user = this.user
         val project = Project(projectName, "")
         project.id = projectId
         val task = ProjectTask(taskName, "")
@@ -139,7 +138,7 @@ class TimeTrackerPrefs(context: Context) {
         project.addTask(task)
         val start = startTime.toCalendar()
 
-        return TimeRecord(TikalEntity.ID_NONE, user, project, task, start)
+        return TimeRecord(TikalEntity.ID_NONE, project, task, start)
     }
 
     fun stopRecord() {
