@@ -52,9 +52,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
 
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
-        if (BuildConfig.DEBUG) {
-            MultiDex.install(this)
-        }
+        MultiDex.install(this)
     }
 
     override fun onCreate() {

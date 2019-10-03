@@ -18,6 +18,7 @@ android {
         versionName versionMajor + '.' + versionMinor.toString().padLeft(2, '0')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        multiDexEnabled true
         vectorDrawables.useSupportLibrary true
     }
 
@@ -33,7 +34,6 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            multiDexEnabled true
         }
         release {
             minifyEnabled true
