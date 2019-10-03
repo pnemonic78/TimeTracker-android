@@ -54,8 +54,8 @@ class TimeTrackerServiceFactory {
     companion object {
         private const val BASE_URL = "https://planet.tikalk.com/timetracker/"
 
-        private var cookieHandlerDefault: CookieHandler? = null
-        private var cookieHandlerPersistent: CookieHandler? = null
+        private var cookieHandlerDefault: CookieManager? = null
+        private var cookieHandlerPersistent: CookieManager? = null
 
         private fun createCookieHandler(context: Context?): CookieHandler {
             val cookieHandler: CookieHandler
@@ -107,6 +107,11 @@ class TimeTrackerServiceFactory {
         fun createPlain(context: Context?, preferences: TimeTrackerPrefs): TimeTrackerService {
             val authToken = preferences.basicCredentials.authToken()
             return createPlain(context, authToken)
+        }
+
+        fun clearCookies() {
+            cookieHandlerDefault?.cookieStore?.removeAll()
+            cookieHandlerPersistent?.cookieStore?.removeAll()
         }
     }
 }

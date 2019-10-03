@@ -72,16 +72,21 @@ fun parseSystemTime(date: Date, time: String?): Calendar? {
     return parseSystemTime(cal, time)
 }
 
+@Suppress("DEPRECATION")
 fun parseSystemTime(date: Calendar, time: String?): Calendar? {
     if (time.isNullOrEmpty()) {
         return null
     }
-    val cal = date.clone() as Calendar
     val parsed = SimpleDateFormat(SYSTEM_TIME_PATTERN, Locale.US).parse(time)
-    cal.set(Calendar.HOUR_OF_DAY, parsed.hours)
-    cal.set(Calendar.MINUTE, parsed.minutes)
-    cal.set(Calendar.SECOND, parsed.seconds)
-    return cal
+    if (parsed != null) {
+        val cal = date.clone() as Calendar
+        cal.hourOfDay = parsed.hours
+        cal.minute = parsed.minutes
+        cal.second = parsed.seconds
+        cal.millis = 0
+        return cal
+    }
+    return null
 }
 
 fun parseHours(time: String?): Long? {
@@ -91,7 +96,7 @@ fun parseHours(time: String?): Long? {
     val dateFormat = SimpleDateFormat(SYSTEM_HOURS_PATTERN, Locale.US)
     dateFormat.timeZone = TimeZone.getTimeZone("UTC")
     val parsed = dateFormat.parse(time)
-    return parsed.time
+    return parsed?.time
 }
 
 var Calendar.era: Int
