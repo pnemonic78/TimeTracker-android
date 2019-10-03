@@ -146,10 +146,14 @@ class TimerFragment : TimeFormFragment() {
 
     fun stopTimer() {
         Timber.v("stopTimer")
-        val context: Context = requireContext()
-        record.finishTime = System.currentTimeMillis()
-
-        TimerWorker.stopTimer(context)
+        val recordStarted = getStartedRecord()
+        Timber.v("stopTimer recordStarted=$recordStarted")
+        if (recordStarted != null) {
+            record = recordStarted
+        }
+        if (record.finishTime <= 0L) {
+            record.finishTime = System.currentTimeMillis()
+        }
 
         editRecord(record)
     }
@@ -210,13 +214,12 @@ class TimerFragment : TimeFormFragment() {
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
-    private fun getStartedRecord(): TimeRecord? {
+    private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
         val started = preferences.getStartedRecord()
         if (started != null) {
             return started
         }
 
-        val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_PROJECT_ID) and args.containsKey(EXTRA_TASK_ID)) {
                 val projectId = args.getLong(EXTRA_PROJECT_ID)
@@ -278,8 +281,8 @@ class TimerFragment : TimeFormFragment() {
             if (taskFavorite != TikalEntity.ID_NONE) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
-        } else {
-            val recordStartedProjectId = recordStarted!!.project.id
+        } else if (recordStarted != null) {
+            val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
             record.project = projects.firstOrNull { it.id == recordStartedProjectId }
                 ?: projectEmpty
@@ -307,7 +310,8 @@ class TimerFragment : TimeFormFragment() {
     }
 
     fun run() {
-        populateForm(record)
+        val recordStarted = getStartedRecord()
+        populateForm(recordStarted)
         bindForm(record)
     }
 

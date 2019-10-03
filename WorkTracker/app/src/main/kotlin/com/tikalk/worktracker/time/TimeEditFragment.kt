@@ -570,6 +570,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
+        this.record = record
         this.date = date
         var args = arguments
         if (args == null) {
