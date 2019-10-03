@@ -426,7 +426,7 @@ class TimeEditFragment : TimeFormFragment(),
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
-                record = recordEntity.toTimeRecord(user, projects, tasks)
+                record = recordEntity.toTimeRecord(projects, tasks)
             }
         }
     }
@@ -570,6 +570,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
+        this.record = record
         this.date = date
         var args = arguments
         if (args == null) {
