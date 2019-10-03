@@ -39,13 +39,24 @@ import android.os.Bundle
 import androidx.preference.Preference
 import com.tikalk.preference.TikalPreferenceFragment
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.model.BasicCredentials
+import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 
 class TimeSettingsFragment : TikalPreferenceFragment() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        val context = this.context ?: return
+        val context = requireContext()
+
+        val clearUser = findPreference<Preference>("clear_user")
+        clearUser?.setOnPreferenceClickListener { preference ->
+            preference.isEnabled = false
+            deleteUser()
+            preference.isEnabled = true
+            true
+        }
 
         val clearAppData = findPreference<Preference>("clear_data")
         clearAppData?.setOnPreferenceClickListener { preference ->
@@ -68,11 +79,19 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
         validateIntent("about.issue")
     }
 
+    private fun deleteUser() {
+        val context = requireContext()
+        val prefs = TimeTrackerPrefs(context)
+        prefs.userCredentials = UserCredentials.EMPTY
+        prefs.basicCredentials = BasicCredentials.EMPTY
+        TimeTrackerServiceFactory.clearCookies()
+    }
+
     /**
      * Clear the application data.
      */
     private fun deleteAppData() {
-        val context = this.context ?: return
+        val context = requireContext()
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         am.clearApplicationUserData()
     }

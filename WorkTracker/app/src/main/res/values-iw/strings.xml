@@ -48,6 +48,7 @@
     <!-- Settings - Privacy -->
     <string name="pref_privacy_security_title">פרטיות ואבטחה</string>
     <string name="clear_user_data_text" msgid="355574089263023363">"פינוי שטח אחסון"</string>
+    <string name="pref_logout_title">התנתק</string>
 
     <!-- Settings - About -->
     <string name="pref_about_title">אודות</string>

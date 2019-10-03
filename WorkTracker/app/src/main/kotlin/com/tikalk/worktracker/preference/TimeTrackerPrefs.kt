@@ -66,7 +66,7 @@ class TimeTrackerPrefs(context: Context) {
         private const val START_TIME = "start.time"
     }
 
-    var basicCredentials: BasicCredentials = BasicCredentials("", "", "")
+    var basicCredentials: BasicCredentials = BasicCredentials.EMPTY.copy()
         get() {
             field.realm = prefs.getString(BASIC_CREDENTIALS_REALM, null) ?: ""
             field.username = prefs.getString(BASIC_CREDENTIALS_USER, null) ?: ""
@@ -84,7 +84,7 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    var userCredentials: UserCredentials = UserCredentials("", "")
+    var userCredentials: UserCredentials = UserCredentials.EMPTY.copy()
         get() {
             field.login = prefs.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
             field.password = prefs.getString(USER_CREDENTIALS_PASSWORD, null) ?: ""
