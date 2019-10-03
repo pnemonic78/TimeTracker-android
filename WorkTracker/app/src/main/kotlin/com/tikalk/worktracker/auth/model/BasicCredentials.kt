@@ -39,13 +39,15 @@ import okhttp3.Credentials
  */
 data class BasicCredentials(var realm: String, var username: String, var password: String) {
 
-    companion object {
-        const val SCHEME = "Basic"
-    }
-
     fun authToken(): String {
         return Credentials.basic(username, password)
     }
 
     fun isEmpty(): Boolean = realm.isEmpty() || username.isEmpty() || password.isEmpty()
+
+    companion object {
+        const val SCHEME = "Basic"
+
+        val EMPTY = BasicCredentials("", "", "")
+    }
 }

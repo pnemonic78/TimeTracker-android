@@ -29,16 +29,40 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.auth.model
 
-/**
- * Credentials for user authentication.
- * @author moshe on 2018/05/13.
- */
-data class UserCredentials(var login: String, var password: String) {
-    fun isEmpty(): Boolean = login.isEmpty() || password.isEmpty()
+package com.tikalk.preference
 
-    companion object {
-        val EMPTY = UserCredentials("", "")
+import android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import timber.log.Timber
+
+abstract class TikalPreferenceFragment : PreferenceFragmentCompat() {
+
+    protected fun validateIntent(key: String) {
+        validateIntent(findPreference<Preference>(key))
+    }
+
+    protected fun validateIntent(preference: Preference?) {
+        if (preference == null) {
+            return
+        }
+        val intent = preference.intent ?: return
+        val context = preference.context
+        val pm = context.packageManager
+        val info = pm.resolveActivity(intent, MATCH_DEFAULT_ONLY)
+        if (info != null) {
+            preference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Timber.e(e, "Error launching intent: %s", intent)
+                }
+
+                true
+            }
+        } else {
+            preference.intent = null
+        }
     }
 }

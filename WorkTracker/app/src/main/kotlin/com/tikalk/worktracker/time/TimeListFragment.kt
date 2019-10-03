@@ -292,7 +292,9 @@ class TimeListFragment : InternetFragment(),
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_TOTALS, totals)
-        outState.putInt(STATE_DISPLAYED_CHILD, switcherForm.displayedChild)
+        if (switcherForm != null) {
+            outState.putInt(STATE_DISPLAYED_CHILD, switcherForm.displayedChild)
+        }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {

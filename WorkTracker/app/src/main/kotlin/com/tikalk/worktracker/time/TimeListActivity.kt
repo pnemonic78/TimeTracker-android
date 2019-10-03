@@ -34,9 +34,11 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
+import com.tikalk.worktracker.preference.TimeSettingsFragment
 import kotlinx.android.synthetic.main.progress.*
 
 class TimeListActivity : InternetActivity() {
@@ -48,7 +50,16 @@ class TimeListActivity : InternetActivity() {
 
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
-        mainFragment = supportFragmentManager.findFragmentById(R.id.fragmentFormAndList) as TimeListFragment
+        val mainFragmentExisting = supportFragmentManager.findFragmentByTag(TAG_MAIN_FRAGMENT) as TimeListFragment?
+        if (mainFragmentExisting != null) {
+            mainFragment = mainFragmentExisting
+        } else {
+            mainFragment = TimeListFragment()
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container, mainFragment, TAG_MAIN_FRAGMENT)
+                .commit()
+        }
 
         handleIntent(intent, savedInstanceState)
     }
@@ -62,6 +73,14 @@ class TimeListActivity : InternetActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_settings) {
+            showSettings()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun showProgress(show: Boolean) {
@@ -82,13 +101,29 @@ class TimeListActivity : InternetActivity() {
     }
 
     override fun onBackPressed() {
+        val settingsFragment = supportFragmentManager.findFragmentByTag(TAG_SETTINGS_FRAGMENT)
+        if (settingsFragment != null) {
+            supportFragmentManager.popBackStack()
+            return
+        }
         if (mainFragment.onBackPressed()) {
             return
         }
         super.onBackPressed()
     }
 
+    private fun showSettings() {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, TimeSettingsFragment(), TAG_SETTINGS_FRAGMENT)
+            .addToBackStack(TAG_SETTINGS_FRAGMENT)
+            .commit()
+    }
+
     companion object {
         const val ACTION_STOP = TimeListFragment.ACTION_STOP
+
+        private const val TAG_MAIN_FRAGMENT = "main_list"
+        private const val TAG_SETTINGS_FRAGMENT = "settings"
     }
 }
