@@ -31,38 +31,6 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/pref_privacy_security_title">
-
-        <Preference
-            android:icon="@drawable/ic_settings_logout"
-            android:key="clear_user"
-            android:title="@string/pref_logout_title" />
-        <Preference
-            android:icon="@drawable/ic_settings_delete"
-            android:key="clear_data"
-            android:title="@string/pref_clear_user_data" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/pref_about_title">
-
-        <Preference
-            android:key="about.version"
-            android:title="@string/pref_version_title">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/support_url" />
-        </Preference>
-        <Preference
-            android:icon="@drawable/ic_settings_issue"
-            android:key="about.issue"
-            android:summary="@string/pref_issue_summary"
-            android:title="@string/pref_issue_title">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/pref_issue_url" />
-        </Preference>
-
-    </PreferenceCategory>
-</PreferenceScreen>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_bug_report_white" />
+</selector>
