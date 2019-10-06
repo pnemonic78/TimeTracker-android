@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ BSD 3-Clause License
   ~
@@ -31,38 +30,13 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/pref_privacy_security_title">
-
-        <Preference
-            android:icon="@drawable/ic_settings_logout"
-            android:key="clear_user"
-            android:title="@string/pref_logout_title" />
-        <Preference
-            android:icon="@drawable/ic_settings_delete"
-            android:key="clear_data"
-            android:title="@string/pref_clear_user_data" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/pref_about_title">
-
-        <Preference
-            android:key="about.version"
-            android:title="@string/pref_version_title">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/support_url" />
-        </Preference>
-        <Preference
-            android:icon="@drawable/ic_settings_issue"
-            android:key="about.issue"
-            android:summary="@string/pref_issue_summary"
-            android:title="@string/pref_issue_title">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/pref_issue_url" />
-        </Preference>
-
-    </PreferenceCategory>
-</PreferenceScreen>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:alpha="0.75"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M20,8h-2.81c-0.45,-0.78 -1.07,-1.45 -1.82,-1.96L17,4.41 15.59,3l-2.17,2.17C12.96,5.06 12.49,5 12,5c-0.49,0 -0.96,0.06 -1.41,0.17L8.41,3 7,4.41l1.62,1.63C7.88,6.55 7.26,7.22 6.81,8L4,8v2h2.09c-0.05,0.33 -0.09,0.66 -0.09,1v1L4,12v2h2v1c0,0.34 0.04,0.67 0.09,1L4,16v2h2.81c1.04,1.79 2.97,3 5.19,3s4.15,-1.21 5.19,-3L20,18v-2h-2.09c0.05,-0.33 0.09,-0.66 0.09,-1v-1h2v-2h-2v-1c0,-0.34 -0.04,-0.67 -0.09,-1L20,10L20,8zM14,16h-4v-2h4v2zM14,12h-4v-2h4v2z" />
+</vector>

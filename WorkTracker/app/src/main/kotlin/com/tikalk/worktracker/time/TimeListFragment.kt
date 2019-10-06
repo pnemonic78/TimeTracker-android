@@ -83,10 +83,12 @@ class TimeListFragment : InternetFragment(),
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
 
-    private var date
-        get() = timerFragment.date
+    private var date: Calendar = Calendar.getInstance()
         set(value) {
-            timerFragment.date = value
+            field = value
+            if (::timerFragment.isInitialized) {
+                timerFragment.date = value
+            }
         }
     private var record
         get() = timerFragment.record
@@ -480,7 +482,16 @@ class TimeListFragment : InternetFragment(),
     }
 
     fun stopTimer() {
-        timerFragment.stopTimer()
+        if (::timerFragment.isInitialized) {
+            timerFragment.stopTimer()
+        } else {
+            // Save for "run" later.
+            val args = arguments ?: Bundle()
+            args.putString(EXTRA_ACTION, ACTION_STOP)
+            if (arguments == null) {
+                arguments = args
+            }
+        }
     }
 
     private fun navigateTomorrow() {
@@ -670,6 +681,18 @@ class TimeListFragment : InternetFragment(),
                 if (projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
                 }
+
+                val args = arguments
+                if (args != null) {
+                    if (args.containsKey(EXTRA_ACTION)) {
+                        val action = args.getString(EXTRA_ACTION)
+                        if (action == ACTION_STOP) {
+                            args.remove(EXTRA_ACTION)
+                            stopTimer()
+                        }
+                    }
+                }
+
                 showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -795,10 +818,7 @@ class TimeListFragment : InternetFragment(),
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
 
-        const val EXTRA_PROJECT_ID = TimeEditFragment.EXTRA_PROJECT_ID
-        const val EXTRA_TASK_ID = TimeEditFragment.EXTRA_TASK_ID
-        const val EXTRA_START_TIME = TimeEditFragment.EXTRA_START_TIME
-        const val EXTRA_FINISH_TIME = TimeEditFragment.EXTRA_FINISH_TIME
+        private const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
 
         const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
 
