@@ -50,7 +50,8 @@ import java.util.*
         ForeignKey(entity = ProjectTask::class,
             parentColumns = ["id"],
             childColumns = ["task_id"])
-    ]
+    ],
+    indices = [Index("project_id"), Index("task_id")]
 )
 @TypeConverters(TimeRecordConverters::class)
 data class TimeRecordEntity(
