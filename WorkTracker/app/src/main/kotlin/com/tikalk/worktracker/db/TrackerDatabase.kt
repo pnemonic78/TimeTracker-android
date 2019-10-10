@@ -41,7 +41,7 @@ import com.tikalk.worktracker.model.ProjectTask
 /**
  * Work Tracker database.
  */
-@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class, TimeRecordEntity::class], version = 3, exportSchema = false)
+@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class, TimeRecordEntity::class], version = 4, exportSchema = false)
 abstract class TrackerDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao
     abstract fun taskDao(): ProjectTaskDao

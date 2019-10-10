@@ -572,13 +572,15 @@ class TimeListFragment : InternetFragment(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
+            val context: Context = this.context ?: return@fromCallable
+
             if (isTimerShowing()) {
                 timerFragment.loadForm()
             } else {
                 editFragment.loadForm()
             }
 
-            val db = TrackerDatabase.getDatabase(requireContext())
+            val db = TrackerDatabase.getDatabase(context)
             loadRecords(db, date)
         }
             .subscribeOn(Schedulers.io())
