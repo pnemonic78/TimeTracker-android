@@ -513,15 +513,16 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     private fun deleteRecord() {
-        if (record.id == TikalEntity.ID_NONE) {
-            listener?.onRecordEditDeleted(this, record)
-        } else {
-            deleteRecord(record)
-        }
+        deleteRecord(record)
     }
 
     private fun deleteRecord(record: TimeRecord) {
         Timber.v("deleteRecord $record")
+        if (record.id == TikalEntity.ID_NONE) {
+            listener?.onRecordEditDeleted(this, record)
+            return
+        }
+
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)

@@ -293,7 +293,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun editRecord(record: TimeRecord) {
         if (parentFragment is TimeListFragment) {
-            (parentFragment as TimeListFragment).editRecord(record)
+            (parentFragment as TimeListFragment).editRecord(record, true)
         } else {
             val intent = Intent(context, TimeEditActivity::class.java)
             if (record.id == TikalEntity.ID_NONE) {
