@@ -296,7 +296,6 @@ class TimerFragment : TimeFormFragment() {
             (parentFragment as TimeListFragment).editRecord(record)
         } else {
             val intent = Intent(context, TimeEditActivity::class.java)
-            intent.putExtra(TimeEditFragment.EXTRA_DATE, record.startTime)
             if (record.id == TikalEntity.ID_NONE) {
                 intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
                 intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
