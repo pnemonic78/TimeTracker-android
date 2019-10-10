@@ -84,12 +84,6 @@ class TimeListFragment : InternetFragment(),
     private var totals = TimeTotals()
 
     private var date: Calendar = Calendar.getInstance()
-        set(value) {
-            field = value
-            if (::timerFragment.isInitialized) {
-                timerFragment.date = value
-            }
-        }
     private var record
         get() = timerFragment.record
         set(value) {
@@ -100,6 +94,8 @@ class TimeListFragment : InternetFragment(),
     private val tasks
         get() = timerFragment.tasks
     private var records: List<TimeRecord> = ArrayList()
+    /** Is the record from the "timer" or "+" FAB? */
+    private var recordForTimer = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -436,7 +432,8 @@ class TimeListFragment : InternetFragment(),
         return id.toLong()
     }
 
-    fun editRecord(record: TimeRecord) {
+    fun editRecord(record: TimeRecord, timer: Boolean = false) {
+        recordForTimer = timer
         editFragment.editRecord(record, date)
         showEditor()
     }
@@ -724,7 +721,9 @@ class TimeListFragment : InternetFragment(),
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
         Timber.i("record submitted: ${record.id} / ${record.project} / ${record.task}")
         if (record.id == TikalEntity.ID_NONE) {
-            timerFragment.stopTimerCommit()
+            if (recordForTimer) {
+                timerFragment.stopTimerCommit()
+            }
         }
         if (last) {
             showTimer()
@@ -737,7 +736,9 @@ class TimeListFragment : InternetFragment(),
         Timber.i("record deleted: ${record.id} / ${record.project} / ${record.task}")
         showTimer()
         if (record.id == TikalEntity.ID_NONE) {
-            timerFragment.stopTimerCommit()
+            if (recordForTimer) {
+                timerFragment.stopTimerCommit()
+            }
         } else {
             // Refresh the list with the edited item.
             fetchPage(date)
