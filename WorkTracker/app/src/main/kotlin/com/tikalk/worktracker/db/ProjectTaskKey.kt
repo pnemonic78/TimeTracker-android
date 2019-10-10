@@ -34,6 +34,7 @@ package com.tikalk.worktracker.db
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -51,7 +52,9 @@ import com.tikalk.worktracker.model.TikalEntity
         ForeignKey(entity = ProjectTask::class,
             parentColumns = ["id"],
             childColumns = ["task_id"])
-    ])
+    ],
+    indices = [Index("project_id"), Index("task_id")]
+)
 data class ProjectTaskKey(
     @ColumnInfo(name = "project_id")
     private var _projectId: Long,
