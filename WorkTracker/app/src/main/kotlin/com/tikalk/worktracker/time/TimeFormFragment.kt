@@ -50,7 +50,6 @@ import kotlin.collections.ArrayList
 
 abstract class TimeFormFragment : InternetFragment() {
 
-    var date: Calendar = Calendar.getInstance()
     var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projects: MutableList<Project> = ArrayList()
     val tasks: MutableList<ProjectTask> = ArrayList()
@@ -371,18 +370,7 @@ abstract class TimeFormFragment : InternetFragment() {
         preferences.setFavorite(record)
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putLong(STATE_DATE, date.timeInMillis)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-    }
-
     companion object {
-        const val STATE_DATE = "date"
         const val STATE_RECORD_ID = "record_id"
         const val STATE_RECORD = "record"
 

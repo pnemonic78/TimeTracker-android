@@ -33,7 +33,6 @@ package com.tikalk.worktracker.model
 
 import android.net.Uri
 import android.os.Parcel
-import android.os.Parcelable
 import com.tikalk.net.createUriFromParcel
 
 /**
@@ -66,7 +65,7 @@ data class User(
      * The roles.
      */
     var roles: Array<String>? = null
-) : TikalEntity(), Parcelable {
+) : TikalEntity() {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString(),
@@ -75,35 +74,11 @@ data class User(
         createUriFromParcel(parcel),
         parcel.createStringArray())
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(username)
-        parcel.writeString(email)
-        parcel.writeString(displayName)
-        parcel.writeString(telephone)
-        Uri.writeToParcel(parcel, photo)
-        parcel.writeStringArray(roles)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
     fun isEmpty(): Boolean {
         return username.isEmpty()
     }
 
     companion object {
         val EMPTY = User("")
-
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<User> {
-            override fun createFromParcel(parcel: Parcel): User {
-                return User(parcel)
-            }
-
-            override fun newArray(size: Int): Array<User?> {
-                return arrayOfNulls(size)
-            }
-        }
     }
 }
