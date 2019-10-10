@@ -70,6 +70,7 @@ import kotlin.math.max
 class TimeEditFragment : TimeFormFragment(),
     LoginFragment.OnLoginListener {
 
+    var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
 
     private var startPickerDialog: TimePickerDialog? = null
@@ -550,12 +551,14 @@ class TimeEditFragment : TimeFormFragment(),
         if (view != null) {
             bindRecord(record)
         }
+        outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putLong(STATE_RECORD_ID, record.id)
         outState.putParcelable(STATE_RECORD, record)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
+        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
 
         if (recordParcel != null) {
@@ -662,5 +665,7 @@ class TimeEditFragment : TimeFormFragment(),
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_RECORD = TimeFormFragment.EXTRA_RECORD
+
+        private const val STATE_DATE = "date"
     }
 }

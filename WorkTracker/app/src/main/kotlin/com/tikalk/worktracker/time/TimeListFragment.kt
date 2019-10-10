@@ -84,12 +84,6 @@ class TimeListFragment : InternetFragment(),
     private var totals = TimeTotals()
 
     private var date: Calendar = Calendar.getInstance()
-        set(value) {
-            field = value
-            if (::timerFragment.isInitialized) {
-                timerFragment.date = value
-            }
-        }
     private var record
         get() = timerFragment.record
         set(value) {
