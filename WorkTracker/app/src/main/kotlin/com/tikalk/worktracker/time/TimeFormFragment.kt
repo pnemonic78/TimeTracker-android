@@ -370,6 +370,40 @@ abstract class TimeFormFragment : InternetFragment() {
         preferences.setFavorite(record)
     }
 
+    protected fun findProject(projects: List<Project>, project: Project): Int {
+        val index = projects.indexOf(project)
+        if (index < 0) {
+            val id = project.id
+            for (i in projects.indices) {
+                val p = projects[i]
+                if (p == project) {
+                    return i
+                }
+                if (p.id == id) {
+                    return i
+                }
+            }
+        }
+        return index
+    }
+
+    protected fun findTask(tasks: List<ProjectTask>, task: ProjectTask): Int {
+        val index = tasks.indexOf(task)
+        if (index < 0) {
+            val id = task.id
+            for (i in tasks.indices) {
+                val t = tasks[i]
+                if (t == task) {
+                    return i
+                }
+                if (t.id == id) {
+                    return i
+                }
+            }
+        }
+        return index
+    }
+
     companion object {
         const val STATE_RECORD_ID = "record_id"
         const val STATE_RECORD = "record"
