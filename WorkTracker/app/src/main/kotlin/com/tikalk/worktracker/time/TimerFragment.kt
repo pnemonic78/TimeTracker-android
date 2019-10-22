@@ -109,11 +109,11 @@ class TimerFragment : TimeFormFragment() {
         val context: Context = requireContext()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
         if (projects.isNotEmpty()) {
-            projectInput.setSelection(max(0, projects.indexOf(record.project)))
+            projectInput.setSelection(max(0, findProject(projects, record.project)))
         }
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         if (tasks.isNotEmpty()) {
-            taskInput.setSelection(max(0, tasks.indexOf(record.task)))
+            taskInput.setSelection(max(0, findTask(tasks, record.task)))
         }
         projectInput.requestFocus()
 
@@ -183,7 +183,7 @@ class TimerFragment : TimeFormFragment() {
         options.add(taskEmpty)
         options.addAll(filtered)
         taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
-        taskInput.setSelection(options.indexOf(record.task))
+        taskInput.setSelection(findTask(options, record.task))
     }
 
     private fun maybeStartTimer() {
