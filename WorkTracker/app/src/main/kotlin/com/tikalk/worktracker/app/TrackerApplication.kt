@@ -61,9 +61,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
     override fun onCreate() {
         super.onCreate()
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(LogTree(BuildConfig.DEBUG))
-        }
+        Timber.plant(LogTree(BuildConfig.DEBUG))
         Fabric.with(this, Crashlytics())
 
         registerActivityLifecycleCallbacks(this)
