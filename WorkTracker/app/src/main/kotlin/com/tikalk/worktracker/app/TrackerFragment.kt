@@ -33,11 +33,16 @@
 package com.tikalk.worktracker.app
 
 import android.content.Context
+import android.os.Bundle
 import com.tikalk.app.TikalFragment
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
-abstract class TrackerFragment : TikalFragment() {
+abstract class TrackerFragment : TikalFragment {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     protected lateinit var preferences: TimeTrackerPrefs
     var user: User = User.EMPTY

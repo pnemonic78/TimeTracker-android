@@ -73,10 +73,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class TimeListFragment : InternetFragment(),
+class TimeListFragment : InternetFragment,
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
     TimeEditFragment.OnEditRecordListener {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment

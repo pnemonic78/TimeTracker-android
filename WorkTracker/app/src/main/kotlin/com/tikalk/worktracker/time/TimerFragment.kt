@@ -62,7 +62,11 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
-class TimerFragment : TimeFormFragment() {
+class TimerFragment : TimeFormFragment {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     private var timer: Disposable? = null
 

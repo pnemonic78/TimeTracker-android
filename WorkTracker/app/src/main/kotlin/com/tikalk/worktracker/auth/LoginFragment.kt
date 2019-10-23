@@ -63,12 +63,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * A login screen that offers login via email/password.
  */
-class LoginFragment() : InternetFragment(),
+class LoginFragment : InternetFragment,
     BasicRealmFragment.OnBasicRealmListener {
 
-    constructor(args: Bundle) : this() {
-        arguments = args
-    }
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     private val listeners: MutableList<OnLoginListener> = CopyOnWriteArrayList<OnLoginListener>()
 
@@ -244,11 +244,11 @@ class LoginFragment() : InternetFragment(),
         val indexAt = username.indexOf('@')
         val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
-        val args = Bundle()
-        args.putString(BasicRealmFragment.EXTRA_REALM, realm)
-        args.putString(BasicRealmFragment.EXTRA_USER, userClean)
-        val fragment = BasicRealmFragment()
-        fragment.arguments = args
+        val args = Bundle().apply {
+            putString(BasicRealmFragment.EXTRA_REALM, realm)
+            putString(BasicRealmFragment.EXTRA_USER, userClean)
+        }
+        val fragment = BasicRealmFragment(args)
         fragment.listener = this
         fragment.show(requireFragmentManager(), "basic_realm")
     }

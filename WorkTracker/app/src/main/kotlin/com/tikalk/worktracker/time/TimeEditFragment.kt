@@ -69,8 +69,12 @@ import timber.log.Timber
 import java.util.*
 import kotlin.math.max
 
-class TimeEditFragment : TimeFormFragment(),
+class TimeEditFragment : TimeFormFragment,
     LoginFragment.OnLoginListener {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
