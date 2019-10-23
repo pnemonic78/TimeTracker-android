@@ -35,6 +35,7 @@ package com.tikalk.worktracker.auth
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -150,7 +151,6 @@ class LoginFragment() : InternetFragment(),
         // Store values at the time of the login attempt.
         val emailValue = emailInput.text.toString()
         val passwordValue = passwordInput.text.toString()
-        val fragment: LoginFragment = this
 
         var cancel = false
         var focusView: View? = null
@@ -307,19 +307,35 @@ class LoginFragment() : InternetFragment(),
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
 
+        const val REQUEST_LOGIN = 0x109
+
         @Synchronized
         fun show(fragment: Fragment, submit: Boolean = false, tag: String = "login", listener: OnLoginListener) {
             val topLevel = fragment.topLevel()
             val fragmentManager = topLevel.requireFragmentManager()
-            val fragmentExisting = fragmentManager.findFragmentByTag(tag) as LoginFragment?
-            val fragmentLogin: LoginFragment = fragmentExisting ?: LoginFragment().apply {
-                val args = Bundle()
-                args.putBoolean(EXTRA_SUBMIT, submit)
-                arguments = args
-            }
-            fragmentLogin.addListener(listener)
-            if (fragmentExisting == null) {
-                fragmentLogin.show(fragmentManager, tag)
+            if (!fragmentManager.isDestroyed) {
+                val fragmentExisting = fragmentManager.findFragmentByTag(tag) as LoginFragment?
+                if (fragmentExisting == null) {
+                    val fragmentArguments = fragment.arguments
+                    if (fragmentManager.isStateSaved) {
+                        val intent = Intent(fragment.requireContext(), LoginActivity::class.java)
+                        if (fragmentArguments != null) {
+                            intent.putExtras(fragmentArguments)
+                        }
+                        intent.putExtra(EXTRA_SUBMIT, submit)
+                        fragment.startActivityForResult(intent, REQUEST_LOGIN)
+                    } else {
+                        val args = Bundle().apply {
+                            if (fragmentArguments != null) {
+                                putAll(fragmentArguments)
+                            }
+                            putBoolean(EXTRA_SUBMIT, submit)
+                        }
+                        val fragmentLogin: LoginFragment = fragmentExisting ?: LoginFragment(args)
+                        fragmentLogin.addListener(listener)
+                        fragmentLogin.show(fragmentManager, tag)
+                    }
+                }
             }
         }
     }

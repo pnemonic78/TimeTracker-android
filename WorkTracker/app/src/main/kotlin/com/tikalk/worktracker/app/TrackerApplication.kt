@@ -37,6 +37,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.multidex.MultiDex
 import com.tikalk.app.TikalApplication
+import com.tikalk.util.LogTree
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.work.TimerWorker
@@ -59,7 +60,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         super.onCreate()
 
         if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
+            Timber.plant(LogTree(BuildConfig.DEBUG))
         }
 
         registerActivityLifecycleCallbacks(this)
@@ -92,7 +93,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
     override fun onActivityStopped(activity: Activity) {
         active = max(0, active - 1)
         Timber.v("onActivityStopped $activity $active isFinishing=${activity.isFinishing}")
-        if ((active == 0) && activity.isFinishing) {
+        if (active == 0) {
             TimerWorker.maybeShowNotification(this)
         }
     }
