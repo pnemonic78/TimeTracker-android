@@ -32,8 +32,10 @@
 
 package com.tikalk.worktracker.time
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -812,6 +814,20 @@ class TimeListFragment : InternetFragment(),
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == LoginFragment.REQUEST_LOGIN) {
+            if (resultCode == Activity.RESULT_OK) {
+                user = preferences.user
+                // Fetch the list for the user.
+                fetchPage(date)
+            } else {
+                activity?.finish()
+            }
+            return
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
