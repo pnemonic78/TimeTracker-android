@@ -206,7 +206,7 @@ class TimeListFragment : InternetFragment,
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
         populateForm(html, date)
-        populateList(html, date)
+        populateList(html)
         savePage()
         runOnUiThread {
             bindList(date, records)
@@ -216,7 +216,7 @@ class TimeListFragment : InternetFragment,
     }
 
     /** Populate the list. */
-    private fun populateList(html: String, date: Calendar) {
+    private fun populateList(html: String) {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
 
@@ -289,7 +289,7 @@ class TimeListFragment : InternetFragment,
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, "login", this)
+        LoginFragment.show(this, submit, this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -320,7 +320,7 @@ class TimeListFragment : InternetFragment,
     private fun pickDate() {
         if (datePickerDialog == null) {
             val cal = date
-            val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
+            val listener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, month)
                 cal.set(Calendar.DAY_OF_MONTH, day)

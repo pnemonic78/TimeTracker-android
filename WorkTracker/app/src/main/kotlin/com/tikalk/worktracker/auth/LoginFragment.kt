@@ -98,7 +98,7 @@ class LoginFragment : InternetFragment,
         emailInput.setText(preferences.userCredentials.login)
 
         val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
             if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
@@ -307,10 +307,10 @@ class LoginFragment : InternetFragment,
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
 
-        const val REQUEST_LOGIN = 0x109
+        const val REQUEST_LOGIN = 0x109E
 
         @Synchronized
-        fun show(fragment: Fragment, submit: Boolean = false, tag: String = "login", listener: OnLoginListener) {
+        fun show(fragment: Fragment, submit: Boolean = false, listener: OnLoginListener, tag: String = "login_email") {
             val topLevel = fragment.topLevel()
             val fragmentManager = topLevel.requireFragmentManager()
             if (!fragmentManager.isDestroyed) {

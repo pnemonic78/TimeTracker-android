@@ -244,7 +244,7 @@ class TimeEditFragment : TimeFormFragment,
     private fun pickStartTime() {
         if (startPickerDialog == null) {
             val cal = getCalendar(record.start)
-            val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+            val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.start = cal
@@ -261,7 +261,7 @@ class TimeEditFragment : TimeFormFragment,
     private fun pickFinishTime() {
         if (finishPickerDialog == null) {
             val cal = getCalendar(record.finish)
-            val listener = TimePickerDialog.OnTimeSetListener { picker, hour, minute ->
+            val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 record.finish = cal
@@ -440,7 +440,7 @@ class TimeEditFragment : TimeFormFragment,
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, "login", this)
+        LoginFragment.show(this, submit, this)
     }
 
     private fun submit() {
