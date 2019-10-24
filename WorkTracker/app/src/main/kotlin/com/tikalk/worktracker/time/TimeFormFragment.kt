@@ -48,7 +48,11 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
-abstract class TimeFormFragment : InternetFragment() {
+abstract class TimeFormFragment : InternetFragment {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projects: MutableList<Project> = ArrayList()
