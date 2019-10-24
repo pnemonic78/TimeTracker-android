@@ -205,7 +205,7 @@ class TimeListFragment : InternetFragment,
     }
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
-        populateForm(html, date)
+        populateForm(html)
         populateList(html)
         savePage()
         runOnUiThread {
@@ -472,8 +472,8 @@ class TimeListFragment : InternetFragment,
             .addTo(disposables)
     }
 
-    private fun populateForm(html: String, date: Calendar) {
-        timerFragment.populateForm(html, date)
+    private fun populateForm(html: String) {
+        timerFragment.populateForm(html)
     }
 
     private fun populateForm(recordStarted: TimeRecord?) {
