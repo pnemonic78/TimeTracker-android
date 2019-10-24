@@ -468,11 +468,14 @@ class TimeEditFragment : TimeFormFragment,
             val splits = record.split()
             val size = splits.size
             val lastIndex = size - 1
-            for (i in 0 until size) {
-                submit(splits[i], i == 0, i == lastIndex)
+            submit(splits[0], true, 0 == lastIndex)
+            if (size > 1) {
+                for (i in 1 until size) {
+                    submit(splits[i], false, i == lastIndex)
+                }
             }
         } else {
-            submit(record, true, true)
+            submit(record, first = true, last = true)
         }
     }
 

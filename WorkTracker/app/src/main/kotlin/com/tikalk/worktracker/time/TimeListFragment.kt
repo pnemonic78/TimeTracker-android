@@ -582,7 +582,7 @@ class TimeListFragment : InternetFragment,
 
             if (isTimerShowing()) {
                 timerFragment.loadForm()
-            } else {
+            } else if (!recordForTimer) {
                 editFragment.loadForm()
             }
 
@@ -727,7 +727,7 @@ class TimeListFragment : InternetFragment,
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
-        Timber.i("record submitted: ${record.id} / ${record.project} / ${record.task}")
+        Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
                 timerFragment.stopTimerCommit()
@@ -741,7 +741,7 @@ class TimeListFragment : InternetFragment,
     }
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
-        Timber.i("record deleted: ${record.id} / ${record.project} / ${record.task}")
+        Timber.i("record deleted: $record")
         showTimer()
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
