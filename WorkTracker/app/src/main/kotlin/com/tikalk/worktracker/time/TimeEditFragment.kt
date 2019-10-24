@@ -289,9 +289,13 @@ class TimeEditFragment : TimeFormFragment,
         val taskInputView = taskInput.selectedView as TextView
 
         projectInputView.error = null
+        projectInputView.isFocusableInTouchMode = false
         taskInputView.error = null
+        taskInputView.isFocusableInTouchMode = false
         startInput.error = null
+        startInput.isFocusableInTouchMode = false
         finishInput.error = null
+        finishInput.isFocusableInTouchMode = false
         errorLabel.text = null
 
         if (record.project.id == TikalEntity.ID_NONE) {
@@ -311,18 +315,21 @@ class TimeEditFragment : TimeFormFragment,
         if (record.start == null) {
             startInput.error = getText(R.string.error_start_field_required)
             errorLabel.text = getText(R.string.error_start_field_required)
+            startInput.isFocusableInTouchMode = true
             startInput.requestFocus()
             return false
         }
         if (record.finish == null) {
             finishInput.error = getText(R.string.error_finish_field_required)
             errorLabel.text = getText(R.string.error_finish_field_required)
+            finishInput.isFocusableInTouchMode = true
             finishInput.requestFocus()
             return false
         }
         if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
             finishInput.error = getText(R.string.error_finish_time_before_start_time)
             errorLabel.text = getText(R.string.error_finish_time_before_start_time)
+            finishInput.isFocusableInTouchMode = true
             finishInput.requestFocus()
             return false
         }
