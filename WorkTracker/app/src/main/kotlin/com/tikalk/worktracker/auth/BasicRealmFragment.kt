@@ -48,7 +48,11 @@ import kotlinx.android.synthetic.main.fragment_basic_realm.*
 /**
  * An authentication screen for Basic Realm via email/password.
  */
-class BasicRealmFragment : InternetFragment() {
+class BasicRealmFragment : InternetFragment {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     var realmName = "(realm)"
         set(value) {

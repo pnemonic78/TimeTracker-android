@@ -73,10 +73,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class TimeListFragment : InternetFragment(),
+class TimeListFragment : InternetFragment,
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
     TimeEditFragment.OnEditRecordListener {
+
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment
@@ -202,7 +206,7 @@ class TimeListFragment : InternetFragment(),
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
         populateForm(html, date)
-        populateList(html, date)
+        populateList(html)
         savePage()
         runOnUiThread {
             bindList(date, records)
@@ -212,7 +216,7 @@ class TimeListFragment : InternetFragment(),
     }
 
     /** Populate the list. */
-    private fun populateList(html: String, date: Calendar) {
+    private fun populateList(html: String) {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
 
@@ -285,7 +289,7 @@ class TimeListFragment : InternetFragment(),
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, "login", this)
+        LoginFragment.show(this, submit, this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -316,7 +320,7 @@ class TimeListFragment : InternetFragment(),
     private fun pickDate() {
         if (datePickerDialog == null) {
             val cal = date
-            val listener = DatePickerDialog.OnDateSetListener { picker, year, month, day ->
+            val listener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, month)
                 cal.set(Calendar.DAY_OF_MONTH, day)
@@ -578,7 +582,7 @@ class TimeListFragment : InternetFragment(),
 
             if (isTimerShowing()) {
                 timerFragment.loadForm()
-            } else {
+            } else if (!recordForTimer) {
                 editFragment.loadForm()
             }
 
@@ -723,7 +727,7 @@ class TimeListFragment : InternetFragment(),
     }
 
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
-        Timber.i("record submitted: ${record.id} / ${record.project} / ${record.task}")
+        Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
                 timerFragment.stopTimerCommit()
@@ -737,7 +741,7 @@ class TimeListFragment : InternetFragment(),
     }
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
-        Timber.i("record deleted: ${record.id} / ${record.project} / ${record.task}")
+        Timber.i("record deleted: $record")
         showTimer()
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {

@@ -24,7 +24,11 @@
     <string name="finish_label">שעת סיום</string>
     <string name="submit">שמור</string>
     <string name="note_hint">הערה</string>
-    <string name="error_finish_time_before_start_time">שעת ההתחלה חייב להיות לפני שעת הסיום.</string>
+    <string name="error_project_field_required">פרויקט חובה</string>
+    <string name="error_task_field_required">משימה חובה</string>
+    <string name="error_start_field_required">שעת התחלה חובה</string>
+    <string name="error_finish_field_required">שעת סיום חובה</string>
+    <string name="error_finish_time_before_start_time">זמן הסיום חייב להיות מאוחר משעת ההתחלה.</string>
     <string name="pick_date">מעבר לתאריך</string>
     <string name="delete">מחק</string>
 
