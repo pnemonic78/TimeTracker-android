@@ -284,38 +284,50 @@ class TimeEditFragment : TimeFormFragment,
         return cal
     }
 
-    fun validateForm(record: TimeRecord): Boolean {
-        var valid = true
+    private fun validateForm(record: TimeRecord): Boolean {
+        val projectInputView = projectInput.selectedView as TextView
+        val taskInputView = taskInput.selectedView as TextView
 
-        if (record.project.id <= 0) {
-            valid = false
-            (projectInput.selectedView as TextView).error = getString(R.string.error_field_required)
-        } else {
-            (projectInput.selectedView as TextView).error = null
+        projectInputView.error = null
+        taskInputView.error = null
+        startInput.error = null
+        finishInput.error = null
+        errorLabel.text = null
+
+        if (record.project.id == TikalEntity.ID_NONE) {
+            projectInputView.error = getText(R.string.error_project_field_required)
+            errorLabel.text = getText(R.string.error_project_field_required)
+            projectInputView.isFocusableInTouchMode = true
+            projectInputView.post { projectInputView.requestFocus() }
+            return false
         }
-        if (record.task.id <= 0) {
-            valid = false
-            (taskInput.selectedView as TextView).error = getString(R.string.error_field_required)
-        } else {
-            (taskInput.selectedView as TextView).error = null
+        if (record.task.id == TikalEntity.ID_NONE) {
+            taskInputView.error = getText(R.string.error_task_field_required)
+            errorLabel.text = getText(R.string.error_task_field_required)
+            taskInputView.isFocusableInTouchMode = true
+            taskInputView.post { taskInputView.requestFocus() }
+            return false
         }
         if (record.start == null) {
-            valid = false
-            startInput.error = getString(R.string.error_field_required)
-        } else {
-            startInput.error = null
+            startInput.error = getText(R.string.error_start_field_required)
+            errorLabel.text = getText(R.string.error_start_field_required)
+            startInput.requestFocus()
+            return false
         }
         if (record.finish == null) {
-            valid = false
-            finishInput.error = getString(R.string.error_field_required)
-        } else if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
-            valid = false
-            finishInput.error = getString(R.string.error_finish_time_before_start_time)
-        } else {
-            finishInput.error = null
+            finishInput.error = getText(R.string.error_finish_field_required)
+            errorLabel.text = getText(R.string.error_finish_field_required)
+            finishInput.requestFocus()
+            return false
+        }
+        if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
+            finishInput.error = getText(R.string.error_finish_time_before_start_time)
+            errorLabel.text = getText(R.string.error_finish_time_before_start_time)
+            finishInput.requestFocus()
+            return false
         }
 
-        return valid
+        return true
     }
 
     private fun filterTasks(project: Project) {
