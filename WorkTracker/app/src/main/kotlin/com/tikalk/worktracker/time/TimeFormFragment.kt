@@ -172,10 +172,10 @@ abstract class TimeFormFragment : InternetFragment {
             for (line in lines) {
                 val matcher = pattern.matcher(line)
                 if (matcher.find()) {
-                    val projectId = matcher.group(1).toLong()
+                    val projectId = matcher.group(1)!!.toLong()
                     val project = projects.find { it.id == projectId }
 
-                    val taskIds: List<Long> = matcher.group(2)
+                    val taskIds: List<Long> = matcher.group(2)!!
                         .split(",")
                         .map { it.toLong() }
                     val tasks = this.tasks.filter { it.id in taskIds }

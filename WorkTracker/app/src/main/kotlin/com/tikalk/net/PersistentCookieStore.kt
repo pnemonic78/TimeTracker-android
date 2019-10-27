@@ -127,7 +127,7 @@ class PersistentCookieStore(context: Context) : CookieStore {
             val effectiveURI = getEffectiveURI(uri)
             val cookies = uriIndex[effectiveURI] ?: return false
             if (cookies.remove(cookie)) {
-                val set = cookies.map { it.toString() }.toSet()
+                val set = cookies.map { it.format() }.toSet()
                 prefs.edit().putStringSet(effectiveURI.toString(), set).apply()
                 return true
             }
@@ -168,10 +168,10 @@ class PersistentCookieStore(context: Context) : CookieStore {
             cookies = ArrayList()
             cookies.add(cookie)
             indexStore[index] = cookies
-
-            val set = cookies.map { it.toString() }.toSet()
-            prefs.edit().putStringSet(index.toString(), set).apply()
         }
+
+        val set = cookies.map { it.format() }.toSet()
+        prefs.edit().putStringSet(index.toString(), set).apply()
     }
 
     //
@@ -230,7 +230,7 @@ class PersistentCookieStore(context: Context) : CookieStore {
             if (index === comparator || comparator.compareTo(index) == 0) {
                 val indexedCookies = cookieIndex[index]
                 // check the list of cookies associated with this domain
-                if (indexedCookies != null) {
+                if ((indexedCookies != null) && indexedCookies.isNotEmpty()) {
                     val it = indexedCookies.iterator()
                     while (it.hasNext()) {
                         val cookie = it.next()
@@ -307,7 +307,6 @@ class PersistentCookieStore(context: Context) : CookieStore {
                 val index = URI.create(key)
                 uriIndex[index] = value
                     .flatMap { header -> HttpCookie.parse(header as String) }
-                    .filter { cookie -> !cookie.domain.isNullOrEmpty() }
                     .toMutableList()
             }
         }

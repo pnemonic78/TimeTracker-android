@@ -57,9 +57,7 @@ import kotlinx.android.synthetic.main.fragment_timer.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import timber.log.Timber
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class TimerFragment : TimeFormFragment {
@@ -249,7 +247,7 @@ class TimerFragment : TimeFormFragment {
     }
 
     /** Populate the record and then bind the form. */
-    fun populateForm(html: String, date: Calendar) {
+    fun populateForm(html: String) {
         val doc: Document = Jsoup.parse(html)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
