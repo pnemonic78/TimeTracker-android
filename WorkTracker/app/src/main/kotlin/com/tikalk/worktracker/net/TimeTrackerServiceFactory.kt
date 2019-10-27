@@ -57,7 +57,7 @@ class TimeTrackerServiceFactory {
         private var cookieHandlerDefault: CookieManager? = null
         private var cookieHandlerPersistent: CookieManager? = null
 
-        private fun createCookieHandler(context: Context?): CookieHandler {
+         fun createCookieHandler(context: Context?): CookieHandler {
             val cookieHandler: CookieHandler
             if (context == null) {
                 if (cookieHandlerDefault == null) {

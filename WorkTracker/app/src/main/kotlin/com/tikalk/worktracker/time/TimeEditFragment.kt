@@ -56,7 +56,7 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -408,7 +408,7 @@ class TimeEditFragment : TimeFormFragment,
         // Show a progress spinner, and kick off a background task to perform the user login attempt.
         showProgress(true)
 
-        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
+        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
         val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
             service.fetchTimes(dateFormatted)
@@ -495,7 +495,7 @@ class TimeEditFragment : TimeFormFragment,
             errorLabel.text = ""
         }
 
-        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
+        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             service.addTime(record.project.id,
@@ -555,7 +555,7 @@ class TimeEditFragment : TimeFormFragment,
         // perform the user login attempt.
         showProgress(true)
 
-        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
+        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())

@@ -57,7 +57,7 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -164,9 +164,13 @@ class TimeListFragment : InternetFragment,
         deleteRecord(record)
     }
 
+    private var fetchingPage = false
+
     private fun fetchPage(date: Calendar, progress: Boolean = true) {
         val dateFormatted = formatSystemDate(date)
-        Timber.d("fetchPage $dateFormatted")
+        Timber.d("fetchPage $dateFormatted fetching=$fetchingPage")
+        if (fetchingPage) return
+        fetchingPage = true
         // Show a progress spinner, and kick off a background task to perform the user login attempt.
         if (progress) showProgress(true)
 
@@ -178,7 +182,7 @@ class TimeListFragment : InternetFragment,
                 bindList(date, records)
 
                 // Fetch from remote server.
-                val service = TimeTrackerServiceFactory.createPlain(context, preferences)
+                val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
@@ -192,14 +196,17 @@ class TimeListFragment : InternetFragment,
                         } else {
                             authenticate(true)
                         }
+                        fetchingPage = false
                     }, { err ->
                         Timber.e(err, "Error fetching page: ${err.message}")
                         if (progress) showProgressMain(false)
+                        fetchingPage = false
                     })
                     .addTo(disposables)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 if (progress) showProgress(false)
+                fetchingPage = false
             })
             .addTo(disposables)
     }
@@ -450,7 +457,7 @@ class TimeListFragment : InternetFragment,
         showProgress(true)
 
         val context: Context = requireContext()
-        val service = TimeTrackerServiceFactory.createPlain(context, preferences)
+        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
