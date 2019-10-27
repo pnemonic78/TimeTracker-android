@@ -29,16 +29,33 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.net
+package com.tikalk.worktracker.net
 
-import android.net.Uri
-import android.os.Parcel
+import android.content.Context
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
-fun createUriFromParcel(parcel: Parcel): Uri? {
-    try {
-        return Uri.CREATOR.createFromParcel(parcel)
-    } catch (e: IllegalArgumentException) {
-        e.printStackTrace()
+/**
+ * Time Tracker web service provider.
+ *
+ * @author Moshe Waisberg.
+ */
+class TimeTrackerServiceProvider {
+
+    companion object {
+        private var service: TimeTrackerService? = null
+
+        fun providePlain(context: Context?, authToken: String? = null): TimeTrackerService {
+            if (service == null) {
+                service = TimeTrackerServiceFactory.createPlain(context, authToken)
+            }
+            return service!!
+        }
+
+        fun providePlain(context: Context?, preferences: TimeTrackerPrefs): TimeTrackerService {
+            if (service == null) {
+                service = TimeTrackerServiceFactory.createPlain(context, preferences)
+            }
+            return service!!
+        }
     }
-    return null
 }

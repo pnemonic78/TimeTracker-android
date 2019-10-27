@@ -82,7 +82,7 @@ class BasicRealmFragment : InternetFragment {
         usernameInput.setText(username)
 
         val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
             if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
