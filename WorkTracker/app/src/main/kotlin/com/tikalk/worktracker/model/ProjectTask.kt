@@ -67,3 +67,37 @@ data class ProjectTask(
 inline fun ProjectTask?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }
+
+fun findTask(tasks: List<ProjectTask>, task: ProjectTask): Int {
+    val index = tasks.indexOf(task)
+    if (index < 0) {
+        val id = task.id
+        for (i in tasks.indices) {
+            val t = tasks[i]
+            if (t == task) {
+                return i
+            }
+            if (t.id == id) {
+                return i
+            }
+        }
+    }
+    return index
+}
+
+fun findTask(tasks: Array<ProjectTask>, task: ProjectTask): Int {
+    val index = tasks.indexOf(task)
+    if (index < 0) {
+        val id = task.id
+        for (i in tasks.indices) {
+            val t = tasks[i]
+            if (t == task) {
+                return i
+            }
+            if (t.id == id) {
+                return i
+            }
+        }
+    }
+    return index
+}
