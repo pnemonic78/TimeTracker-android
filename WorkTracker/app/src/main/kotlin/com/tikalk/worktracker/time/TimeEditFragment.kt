@@ -48,10 +48,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.isNullOrEmpty
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
@@ -207,10 +204,10 @@ class TimeEditFragment : TimeFormFragment,
         Timber.v("bindForm $record")
         val context: Context = requireContext()
 
-        errorLabel.text = errorMessage
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        if (projects.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projects, record.project)))
+        val projectItems = projects.toTypedArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
         }
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         if (tasks.isNotEmpty()) {
@@ -235,6 +232,8 @@ class TimeEditFragment : TimeFormFragment,
         finishPickerDialog = null
 
         noteInput.setText(record.note)
+
+        errorLabel.text = errorMessage
     }
 
     private fun bindRecord(record: TimeRecord) {

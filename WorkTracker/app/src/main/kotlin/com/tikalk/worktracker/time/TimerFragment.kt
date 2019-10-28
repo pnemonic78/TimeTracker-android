@@ -43,10 +43,7 @@ import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.isNullOrEmpty
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.work.TimerWorker
 import io.reactivex.Observable
@@ -109,9 +106,10 @@ class TimerFragment : TimeFormFragment {
     override fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
         val context: Context = requireContext()
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projects.toTypedArray())
-        if (projects.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projects, record.project)))
+        val projectItems = projects.toTypedArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
         }
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, tasks.toTypedArray())
         if (tasks.isNotEmpty()) {
