@@ -323,6 +323,7 @@ abstract class TimeFormFragment : InternetFragment {
         loadFormFromDb(db)
     }
 
+    @Synchronized
     protected open fun loadFormFromDb(db: TrackerDatabase) {
         Timber.v("loadFormFromDb")
         loadProjects(db)
