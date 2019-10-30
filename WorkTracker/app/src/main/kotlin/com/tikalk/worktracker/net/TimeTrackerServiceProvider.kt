@@ -44,13 +44,6 @@ class TimeTrackerServiceProvider {
     companion object {
         private var service: TimeTrackerService? = null
 
-        fun providePlain(context: Context?, authToken: String? = null): TimeTrackerService {
-            if (service == null) {
-                service = TimeTrackerServiceFactory.createPlain(context, authToken)
-            }
-            return service!!
-        }
-
         fun providePlain(context: Context?, preferences: TimeTrackerPrefs): TimeTrackerService {
             if (service == null) {
                 service = TimeTrackerServiceFactory.createPlain(context, preferences)

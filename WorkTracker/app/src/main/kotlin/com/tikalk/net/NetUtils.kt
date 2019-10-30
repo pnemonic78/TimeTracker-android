@@ -33,7 +33,10 @@ package com.tikalk.net
 
 import android.net.Uri
 import android.os.Parcel
+import android.text.format.DateUtils
+import okhttp3.internal.http.HttpDate
 import java.net.HttpCookie
+import java.util.*
 
 fun createUriFromParcel(parcel: Parcel): Uri? {
     try {
@@ -54,10 +57,16 @@ fun HttpCookie.format(): String {
         sb.append("; domain=\"").append(domain).append('"')
     if (portlist != null)
         sb.append("; port=\"").append(portlist).append('"')
-    if (hasExpired())
-        sb.append("; max-age=\"").append(0).append('"')
-    else if (maxAge >= 0)
-        sb.append("; max-age=\"").append(maxAge).append('"')
+    when {
+        hasExpired() -> sb.append("; max-age=\"").append(0).append('"')
+        maxAge > 0 -> {
+            val whenCreated = System.currentTimeMillis()
+            val date = whenCreated + (maxAge * DateUtils.SECOND_IN_MILLIS)
+            val expires = HttpDate.format(Date(date))
+            sb.append("; expires=\"").append(expires).append('"')
+        }
+        else -> sb.append("; max-age=\"").append(maxAge).append('"')
+    }
 
     return sb.toString()
 }
