@@ -85,3 +85,37 @@ data class Project(
 inline fun Project?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }
+
+fun findProject(projects: List<Project>, project: Project): Int {
+    val index = projects.indexOf(project)
+    if (index < 0) {
+        val id = project.id
+        for (i in projects.indices) {
+            val p = projects[i]
+            if (p == project) {
+                return i
+            }
+            if (p.id == id) {
+                return i
+            }
+        }
+    }
+    return index
+}
+
+fun findProject(projects: Array<Project>, project: Project): Int {
+    val index = projects.indexOf(project)
+    if (index < 0) {
+        val id = project.id
+        for (i in projects.indices) {
+            val p = projects[i]
+            if (p == project) {
+                return i
+            }
+            if (p.id == id) {
+                return i
+            }
+        }
+    }
+    return index
+}
