@@ -45,6 +45,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
@@ -55,8 +56,8 @@ abstract class TimeFormFragment : InternetFragment {
     constructor(args: Bundle) : super(args)
 
     var record: TimeRecord = TimeRecord.EMPTY.copy()
-    val projects: MutableList<Project> = ArrayList()
-    val tasks: MutableList<ProjectTask> = ArrayList()
+    val projects: MutableList<Project> = CopyOnWriteArrayList()
+    val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
 

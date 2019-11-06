@@ -269,10 +269,8 @@ class TimerFragment : TimeFormFragment {
 
     fun populateForm(recordStarted: TimeRecord?) {
         Timber.v("populateForm $recordStarted")
-        // In case `this.projects` is modified while we loop through it.
-        val projects = this.projects.toList()
-        // In case `this.tasks` is modified while we loop through it.
-        val tasks = this.tasks.toList()
+        val projects = this.projects
+        val tasks = this.tasks
         if ((recordStarted == null) or (recordStarted?.project.isNullOrEmpty() and recordStarted?.task.isNullOrEmpty())) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
