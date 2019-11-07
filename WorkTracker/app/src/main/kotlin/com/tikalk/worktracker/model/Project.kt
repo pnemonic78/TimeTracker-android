@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.model
 
+import android.widget.AdapterView
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -51,8 +52,12 @@ data class Project(
     @Ignore
     val tasksById: MutableMap<Long, ProjectTask> = HashMap()
 
-    val tasks: List<ProjectTask>
+    var tasks: List<ProjectTask>
         get() = tasksById.values.sortedBy { task -> task.name }
+        set(value) {
+            clearTasks()
+            addTasks(value)
+        }
 
     override fun toString(): String {
         return name
@@ -105,17 +110,18 @@ fun findProject(projects: List<Project>, project: Project): Int {
 
 fun findProject(projects: Array<Project>, project: Project): Int {
     val index = projects.indexOf(project)
-    if (index < 0) {
-        val id = project.id
-        for (i in projects.indices) {
-            val p = projects[i]
-            if (p == project) {
-                return i
-            }
-            if (p.id == id) {
-                return i
-            }
+    if (index >= 0) {
+        return index
+    }
+    val id = project.id
+    for (i in projects.indices) {
+        val p = projects[i]
+        if (p == project) {
+            return i
+        }
+        if (p.id == id) {
+            return i
         }
     }
-    return index
+    return AdapterView.INVALID_POSITION
 }

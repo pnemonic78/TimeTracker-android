@@ -209,11 +209,8 @@ class TimeEditFragment : TimeFormFragment,
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
         }
-        val taskItems = tasks.toTypedArray()
+        val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
-        if (taskItems.isNotEmpty()) {
-            taskInput.setSelection(max(0, findTask(taskItems, record.task)))
-        }
         projectInput.requestFocus()
 
         val startTime = record.startTime

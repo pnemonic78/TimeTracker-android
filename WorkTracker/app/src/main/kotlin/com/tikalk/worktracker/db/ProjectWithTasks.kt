@@ -29,78 +29,29 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.db
 
-import android.widget.AdapterView
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import androidx.room.Embedded
+import androidx.room.Junction
+import androidx.room.Relation
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
 
 /**
- * Task that belongs to a project entity.
+ * Project with Tasks relational ID entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "project_task")
-data class ProjectTask(
-    @ColumnInfo(name = "name")
-    var name: String,
-    @ColumnInfo(name = "description")
-    var description: String? = null
-) : TikalEntity() {
-
-    override fun toString(): String {
-        return name
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other) || ((other is ProjectTask) && (this.id == other.id))
-    }
-
-    fun isEmpty(): Boolean {
-        return (id == ID_NONE) || name.isEmpty()
-    }
-
-    companion object {
-        val EMPTY = ProjectTask("")
-    }
-}
-
-inline fun ProjectTask?.isNullOrEmpty(): Boolean {
-    return this == null || this.isEmpty()
-}
-
-fun findTask(tasks: List<ProjectTask>, task: ProjectTask): Int {
-    val index = tasks.indexOf(task)
-    if (index >= 0) {
-        return index
-    }
-    val id = task.id
-    for (i in tasks.indices) {
-        val t = tasks[i]
-        if (t == task) {
-            return i
-        }
-        if (t.id == id) {
-            return i
-        }
-    }
-    return AdapterView.INVALID_POSITION
-}
-
-fun findTask(tasks: Array<ProjectTask>, task: ProjectTask): Int {
-    val index = tasks.indexOf(task)
-    if (index >= 0) {
-        return index
-    }
-    val id = task.id
-    for (i in tasks.indices) {
-        val t = tasks[i]
-        if (t == task) {
-            return i
-        }
-        if (t.id == id) {
-            return i
-        }
-    }
-    return AdapterView.INVALID_POSITION
-}
+data class ProjectWithTasks(
+    @Embedded val project: Project,
+    @Relation(
+        parentColumn = "id",// Project
+        entity = ProjectTask::class,
+        entityColumn = "id",// ProjectTask
+        associateBy = Junction(ProjectTaskKey::class,
+            parentColumn = "project_id",
+            entityColumn = "task_id"
+        )
+    )
+    val tasks: List<ProjectTask>
+)
