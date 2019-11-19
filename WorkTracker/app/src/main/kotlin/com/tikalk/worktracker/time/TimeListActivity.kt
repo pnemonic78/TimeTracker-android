@@ -36,6 +36,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.navigation.findNavController
+import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.net.InternetActivity
@@ -43,23 +44,11 @@ import kotlinx.android.synthetic.main.progress.*
 
 class TimeListActivity : InternetActivity() {
 
-//    private lateinit var mainFragment: TimeListFragment
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
-//        val mainFragmentExisting = supportFragmentManager.findFragmentByTag(TAG_MAIN_FRAGMENT) as TimeListFragment?
-//        if (mainFragmentExisting != null) {
-//            mainFragment = mainFragmentExisting
-//        } else {
-//            mainFragment = TimeListFragment()
-//            supportFragmentManager
-//                .beginTransaction()
-//                .replace(R.id.fragment_container, mainFragment, TAG_MAIN_FRAGMENT)
-//                .commit()
-//        }
 
         handleIntent(intent, savedInstanceState)
     }
@@ -101,19 +90,22 @@ class TimeListActivity : InternetActivity() {
     }
 
     override fun onBackPressed() {
-//        val settingsFragment = supportFragmentManager.findFragmentByTag(TAG_SETTINGS_FRAGMENT)
-//        if (settingsFragment != null) {
-//            supportFragmentManager.popBackStack()
-//            return
-//        }
-//        if (mainFragment.onBackPressed()) {
-//            return
-//        }
+        val mainFragment = findMainFragment()
+        if (mainFragment != null) {
+            if (mainFragment.onBackPressed()) {
+                return
+            }
+        }
         super.onBackPressed()
     }
 
     private fun showSettings() {
         findNavController(R.id.nav_host_fragment).navigate(R.id.action_timeList_to_settings)
+    }
+
+    private fun findMainFragment(): TimeListFragment? {
+        val navFragment = supportFragmentManager.primaryNavigationFragment ?: return null
+        return navFragment.childFragmentManager.findFragmentByClass(TimeListFragment::class.java)
     }
 
     companion object {

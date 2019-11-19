@@ -37,6 +37,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import io.reactivex.disposables.CompositeDisposable
 
 open class TikalFragment() : AppCompatDialogFragment() {
@@ -83,4 +84,8 @@ fun DialogFragment.isShowing(): Boolean {
         return (d.isShowing) and !isRemoving
     }
     return false
+}
+
+fun <F: Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
+    return fragments.firstOrNull { clazz.isAssignableFrom(it.javaClass) } as F?
 }
