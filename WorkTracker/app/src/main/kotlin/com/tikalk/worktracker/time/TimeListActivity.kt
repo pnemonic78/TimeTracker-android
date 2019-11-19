@@ -49,13 +49,16 @@ class TimeListActivity : InternetActivity() {
 
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
-
-        handleIntent(intent, savedInstanceState)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
+        handleIntent(intent)
+    }
+
+    override fun onStart() {
+        super.onStart()
         handleIntent(intent)
     }
 
@@ -76,17 +79,14 @@ class TimeListActivity : InternetActivity() {
         progress.showAnimated(show)
     }
 
-    private fun handleIntent(intent: Intent, savedInstanceState: Bundle? = null) {
-//        if (savedInstanceState == null) {
-//            mainFragment.arguments = intent.extras
-//            mainFragment.run()
-//
-//            if (intent.action == ACTION_STOP) {
-//                intent.action = null
-//                mainFragment.stopTimer()
-//            }
-//        }
+    private fun handleIntent(intent: Intent) {
+        val action = intent.action
         intent.action = null
+
+        if (action == ACTION_STOP) {
+            val mainFragment = findMainFragment()
+            mainFragment?.stopTimer()
+        }
     }
 
     override fun onBackPressed() {

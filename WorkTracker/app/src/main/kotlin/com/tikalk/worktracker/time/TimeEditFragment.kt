@@ -354,6 +354,7 @@ class TimeEditFragment : TimeFormFragment,
     }
 
     fun run() {
+        Timber.v("run")
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {

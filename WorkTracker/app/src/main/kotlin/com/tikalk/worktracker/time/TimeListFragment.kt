@@ -684,6 +684,7 @@ class TimeListFragment : InternetFragment,
 
     @MainThread
     fun run() {
+        Timber.v("run")
         showProgress(true)
         loadPage()
             .subscribe({

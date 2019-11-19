@@ -112,6 +112,7 @@ class LoginFragment : InternetFragment,
 
     @MainThread
     fun run() {
+        Timber.v("run")
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_EMAIL)) {

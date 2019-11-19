@@ -305,6 +305,7 @@ class TimerFragment : TimeFormFragment {
     }
 
     fun run() {
+        Timber.v("run")
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
         bindForm(record)

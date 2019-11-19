@@ -44,6 +44,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.android.synthetic.main.fragment_basic_realm.*
+import timber.log.Timber
 
 /**
  * An authentication screen for Basic Realm via email/password.
@@ -96,6 +97,7 @@ class BasicRealmFragment : InternetFragment {
 
     @MainThread
     fun run() {
+        Timber.v("run")
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_REALM)) {
