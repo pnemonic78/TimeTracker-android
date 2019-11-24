@@ -86,6 +86,6 @@ fun DialogFragment.isShowing(): Boolean {
     return false
 }
 
-fun <F: Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
+fun <F : Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
     return fragments.firstOrNull { clazz.isAssignableFrom(it.javaClass) } as F?
 }
