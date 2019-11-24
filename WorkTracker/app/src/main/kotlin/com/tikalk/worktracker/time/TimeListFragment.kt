@@ -42,6 +42,7 @@ import android.text.format.DateUtils
 import android.view.*
 import android.view.animation.AnimationUtils
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.findNavController
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -296,7 +297,11 @@ class TimeListFragment : InternetFragment,
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, this)
+        val fragmentManager = this.fragmentManager ?: return
+        val args = Bundle()
+        fragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
+        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+        findNavController().navigate(R.id.action_login, args)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -721,10 +726,7 @@ class TimeListFragment : InternetFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
         user = preferences.user
-        // Fetch the list for the user.
-        fetchPage(date)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {

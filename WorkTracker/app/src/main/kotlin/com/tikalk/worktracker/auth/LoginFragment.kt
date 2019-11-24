@@ -45,8 +45,10 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.InternetFragment
@@ -80,6 +82,17 @@ class LoginFragment : InternetFragment,
 
     fun removeListener(listener: OnLoginListener) {
         listeners.remove(listener)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val caller = this.caller
+        if (caller != null) {
+            if (caller is OnLoginListener) {
+                addListener(caller)
+            }
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -256,7 +269,9 @@ class LoginFragment : InternetFragment,
 
     override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
         Timber.i("basic realm success for \"$realm\"")
-        fragment.dismissAllowingStateLoss()
+        if (fragment.isVisible) {
+            fragment.dismissAllowingStateLoss()
+        }
         attemptLogin()
     }
 
@@ -269,6 +284,7 @@ class LoginFragment : InternetFragment,
         for (listener in listeners) {
             listener.onLoginSuccess(fragment, email)
         }
+        findNavController().popBackStack()
     }
 
     private fun notifyLoginFailure(email: String, reason: String) {
@@ -304,6 +320,7 @@ class LoginFragment : InternetFragment,
     }
 
     companion object {
+        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_EMAIL = "email"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"

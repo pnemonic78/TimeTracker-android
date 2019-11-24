@@ -390,7 +390,6 @@ class TimeEditFragment : TimeFormFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
         fetchPage(date, record.id)
     }
 

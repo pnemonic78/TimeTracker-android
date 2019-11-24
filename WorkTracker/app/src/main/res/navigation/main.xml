@@ -39,6 +39,9 @@
         android:name="com.tikalk.worktracker.auth.LoginFragment"
         android:label="LoginFragment">
         <argument
+            android:name="callerId"
+            app:argType="string" />
+        <argument
             android:name="email"
             app:argType="string" />
         <argument
@@ -57,6 +60,9 @@
         android:name="com.tikalk.worktracker.auth.BasicRealmFragment"
         android:label="BasicRealmFragment">
         <argument
+            android:name="callerId"
+            app:argType="string" />
+        <argument
             android:name="username"
             app:argType="string" />
         <argument
@@ -74,6 +80,9 @@
         <action
             android:id="@+id/action_login"
             app:destination="@id/loginFragment">
+            <argument
+                android:name="callerId"
+                app:argType="string" />
             <argument
                 android:name="email"
                 app:argType="string" />

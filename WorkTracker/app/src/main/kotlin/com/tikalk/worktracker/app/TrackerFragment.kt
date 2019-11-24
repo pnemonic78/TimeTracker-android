@@ -34,6 +34,7 @@ package com.tikalk.worktracker.app
 
 import android.content.Context
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -47,9 +48,24 @@ abstract class TrackerFragment : TikalFragment {
     protected lateinit var preferences: TimeTrackerPrefs
     var user: User = User.EMPTY
 
+    protected var caller: Fragment? = null
+        private set
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         preferences = TimeTrackerPrefs(context)
         user = preferences.user
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val args = this.arguments ?: return
+        if (args.containsKey(EXTRA_CALLER)) {
+            caller = fragmentManager?.getFragment(args, EXTRA_CALLER)
+        }
+    }
+
+    companion object {
+        const val EXTRA_CALLER = "callerId"
     }
 }
