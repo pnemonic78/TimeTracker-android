@@ -301,7 +301,7 @@ class TimeListFragment : InternetFragment,
         val args = Bundle()
         fragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
         args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        findNavController().navigate(R.id.action_login, args)
+        findNavController().navigate(R.id.action_timeList_to_login, args)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

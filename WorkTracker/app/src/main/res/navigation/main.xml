@@ -34,7 +34,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     app:startDestination="@id/timeListFragment">
-    <fragment
+    <dialog
         android:id="@+id/loginFragment"
         android:name="com.tikalk.worktracker.auth.LoginFragment"
         android:label="LoginFragment">
@@ -54,8 +54,8 @@
         <action
             android:id="@+id/action_basicRealmLogin"
             app:destination="@id/basicRealmFragment" />
-    </fragment>
-    <fragment
+    </dialog>
+    <dialog
         android:id="@+id/basicRealmFragment"
         android:name="com.tikalk.worktracker.auth.BasicRealmFragment"
         android:label="BasicRealmFragment">
@@ -72,24 +72,14 @@
             android:name="submit"
             android:defaultValue="false"
             app:argType="boolean" />
-    </fragment>
+    </dialog>
     <fragment
         android:id="@+id/timeListFragment"
         android:name="com.tikalk.worktracker.time.TimeListFragment"
         android:label="TimeListFragment">
         <action
-            android:id="@+id/action_login"
-            app:destination="@id/loginFragment">
-            <argument
-                android:name="callerId"
-                app:argType="string" />
-            <argument
-                android:name="email"
-                app:argType="string" />
-            <argument
-                android:name="password"
-                app:argType="string" />
-        </action>
+            android:id="@+id/action_timeList_to_login"
+            app:destination="@id/loginFragment" />
         <action
             android:id="@+id/action_timeList_to_settings"
             app:destination="@id/timeSettingsFragment" />
@@ -98,4 +88,12 @@
         android:id="@+id/timeSettingsFragment"
         android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
         android:label="TimeSettingsFragment" />
+    <fragment
+        android:id="@+id/timeEditFragment"
+        android:name="com.tikalk.worktracker.time.TimeEditFragment"
+        android:label="TimeEditFragment">
+        <action
+            android:id="@+id/action_timeEdit_to_login"
+            app:destination="@id/loginFragment" />
+    </fragment>
 </navigation>

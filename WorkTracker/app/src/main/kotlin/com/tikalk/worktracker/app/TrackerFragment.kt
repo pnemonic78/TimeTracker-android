@@ -59,9 +59,11 @@ abstract class TrackerFragment : TikalFragment {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val args = this.arguments ?: return
-        if (args.containsKey(EXTRA_CALLER)) {
-            caller = fragmentManager?.getFragment(args, EXTRA_CALLER)
+        val args = this.arguments
+        if (args != null) {
+            if (args.containsKey(EXTRA_CALLER)) {
+                caller = fragmentManager?.getFragment(args, EXTRA_CALLER)
+            }
         }
     }
 
