@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.auth
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +42,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.android.synthetic.main.fragment_basic_realm.*
@@ -61,6 +63,17 @@ class BasicRealmFragment : InternetFragment {
             realmTitle?.text = getString(R.string.authentication_basic_realm, value)
         }
     var listener: OnBasicRealmListener? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val caller = this.caller
+        if (caller != null) {
+            if (caller is OnBasicRealmListener) {
+                this.listener = caller
+            }
+        }
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -143,7 +156,6 @@ class BasicRealmFragment : InternetFragment {
         // Store values at the time of the login attempt.
         val username = usernameInput.text.toString()
         val password = passwordInput.text.toString()
-        val fragment: BasicRealmFragment = this
 
         var cancel = false
         var focusView: View? = null
@@ -180,7 +192,7 @@ class BasicRealmFragment : InternetFragment {
             actionAuthenticate.isEnabled = false
 
             preferences.basicCredentials = BasicCredentials(realmName, username, password)
-            listener?.onBasicRealmSuccess(fragment, realmName, username)
+            notifyLoginSuccess(realmName, username)
         }
     }
 
@@ -190,6 +202,19 @@ class BasicRealmFragment : InternetFragment {
 
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
+    }
+
+    private fun notifyLoginSuccess(realmName: String, username: String) {
+        listener?.onBasicRealmSuccess(this, realmName, username)
+    }
+
+    private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
+        listener?.onBasicRealmFailure(this, realmName, username, reason)
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        notifyLoginFailure(realmName, "", "onCancel")
     }
 
     /**
@@ -215,6 +240,7 @@ class BasicRealmFragment : InternetFragment {
     }
 
     companion object {
+        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_REALM = "realm"
         const val EXTRA_USER = "user"
         const val EXTRA_PASSWORD = "password"

@@ -262,15 +262,14 @@ class LoginFragment : InternetFragment,
             putString(BasicRealmFragment.EXTRA_REALM, realm)
             putString(BasicRealmFragment.EXTRA_USER, userClean)
         }
-        val fragment = BasicRealmFragment(args)
-        fragment.listener = this
-        fragment.show(requireFragmentManager(), "basic_realm")
+        requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
+        findNavController().navigate(R.id.action_basicRealmLogin, args)
     }
 
     override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
         Timber.i("basic realm success for \"$realm\"")
         if (fragment.isVisible) {
-            fragment.dismissAllowingStateLoss()
+            findNavController().popBackStack()
         }
         attemptLogin()
     }
@@ -284,7 +283,6 @@ class LoginFragment : InternetFragment,
         for (listener in listeners) {
             listener.onLoginSuccess(fragment, email)
         }
-        findNavController().popBackStack()
     }
 
     private fun notifyLoginFailure(email: String, reason: String) {

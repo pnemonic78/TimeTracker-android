@@ -297,9 +297,8 @@ class TimeListFragment : InternetFragment,
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        val fragmentManager = this.fragmentManager ?: return
         val args = Bundle()
-        fragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
+        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
         args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
         findNavController().navigate(R.id.action_timeList_to_login, args)
     }
@@ -726,6 +725,9 @@ class TimeListFragment : InternetFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
+        if (fragment.isVisible) {
+            findNavController().popBackStack()
+        }
         user = preferences.user
     }
 
