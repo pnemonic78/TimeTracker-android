@@ -85,7 +85,6 @@ class TimeListFragment : TimeFormFragment,
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var timerFragment: TimerFragment
-    private lateinit var editFragment: TimeEditFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
@@ -108,7 +107,6 @@ class TimeListFragment : TimeFormFragment,
         super.onViewCreated(view, savedInstanceState)
 
         timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
-        editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
 
         switcherForm.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_form)
         switcherForm.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_form)
@@ -441,6 +439,7 @@ class TimeListFragment : TimeFormFragment,
 
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
         recordForTimer = timer
+        val editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
         editFragment.listener = this
         editFragment.editRecord(record, date)
         showEditor()
@@ -837,11 +836,12 @@ class TimeListFragment : TimeFormFragment,
     }
 
     private fun findTopFormFragment(): TimeFormFragment {
-        return if (isTimerShowing()) {
-            timerFragment
+        val fragmentId = if (isTimerShowing()) {
+            R.id.fragmentTimer
         } else {
-            editFragment
+            R.id.fragmentEdit
         }
+        return childFragmentManager.findFragmentById(fragmentId) as TimeFormFragment
     }
 
     companion object {
