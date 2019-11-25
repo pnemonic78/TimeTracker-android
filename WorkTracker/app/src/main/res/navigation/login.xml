@@ -33,33 +33,47 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    app:startDestination="@id/timeListFragment">
-    <include app:graph="@navigation/login" />
-    <fragment
-        android:id="@+id/timeListFragment"
-        android:name="com.tikalk.worktracker.time.TimeListFragment"
-        android:label="TimeListFragment"
-        tools:layout="@layout/fragment_time_list">
+    android:id="@+id/login"
+    app:startDestination="@id/loginFragment">
+    <dialog
+        android:id="@+id/loginFragment"
+        android:name="com.tikalk.worktracker.auth.LoginFragment"
+        android:label="LoginFragment"
+        tools:layout="@layout/fragment_login">
+        <argument
+            android:name="callerId"
+            app:argType="string" />
+        <argument
+            android:name="email"
+            app:argType="string" />
+        <argument
+            android:name="password"
+            app:argType="string" />
+        <argument
+            android:name="submit"
+            android:defaultValue="false"
+            app:argType="boolean" />
         <action
-            android:id="@+id/action_timeList_to_login"
-            app:destination="@id/login" />
-        <action
-            android:id="@+id/action_timeList_to_settings"
-            app:destination="@id/timeSettingsFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/timeSettingsFragment"
-        android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
-        android:label="TimeSettingsFragment"
-        tools:layout="@layout/preference_list_fragment"/>
-    <fragment
-        android:id="@+id/timeEditFragment"
-        android:name="com.tikalk.worktracker.time.TimeEditFragment"
-        android:label="TimeEditFragment"
-        tools:layout="@layout/time_form">
-        <action
-            android:id="@+id/action_timeEdit_to_login"
-            app:destination="@id/login" />
-    </fragment>
+            android:id="@+id/action_basicRealmLogin"
+            app:destination="@id/basicRealmFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/basicRealmFragment"
+        android:name="com.tikalk.worktracker.auth.BasicRealmFragment"
+        android:label="BasicRealmFragment"
+        tools:layout="@layout/fragment_basic_realm">
+        <argument
+            android:name="callerId"
+            app:argType="string" />
+        <argument
+            android:name="username"
+            app:argType="string" />
+        <argument
+            android:name="password"
+            app:argType="string" />
+        <argument
+            android:name="submit"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </dialog>
 </navigation>
