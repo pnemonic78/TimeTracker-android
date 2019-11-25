@@ -91,11 +91,6 @@ class TimeListFragment : InternetFragment,
     private var totals = TimeTotals()
 
     private var date: Calendar = Calendar.getInstance()
-    private var record
-        get() = timerFragment.record
-        set(value) {
-            timerFragment.record = value
-        }
     private val projects
         get() = timerFragment.projects
     private val tasks
@@ -178,8 +173,8 @@ class TimeListFragment : InternetFragment,
         // Fetch from local database first.
         loadPage()
             .subscribe({
-                populateForm(record)
-                bindForm(record)
+                populateForm()
+                bindForm()
                 bindList(date, records)
 
                 // Fetch from remote server.
@@ -487,12 +482,12 @@ class TimeListFragment : InternetFragment,
         timerFragment.populateForm(html)
     }
 
-    private fun populateForm(recordStarted: TimeRecord?) {
-        timerFragment.populateForm(recordStarted)
+    private fun populateForm() {
+        timerFragment.populateForm(timerFragment.record)
     }
 
-    private fun bindForm(record: TimeRecord) {
-        timerFragment.bindForm(record)
+    private fun bindForm() {
+        timerFragment.bindForm(timerFragment.record)
     }
 
     fun stopTimer() {
@@ -692,8 +687,8 @@ class TimeListFragment : InternetFragment,
         showProgress(true)
         loadPage()
             .subscribe({
-                populateForm(record)
-                bindForm(record)
+                populateForm()
+                bindForm()
                 bindList(date, records)
                 if (projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
