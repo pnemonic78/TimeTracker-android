@@ -84,7 +84,6 @@ class TimeListFragment : TimeFormFragment,
     constructor(args: Bundle) : super(args)
 
     private var datePickerDialog: DatePickerDialog? = null
-    private lateinit var timerFragment: TimerFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
@@ -105,8 +104,6 @@ class TimeListFragment : TimeFormFragment,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
 
         switcherForm.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_form)
         switcherForm.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_form)
@@ -474,7 +471,7 @@ class TimeListFragment : TimeFormFragment,
 
     override fun populateForm(date: Calendar, doc: Document) {
         super.populateForm(date, doc)
-        timerFragment.populateForm(date, doc)
+        findTopFormFragment().populateForm(date, doc)
     }
 
     override fun populateForm(record: TimeRecord) {
@@ -488,7 +485,8 @@ class TimeListFragment : TimeFormFragment,
     }
 
     fun stopTimer() {
-        if (::timerFragment.isInitialized) {
+        val timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment?
+        if (timerFragment != null) {
             timerFragment.stopTimer()
         } else {
             // Save for "run" later.
@@ -660,17 +658,6 @@ class TimeListFragment : TimeFormFragment,
         }
     }
 
-    override fun setArguments(args: Bundle?) {
-        super.setArguments(args)
-
-        if (isAdded) {
-            if (childFragmentManager.fragments.size > 0) {
-                timerFragment.arguments = arguments
-                timerFragment.run()
-            }
-        }
-    }
-
     @MainThread
     fun run() {
         Timber.v("run")
@@ -727,6 +714,7 @@ class TimeListFragment : TimeFormFragment,
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
+                val timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
                 timerFragment.stopTimerCommit()
             }
         }
@@ -742,6 +730,7 @@ class TimeListFragment : TimeFormFragment,
         showTimer()
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
+                val timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
                 timerFragment.stopTimerCommit()
             }
         } else {
