@@ -109,7 +109,6 @@ class TimeListFragment : TimeFormFragment,
 
         timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
         editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
-        editFragment.listener = this
 
         switcherForm.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_form)
         switcherForm.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_form)
@@ -442,6 +441,7 @@ class TimeListFragment : TimeFormFragment,
 
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
         recordForTimer = timer
+        editFragment.listener = this
         editFragment.editRecord(record, date)
         showEditor()
     }
@@ -587,11 +587,7 @@ class TimeListFragment : TimeFormFragment,
         return Single.fromCallable {
             val context: Context = this.context ?: return@fromCallable
 
-            if (isTimerShowing()) {
-                timerFragment.loadForm()
-            } else if (!recordForTimer) {
-                editFragment.loadForm()
-            }
+            findTopFormFragment().loadForm()
 
             val db = TrackerDatabase.getDatabase(context)
             loadRecords(db, date)
@@ -601,11 +597,7 @@ class TimeListFragment : TimeFormFragment,
     }
 
     override fun saveFormToDb() {
-        if (isTimerShowing()) {
-            timerFragment.savePage()
-        } else {
-            editFragment.savePage()
-        }
+        findTopFormFragment().savePage()
 
         val db = TrackerDatabase.getDatabase(requireContext())
         saveRecords(db, date)
@@ -675,7 +667,7 @@ class TimeListFragment : TimeFormFragment,
         super.setArguments(args)
 
         if (isAdded) {
-            if ((childFragmentManager.fragments.size > 0)) {
+            if (childFragmentManager.fragments.size > 0) {
                 timerFragment.arguments = arguments
                 timerFragment.run()
             }
@@ -806,7 +798,9 @@ class TimeListFragment : TimeFormFragment,
         showTimer()
     }
 
-    private fun isTimerShowing() = (switcherForm?.displayedChild == CHILD_TIMER)
+    private fun isTimerShowing(): Boolean {
+        return (switcherForm?.displayedChild == CHILD_TIMER)
+    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (view?.visibility == View.VISIBLE) {
@@ -840,6 +834,14 @@ class TimeListFragment : TimeFormFragment,
             return
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun findTopFormFragment(): TimeFormFragment {
+        return if (isTimerShowing()) {
+            timerFragment
+        } else {
+            editFragment
+        }
     }
 
     companion object {
