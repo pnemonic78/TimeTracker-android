@@ -41,6 +41,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -186,6 +187,33 @@ abstract class TimeFormFragment : InternetFragment {
                 }
             }
         }
+    }
+
+    fun populateForm(date: Calendar, html: String): Document {
+        val doc: Document = Jsoup.parse(html)
+        populateForm(date, doc)
+        return doc
+    }
+
+    open fun populateForm(date: Calendar, doc: Document): Element? {
+        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return null
+        populateForm(date, doc, form)
+        return form
+    }
+
+    open fun populateForm(date: Calendar, doc: Document, form: Element) {
+        val inputProjects = form.selectFirst("select[name='project']") ?: return
+        val inputTasks = form.selectFirst("select[name='task']") ?: return
+        populateForm(date, doc, form, inputProjects, inputTasks)
+    }
+
+    open fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {
+        populateProjects(inputProjects, projects)
+        populateTasks(inputTasks, tasks)
+        populateTaskIds(doc, projects)
+
+        record.project = findSelectedProject(inputProjects, projects)
+        record.task = findSelectedTask(inputTasks, tasks)
     }
 
     fun savePage() {
@@ -336,7 +364,7 @@ abstract class TimeFormFragment : InternetFragment {
         val projectsWithTasks = projectsDao.queryAllWithTasks()
         val projectsDb = ArrayList<Project>()
         val tasksDb = HashSet<ProjectTask>()
-        for (projectWithTasks in projectsWithTasks){
+        for (projectWithTasks in projectsWithTasks) {
             val project = projectWithTasks.project
             project.tasks = projectWithTasks.tasks
             projectsDb.add(project)

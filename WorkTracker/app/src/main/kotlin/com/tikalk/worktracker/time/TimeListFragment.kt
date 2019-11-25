@@ -479,7 +479,7 @@ class TimeListFragment : InternetFragment,
     }
 
     private fun populateForm(html: String) {
-        timerFragment.populateForm(html)
+        timerFragment.populateForm(date, html)
     }
 
     private fun populateForm() {

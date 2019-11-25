@@ -60,8 +60,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.time_form.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
@@ -118,22 +118,23 @@ class TimeEditFragment : TimeFormFragment,
     }
 
     /** Populate the record and then bind the form. */
-    private fun populateForm(html: String, date: Calendar, id: Long) {
-        val doc: Document = Jsoup.parse(html)
+    private fun populateForm(date: Calendar, html: String, id: Long) {
+        populateForm(date, html)
 
         record.id = id
+        record.status = TaskRecordStatus.CURRENT
 
+        populateForm(record)
+        runOnUiThread { bindForm(record) }
+    }
+
+    override fun populateForm(date: Calendar, doc: Document): Element? {
         errorMessage = findError(doc)?.trim() ?: ""
+        return super.populateForm(date, doc)
+    }
 
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
-
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
-        populateTasks(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
+    override fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {
+        super.populateForm(date, doc, form, inputProjects, inputTasks)
 
         val inputStart = form.selectFirst("input[name='start']") ?: return
         val startValue = inputStart.attr("value")
@@ -143,15 +144,9 @@ class TimeEditFragment : TimeFormFragment,
 
         val inputNote = form.selectFirst("textarea[name='note']")
 
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
         record.start = parseSystemTime(date, startValue)
         record.finish = parseSystemTime(date, finishValue)
         record.note = inputNote?.text() ?: ""
-        record.status = TaskRecordStatus.CURRENT
-
-        populateForm(record)
-        runOnUiThread { bindForm(record) }
     }
 
     private fun populateForm(record: TimeRecord) {
@@ -422,7 +417,7 @@ class TimeEditFragment : TimeFormFragment,
                 this.date = date
                 if (isValidResponse(response)) {
                     val body = response.body()!!
-                    populateForm(body, date, id)
+                    populateForm(date, body, id)
                     savePage()
                     showProgressMain(false)
                 } else {

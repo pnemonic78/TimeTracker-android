@@ -51,10 +51,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_timer.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import timber.log.Timber
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class TimerFragment : TimeFormFragment {
@@ -242,22 +244,8 @@ class TimerFragment : TimeFormFragment {
         return null
     }
 
-    /** Populate the record and then bind the form. */
-    fun populateForm(html: String) {
-        val doc: Document = Jsoup.parse(html)
-
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
-
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
-        populateTasks(inputTasks, tasks)
-
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
+    override fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {
+        super.populateForm(date, doc, form, inputProjects, inputTasks)
 
         val recordStarted = getStartedRecord()
         populateForm(recordStarted)
