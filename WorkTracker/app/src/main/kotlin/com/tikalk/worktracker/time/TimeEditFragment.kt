@@ -128,9 +128,9 @@ class TimeEditFragment : TimeFormFragment,
         runOnUiThread { bindForm(record) }
     }
 
-    override fun populateForm(date: Calendar, doc: Document): Element? {
+    override fun populateForm(date: Calendar, doc: Document) {
+        super.populateForm(date, doc)
         errorMessage = findError(doc)?.trim() ?: ""
-        return super.populateForm(date, doc)
     }
 
     override fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {

@@ -189,16 +189,14 @@ abstract class TimeFormFragment : InternetFragment {
         }
     }
 
-    fun populateForm(date: Calendar, html: String): Document {
+    open fun populateForm(date: Calendar, html: String) {
         val doc: Document = Jsoup.parse(html)
         populateForm(date, doc)
-        return doc
     }
 
-    open fun populateForm(date: Calendar, doc: Document): Element? {
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return null
+    open fun populateForm(date: Calendar, doc: Document) {
+        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
         populateForm(date, doc, form)
-        return form
     }
 
     open fun populateForm(date: Calendar, doc: Document, form: Element) {

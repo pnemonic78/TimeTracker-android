@@ -166,7 +166,6 @@ class TimeListFragment : TimeFormFragment,
         // Fetch from local database first.
         loadPage()
             .subscribe({
-                populateForm()
                 bindForm()
                 bindList(date, records)
 
@@ -201,7 +200,7 @@ class TimeListFragment : TimeFormFragment,
     }
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
-        populateForm(html)
+        populateForm(date, html)
         populateList(html)
         savePage()
         runOnUiThread {
@@ -473,21 +472,18 @@ class TimeListFragment : TimeFormFragment,
             .addTo(disposables)
     }
 
-    private fun populateForm(html: String) {
-        populateForm(date, html)
-        timerFragment.populateForm(date, html)
-    }
-
-    private fun populateForm() {
-        timerFragment.populateForm(timerFragment.record)
+    override fun populateForm(date: Calendar, doc: Document) {
+        super.populateForm(date, doc)
+        timerFragment.populateForm(date, doc)
     }
 
     private fun bindForm() {
-        bindForm(timerFragment.record)
+        val record = timerFragment.record
+        timerFragment.populateForm(record)
+        timerFragment.bindForm(record)
     }
 
     override fun bindForm(record: TimeRecord) {
-        timerFragment.bindForm(record)
     }
 
     fun stopTimer() {
@@ -679,7 +675,6 @@ class TimeListFragment : TimeFormFragment,
         showProgress(true)
         loadPage()
             .subscribe({
-                populateForm()
                 bindForm()
                 bindList(date, records)
                 if (projects.isEmpty() or tasks.isEmpty()) {
