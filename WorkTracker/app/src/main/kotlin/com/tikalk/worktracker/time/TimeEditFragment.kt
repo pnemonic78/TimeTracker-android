@@ -149,7 +149,7 @@ class TimeEditFragment : TimeFormFragment,
         record.note = inputNote?.text() ?: ""
     }
 
-    private fun populateForm(record: TimeRecord) {
+    override fun populateForm(record: TimeRecord) {
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {

@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 
 import android.os.Bundle
 import android.text.format.DateUtils
+import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -377,6 +378,8 @@ abstract class TimeFormFragment : InternetFragment {
         this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
     }
 
+    abstract fun populateForm(record: TimeRecord)
+
     abstract fun bindForm(record: TimeRecord)
 
     fun markFavorite() {
@@ -386,6 +389,12 @@ abstract class TimeFormFragment : InternetFragment {
     protected open fun markFavorite(record: TimeRecord) {
         Timber.v("markFavorite $record")
         preferences.setFavorite(record)
+    }
+
+    fun populateAndBind() {
+        val record = this.record
+        populateForm(record)
+        runOnUiThread { bindForm(record) }
     }
 
     companion object {

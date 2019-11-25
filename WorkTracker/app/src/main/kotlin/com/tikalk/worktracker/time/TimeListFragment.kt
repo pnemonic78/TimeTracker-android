@@ -477,13 +477,14 @@ class TimeListFragment : TimeFormFragment,
         timerFragment.populateForm(date, doc)
     }
 
-    private fun bindForm() {
-        val record = timerFragment.record
-        timerFragment.populateForm(record)
-        timerFragment.bindForm(record)
+    override fun populateForm(record: TimeRecord) {
     }
 
     override fun bindForm(record: TimeRecord) {
+    }
+
+    private fun bindForm() {
+        findTopFormFragment().populateAndBind()
     }
 
     fun stopTimer() {
@@ -585,6 +586,7 @@ class TimeListFragment : TimeFormFragment,
             findTopFormFragment().loadForm()
 
             val db = TrackerDatabase.getDatabase(context)
+            loadFormFromDb(db)
             loadRecords(db, date)
         }
             .subscribeOn(Schedulers.io())
@@ -677,6 +679,7 @@ class TimeListFragment : TimeFormFragment,
             .subscribe({
                 bindForm()
                 bindList(date, records)
+
                 if (projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
                 }
