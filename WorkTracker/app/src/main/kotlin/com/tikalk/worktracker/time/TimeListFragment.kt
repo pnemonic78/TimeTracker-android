@@ -74,7 +74,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class TimeListFragment : InternetFragment,
+class TimeListFragment : TimeFormFragment,
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
     TimeEditFragment.OnEditRecordListener {
@@ -91,10 +91,6 @@ class TimeListFragment : InternetFragment,
     private var totals = TimeTotals()
 
     private var date: Calendar = Calendar.getInstance()
-    private val projects
-        get() = timerFragment.projects
-    private val tasks
-        get() = timerFragment.tasks
     private var records: List<TimeRecord> = ArrayList()
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -479,6 +475,7 @@ class TimeListFragment : InternetFragment,
     }
 
     private fun populateForm(html: String) {
+        populateForm(date, html)
         timerFragment.populateForm(date, html)
     }
 
@@ -487,7 +484,11 @@ class TimeListFragment : InternetFragment,
     }
 
     private fun bindForm() {
-        timerFragment.bindForm(timerFragment.record)
+        bindForm(timerFragment.record)
+    }
+
+    override fun bindForm(record: TimeRecord) {
+        timerFragment.bindForm(record)
     }
 
     fun stopTimer() {
@@ -599,7 +600,7 @@ class TimeListFragment : InternetFragment,
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun savePage() {
+    override fun saveFormToDb() {
         if (isTimerShowing()) {
             timerFragment.savePage()
         } else {

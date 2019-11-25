@@ -74,7 +74,7 @@ class TimeEditFragment : TimeFormFragment,
 
     constructor(args: Bundle) : super(args)
 
-    var date: Calendar = Calendar.getInstance()
+    private var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
 
     private var startPickerDialog: TimePickerDialog? = null
