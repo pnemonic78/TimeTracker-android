@@ -33,24 +33,27 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    app:startDestination="@id/timeListFragment">
+    android:id="@+id/main_timer"
+    app:startDestination="@id/timerFragment">
     <include app:graph="@navigation/login" />
     <fragment
-        android:id="@+id/timeListFragment"
-        android:name="com.tikalk.worktracker.time.TimeListFragment"
-        android:label="TimeListFragment"
-        tools:layout="@layout/fragment_time_list">
+        android:id="@+id/timeEditFragment"
+        android:name="com.tikalk.worktracker.time.TimeEditFragment"
+        android:label="TimeEditFragment"
+        tools:layout="@layout/time_form">
         <action
-            android:id="@+id/action_timeList_to_login"
+            android:id="@+id/action_timeEdit_to_login"
             app:destination="@id/login" />
-        <action
-            android:id="@+id/action_timeList_to_settings"
-            app:destination="@id/timeSettingsFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/timeSettingsFragment"
-        android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
-        android:label="TimeSettingsFragment"
-        tools:layout="@layout/preference_list_fragment"/>
+    <dialog
+        android:id="@+id/timerFragment"
+        android:name="com.tikalk.worktracker.time.TimerFragment"
+        android:label="TimerFragment" >
+        <action
+            android:id="@+id/action_timer_to_timeEdit"
+            app:destination="@id/timeEditFragment" />
+        <action
+            android:id="@+id/action_timer_to_login"
+            app:destination="@id/login" />
+    </dialog>
 </navigation>
