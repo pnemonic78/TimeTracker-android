@@ -56,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:endIconDrawable="@drawable/ic_person_black"
+        app:endIconDrawable="@drawable/ic_person"
         app:endIconMode="custom">
 
         <com.google.android.material.textfield.TextInputEditText

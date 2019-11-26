@@ -47,7 +47,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:endIconDrawable="@drawable/ic_email_black"
+        app:endIconDrawable="@drawable/ic_email"
         app:endIconMode="custom">
 
         <com.google.android.material.textfield.TextInputEditText

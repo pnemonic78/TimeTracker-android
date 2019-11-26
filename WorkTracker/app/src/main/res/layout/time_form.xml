@@ -93,7 +93,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/startInput"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/startInput"
-        app:srcCompat="@drawable/ic_timer_normal" />
+        app:srcCompat="@drawable/ic_timer" />
 
     <Button
         android:id="@+id/startInput"
