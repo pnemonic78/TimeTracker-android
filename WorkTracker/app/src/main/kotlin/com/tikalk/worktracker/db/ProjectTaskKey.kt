@@ -48,10 +48,12 @@ import com.tikalk.worktracker.model.TikalEntity
     foreignKeys = [
         ForeignKey(entity = Project::class,
             parentColumns = ["id"],
-            childColumns = ["project_id"]),
+            childColumns = ["project_id"],
+            onDelete = ForeignKey.CASCADE),
         ForeignKey(entity = ProjectTask::class,
             parentColumns = ["id"],
-            childColumns = ["task_id"])
+            childColumns = ["task_id"],
+            onDelete = ForeignKey.CASCADE)
     ],
     indices = [Index("project_id"), Index("task_id")]
 )
