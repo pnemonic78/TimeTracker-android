@@ -45,7 +45,7 @@
             android:id="@+id/action_timeEdit_to_login"
             app:destination="@id/login" />
     </fragment>
-    <dialog
+    <fragment
         android:id="@+id/timerFragment"
         android:name="com.tikalk.worktracker.time.TimerFragment"
         android:label="TimerFragment" >
@@ -55,5 +55,5 @@
         <action
             android:id="@+id/action_timer_to_login"
             app:destination="@id/login" />
-    </dialog>
+    </fragment>
 </navigation>
