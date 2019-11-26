@@ -36,6 +36,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
@@ -62,12 +63,30 @@ abstract class TrackerFragment : TikalFragment {
         val args = this.arguments
         if (args != null) {
             if (args.containsKey(EXTRA_CALLER)) {
-                caller = fragmentManager?.getFragment(args, EXTRA_CALLER)
+                caller = findCaller(args)
             }
+        }
+    }
+
+    private fun findCaller(args: Bundle): Fragment? {
+        var fragment: Fragment = this
+        while (true) {
+            val fm = fragment.fragmentManager ?: return null
+            try {
+                val caller = fm.getFragment(args, EXTRA_CALLER)
+                if (caller != null) {
+                    return caller
+                }
+            } catch (e: IllegalStateException) {
+            }
+            fragment = fragment.parentFragment ?: return null
         }
     }
 
     companion object {
         const val EXTRA_CALLER = "callerId"
+        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+
+        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
     }
 }

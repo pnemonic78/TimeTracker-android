@@ -44,12 +44,15 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.findParentFragment
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -85,6 +88,13 @@ class TimeEditFragment : TimeFormFragment,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        val caller = this.caller
+        if (caller != null) {
+            if (caller is OnEditRecordListener) {
+                this.listener = caller
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -358,7 +368,7 @@ class TimeEditFragment : TimeFormFragment,
                 return
             }
             // The parent fragment should be responsible for authentication.
-            if (parentFragment is InternetFragment) {
+            if (findParentFragment(InternetFragment::class.java) != null) {
                 return
             }
         }
@@ -454,6 +464,16 @@ class TimeEditFragment : TimeFormFragment,
         }
     }
 
+    private fun saveRecord(record: TimeRecord) {
+        val db = TrackerDatabase.getDatabase(requireContext())
+        val recordDao = db.timeRecordDao()
+        if (record.id == TikalEntity.ID_NONE) {
+            recordDao.insert(record.toTimeRecordEntity())
+        } else {
+            recordDao.update(record.toTimeRecordEntity())
+        }
+    }
+
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
         LoginFragment.show(this, submit, this)
@@ -514,6 +534,10 @@ class TimeEditFragment : TimeFormFragment,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
+                if (record.id != TikalEntity.ID_NONE) {
+                    saveRecord(record)
+                }
+
                 if (last) {
                     showProgress(false)
                 }
@@ -574,7 +598,7 @@ class TimeEditFragment : TimeFormFragment,
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        if (view != null) {
+        if (isVisible) {
             bindRecord(record)
         }
         outState.putLong(STATE_DATE, date.timeInMillis)
@@ -590,7 +614,7 @@ class TimeEditFragment : TimeFormFragment,
         if (recordParcel != null) {
             record = recordParcel
             // Is there a view?
-            if (view != null) {
+            if (isVisible) {
                 bindForm(record)
             }
         } else {
@@ -697,6 +721,7 @@ class TimeEditFragment : TimeFormFragment,
     }
 
     companion object {
+        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID

@@ -40,13 +40,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
-import android.view.animation.AnimationUtils
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -58,7 +59,6 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -85,6 +85,7 @@ class TimeListFragment : TimeFormFragment,
     constructor(args: Bundle) : super(args)
 
     private var datePickerDialog: DatePickerDialog? = null
+    private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
@@ -106,8 +107,7 @@ class TimeListFragment : TimeFormFragment,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        switcherForm.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_form)
-        switcherForm.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_form)
+        formNavHostFragment = childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
 
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
@@ -292,24 +292,16 @@ class TimeListFragment : TimeFormFragment,
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_TOTALS, totals)
-        if (switcherForm != null) {
-            outState.putInt(STATE_DISPLAYED_CHILD, switcherForm.displayedChild)
-        }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
-        val displayedChild = savedInstanceState.getInt(STATE_DISPLAYED_CHILD, -1)
 
         if (totals != null) {
             this.totals = totals
             bindTotals(totals)
-        }
-        when (displayedChild) {
-            CHILD_TIMER -> showTimer()
-            CHILD_EDITOR -> showEditor()
         }
     }
 
@@ -435,14 +427,28 @@ class TimeListFragment : TimeFormFragment,
     }
 
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
+        Timber.d("editRecord record=$record timer=$timer")
         recordForTimer = timer
-        val editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
-        editFragment.listener = this
-        editFragment.editRecord(record, date)
-        showEditor()
+
+        val form = findTopFormFragment()
+        if (form is TimeEditFragment) {
+            form.listener = this
+            form.editRecord(record, date)
+        } else {
+            val args = Bundle()
+            args.putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
+            args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            args.putLong(TimeEditFragment.EXTRA_RECORD, record.id)
+            requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
+            formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
+        }
     }
 
     private fun deleteRecord(record: TimeRecord) {
+        Timber.d("deleteRecord record=$record")
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
@@ -486,20 +492,22 @@ class TimeListFragment : TimeFormFragment,
     }
 
     fun stopTimer() {
-        val timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment?
-        if (timerFragment != null) {
-            timerFragment.stopTimer()
-        } else {
-            // Save for "run" later.
-            val args = arguments ?: Bundle()
-            args.putString(EXTRA_ACTION, ACTION_STOP)
-            if (arguments == null) {
-                arguments = args
-            }
+        Timber.v("stopTimer")
+        val form = findTopFormFragment()
+        if (form is TimerFragment) {
+            form.stopTimer()
+            return
+        }
+        // Save for "run" later.
+        val args = arguments ?: Bundle()
+        args.putString(EXTRA_ACTION, ACTION_STOP)
+        if (arguments == null) {
+            arguments = args
         }
     }
 
     private fun navigateTomorrow() {
+        Timber.v("navigateTomorrow")
         val cal = date
         cal.add(Calendar.DATE, 1)
         fetchPage(cal)
@@ -507,6 +515,7 @@ class TimeListFragment : TimeFormFragment,
     }
 
     private fun navigateYesterday() {
+        Timber.v("navigateYesterday")
         val cal = date
         cal.add(Calendar.DATE, -1)
         fetchPage(cal)
@@ -581,8 +590,6 @@ class TimeListFragment : TimeFormFragment,
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
             val context: Context = this.context ?: return@fromCallable
-
-            findTopFormFragment().loadForm()
 
             val db = TrackerDatabase.getDatabase(context)
             loadFormFromDb(db)
@@ -672,16 +679,7 @@ class TimeListFragment : TimeFormFragment,
                     fetchPage(date)
                 }
 
-                val args = arguments
-                if (args != null) {
-                    if (args.containsKey(EXTRA_ACTION)) {
-                        val action = args.getString(EXTRA_ACTION)
-                        if (action == ACTION_STOP) {
-                            args.remove(EXTRA_ACTION)
-                            stopTimer()
-                        }
-                    }
-                }
+                handleArguments()
 
                 showProgress(false)
             }, { err ->
@@ -689,6 +687,19 @@ class TimeListFragment : TimeFormFragment,
                 showProgress(false)
             })
             .addTo(disposables)
+    }
+
+    private fun handleArguments() {
+        val args = arguments
+        if (args != null) {
+            if (args.containsKey(EXTRA_ACTION)) {
+                val action = args.getString(EXTRA_ACTION)
+                if (action == ACTION_STOP) {
+                    args.remove(EXTRA_ACTION)
+                    stopTimer()
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -715,8 +726,14 @@ class TimeListFragment : TimeFormFragment,
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
-                val timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
-                timerFragment.stopTimerCommit()
+                val args = Bundle()
+                args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
+                args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
+                showTimer(args, true)
+                // Refresh the list with the inserted item.
+                fetchPage(date)
+                return
             }
         }
         if (last) {
@@ -728,13 +745,18 @@ class TimeListFragment : TimeFormFragment,
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
         Timber.i("record deleted: $record")
-        showTimer()
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
-                val timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
-                timerFragment.stopTimerCommit()
+                val args = Bundle()
+                args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
+                args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
+                showTimer(args, true)
+            } else {
+                showTimer()
             }
         } else {
+            showTimer()
             // Refresh the list with the edited item.
             fetchPage(date)
         }
@@ -749,9 +771,7 @@ class TimeListFragment : TimeFormFragment,
     }
 
     override fun onBackPressed(): Boolean {
-        val child = switcherForm?.displayedChild ?: -1
-        if (child == CHILD_EDITOR) {
-            cancelEditRecord()
+        if (formNavHostFragment.navController.popBackStack()) {
             return true
         }
         return super.onBackPressed()
@@ -761,32 +781,15 @@ class TimeListFragment : TimeFormFragment,
         showTimer()
     }
 
-    private fun showTimer() {
-        val switcher = switcherForm
-        if (switcher != null) {
-            if (switcher.displayedChild != CHILD_TIMER) {
-                switcher.displayedChild = CHILD_TIMER
-            }
+    private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
+        formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
+        if (popInclusive) {
+            formNavHostFragment.navController.navigate(R.id.timerFragment, args)
         }
-        activity?.invalidateOptionsMenu()
-    }
-
-    private fun showEditor() {
-        val switcher = switcherForm
-        if (switcher != null) {
-            if (switcher.displayedChild != CHILD_EDITOR) {
-                switcher.displayedChild = CHILD_EDITOR
-            }
-        }
-        activity?.invalidateOptionsMenu()
     }
 
     private fun hideEditor() {
         showTimer()
-    }
-
-    private fun isTimerShowing(): Boolean {
-        return (switcherForm?.displayedChild == CHILD_TIMER)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -824,26 +827,17 @@ class TimeListFragment : TimeFormFragment,
     }
 
     private fun findTopFormFragment(): TimeFormFragment {
-        val fragmentId = if (isTimerShowing()) {
-            R.id.fragmentTimer
-        } else {
-            R.id.fragmentEdit
-        }
-        return childFragmentManager.findFragmentById(fragmentId) as TimeFormFragment
+        return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
     }
 
     companion object {
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
-        private const val STATE_DISPLAYED_CHILD = "switcher.displayedChild"
 
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
+        const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
-        private const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
 
         const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
-
-        private const val CHILD_TIMER = 0
-        private const val CHILD_EDITOR = 1
     }
 }

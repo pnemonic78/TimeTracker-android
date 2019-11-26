@@ -51,7 +51,11 @@
         android:label="TimerFragment" >
         <action
             android:id="@+id/action_timer_to_timeEdit"
-            app:destination="@id/timeEditFragment" />
+            app:destination="@id/timeEditFragment"
+            app:enterAnim="@anim/slide_in_form"
+            app:exitAnim="@anim/slide_out_form"
+            app:popEnterAnim="@anim/slide_in_form"
+            app:popExitAnim="@anim/slide_out_form" />
         <action
             android:id="@+id/action_timer_to_login"
             app:destination="@id/login" />
