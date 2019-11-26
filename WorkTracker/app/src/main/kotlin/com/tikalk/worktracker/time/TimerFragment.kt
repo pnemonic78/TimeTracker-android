@@ -41,6 +41,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import com.tikalk.app.findParentFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.*
@@ -276,8 +277,9 @@ class TimerFragment : TimeFormFragment {
     }
 
     private fun editRecord(record: TimeRecord) {
-        if (parentFragment is TimeListFragment) {
-            (parentFragment as TimeListFragment).editRecord(record, true)
+        val parent = findParentFragment(TimeListFragment::class.java)
+        if (parent != null) {
+            parent.editRecord(record, true)
         } else {
             val intent = Intent(context, TimeEditActivity::class.java)
             if (record.id == TikalEntity.ID_NONE) {
@@ -345,9 +347,10 @@ class TimerFragment : TimeFormFragment {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_EDIT) {
             if (resultCode == RESULT_OK) {
-                TODO("record submitted")
+                Timber.i("record processed")
+                stopTimerCommit()
             } else {
-                TODO("record edit cancelled")
+                Timber.i("record edit cancelled")
             }
             return
         }

@@ -43,6 +43,7 @@ import android.view.*
 import android.view.animation.AnimationUtils
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -697,7 +698,7 @@ class TimeListFragment : TimeFormFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
-        if (fragment.isVisible) {
+        if (fragment.isShowing()) {
             findNavController().popBackStack()
         }
         user = preferences.user

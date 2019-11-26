@@ -83,9 +83,21 @@ fun DialogFragment.isShowing(): Boolean {
     if (d != null) {
         return (d.isShowing) and !isRemoving
     }
-    return false
+    return isVisible
 }
 
 fun <F : Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
     return fragments.firstOrNull { clazz.isAssignableFrom(it.javaClass) } as F?
+}
+
+fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {
+    var parent = parentFragment
+    while (parent != null) {
+        val parentClass = parent.javaClass
+        if (clazz.isAssignableFrom(parentClass)) {
+            return parent as F?
+        }
+        parent = parent.parentFragment
+    }
+    return null
 }

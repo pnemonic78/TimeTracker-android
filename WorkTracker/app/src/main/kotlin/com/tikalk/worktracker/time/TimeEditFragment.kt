@@ -44,6 +44,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -386,7 +387,7 @@ class TimeEditFragment : TimeFormFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
-        if (fragment.isVisible) {
+        if (fragment.isShowing()) {
             findNavController().popBackStack()
         }
         fetchPage(date, record.id)

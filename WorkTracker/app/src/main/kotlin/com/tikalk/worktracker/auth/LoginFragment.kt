@@ -46,6 +46,7 @@ import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -268,7 +269,7 @@ class LoginFragment : InternetFragment,
 
     override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
         Timber.i("basic realm success for \"$realm\"")
-        if (fragment.isVisible) {
+        if (fragment.isShowing()) {
             findNavController().popBackStack()
         }
         attemptLogin()
