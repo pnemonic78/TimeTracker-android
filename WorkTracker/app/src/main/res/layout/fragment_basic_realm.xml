@@ -84,6 +84,7 @@
             android:imeActionLabel="@string/action_sign_in"
             android:imeOptions="actionGo"
             android:inputType="textPassword"
+            android:maxLength="30"
             android:maxLines="1"
             android:singleLine="true" />
 
