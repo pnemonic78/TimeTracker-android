@@ -33,6 +33,7 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import com.tikalk.worktracker.model.Project
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -58,6 +59,24 @@ interface ProjectDao : BaseDao<Project> {
      */
     @Query("SELECT * FROM project")
     fun queryAllSingle(): Single<List<Project>>
+
+    /**
+     * Select all projects from the table.
+     *
+     * @return all projects with their tasks.
+     */
+    @Transaction
+    @Query("SELECT * FROM project")
+    fun queryAllWithTasks(): List<ProjectWithTasks>
+
+    /**
+     * Select all projects from the table.
+     *
+     * @return all projects with their tasks.
+     */
+    @Transaction
+    @Query("SELECT * FROM project")
+    fun queryAllWithTasksSingle(): Single<List<ProjectWithTasks>>
 
     /**
      * Select a project by its id.

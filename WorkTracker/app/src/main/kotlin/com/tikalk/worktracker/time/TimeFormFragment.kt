@@ -34,6 +34,8 @@ package com.tikalk.worktracker.time
 
 import android.os.Bundle
 import android.text.format.DateUtils
+import com.tikalk.app.runOnUiThread
+import com.tikalk.html.selectByName
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -41,12 +43,16 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 abstract class TimeFormFragment : InternetFragment {
 
@@ -55,8 +61,8 @@ abstract class TimeFormFragment : InternetFragment {
     constructor(args: Bundle) : super(args)
 
     var record: TimeRecord = TimeRecord.EMPTY.copy()
-    val projects: MutableList<Project> = ArrayList()
-    val tasks: MutableList<ProjectTask> = ArrayList()
+    val projects: MutableList<Project> = CopyOnWriteArrayList()
+    val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
@@ -184,6 +190,31 @@ abstract class TimeFormFragment : InternetFragment {
                 }
             }
         }
+    }
+
+    open fun populateForm(date: Calendar, html: String) {
+        val doc: Document = Jsoup.parse(html)
+        populateForm(date, doc)
+    }
+
+    open fun populateForm(date: Calendar, doc: Document) {
+        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement? ?: return
+        populateForm(date, doc, form)
+    }
+
+    open fun populateForm(date: Calendar, doc: Document, form: FormElement) {
+        val inputProjects = form.selectByName("project") ?: return
+        val inputTasks = form.selectByName("task") ?: return
+        populateForm(date, doc, form, inputProjects, inputTasks)
+    }
+
+    open fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
+        populateProjects(inputProjects, projects)
+        populateTasks(inputTasks, tasks)
+        populateTaskIds(doc, projects)
+
+        record.project = findSelectedProject(inputProjects, projects)
+        record.task = findSelectedTask(inputTasks, tasks)
     }
 
     fun savePage() {
@@ -326,43 +357,30 @@ abstract class TimeFormFragment : InternetFragment {
     @Synchronized
     protected open fun loadFormFromDb(db: TrackerDatabase) {
         Timber.v("loadFormFromDb")
-        loadProjects(db)
-        loadTasks(db)
-        loadProjectTaskKeys(db)
+        loadProjectsWithTasks(db)
     }
 
-    private fun loadProjects(db: TrackerDatabase) {
+    private fun loadProjectsWithTasks(db: TrackerDatabase) {
         val projectsDao = db.projectDao()
-        val projectsDb = projectsDao.queryAll()
+        val projectsWithTasks = projectsDao.queryAllWithTasks()
+        val projectsDb = ArrayList<Project>()
+        val tasksDb = HashSet<ProjectTask>()
+        for (projectWithTasks in projectsWithTasks) {
+            val project = projectWithTasks.project
+            project.tasks = projectWithTasks.tasks
+            projectsDb.add(project)
+            tasksDb.addAll(projectWithTasks.tasks)
+        }
         projects.clear()
         projects.addAll(projectsDb)
         this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
-    }
 
-    private fun loadTasks(db: TrackerDatabase) {
-        val tasksDao = db.taskDao()
-        val tasksDb = tasksDao.queryAll()
         tasks.clear()
         tasks.addAll(tasksDb)
         this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
     }
 
-    private fun loadProjectTaskKeys(db: TrackerDatabase) {
-        val projectsById: Map<Long, Project> = projects.map { project -> (project.id to project) }.toMap()
-        val tasksById: Map<Long, ProjectTask> = tasks.map { task -> (task.id to task) }.toMap()
-        projects.forEach { project -> project.clearTasks() }
-
-        val projectTasksDao = db.projectTaskKeyDao()
-        val keysDb = projectTasksDao.queryAll()
-
-        keysDb.forEach { key ->
-            val project = projectsById[key.projectId]
-            val task = tasksById[key.taskId]
-            if ((project != null) && (task != null)) {
-                project.addTask(task)
-            }
-        }
-    }
+    abstract fun populateForm(record: TimeRecord)
 
     abstract fun bindForm(record: TimeRecord)
 
@@ -373,6 +391,12 @@ abstract class TimeFormFragment : InternetFragment {
     protected open fun markFavorite(record: TimeRecord) {
         Timber.v("markFavorite $record")
         preferences.setFavorite(record)
+    }
+
+    fun populateAndBind() {
+        val record = this.record
+        populateForm(record)
+        runOnUiThread { bindForm(record) }
     }
 
     companion object {

@@ -45,8 +45,11 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.InternetFragment
@@ -61,7 +64,7 @@ import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * A login screen that offers login via email/password.
+ * A login screen that offers login via login/password.
  */
 class LoginFragment : InternetFragment,
     BasicRealmFragment.OnBasicRealmListener {
@@ -82,6 +85,17 @@ class LoginFragment : InternetFragment,
         listeners.remove(listener)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val caller = this.caller
+        if (caller != null) {
+            if (caller is OnLoginListener) {
+                addListener(caller)
+            }
+        }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setTitle(R.string.activity_login)
@@ -95,7 +109,7 @@ class LoginFragment : InternetFragment,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        emailInput.setText(preferences.userCredentials.login)
+        loginInput.setText(preferences.userCredentials.login)
 
         val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
         passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
@@ -112,10 +126,11 @@ class LoginFragment : InternetFragment,
 
     @MainThread
     fun run() {
+        Timber.v("run")
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_EMAIL)) {
-            emailInput.setText(args.getString(EXTRA_EMAIL))
+            loginInput.setText(args.getString(EXTRA_EMAIL))
             passwordInput.text = null
 
             if (args.containsKey(EXTRA_PASSWORD)) {
@@ -134,7 +149,7 @@ class LoginFragment : InternetFragment,
 
     /**
      * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
+     * If there are form errors (invalid login, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
     fun attemptLogin() {
@@ -145,15 +160,26 @@ class LoginFragment : InternetFragment,
         val context: Context = requireContext()
 
         // Reset errors.
-        emailInput.error = null
+        loginInput.error = null
         passwordInput.error = null
 
         // Store values at the time of the login attempt.
-        val emailValue = emailInput.text.toString()
+        val loginValue = loginInput.text.toString()
         val passwordValue = passwordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
+
+        // Check for a valid login name.
+        if (loginValue.isEmpty()) {
+            loginInput.error = getString(R.string.error_field_required)
+            focusView = loginInput
+            cancel = true
+        } else if (!isLoginValid(loginValue)) {
+            loginInput.error = getString(R.string.error_invalid_login)
+            focusView = loginInput
+            cancel = true
+        }
 
         // Check for a valid password, if the user entered one.
         if (passwordValue.isEmpty()) {
@@ -163,17 +189,6 @@ class LoginFragment : InternetFragment,
         } else if (!isPasswordValid(passwordValue)) {
             passwordInput.error = getString(R.string.error_invalid_password)
             focusView = passwordInput
-            cancel = true
-        }
-
-        // Check for a valid email address.
-        if (emailValue.isEmpty()) {
-            emailInput.error = getString(R.string.error_field_required)
-            focusView = emailInput
-            cancel = true
-        } else if (!isEmailValid(emailValue)) {
-            emailInput.error = getString(R.string.error_invalid_email)
-            focusView = emailInput
             cancel = true
         }
 
@@ -187,12 +202,12 @@ class LoginFragment : InternetFragment,
             showProgress(true)
             actionSignIn.isEnabled = false
 
-            preferences.userCredentials = UserCredentials(emailValue, passwordValue)
+            preferences.userCredentials = UserCredentials(loginValue, passwordValue)
 
             val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
             val today = formatSystemDate()
-            service.login(emailValue, passwordValue, today)
+            service.login(loginValue, passwordValue, today)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -203,14 +218,14 @@ class LoginFragment : InternetFragment,
                         val body = response.body()!!
                         val errorMessage = getResponseError(body)
                         if (errorMessage.isNullOrEmpty()) {
-                            notifyLoginSuccess(emailValue)
+                            notifyLoginSuccess(loginValue)
                         } else {
-                            emailInput.error = errorMessage
-                            notifyLoginFailure(emailValue, errorMessage)
+                            loginInput.error = errorMessage
+                            notifyLoginFailure(loginValue, errorMessage)
                         }
                     } else {
                         passwordInput.requestFocus()
-                        authenticate(emailValue, response.raw())
+                        authenticate(loginValue, response.raw())
                     }
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
@@ -221,19 +236,19 @@ class LoginFragment : InternetFragment,
         }
     }
 
-    private fun isEmailValid(email: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    private fun isLoginValid(login: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(login).matches()
     }
 
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
     }
 
-    private fun authenticate(email: String, response: Response): Boolean {
+    private fun authenticate(login: String, response: Response): Boolean {
         val challenges = response.challenges()
         for (challenge in challenges) {
             if (challenge.scheme() == BasicCredentials.SCHEME) {
-                authenticateBasicRealm(email, challenge.realm())
+                authenticateBasicRealm(login, challenge.realm())
                 return true
             }
         }
@@ -248,14 +263,15 @@ class LoginFragment : InternetFragment,
             putString(BasicRealmFragment.EXTRA_REALM, realm)
             putString(BasicRealmFragment.EXTRA_USER, userClean)
         }
-        val fragment = BasicRealmFragment(args)
-        fragment.listener = this
-        fragment.show(requireFragmentManager(), "basic_realm")
+        requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
+        findNavController().navigate(R.id.action_basicRealmLogin, args)
     }
 
     override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
         Timber.i("basic realm success for \"$realm\"")
-        fragment.dismissAllowingStateLoss()
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
         attemptLogin()
     }
 
@@ -263,17 +279,17 @@ class LoginFragment : InternetFragment,
         Timber.e("basic realm failure for \"$realm\": $reason")
     }
 
-    private fun notifyLoginSuccess(email: String) {
+    private fun notifyLoginSuccess(login: String) {
         val fragment: LoginFragment = this
         for (listener in listeners) {
-            listener.onLoginSuccess(fragment, email)
+            listener.onLoginSuccess(fragment, login)
         }
     }
 
-    private fun notifyLoginFailure(email: String, reason: String) {
+    private fun notifyLoginFailure(login: String, reason: String) {
         val fragment: LoginFragment = this
         for (listener in listeners) {
-            listener.onLoginFailure(fragment, email, reason)
+            listener.onLoginFailure(fragment, login, reason)
         }
     }
 
@@ -289,28 +305,29 @@ class LoginFragment : InternetFragment,
         /**
          * Login was successful.
          * @param fragment the login fragment.
-         * @param email the user's email that was used.
+         * @param login the user's login that was used.
          */
-        fun onLoginSuccess(fragment: LoginFragment, email: String)
+        fun onLoginSuccess(fragment: LoginFragment, login: String)
 
         /**
          * Login failed.
          * @param fragment the login fragment.
-         * @param email the user's email that was used.
+         * @param login the user's login that was used.
          * @param reason the failure reason.
          */
-        fun onLoginFailure(fragment: LoginFragment, email: String, reason: String)
+        fun onLoginFailure(fragment: LoginFragment, login: String, reason: String)
     }
 
     companion object {
-        const val EXTRA_EMAIL = "email"
+        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
+        const val EXTRA_EMAIL = "login"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
 
         const val REQUEST_LOGIN = 0x109E
 
         @Synchronized
-        fun show(fragment: Fragment, submit: Boolean = false, listener: OnLoginListener, tag: String = "login_email") {
+        fun show(fragment: Fragment, submit: Boolean = false, listener: OnLoginListener, tag: String = "login_login") {
             val topLevel = fragment.topLevel()
             val fragmentManager = topLevel.requireFragmentManager()
             if (!fragmentManager.isDestroyed) {
