@@ -42,19 +42,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
-import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
-import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_profile.*
-import okhttp3.Response
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
 
 /**
@@ -67,6 +69,15 @@ class ProfileFragment : InternetFragment {
     constructor(args: Bundle) : super(args)
 
     var listener: OnProfileListener? = null
+    private var userCredentials = UserCredentials.EMPTY
+    @Transient
+    private var password2 = ""
+    private var errorMessage: String = ""
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        userCredentials = preferences.userCredentials
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,8 +103,25 @@ class ProfileFragment : InternetFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val user = preferences.user
-        val credentials = preferences.userCredentials
+        bindForm()
+        actionSave.setOnClickListener { attemptSave() }
+    }
+
+    @MainThread
+    fun run() {
+        Timber.v("run")
+        fetchPage()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        run()
+    }
+
+    private fun bindForm() {
+        val user = this.user
+        val credentials = this.userCredentials
+
         var emailValue = user.email
         if (emailValue.isNullOrBlank()) {
             emailValue = credentials.login
@@ -103,25 +131,18 @@ class ProfileFragment : InternetFragment {
         emailInput.setText(emailValue)
         loginInput.setText(credentials.login)
         passwordInput.setText(credentials.password)
-        confirmPasswordInput.setText("")
+        confirmPasswordInput.setText(password2)
+        errorLabel.text = errorMessage
 
-        actionSave.setOnClickListener { attemptSave() }
-    }
-
-    @MainThread
-    fun run() {
-        Timber.v("run")
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
+        //TODO disable name?
+        //TODO disable email?
+        //TODO disable login?
     }
 
     /**
      * Attempts to save any changes.
      */
-    fun attemptSave() {
+    private fun attemptSave() {
         if (!actionSave.isEnabled) {
             return
         }
@@ -129,24 +150,27 @@ class ProfileFragment : InternetFragment {
         val context: Context = requireContext()
 
         // Reset errors.
+        nameInput.error = null
         emailInput.error = null
+        loginInput.error = null
         passwordInput.error = null
+        confirmPasswordInput.error = null
+        errorLabel.text = ""
 
         // Store values at the time of the login attempt.
+        val nameValue = nameInput.text.toString()
         val emailValue = emailInput.text.toString()
+        val loginValue = loginInput.text.toString()
         val passwordValue = passwordInput.text.toString()
+        val confirmPasswordValue = confirmPasswordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
-        // Check for a valid password, if the user entered one.
-        if (passwordValue.isEmpty()) {
-            passwordInput.error = getString(R.string.error_field_required)
-            focusView = passwordInput
-            cancel = true
-        } else if (!isPasswordValid(passwordValue)) {
-            passwordInput.error = getString(R.string.error_invalid_password)
-            focusView = passwordInput
+        // Check for a valid name, if the user entered one.
+        if (nameValue.isEmpty()) {
+            nameInput.error = getString(R.string.error_field_required)
+            focusView = nameInput
             cancel = true
         }
 
@@ -161,6 +185,34 @@ class ProfileFragment : InternetFragment {
             cancel = true
         }
 
+        // Check for a valid login name.
+        if (loginValue.isEmpty()) {
+            loginInput.error = getString(R.string.error_field_required)
+            focusView = loginInput
+            cancel = true
+        } else if (!isLoginValid(loginValue)) {
+            loginInput.error = getString(R.string.error_invalid_login)
+            focusView = loginInput
+            cancel = true
+        }
+
+        // Check for a valid password, if the user entered one.
+        if (passwordValue.isEmpty()) {
+            passwordInput.error = getString(R.string.error_field_required)
+            focusView = passwordInput
+            cancel = true
+        } else if (!isPasswordValid(passwordValue)) {
+            passwordInput.error = getString(R.string.error_invalid_password)
+            focusView = passwordInput
+            cancel = true
+        }
+
+        if (confirmPasswordValue.isNotBlank()) {
+            confirmPasswordInput.error = getString(R.string.error_invalid_password)
+            focusView = passwordInput
+            cancel = true
+        }
+
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
@@ -171,12 +223,9 @@ class ProfileFragment : InternetFragment {
             showProgress(true)
             actionSave.isEnabled = false
 
-            preferences.userCredentials = UserCredentials(emailValue, passwordValue)
-
             val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
-            val today = formatSystemDate()
-            service.login(emailValue, passwordValue, today)
+            service.editProfile(nameValue, loginValue, passwordValue, confirmPasswordValue, emailValue)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ response ->
@@ -184,20 +233,22 @@ class ProfileFragment : InternetFragment {
                     actionSave.isEnabled = true
 
                     if (isValidResponse(response)) {
-                        val body = response.body()!!
-                        val errorMessage = getResponseError(body)
-                        if (errorMessage.isNullOrEmpty()) {
+                        val html = response.body()!!
+                        processPage(html, true)
+
+                        if (errorMessage.isEmpty()) {
+                            preferences.user = user
+                            preferences.userCredentials = userCredentials
+
                             notifyProfileSuccess(user)
                         } else {
-                            emailInput.error = errorMessage
                             notifyProfileFailure(user, errorMessage)
                         }
                     } else {
-                        passwordInput.requestFocus()
-                        authenticate(emailValue, response.raw())
+                        authenticate(true)
                     }
                 }, { err ->
-                    Timber.e(err, "Error signing in: ${err.message}")
+                    Timber.e(err, "Error updating profile: ${err.message}")
                     showProgress(false)
                     actionSave.isEnabled = true
                 })
@@ -209,31 +260,83 @@ class ProfileFragment : InternetFragment {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    private fun isLoginValid(login: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(login).matches()
+    }
+
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
     }
 
-    private fun authenticate(email: String, response: Response): Boolean {
-        val challenges = response.challenges()
-        for (challenge in challenges) {
-            if (challenge.scheme() == BasicCredentials.SCHEME) {
-                authenticateBasicRealm(email, challenge.realm())
-                return true
-            }
-        }
-        return false
+    private fun authenticate(submit: Boolean = false) {
+        Timber.v("authenticate submit=$submit")
+        val args = Bundle()
+        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+        findNavController().navigate(R.id.action_profile_to_login, args)
     }
 
-    private fun authenticateBasicRealm(username: String, realm: String) {
-        val indexAt = username.indexOf('@')
-        val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
+    private fun fetchPage(progress: Boolean = true) {
+        Timber.d("fetchPage")
+        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        if (progress) showProgress(true)
 
-        val args = Bundle().apply {
-            putString(BasicRealmFragment.EXTRA_REALM, realm)
-            putString(BasicRealmFragment.EXTRA_USER, userClean)
+        // Fetch from remote server.
+        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
+
+        service.fetchProfile()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    processPage(html, progress)
+                } else {
+                    authenticate(true)
+                }
+            }, { err ->
+                Timber.e(err, "Error fetching page: ${err.message}")
+                if (progress) showProgressMain(false)
+            })
+            .addTo(disposables)
+    }
+
+    private fun processPage(html: String, progress: Boolean = true) {
+        populateForm(html)
+        bindForm()
+        if (progress) showProgress(false)
+    }
+
+    private fun populateForm(html: String) {
+        val doc: Document = Jsoup.parse(html)
+        populateForm(doc)
+    }
+
+    private fun populateForm(doc: Document) {
+        errorMessage = findError(doc)?.trim() ?: ""
+
+        val form = doc.selectFirst("form[name='profileForm']") as FormElement? ?: return
+        populateForm(doc, form)
+    }
+
+    private fun populateForm(doc: Document, form: FormElement) {
+        val nameInputElement = form.selectByName("name") ?: return
+        val emailInputElement = form.selectByName("email") ?: return
+        val loginInputElement = form.selectByName("login") ?: return
+        val passwordInputElement = form.selectByName("password1") ?: return
+        val confirmPasswordInputElement = form.selectByName("password2") ?: return
+
+        user.displayName = nameInputElement.value()
+        user.email = emailInputElement.value()
+        user.username = loginInputElement.value()
+
+        userCredentials.login = user.username
+        val password1 = passwordInputElement.value()
+        if (password1.isNotBlank()) {
+            userCredentials.password = password1
         }
-        requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
-        findNavController().navigate(R.id.action_basicRealmLogin, args)
+
+        password2 = confirmPasswordInputElement.text()
     }
 
     private fun notifyProfileSuccess(user: User) {
@@ -258,14 +361,14 @@ class ProfileFragment : InternetFragment {
         /**
          * Profile update was successful.
          * @param fragment the login fragment.
-         * @param email the user's email that was used.
+         * @param user the updated user.
          */
         fun onProfileSuccess(fragment: ProfileFragment, user: User)
 
         /**
          * Profile update failed.
          * @param fragment the login fragment.
-         * @param email the user's email that was used.
+         * @param user the current user.
          * @param reason the failure reason.
          */
         fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String)

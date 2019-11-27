@@ -59,5 +59,9 @@
     <dialog
         android:id="@+id/profileFragment"
         android:name="com.tikalk.worktracker.auth.ProfileFragment"
-        android:label="ProfileFragment" />
+        android:label="ProfileFragment" >
+        <action
+            android:id="@+id/action_profile_to_login"
+            app:destination="@id/login" />
+    </dialog>
 </navigation>

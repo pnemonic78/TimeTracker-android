@@ -11,8 +11,7 @@
     <string name="action_sign_in">Sign in</string>
     <string name="error_invalid_login">This login name is invalid</string>
     <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_invalid_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="activity_basic_realm">Basic Realm Authentication</string>
     <string name="authentication_basic_realm">Basic Realm Authentication for \"%1$s\"</string>
@@ -77,5 +76,6 @@
     <string name="prompt_name">Name</string>
     <string name="prompt_confirmPassword">Confirm Password</string>
     <string name="menu_profile" translatable="false">@string/profile</string>
+    <string name="error_match_password">Passwords are not the same</string>
 
 </resources>

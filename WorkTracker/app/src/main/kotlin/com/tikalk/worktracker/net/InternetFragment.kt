@@ -79,6 +79,15 @@ open class InternetFragment : TrackerFragment {
      */
     protected fun findError(doc: Document): String? {
         val body = doc.body()
+
+        val tableErrors = body.selectFirst("table[id='page_errors']")
+        if (tableErrors != null) {
+            val errorNode = tableErrors.selectFirst("td[class='error']")
+            if (errorNode != null) {
+                return errorNode.text()
+            }
+        }
+
         val tables = body.select("table")
         if (tables.isEmpty()) {
             return body.text()

@@ -54,6 +54,7 @@
             android:id="@+id/nameInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:hint="@string/prompt_name"
             android:inputType="textPersonName"
             android:maxLines="1"
@@ -71,6 +72,7 @@
             android:id="@+id/emailInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:hint="@string/prompt_email"
             android:inputType="textEmailAddress"
             android:maxLines="1"
@@ -88,6 +90,7 @@
             android:id="@+id/loginInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:hint="@string/prompt_login"
             android:inputType="textEmailAddress"
             android:maxLines="1"
@@ -106,6 +109,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/prompt_password"
             android:inputType="textPassword"
+            android:maxLength="30"
             android:maxLines="1"
             android:singleLine="true" />
 
@@ -122,16 +126,25 @@
             android:layout_height="wrap_content"
             android:hint="@string/prompt_confirmPassword"
             android:inputType="textPassword"
+            android:maxLength="30"
             android:maxLines="1"
             android:singleLine="true" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <TextView
+        android:id="@+id/errorLabel"
+        style="@style/Widget.TextView.Error"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        tools:text="@tools:sample/lorem" />
+
     <Button
         android:id="@+id/actionSave"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:drawableEnd="@drawable/ic_save"
         android:text="@string/action_submit">
 

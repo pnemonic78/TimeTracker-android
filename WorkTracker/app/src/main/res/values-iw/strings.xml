@@ -9,8 +9,7 @@
     <string name="action_sign_in">היכנס</string>
     <string name="error_invalid_login">שם כניסה זה שגוי</string>
     <string name="error_invalid_email">כתובת דוא\"ל זו שגויה</string>
-    <string name="error_invalid_password">סיסמה זו קצרה מדי</string>
-    <string name="error_incorrect_password">סיסמה זו שגויה</string>
+    <string name="error_invalid_password">סיסמה זו שגויה</string>
     <string name="error_field_required">שדה חובה</string>
     <string name="activity_basic_realm">אימות תחום בסיסי</string>
     <string name="authentication_basic_realm">אימות תחום בסיסי ל-\"%1$s\"</string>
@@ -66,5 +65,6 @@
     <string name="profile">פרופיל</string>
     <string name="prompt_name">שם</string>
     <string name="prompt_confirmPassword">אשר סיסמה</string>
+    <string name="error_match_password">סיסמאות אינן זהות</string>
 
 </resources>
