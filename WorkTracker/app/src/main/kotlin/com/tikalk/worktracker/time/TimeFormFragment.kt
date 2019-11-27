@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.os.Bundle
 import android.text.format.DateUtils
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
@@ -54,11 +53,7 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
-abstract class TimeFormFragment : InternetFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
+abstract class TimeFormFragment : InternetFragment() {
 
     var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projects: MutableList<Project> = CopyOnWriteArrayList()

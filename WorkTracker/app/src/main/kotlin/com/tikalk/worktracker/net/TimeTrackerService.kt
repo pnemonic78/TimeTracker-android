@@ -49,6 +49,9 @@ interface TimeTrackerService {
         const val PHP_EDIT = "time_edit.php"
         const val PHP_DELETE = "time_delete.php"
         const val PHP_PROFILE = "profile_edit.php"
+        const val PHP_PROJECTS = "projects.php"
+        const val PHP_TASKS = "tasks.php"
+        const val PHP_USERS = "users.php"
     }
 
     @FormUrlEncoded
@@ -104,4 +107,13 @@ interface TimeTrackerService {
                     @Field("password2") password2: String,
                     @Field("email") email: String,
                     @Field("btn_save") submit: String = "Save"): Single<Response<String>>
+
+    @GET(PHP_PROJECTS)
+    fun fetchProjects(): Single<Response<String>>
+
+    @GET(PHP_TASKS)
+    fun fetchProjectTasks(): Single<Response<String>>
+
+    @GET(PHP_USERS)
+    fun fetchUsers(): Single<Response<String>>
 }

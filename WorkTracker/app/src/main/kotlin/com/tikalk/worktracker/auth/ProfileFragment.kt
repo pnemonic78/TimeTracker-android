@@ -62,11 +62,7 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
+class ProfileFragment : InternetFragment() {
 
     var listener: OnProfileListener? = null
     private var userCredentials = UserCredentials.EMPTY
