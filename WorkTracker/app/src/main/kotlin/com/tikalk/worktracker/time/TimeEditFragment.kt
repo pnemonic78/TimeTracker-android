@@ -397,7 +397,7 @@ class TimeEditFragment : TimeFormFragment,
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, email: String) {
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         Timber.i("login success")
         if (fragment.isShowing()) {
             findNavController().popBackStack()
@@ -405,7 +405,7 @@ class TimeEditFragment : TimeFormFragment,
         fetchPage(date, record.id)
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
         activity?.finish()
     }
