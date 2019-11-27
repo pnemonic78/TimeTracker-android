@@ -70,6 +70,9 @@ class ProfileFragment : InternetFragment {
 
     var listener: OnProfileListener? = null
     private var userCredentials = UserCredentials.EMPTY
+    private var nameInputEditable = true
+    private var emailInputEditable = true
+    private var loginInputEditable = true
     @Transient
     private var password2 = ""
     private var errorMessage: String = ""
@@ -134,9 +137,9 @@ class ProfileFragment : InternetFragment {
         confirmPasswordInput.setText(password2)
         errorLabel.text = errorMessage
 
-        //TODO disable name?
-        //TODO disable email?
-        //TODO disable login?
+        nameInput.isEnabled = nameInputEditable
+        emailInput.isEnabled = emailInputEditable
+        loginInput.isEnabled = loginInputEditable
     }
 
     /**
@@ -335,6 +338,10 @@ class ProfileFragment : InternetFragment {
         val loginInputElement = form.selectByName("login") ?: return
         val passwordInputElement = form.selectByName("password1") ?: return
         val confirmPasswordInputElement = form.selectByName("password2") ?: return
+
+        nameInputEditable = !nameInputElement.hasAttr("readonly")
+        emailInputEditable = !emailInputElement.hasAttr("readonly")
+        loginInputEditable = !loginInputElement.hasAttr("readonly")
 
         user.displayName = nameInputElement.value()
         user.email = emailInputElement.value()
