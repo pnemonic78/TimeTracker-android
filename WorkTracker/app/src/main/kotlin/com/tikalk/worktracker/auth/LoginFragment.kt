@@ -170,6 +170,17 @@ class LoginFragment : InternetFragment,
         var cancel = false
         var focusView: View? = null
 
+        // Check for a valid login name.
+        if (loginValue.isEmpty()) {
+            loginInput.error = getString(R.string.error_field_required)
+            focusView = loginInput
+            cancel = true
+        } else if (!isLoginValid(loginValue)) {
+            loginInput.error = getString(R.string.error_invalid_login)
+            focusView = loginInput
+            cancel = true
+        }
+
         // Check for a valid password, if the user entered one.
         if (passwordValue.isEmpty()) {
             passwordInput.error = getString(R.string.error_field_required)
@@ -178,17 +189,6 @@ class LoginFragment : InternetFragment,
         } else if (!isPasswordValid(passwordValue)) {
             passwordInput.error = getString(R.string.error_invalid_password)
             focusView = passwordInput
-            cancel = true
-        }
-
-        // Check for a valid login address.
-        if (loginValue.isEmpty()) {
-            loginInput.error = getString(R.string.error_field_required)
-            focusView = loginInput
-            cancel = true
-        } else if (!isLoginValid(loginValue)) {
-            loginInput.error = getString(R.string.error_invalid_login)
-            focusView = loginInput
             cancel = true
         }
 
