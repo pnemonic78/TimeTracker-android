@@ -157,7 +157,7 @@ class ProfileFragment : InternetFragment {
         confirmPasswordInput.error = null
         errorLabel.text = ""
 
-        // Store values at the time of the login attempt.
+        // Store values at the time of the submission attempt.
         val nameValue = nameInput.text.toString()
         val emailValue = emailInput.text.toString()
         val loginValue = loginInput.text.toString()
@@ -245,6 +245,8 @@ class ProfileFragment : InternetFragment {
                         processPage(html, true)
 
                         if (errorMessage.isEmpty()) {
+                            userCredentials.password = passwordValue
+                            password2 = confirmPasswordValue
                             preferences.user = user
                             preferences.userCredentials = userCredentials
 

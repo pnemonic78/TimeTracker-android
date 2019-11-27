@@ -34,13 +34,9 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
-import android.view.MenuItem
-import androidx.navigation.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.auth.ProfileFragment
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
 
