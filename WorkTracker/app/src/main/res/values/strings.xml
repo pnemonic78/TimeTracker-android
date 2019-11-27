@@ -5,9 +5,11 @@
 
     <!-- Strings related to login -->
     <string name="activity_login">Sign in</string>
+    <string name="prompt_login">Login name</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in</string>
+    <string name="error_invalid_login">This login name is invalid</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
