@@ -69,6 +69,7 @@ import kotlinx.android.synthetic.main.time_totals.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
@@ -228,7 +229,7 @@ class TimeListFragment : TimeFormFragment,
 
         this.records = records
 
-        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
         populateTotals(doc, form, totals)
     }
 

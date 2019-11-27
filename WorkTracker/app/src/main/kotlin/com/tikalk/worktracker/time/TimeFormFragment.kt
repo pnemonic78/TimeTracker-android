@@ -35,6 +35,7 @@ package com.tikalk.worktracker.time
 import android.os.Bundle
 import android.text.format.DateUtils
 import com.tikalk.app.runOnUiThread
+import com.tikalk.html.selectByName
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -45,6 +46,7 @@ import com.tikalk.worktracker.net.InternetFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
@@ -196,17 +198,17 @@ abstract class TimeFormFragment : InternetFragment {
     }
 
     open fun populateForm(date: Calendar, doc: Document) {
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
+        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement? ?: return
         populateForm(date, doc, form)
     }
 
-    open fun populateForm(date: Calendar, doc: Document, form: Element) {
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
+    open fun populateForm(date: Calendar, doc: Document, form: FormElement) {
+        val inputProjects = form.selectByName("project") ?: return
+        val inputTasks = form.selectByName("task") ?: return
         populateForm(date, doc, form, inputProjects, inputTasks)
     }
 
-    open fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {
+    open fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
         populateProjects(inputProjects, projects)
         populateTasks(inputTasks, tasks)
         populateTaskIds(doc, projects)

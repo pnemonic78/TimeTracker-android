@@ -47,6 +47,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
+import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -66,6 +67,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.time_form.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
@@ -144,13 +146,13 @@ class TimeEditFragment : TimeFormFragment,
         errorMessage = findError(doc)?.trim() ?: ""
     }
 
-    override fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {
+    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
-        val inputStart = form.selectFirst("input[name='start']") ?: return
+        val inputStart = form.selectByName("start") ?: return
         val startValue = inputStart.attr("value")
 
-        val inputFinish = form.selectFirst("input[name='finish']") ?: return
+        val inputFinish = form.selectByName("finish") ?: return
         val finishValue = inputFinish.attr("value")
 
         val inputNote = form.selectFirst("textarea[name='note']")

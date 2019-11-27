@@ -58,6 +58,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_timer.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -264,7 +265,7 @@ class TimerFragment : TimeFormFragment {
         return null
     }
 
-    override fun populateForm(date: Calendar, doc: Document, form: Element, inputProjects: Element, inputTasks: Element) {
+    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
         val recordStarted = getStartedRecord()
