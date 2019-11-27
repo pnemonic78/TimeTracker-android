@@ -53,11 +53,16 @@ android {
             java.srcDirs += 'src/test/kotlin'
         }
     }
+
+    kotlinOptions {
+        freeCompilerArgs += ["-Xallow-result-return-type"]
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
 
     // Google Support
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -65,7 +70,7 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     implementation 'androidx.preference:preference:1.1.0'
     implementation 'androidx.security:security-crypto:1.0.0-alpha02'
-    implementation 'androidx.work:work-runtime-ktx:2.3.0-beta01'
+    //implementation 'androidx.work:work-runtime-ktx:2.3.0-beta01'
 
     // Testing
     androidTestImplementation 'androidx.test:core:1.2.0'

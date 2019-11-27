@@ -39,11 +39,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
 import android.os.Build
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.Data
-import androidx.work.ListenableWorker.Result
 import com.tikalk.graphics.drawableToBitmap
+import com.tikalk.os.BundleBuilder
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
@@ -54,7 +54,7 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.TimeListActivity
 import timber.log.Timber
 
-class TimerWorker(private val context: Context, private val workerParams: Data) {
+class TimerWorker(private val context: Context, private val workerParams: Bundle) {
 
     companion object {
         const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
@@ -88,7 +88,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
 
         private fun showNotification(context: Context) {
             Timber.v("showNotification")
-            val inputData = Data.Builder()
+            val inputData = BundleBuilder()
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, true)
                 .build()
@@ -99,7 +99,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
 
         fun hideNotification(context: Context) {
             Timber.v("hideNotification")
-            val inputData = Data.Builder()
+            val inputData = BundleBuilder()
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
@@ -110,7 +110,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
 
         fun startTimer(context: Context, record: TimeRecord) {
             Timber.v("startTimer")
-            val inputData = Data.Builder()
+            val inputData = BundleBuilder()
                 .putString(EXTRA_ACTION, ACTION_START)
                 .putLong(EXTRA_PROJECT_ID, record.project.id)
                 .putString(EXTRA_PROJECT_NAME, record.project.name)
@@ -127,7 +127,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         fun stopTimer(context: Context, intent: Intent? = null) {
             Timber.v("stopTimer $intent")
             val extras = intent?.extras
-            val inputData = Data.Builder()
+            val inputData = BundleBuilder()
                 .putString(EXTRA_ACTION, ACTION_STOP)
                 .putBoolean(EXTRA_EDIT, extras?.getBoolean(EXTRA_EDIT) ?: false)
                 .build()
@@ -140,19 +140,19 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
     private val prefs: TimeTrackerPrefs = TimeTrackerPrefs(context)
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    fun doWork(): Result {
+    fun doWork(): Result<Any> {
         val data = workerParams
         return when (data.getString(EXTRA_ACTION)) {
             ACTION_START -> startTimerAction(data)
             ACTION_STOP -> stopTimerAction(data)
             ACTION_NOTIFY -> showNotification(data)
-            else -> Result.failure()
+            else -> Result.failure(IllegalArgumentException("invalid action"))
         }
     }
 
-    private fun startTimerAction(extras: Data): Result {
+    private fun startTimerAction(extras: Bundle): Result<Any> {
         Timber.v("startTimerAction")
-        val record = createRecord(extras) ?: return Result.failure()
+        val record = createRecord(extras) ?: return Result.failure(IllegalArgumentException("missing record"))
 
         prefs.startRecord(record)
 
@@ -161,27 +161,27 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
             nm.notify(ID_NOTIFY, createNotification(record))
         }
 
-        return Result.success()
+        return Result.success(true)
     }
 
-    private fun stopTimerAction(extras: Data): Result {
+    private fun stopTimerAction(extras: Bundle): Result<Any> {
         Timber.v("stopTimerAction")
         if (extras.getBoolean(EXTRA_EDIT, false)) {
-            val record = prefs.getStartedRecord() ?: return Result.failure()
+            val record = prefs.getStartedRecord() ?: return Result.failure(IllegalArgumentException("missing record"))
             val projectId = record.project.id
             val taskId = record.task.id
             val startTime = record.startTime
 
-            if (projectId <= 0L) return Result.failure()
-            if (taskId <= 0L) return Result.failure()
-            if (startTime <= 0L) return Result.failure()
+            if (projectId <= 0L) return Result.failure(IllegalArgumentException("invalid project id"))
+            if (taskId <= 0L) return Result.failure(IllegalArgumentException("invalid task id"))
+            if (startTime <= 0L) return Result.failure(IllegalArgumentException("invalid start time"))
 
             editStartedRecord(record)
         }
 
         dismissNotification()
 
-        return Result.success()
+        return Result.success(true)
     }
 
     private fun editStartedRecord(record: TimeRecord) {
@@ -257,11 +257,11 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         return PendingIntent.getBroadcast(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    private fun showNotification(extras: Data): Result {
+    private fun showNotification(extras: Bundle): Result<Any> {
         val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
         Timber.v("showNotification visible=$visible")
         if (visible) {
-            val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return Result.failure()
+            val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return Result.failure(IllegalArgumentException("missing record"))
             Timber.v("showNotification record=$record")
             val nm = NotificationManagerCompat.from(context)
             nm.notify(ID_NOTIFY, createNotification(record))
@@ -269,7 +269,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
             dismissNotification()
         }
 
-        return Result.success()
+        return Result.success(true)
     }
 
     private fun dismissNotification() {
@@ -278,7 +278,7 @@ class TimerWorker(private val context: Context, private val workerParams: Data) 
         nm.cancel(ID_NOTIFY)
     }
 
-    private fun createRecord(extras: Data): TimeRecord? {
+    private fun createRecord(extras: Bundle): TimeRecord? {
         val projectId = extras.getLong(EXTRA_PROJECT_ID, 0L)
         val projectName = extras.getString(EXTRA_PROJECT_NAME)
         val taskId = extras.getLong(EXTRA_TASK_ID, 0L)
