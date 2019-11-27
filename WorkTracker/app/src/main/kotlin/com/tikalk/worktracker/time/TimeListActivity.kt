@@ -68,9 +68,15 @@ class TimeListActivity : InternetActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_settings) {
-            showSettings()
-            return true
+        when (item.itemId) {
+            R.id.menu_settings -> {
+                showSettings()
+                return true
+            }
+            R.id.menu_profile -> {
+                showProfile()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -101,6 +107,10 @@ class TimeListActivity : InternetActivity() {
 
     private fun showSettings() {
         findNavController(R.id.nav_host_fragment).navigate(R.id.action_timeList_to_settings)
+    }
+
+    private fun showProfile() {
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_timeList_to_profile)
     }
 
     private fun findMainFragment(): TimeListFragment? {

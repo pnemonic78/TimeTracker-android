@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ BSD 3-Clause License
   ~
   ~ Copyright (c) 2019, Tikal Knowledge, Ltd.
@@ -30,34 +31,6 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    app:startDestination="@id/timeListFragment">
-    <include app:graph="@navigation/login" />
-    <fragment
-        android:id="@+id/timeListFragment"
-        android:name="com.tikalk.worktracker.time.TimeListFragment"
-        android:label="TimeListFragment"
-        tools:layout="@layout/fragment_time_list">
-        <action
-            android:id="@+id/action_timeList_to_login"
-            app:destination="@id/login" />
-        <action
-            android:id="@+id/action_timeList_to_settings"
-            app:destination="@id/timeSettingsFragment" />
-        <action
-            android:id="@+id/action_timeList_to_profile"
-            app:destination="@id/profileFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/timeSettingsFragment"
-        android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
-        android:label="TimeSettingsFragment"
-        tools:layout="@layout/preference_list_fragment"/>
-    <dialog
-        android:id="@+id/profileFragment"
-        android:name="com.tikalk.worktracker.auth.ProfileFragment"
-        android:label="ProfileFragment" />
-</navigation>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_person" />
+</selector>

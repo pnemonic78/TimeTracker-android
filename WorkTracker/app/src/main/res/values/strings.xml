@@ -71,4 +71,11 @@
     <string name="pref_issue_title">Issues</string>
     <string name="pref_issue_summary">Report a problem, or request a new feature.</string>
     <string name="pref_issue_url" translatable="false">mailto:moshe.waisberg@tikalk.com?subject=Tikal+Time+Tracker</string>
+
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="prompt_name">Name</string>
+    <string name="prompt_confirmPassword">Confirm Password</string>
+    <string name="menu_profile" translatable="false">@string/profile</string>
+
 </resources>

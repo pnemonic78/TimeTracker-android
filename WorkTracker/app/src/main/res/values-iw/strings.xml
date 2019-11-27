@@ -61,4 +61,10 @@
     <string name="pref_version_title">גרסת יישום</string>
     <string name="pref_issue_title">בעיות</string>
     <string name="pref_issue_summary">דווח על בעיה או בקש תכונה חדשה.</string>
+
+    <!-- Profile -->
+    <string name="profile">פרופיל</string>
+    <string name="prompt_name">שם</string>
+    <string name="prompt_confirmPassword">אשר סיסמה</string>
+
 </resources>
