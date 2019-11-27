@@ -40,12 +40,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
-import android.view.animation.AnimationUtils
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
+import com.tikalk.app.findFragmentByClass
+import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.auth.ProfileFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
@@ -53,10 +57,10 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -67,38 +71,30 @@ import kotlinx.android.synthetic.main.time_totals.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class TimeListFragment : InternetFragment,
+class TimeListFragment : TimeFormFragment,
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
-    TimeEditFragment.OnEditRecordListener {
+    TimeEditFragment.OnEditRecordListener,
+    ProfileFragment.OnProfileListener {
 
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
 
     private var datePickerDialog: DatePickerDialog? = null
-    private lateinit var timerFragment: TimerFragment
-    private lateinit var editFragment: TimeEditFragment
+    private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
     private var totals = TimeTotals()
 
     private var date: Calendar = Calendar.getInstance()
-    private var record
-        get() = timerFragment.record
-        set(value) {
-            timerFragment.record = value
-        }
-    private val projects
-        get() = timerFragment.projects
-    private val tasks
-        get() = timerFragment.tasks
     private var records: List<TimeRecord> = ArrayList()
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -115,12 +111,7 @@ class TimeListFragment : InternetFragment,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        timerFragment = childFragmentManager.findFragmentById(R.id.fragmentTimer) as TimerFragment
-        editFragment = childFragmentManager.findFragmentById(R.id.fragmentEdit) as TimeEditFragment
-        editFragment.listener = this
-
-        switcherForm.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_form)
-        switcherForm.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_form)
+        formNavHostFragment = childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
 
         dateInput.setOnClickListener { pickDate() }
         recordAdd.setOnClickListener { addTime() }
@@ -177,8 +168,7 @@ class TimeListFragment : InternetFragment,
         // Fetch from local database first.
         loadPage()
             .subscribe({
-                populateForm(record)
-                bindForm(record)
+                bindForm()
                 bindList(date, records)
 
                 // Fetch from remote server.
@@ -212,7 +202,7 @@ class TimeListFragment : InternetFragment,
     }
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
-        populateForm(html)
+        populateForm(date, html)
         populateList(html)
         savePage()
         runOnUiThread {
@@ -242,7 +232,7 @@ class TimeListFragment : InternetFragment,
 
         this.records = records
 
-        val form = doc.selectFirst("form[name='timeRecordForm']")
+        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
         populateTotals(doc, form, totals)
     }
 
@@ -296,31 +286,26 @@ class TimeListFragment : InternetFragment,
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, this)
+        val args = Bundle()
+        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+        findNavController().navigate(R.id.action_timeList_to_login, args)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_TOTALS, totals)
-        if (switcherForm != null) {
-            outState.putInt(STATE_DISPLAYED_CHILD, switcherForm.displayedChild)
-        }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
-        val displayedChild = savedInstanceState.getInt(STATE_DISPLAYED_CHILD, -1)
 
         if (totals != null) {
             this.totals = totals
             bindTotals(totals)
-        }
-        when (displayedChild) {
-            CHILD_TIMER -> showTimer()
-            CHILD_EDITOR -> showEditor()
         }
     }
 
@@ -446,12 +431,28 @@ class TimeListFragment : InternetFragment,
     }
 
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
+        Timber.d("editRecord record=$record timer=$timer")
         recordForTimer = timer
-        editFragment.editRecord(record, date)
-        showEditor()
+
+        val form = findTopFormFragment()
+        if (form is TimeEditFragment) {
+            form.listener = this
+            form.editRecord(record, date)
+        } else {
+            val args = Bundle()
+            args.putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
+            args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            args.putLong(TimeEditFragment.EXTRA_RECORD, record.id)
+            requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
+            formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
+        }
     }
 
     private fun deleteRecord(record: TimeRecord) {
+        Timber.d("deleteRecord record=$record")
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         showProgress(true)
@@ -479,32 +480,38 @@ class TimeListFragment : InternetFragment,
             .addTo(disposables)
     }
 
-    private fun populateForm(html: String) {
-        timerFragment.populateForm(html)
+    override fun populateForm(date: Calendar, doc: Document) {
+        super.populateForm(date, doc)
+        findTopFormFragment().populateForm(date, doc)
     }
 
-    private fun populateForm(recordStarted: TimeRecord?) {
-        timerFragment.populateForm(recordStarted)
+    override fun populateForm(record: TimeRecord) {
     }
 
-    private fun bindForm(record: TimeRecord) {
-        timerFragment.bindForm(record)
+    override fun bindForm(record: TimeRecord) {
+    }
+
+    private fun bindForm() {
+        findTopFormFragment().populateAndBind()
     }
 
     fun stopTimer() {
-        if (::timerFragment.isInitialized) {
-            timerFragment.stopTimer()
-        } else {
-            // Save for "run" later.
-            val args = arguments ?: Bundle()
-            args.putString(EXTRA_ACTION, ACTION_STOP)
-            if (arguments == null) {
-                arguments = args
-            }
+        Timber.v("stopTimer")
+        val form = findTopFormFragment()
+        if (form is TimerFragment) {
+            form.stopTimer()
+            return
+        }
+        // Save for "run" later.
+        val args = arguments ?: Bundle()
+        args.putString(EXTRA_ACTION, ACTION_STOP)
+        if (arguments == null) {
+            arguments = args
         }
     }
 
     private fun navigateTomorrow() {
+        Timber.v("navigateTomorrow")
         val cal = date
         cal.add(Calendar.DATE, 1)
         fetchPage(cal)
@@ -512,6 +519,7 @@ class TimeListFragment : InternetFragment,
     }
 
     private fun navigateYesterday() {
+        Timber.v("navigateYesterday")
         val cal = date
         cal.add(Calendar.DATE, -1)
         fetchPage(cal)
@@ -587,25 +595,16 @@ class TimeListFragment : InternetFragment,
         return Single.fromCallable {
             val context: Context = this.context ?: return@fromCallable
 
-            if (isTimerShowing()) {
-                timerFragment.loadForm()
-            } else if (!recordForTimer) {
-                editFragment.loadForm()
-            }
-
             val db = TrackerDatabase.getDatabase(context)
+            loadFormFromDb(db)
             loadRecords(db, date)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun savePage() {
-        if (isTimerShowing()) {
-            timerFragment.savePage()
-        } else {
-            editFragment.savePage()
-        }
+    override fun saveFormToDb() {
+        findTopFormFragment().savePage()
 
         val db = TrackerDatabase.getDatabase(requireContext())
         saveRecords(db, date)
@@ -671,39 +670,20 @@ class TimeListFragment : InternetFragment,
         }
     }
 
-    override fun setArguments(args: Bundle?) {
-        super.setArguments(args)
-
-        if (isAdded) {
-            if ((childFragmentManager.fragments.size > 0)) {
-                timerFragment.arguments = arguments
-                timerFragment.run()
-            }
-        }
-    }
-
     @MainThread
     fun run() {
+        Timber.v("run")
         showProgress(true)
         loadPage()
             .subscribe({
-                populateForm(record)
-                bindForm(record)
+                bindForm()
                 bindList(date, records)
+
                 if (projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
                 }
 
-                val args = arguments
-                if (args != null) {
-                    if (args.containsKey(EXTRA_ACTION)) {
-                        val action = args.getString(EXTRA_ACTION)
-                        if (action == ACTION_STOP) {
-                            args.remove(EXTRA_ACTION)
-                            stopTimer()
-                        }
-                    }
-                }
+                handleArguments()
 
                 showProgress(false)
             }, { err ->
@@ -713,6 +693,19 @@ class TimeListFragment : InternetFragment,
             .addTo(disposables)
     }
 
+    private fun handleArguments() {
+        val args = arguments
+        if (args != null) {
+            if (args.containsKey(EXTRA_ACTION)) {
+                val action = args.getString(EXTRA_ACTION)
+                if (action == ACTION_STOP) {
+                    args.remove(EXTRA_ACTION)
+                    stopTimer()
+                }
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         run()
@@ -720,10 +713,10 @@ class TimeListFragment : InternetFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
-        user = preferences.user
-        // Fetch the list for the user.
-        fetchPage(date)
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        this.user = preferences.user
     }
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
@@ -737,7 +730,14 @@ class TimeListFragment : InternetFragment,
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
-                timerFragment.stopTimerCommit()
+                val args = Bundle()
+                args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
+                args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
+                showTimer(args, true)
+                // Refresh the list with the inserted item.
+                fetchPage(date)
+                return
             }
         }
         if (last) {
@@ -749,12 +749,18 @@ class TimeListFragment : InternetFragment,
 
     override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
         Timber.i("record deleted: $record")
-        showTimer()
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
-                timerFragment.stopTimerCommit()
+                val args = Bundle()
+                args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
+                args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
+                showTimer(args, true)
+            } else {
+                showTimer()
             }
         } else {
+            showTimer()
             // Refresh the list with the edited item.
             fetchPage(date)
         }
@@ -769,9 +775,7 @@ class TimeListFragment : InternetFragment,
     }
 
     override fun onBackPressed(): Boolean {
-        val child = switcherForm?.displayedChild ?: -1
-        if (child == CHILD_EDITOR) {
-            cancelEditRecord()
+        if (formNavHostFragment.navController.popBackStack()) {
             return true
         }
         return super.onBackPressed()
@@ -781,31 +785,16 @@ class TimeListFragment : InternetFragment,
         showTimer()
     }
 
-    private fun showTimer() {
-        val switcher = switcherForm
-        if (switcher != null) {
-            if (switcher.displayedChild != CHILD_TIMER) {
-                switcher.displayedChild = CHILD_TIMER
-            }
+    private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
+        formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
+        if (popInclusive) {
+            formNavHostFragment.navController.navigate(R.id.timerFragment, args)
         }
-        activity?.invalidateOptionsMenu()
-    }
-
-    private fun showEditor() {
-        val switcher = switcherForm
-        if (switcher != null) {
-            if (switcher.displayedChild != CHILD_EDITOR) {
-                switcher.displayedChild = CHILD_EDITOR
-            }
-        }
-        activity?.invalidateOptionsMenu()
     }
 
     private fun hideEditor() {
         showTimer()
     }
-
-    private fun isTimerShowing() = (switcherForm?.displayedChild == CHILD_TIMER)
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (view?.visibility == View.VISIBLE) {
@@ -821,6 +810,14 @@ class TimeListFragment : InternetFragment,
         when (item.itemId) {
             R.id.menu_date -> {
                 pickDate()
+                return true
+            }
+            R.id.menu_settings -> {
+                showSettings()
+                return true
+            }
+            R.id.menu_profile -> {
+                showProfile()
                 return true
             }
         }
@@ -841,18 +838,40 @@ class TimeListFragment : InternetFragment,
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    private fun findTopFormFragment(): TimeFormFragment {
+        return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
+    }
+
+    private fun showSettings() {
+        findNavController().navigate(R.id.action_timeList_to_settings)
+    }
+
+    private fun showProfile() {
+        val args = Bundle()
+        requireFragmentManager().putFragment(args, ProfileFragment.EXTRA_CALLER, this)
+        findNavController().navigate(R.id.action_timeList_to_profile, args)
+    }
+
+    override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
+        Timber.i("profile success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        this.user = user
+    }
+
+    override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {
+        Timber.e("profile failure: $reason")
+    }
+
     companion object {
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
-        private const val STATE_DISPLAYED_CHILD = "switcher.displayedChild"
 
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
+        const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
-        private const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
 
         const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
-
-        private const val CHILD_TIMER = 0
-        private const val CHILD_EDITOR = 1
     }
 }

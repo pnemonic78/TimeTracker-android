@@ -5,12 +5,13 @@
 
     <!-- Strings related to login -->
     <string name="activity_login">Sign in</string>
+    <string name="prompt_login">Login name</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in</string>
+    <string name="error_invalid_login">This login name is invalid</string>
     <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_invalid_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="activity_basic_realm">Basic Realm Authentication</string>
     <string name="authentication_basic_realm">Basic Realm Authentication for \"%1$s\"</string>
@@ -69,4 +70,12 @@
     <string name="pref_issue_title">Issues</string>
     <string name="pref_issue_summary">Report a problem, or request a new feature.</string>
     <string name="pref_issue_url" translatable="false">mailto:moshe.waisberg@tikalk.com?subject=Tikal+Time+Tracker</string>
+
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="prompt_name">Name</string>
+    <string name="prompt_confirmPassword">Confirm Password</string>
+    <string name="menu_profile" translatable="false">@string/profile</string>
+    <string name="error_match_password">Passwords are not the same</string>
+
 </resources>

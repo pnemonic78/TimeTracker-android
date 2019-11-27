@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.model
 
+import android.widget.AdapterView
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 
@@ -70,34 +71,36 @@ inline fun ProjectTask?.isNullOrEmpty(): Boolean {
 
 fun findTask(tasks: List<ProjectTask>, task: ProjectTask): Int {
     val index = tasks.indexOf(task)
-    if (index < 0) {
-        val id = task.id
-        for (i in tasks.indices) {
-            val t = tasks[i]
-            if (t == task) {
-                return i
-            }
-            if (t.id == id) {
-                return i
-            }
+    if (index >= 0) {
+        return index
+    }
+    val id = task.id
+    for (i in tasks.indices) {
+        val t = tasks[i]
+        if (t == task) {
+            return i
+        }
+        if (t.id == id) {
+            return i
         }
     }
-    return index
+    return AdapterView.INVALID_POSITION
 }
 
 fun findTask(tasks: Array<ProjectTask>, task: ProjectTask): Int {
     val index = tasks.indexOf(task)
-    if (index < 0) {
-        val id = task.id
-        for (i in tasks.indices) {
-            val t = tasks[i]
-            if (t == task) {
-                return i
-            }
-            if (t.id == id) {
-                return i
-            }
+    if (index >= 0) {
+        return index
+    }
+    val id = task.id
+    for (i in tasks.indices) {
+        val t = tasks[i]
+        if (t == task) {
+            return i
+        }
+        if (t.id == id) {
+            return i
         }
     }
-    return index
+    return AdapterView.INVALID_POSITION
 }

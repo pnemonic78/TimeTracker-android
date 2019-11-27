@@ -41,20 +41,28 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import com.tikalk.app.findParentFragment
 import com.tikalk.app.runOnUiThread
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.work.TimerWorker
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_timer.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class TimerFragment : TimeFormFragment {
@@ -111,11 +119,8 @@ class TimerFragment : TimeFormFragment {
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
         }
-        val taskItems = tasks.toTypedArray()
+        val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
-        if (taskItems.isNotEmpty()) {
-            taskInput.setSelection(max(0, findTask(taskItems, record.task)))
-        }
         projectInput.requestFocus()
 
         val startTime = record.startTime
@@ -147,6 +152,16 @@ class TimerFragment : TimeFormFragment {
 
     fun stopTimer() {
         Timber.v("stopTimer")
+        if (!isVisible or !isResumed) {
+            // Save for "run" later.
+            val args = arguments ?: Bundle()
+            args.putString(EXTRA_ACTION, ACTION_STOP)
+            if (arguments == null) {
+                arguments = args
+            }
+            return
+        }
+
         val recordStarted = getStartedRecord()
         Timber.v("stopTimer recordStarted=$recordStarted")
         if (recordStarted != null) {
@@ -178,6 +193,7 @@ class TimerFragment : TimeFormFragment {
     }
 
     private fun filterTasks(project: Project) {
+        Timber.d("filterTasks project=$project")
         val context: Context = requireContext()
         val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
@@ -205,13 +221,17 @@ class TimerFragment : TimeFormFragment {
     }
 
     private fun projectItemSelected(project: Project) {
+        Timber.d("projectItemSelected project=$project")
         record.project = project
+        if (!isVisible) return
         filterTasks(project)
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
+        Timber.d("taskItemSelected task=$task")
         record.task = task
+        if (!isVisible) return
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
@@ -245,35 +265,19 @@ class TimerFragment : TimeFormFragment {
         return null
     }
 
-    /** Populate the record and then bind the form. */
-    fun populateForm(html: String) {
-        val doc: Document = Jsoup.parse(html)
-
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
-
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
-        populateTasks(inputTasks, tasks)
-
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
+    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
+        super.populateForm(date, doc, form, inputProjects, inputTasks)
 
         val recordStarted = getStartedRecord()
-        populateForm(recordStarted)
+        populateForm(recordStarted ?: TimeRecord.EMPTY)
         runOnUiThread { bindForm(record) }
     }
 
-    fun populateForm(recordStarted: TimeRecord?) {
+    override fun populateForm(recordStarted: TimeRecord) {
         Timber.v("populateForm $recordStarted")
-        // In case `this.projects` is modified while we loop through it.
-        val projects = this.projects.toList()
-        // In case `this.tasks` is modified while we loop through it.
-        val tasks = this.tasks.toList()
-        if ((recordStarted == null) or (recordStarted?.project.isNullOrEmpty() and recordStarted?.task.isNullOrEmpty())) {
+        val projects = this.projects
+        val tasks = this.tasks
+        if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
@@ -282,7 +286,7 @@ class TimerFragment : TimeFormFragment {
             if (taskFavorite != TikalEntity.ID_NONE) {
                 record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
             }
-        } else if (recordStarted != null) {
+        } else if (!recordStarted.isEmpty()) {
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
             record.project = projects.firstOrNull { it.id == recordStartedProjectId }
@@ -293,8 +297,10 @@ class TimerFragment : TimeFormFragment {
     }
 
     private fun editRecord(record: TimeRecord) {
-        if (parentFragment is TimeListFragment) {
-            (parentFragment as TimeListFragment).editRecord(record, true)
+        Timber.d("editRecord record=$record")
+        val parent = findParentFragment(TimeListFragment::class.java)
+        if (parent != null) {
+            parent.editRecord(record, true)
         } else {
             val intent = Intent(context, TimeEditActivity::class.java)
             if (record.id == TikalEntity.ID_NONE) {
@@ -310,9 +316,37 @@ class TimerFragment : TimeFormFragment {
     }
 
     fun run() {
-        val recordStarted = getStartedRecord()
-        populateForm(recordStarted)
-        bindForm(record)
+        Timber.v("run")
+        Single.fromCallable { loadForm() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                val recordStarted = getStartedRecord()
+                populateForm(recordStarted ?: TimeRecord.EMPTY)
+                bindForm(record)
+                handleArguments()
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+            })
+            .addTo(disposables)
+    }
+
+    private fun handleArguments() {
+        Timber.d("handleArguments")
+        val args = arguments
+        if (args != null) {
+            if (args.containsKey(EXTRA_ACTION)) {
+                val action = args.getString(EXTRA_ACTION)
+                if (action == ACTION_STOP) {
+                    args.remove(EXTRA_ACTION)
+                    if (args.getBoolean(EXTRA_COMMIT)) {
+                        stopTimerCommit()
+                    } else {
+                        stopTimer()
+                    }
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -361,9 +395,10 @@ class TimerFragment : TimeFormFragment {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_EDIT) {
             if (resultCode == RESULT_OK) {
-                TODO("record submitted")
+                Timber.i("record processed")
+                stopTimerCommit()
             } else {
-                TODO("record edit cancelled")
+                Timber.i("record edit cancelled")
             }
             return
         }
@@ -371,10 +406,15 @@ class TimerFragment : TimeFormFragment {
     }
 
     companion object {
+        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
+        const val EXTRA_COMMIT = BuildConfig.APPLICATION_ID + ".COMMIT"
+
+        const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         private const val REQUEST_EDIT = 0xED17
     }

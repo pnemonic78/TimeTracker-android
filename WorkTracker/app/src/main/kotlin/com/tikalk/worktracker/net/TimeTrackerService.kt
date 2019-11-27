@@ -48,6 +48,7 @@ interface TimeTrackerService {
         const val PHP_TIME = "time.php"
         const val PHP_EDIT = "time_edit.php"
         const val PHP_DELETE = "time_delete.php"
+        const val PHP_PROFILE = "profile_edit.php"
     }
 
     @FormUrlEncoded
@@ -91,4 +92,16 @@ interface TimeTrackerService {
     fun deleteTime(@Field("id") id: Long,
                    @Field("delete_button") submit: String = "Delete",
                    @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
+
+    @GET(PHP_PROFILE)
+    fun fetchProfile(): Single<Response<String>>
+
+    @FormUrlEncoded
+    @POST(PHP_PROFILE)
+    fun editProfile(@Field("name") name: String,
+                    @Field("login") login: String,
+                    @Field("password1") password1: String,
+                    @Field("password2") password2: String,
+                    @Field("email") email: String,
+                    @Field("btn_save") submit: String = "Save"): Single<Response<String>>
 }

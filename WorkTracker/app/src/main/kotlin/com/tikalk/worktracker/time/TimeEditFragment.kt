@@ -43,11 +43,17 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.navigation.fragment.findNavController
+import com.tikalk.app.findParentFragment
+import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
+import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -59,8 +65,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.time_form.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
@@ -73,7 +80,7 @@ class TimeEditFragment : TimeFormFragment,
 
     constructor(args: Bundle) : super(args)
 
-    var date: Calendar = Calendar.getInstance()
+    private var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
 
     private var startPickerDialog: TimePickerDialog? = null
@@ -83,6 +90,13 @@ class TimeEditFragment : TimeFormFragment,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        val caller = this.caller
+        if (caller != null) {
+            if (caller is OnEditRecordListener) {
+                this.listener = caller
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -117,43 +131,38 @@ class TimeEditFragment : TimeFormFragment,
     }
 
     /** Populate the record and then bind the form. */
-    private fun populateForm(html: String, date: Calendar, id: Long) {
-        val doc: Document = Jsoup.parse(html)
+    private fun populateForm(date: Calendar, html: String, id: Long) {
+        populateForm(date, html)
 
         record.id = id
-
-        errorMessage = findError(doc)?.trim() ?: ""
-
-        val form = doc.selectFirst("form[name='timeRecordForm']") ?: return
-
-        val inputProjects = form.selectFirst("select[name='project']") ?: return
-        populateProjects(inputProjects, projects)
-
-        val inputTasks = form.selectFirst("select[name='task']") ?: return
-        populateTasks(inputTasks, tasks)
-
-        populateTaskIds(doc, projects)
-
-        val inputStart = form.selectFirst("input[name='start']") ?: return
-        val startValue = inputStart.attr("value")
-
-        val inputFinish = form.selectFirst("input[name='finish']") ?: return
-        val finishValue = inputFinish.attr("value")
-
-        val inputNote = form.selectFirst("textarea[name='note']")
-
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
-        record.start = parseSystemTime(date, startValue)
-        record.finish = parseSystemTime(date, finishValue)
-        record.note = inputNote?.text() ?: ""
         record.status = TaskRecordStatus.CURRENT
 
         populateForm(record)
         runOnUiThread { bindForm(record) }
     }
 
-    private fun populateForm(record: TimeRecord) {
+    override fun populateForm(date: Calendar, doc: Document) {
+        super.populateForm(date, doc)
+        errorMessage = findError(doc)?.trim() ?: ""
+    }
+
+    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
+        super.populateForm(date, doc, form, inputProjects, inputTasks)
+
+        val inputStart = form.selectByName("start") ?: return
+        val startValue = inputStart.attr("value")
+
+        val inputFinish = form.selectByName("finish") ?: return
+        val finishValue = inputFinish.attr("value")
+
+        val inputNote = form.selectFirst("textarea[name='note']")
+
+        record.start = parseSystemTime(date, startValue)
+        record.finish = parseSystemTime(date, finishValue)
+        record.note = inputNote?.text() ?: ""
+    }
+
+    override fun populateForm(record: TimeRecord) {
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
@@ -209,11 +218,8 @@ class TimeEditFragment : TimeFormFragment,
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
         }
-        val taskItems = tasks.toTypedArray()
+        val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
-        if (taskItems.isNotEmpty()) {
-            taskInput.setSelection(max(0, findTask(taskItems, record.task)))
-        }
         projectInput.requestFocus()
 
         val startTime = record.startTime
@@ -357,13 +363,14 @@ class TimeEditFragment : TimeFormFragment,
     }
 
     fun run() {
+        Timber.v("run")
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {
                 return
             }
             // The parent fragment should be responsible for authentication.
-            if (parentFragment is InternetFragment) {
+            if (findParentFragment(InternetFragment::class.java) != null) {
                 return
             }
         }
@@ -392,7 +399,9 @@ class TimeEditFragment : TimeFormFragment,
 
     override fun onLoginSuccess(fragment: LoginFragment, email: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
         fetchPage(date, record.id)
     }
 
@@ -421,7 +430,7 @@ class TimeEditFragment : TimeFormFragment,
                 this.date = date
                 if (isValidResponse(response)) {
                     val body = response.body()!!
-                    populateForm(body, date, id)
+                    populateForm(date, body, id)
                     savePage()
                     showProgressMain(false)
                 } else {
@@ -454,6 +463,16 @@ class TimeEditFragment : TimeFormFragment,
             if (recordEntity != null) {
                 record = recordEntity.toTimeRecord(projects, tasks)
             }
+        }
+    }
+
+    private fun saveRecord(record: TimeRecord) {
+        val db = TrackerDatabase.getDatabase(requireContext())
+        val recordDao = db.timeRecordDao()
+        if (record.id == TikalEntity.ID_NONE) {
+            recordDao.insert(record.toTimeRecordEntity())
+        } else {
+            recordDao.update(record.toTimeRecordEntity())
         }
     }
 
@@ -517,6 +536,10 @@ class TimeEditFragment : TimeFormFragment,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
+                if (record.id != TikalEntity.ID_NONE) {
+                    saveRecord(record)
+                }
+
                 if (last) {
                     showProgress(false)
                 }
@@ -577,7 +600,7 @@ class TimeEditFragment : TimeFormFragment,
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        if (view != null) {
+        if (isVisible) {
             bindRecord(record)
         }
         outState.putLong(STATE_DATE, date.timeInMillis)
@@ -593,7 +616,7 @@ class TimeEditFragment : TimeFormFragment,
         if (recordParcel != null) {
             record = recordParcel
             // Is there a view?
-            if (view != null) {
+            if (isVisible) {
                 bindForm(record)
             }
         } else {
@@ -700,6 +723,7 @@ class TimeEditFragment : TimeFormFragment,
     }
 
     companion object {
+        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID

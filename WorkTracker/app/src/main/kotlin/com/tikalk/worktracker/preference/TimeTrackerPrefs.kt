@@ -56,6 +56,8 @@ class TimeTrackerPrefs(context: Context) {
 
         private const val USER_CREDENTIALS_LOGIN = "user.login"
         private const val USER_CREDENTIALS_PASSWORD = "user.password"
+        private const val USER_EMAIL = "user.email"
+        private const val USER_DISPLAY_NAME = "user.displayName"
 
         private const val PROJECT_ID = "project.id"
         private const val PROJECT_NAME = "project.name"
@@ -176,12 +178,24 @@ class TimeTrackerPrefs(context: Context) {
 
     private var _user: User? = null
 
-    val user: User
+    var user: User = User.EMPTY.copy()
         get() {
             if (_user == null) {
-                val username = userCredentials.login
-                _user = User(username, username)
+                val username = prefs.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
+                val email = prefs.getString(USER_EMAIL, username)
+                val displayName = prefs.getString(USER_DISPLAY_NAME, null)
+                val user = User(username, email, displayName)
+                _user = user
+                field = user
             }
-            return _user!!
+            return field
+        }
+        set(value) {
+            field = value
+            prefs.edit()
+                .putString(USER_CREDENTIALS_LOGIN, value.username)
+                .putString(USER_EMAIL, value.email)
+                .putString(USER_DISPLAY_NAME, value.displayName)
+                .apply()
         }
 }

@@ -31,39 +31,27 @@
  */
 package com.tikalk.worktracker.db
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room.Embedded
+import androidx.room.Junction
+import androidx.room.Relation
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 
 /**
- * Work Tracker database.
+ * Project with Tasks relational ID entity.
+ *
+ * @author Moshe Waisberg.
  */
-@Database(entities = [Project::class, ProjectTask::class, ProjectTaskKey::class, TimeRecordEntity::class], version = 5, exportSchema = false)
-abstract class TrackerDatabase : RoomDatabase() {
-    abstract fun projectDao(): ProjectDao
-    abstract fun taskDao(): ProjectTaskDao
-    abstract fun projectTaskKeyDao(): ProjectTaskKeyDao
-    abstract fun timeRecordDao(): TimeRecordDao
-
-    companion object {
-        @Volatile
-        private var instance: TrackerDatabase? = null
-
-        fun getDatabase(context: Context): TrackerDatabase {
-            if (instance == null) {
-                synchronized(TrackerDatabase::class.java) {
-                    if (instance == null) {
-                        // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
-                            .fallbackToDestructiveMigration()
-                            .build()
-                    }
-                }
-            }
-            return instance!!
-        }
-    }
-}
+data class ProjectWithTasks(
+    @Embedded val project: Project,
+    @Relation(
+        parentColumn = "id",// Project
+        entity = ProjectTask::class,
+        entityColumn = "id",// ProjectTask
+        associateBy = Junction(ProjectTaskKey::class,
+            parentColumn = "project_id",
+            entityColumn = "task_id"
+        )
+    )
+    val tasks: List<ProjectTask>
+)

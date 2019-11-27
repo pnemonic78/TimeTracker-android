@@ -51,26 +51,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ViewSwitcher
-            android:id="@+id/switcherForm"
+        <fragment
+            android:id="@+id/nav_host_form"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:measureAllChildren="false">
-
-            <fragment
-                android:id="@+id/fragmentTimer"
-                android:name="com.tikalk.worktracker.time.TimerFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:layout="@layout/fragment_timer" />
-
-            <fragment
-                android:id="@+id/fragmentEdit"
-                android:name="com.tikalk.worktracker.time.TimeEditFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:layout="@layout/time_form" />
-        </ViewSwitcher>
+            app:defaultNavHost="false"
+            app:navGraph="@navigation/main_form"
+            tools:layout="@layout/fragment_timer" />
     </androidx.cardview.widget.CardView>
 
     <View
