@@ -32,8 +32,10 @@
 
 package com.tikalk.html
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.FormElement
+import org.jsoup.internal.StringUtil
+import org.jsoup.nodes.*
+import org.jsoup.select.NodeTraversor
+import org.jsoup.select.NodeVisitor
 
 fun FormElement.selectByName(name: String): Element? {
     for (element in elements()) {
@@ -55,4 +57,44 @@ fun FormElement.selectById(id: String): Element? {
 
 fun Element.value(): String {
     return `val`()
+}
+
+fun Element.textBr(): String {
+    val accum = StringUtil.borrowBuilder()
+    NodeTraversor.traverse(object : NodeVisitor {
+        override fun head(node: Node, depth: Int) {
+            if (node is TextNode) {
+                appendNormalisedText(accum, node)
+            } else if (node is Element) {
+                if (node.tagName() == "br") {
+                    accum.append('\n')
+                } else if (accum.isNotEmpty() && node.isBlock) {
+                    accum.append(' ')
+                }
+            }
+        }
+
+        override fun tail(node: Node, depth: Int) { // make sure there is a space between block tags and immediately following text nodes <div>One</div>Two should be "One Two".
+            if (node is Element) {
+                if (node.isBlock && (node.nextSibling() is TextNode) && !lastCharIsWhitespace(accum)) {
+                    accum.append(' ')
+                }
+            }
+        }
+    }, this)
+
+    return StringUtil.releaseBuilder(accum).trim()
+}
+
+private fun appendNormalisedText(accum: StringBuilder, textNode: TextNode) {
+    val text = textNode.wholeText
+    if (textNode is CDataNode) {
+        accum.append(text)
+    } else {
+        StringUtil.appendNormalisedWhitespace(accum, text, lastCharIsWhitespace(accum))
+    }
+}
+
+private fun lastCharIsWhitespace(sb: StringBuilder): Boolean {
+    return sb.isNotEmpty() && (sb[sb.lastIndex] == ' ')
 }

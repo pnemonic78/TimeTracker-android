@@ -207,9 +207,17 @@ class ProfileFragment : InternetFragment {
             cancel = true
         }
 
-        if (confirmPasswordValue.isNotBlank()) {
+        if (confirmPasswordValue.isEmpty()) {
+            confirmPasswordInput.error = getString(R.string.error_field_required)
+            focusView = confirmPasswordInput
+            cancel = true
+        } else if (!isPasswordValid(confirmPasswordValue)) {
             confirmPasswordInput.error = getString(R.string.error_invalid_password)
-            focusView = passwordInput
+            focusView = confirmPasswordInput
+            cancel = true
+        } else if (passwordValue != confirmPasswordValue) {
+            confirmPasswordInput.error = getString(R.string.error_match_password)
+            focusView = confirmPasswordInput
             cancel = true
         }
 

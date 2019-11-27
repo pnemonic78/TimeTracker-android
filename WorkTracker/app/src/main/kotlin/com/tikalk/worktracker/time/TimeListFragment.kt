@@ -49,6 +49,7 @@ import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.auth.ProfileFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
@@ -56,6 +57,7 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -79,7 +81,8 @@ import kotlin.math.abs
 class TimeListFragment : TimeFormFragment,
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
-    TimeEditFragment.OnEditRecordListener {
+    TimeEditFragment.OnEditRecordListener,
+    ProfileFragment.OnProfileListener {
 
     constructor() : super()
 
@@ -713,7 +716,7 @@ class TimeListFragment : TimeFormFragment,
         if (fragment.isShowing()) {
             findNavController().popBackStack()
         }
-        user = preferences.user
+        this.user = preferences.user
     }
 
     override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
@@ -809,6 +812,14 @@ class TimeListFragment : TimeFormFragment,
                 pickDate()
                 return true
             }
+            R.id.menu_settings -> {
+                showSettings()
+                return true
+            }
+            R.id.menu_profile -> {
+                showProfile()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -829,6 +840,28 @@ class TimeListFragment : TimeFormFragment,
 
     private fun findTopFormFragment(): TimeFormFragment {
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
+    }
+
+    private fun showSettings() {
+        findNavController().navigate(R.id.action_timeList_to_settings)
+    }
+
+    private fun showProfile() {
+        val args = Bundle()
+        requireFragmentManager().putFragment(args, ProfileFragment.EXTRA_CALLER, this)
+        findNavController().navigate(R.id.action_timeList_to_profile, args)
+    }
+
+    override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
+        Timber.i("profile success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        this.user = user
+    }
+
+    override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {
+        Timber.e("profile failure: $reason")
     }
 
     companion object {

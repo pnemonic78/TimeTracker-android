@@ -39,6 +39,8 @@ import androidx.navigation.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.auth.ProfileFragment
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
 
@@ -67,20 +69,6 @@ class TimeListActivity : InternetActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_settings -> {
-                showSettings()
-                return true
-            }
-            R.id.menu_profile -> {
-                showProfile()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
     override fun showProgress(show: Boolean) {
         progress.showAnimated(show)
     }
@@ -103,14 +91,6 @@ class TimeListActivity : InternetActivity() {
             }
         }
         super.onBackPressed()
-    }
-
-    private fun showSettings() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_timeList_to_settings)
-    }
-
-    private fun showProfile() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_timeList_to_profile)
     }
 
     private fun findMainFragment(): TimeListFragment? {

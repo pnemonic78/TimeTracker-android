@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.net
 
 import android.os.Bundle
+import com.tikalk.html.textBr
 import com.tikalk.worktracker.app.TrackerFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -84,7 +85,7 @@ open class InternetFragment : TrackerFragment {
         if (tableErrors != null) {
             val errorNode = tableErrors.selectFirst("td[class='error']")
             if (errorNode != null) {
-                return errorNode.text()
+                return errorNode.textBr()
             }
         }
 
@@ -96,7 +97,7 @@ open class InternetFragment : TrackerFragment {
         for (table in tables) {
             val errorNode = table.selectFirst("td[class='error']")
             if (errorNode != null) {
-                return errorNode.text()
+                return errorNode.textBr()
             }
         }
 
