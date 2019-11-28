@@ -51,6 +51,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_time_list.*
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -80,7 +84,7 @@ class ProjectsFragment() : InternetFragment() {
         loadPage()
             .subscribe({
                 bindList(projects)
-                //TODO fetchPage()
+                fetchPage()
                 showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -103,8 +107,12 @@ class ProjectsFragment() : InternetFragment() {
     private fun loadProjects(db: TrackerDatabase) {
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
-        projects.clear()
-        projects.addAll(projectsDb.filter { it.id != TikalEntity.ID_NONE })
+        setProjects(projectsDb.filter { it.id != TikalEntity.ID_NONE })
+    }
+
+    private fun setProjects(projects: Collection<Project>) {
+        this.projects.clear()
+        this.projects.addAll(projects.sortedBy { it.name })
     }
 
     private fun fetchPage() {
@@ -147,7 +155,74 @@ class ProjectsFragment() : InternetFragment() {
     }
 
     private fun populateList(html: String) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val projects = ArrayList<Project>()
+        val doc: Document = Jsoup.parse(html)
+
+        // The first row of the table is the header
+        val table = findProjectsTable(doc)
+        if (table != null) {
+            // loop through all the rows and parse each record
+            // First row is the header, so drop it.
+            val rows = table.getElementsByTag("tr").drop(1)
+            for (tr in rows) {
+                val project = parseProject(tr)
+                if (project != null) {
+                    projects.add(project)
+                }
+            }
+        }
+
+        setProjects(projects)
+    }
+
+    /**
+     * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
+     */
+    private fun findProjectsTable(doc: Document): Element? {
+        val body = doc.body()
+        val tables = body.select("table[width='100%']")
+        var rows: Elements
+        var tr: Element
+        var cols: Elements
+        var td: Element
+        var classAttr: String
+        var label: String
+
+        for (table in tables) {
+            rows = table.getElementsByTag("tr")
+            tr = rows.first()
+            if (tr.children().size != 2) {
+                continue
+            }
+            cols = tr.getElementsByTag("td")
+            td = cols[0]
+            classAttr = td.attr("class")
+            label = td.ownText()
+            if ((classAttr != "tableHeader") || (label != "Name")) {
+                continue
+            }
+            td = cols[1]
+            classAttr = td.attr("class")
+            label = td.ownText()
+            if ((classAttr != "tableHeader") || (label != "Description")) {
+                continue
+            }
+            return table
+        }
+
+        return null
+    }
+
+    private fun parseProject(row: Element): Project? {
+        val cols = row.getElementsByTag("td")
+
+        val tdProject = cols[0]
+        val projectName = tdProject.ownText()
+
+        val tdDescription = cols[1]
+        val projectDescription = tdDescription.ownText()
+
+        return Project(projectName, projectDescription)
     }
 
     private fun bindList(projects: List<Project>) {

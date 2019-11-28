@@ -340,7 +340,7 @@ class TimeListFragment : TimeFormFragment(),
         for (table in tables) {
             rows = table.getElementsByTag("tr")
             tr = rows.first()
-            if (tr.childNodeSize() < 6) {
+            if (tr.children().size < 6) {
                 continue
             }
             cols = tr.getElementsByTag("td")
@@ -571,7 +571,7 @@ class TimeListFragment : TimeFormFragment(),
             }
             rows = table.getElementsByTag("tr")
             tr = rows.first()
-            if (tr.childNodeSize() < 1) {
+            if (tr.children().size < 1) {
                 continue
             }
             cols = tr.getElementsByTag("td")
