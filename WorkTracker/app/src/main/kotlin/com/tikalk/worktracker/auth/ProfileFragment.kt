@@ -117,6 +117,7 @@ class ProfileFragment : InternetFragment() {
         run()
     }
 
+    @MainThread
     private fun bindForm() {
         val user = this.user
         val credentials = this.userCredentials

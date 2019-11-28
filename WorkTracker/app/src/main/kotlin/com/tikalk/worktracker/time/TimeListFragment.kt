@@ -484,6 +484,7 @@ class TimeListFragment : TimeFormFragment(),
     override fun populateForm(record: TimeRecord) {
     }
 
+    @MainThread
     override fun bindForm(record: TimeRecord) {
     }
 
@@ -808,14 +809,6 @@ class TimeListFragment : TimeFormFragment(),
                 pickDate()
                 return true
             }
-            R.id.menu_settings -> {
-                showSettings()
-                return true
-            }
-            R.id.menu_profile -> {
-                showProfile()
-                return true
-            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -836,16 +829,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun findTopFormFragment(): TimeFormFragment {
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
-    }
-
-    private fun showSettings() {
-        findNavController().navigate(R.id.action_timeList_to_settings)
-    }
-
-    private fun showProfile() {
-        val args = Bundle()
-        requireFragmentManager().putFragment(args, ProfileFragment.EXTRA_CALLER, this)
-        findNavController().navigate(R.id.action_timeList_to_profile, args)
     }
 
     override fun onProfileSuccess(fragment: ProfileFragment, user: User) {

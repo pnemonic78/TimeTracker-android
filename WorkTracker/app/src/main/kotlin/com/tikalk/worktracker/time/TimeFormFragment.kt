@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.time
 
 import android.text.format.DateUtils
+import androidx.annotation.MainThread
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.BuildConfig
@@ -377,6 +378,7 @@ abstract class TimeFormFragment : InternetFragment() {
 
     abstract fun populateForm(record: TimeRecord)
 
+    @MainThread
     abstract fun bindForm(record: TimeRecord)
 
     fun markFavorite() {
