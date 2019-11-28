@@ -41,6 +41,7 @@ import com.tikalk.preference.TikalPreferenceFragment
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 
 class TimeSettingsFragment : TikalPreferenceFragment() {
@@ -82,6 +83,7 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
     private fun deleteUser() {
         val context = requireContext()
         val prefs = TimeTrackerPrefs(context)
+        prefs.user = User.EMPTY
         prefs.userCredentials = UserCredentials.EMPTY
         prefs.basicCredentials = BasicCredentials.EMPTY
         TimeTrackerServiceFactory.clearCookies()

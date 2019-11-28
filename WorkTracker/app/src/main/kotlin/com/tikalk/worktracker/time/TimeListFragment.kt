@@ -711,6 +711,7 @@ class TimeListFragment : TimeFormFragment(),
             findNavController().popBackStack()
         }
         this.user = preferences.user
+        fetchPage(date)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {

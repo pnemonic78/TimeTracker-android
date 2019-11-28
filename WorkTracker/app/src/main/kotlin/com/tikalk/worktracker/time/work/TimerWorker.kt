@@ -31,15 +31,14 @@
  */
 package com.tikalk.worktracker.time.work
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.text.format.DateUtils
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.tikalk.graphics.drawableToBitmap
@@ -57,9 +56,10 @@ import timber.log.Timber
 class TimerWorker(private val context: Context, private val workerParams: Bundle) {
 
     companion object {
-        const val ACTION_START = BuildConfig.APPLICATION_ID + ".START"
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".STOP"
-        const val ACTION_NOTIFY = BuildConfig.APPLICATION_ID + ".NOTIFY"
+        const val ACTION_START = BuildConfig.APPLICATION_ID + ".action.START"
+        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
+        const val ACTION_NOTIFY = BuildConfig.APPLICATION_ID + ".action.NOTIFY"
+        const val ACTION_LAUNCH = BuildConfig.APPLICATION_ID + ".action.LAUNCH"
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
         const val EXTRA_PROJECT_NAME = BuildConfig.APPLICATION_ID + ".PROJECT_NAME"
@@ -134,6 +134,21 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
             val worker = TimerWorker(context, inputData)
             worker.doWork()
+        }
+
+        fun launchApp(context: Context) {
+            val pm = context.packageManager
+            val intent = pm.getLaunchIntentForPackage(context.packageName) ?: return
+            intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }
+
+        fun restartApp(context: Context) {
+            val intent = Intent(context, TimeReceiver::class.java)
+            intent.action = TimerWorker.ACTION_LAUNCH
+            val operation = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + (2 * DateUtils.SECOND_IN_MILLIS), operation)
         }
     }
 
