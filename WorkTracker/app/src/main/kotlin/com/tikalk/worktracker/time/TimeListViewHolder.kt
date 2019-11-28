@@ -37,6 +37,7 @@ import android.graphics.Color
 import android.text.format.DateUtils
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
@@ -65,6 +66,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         (itemView as ViewGroup).getChildAt(0).setOnClickListener(this)
     }
 
+    @MainThread
     private fun bind(record: TimeRecord) {
         val context: Context = itemView.context
         itemView.project.text = record.project.name
@@ -82,6 +84,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         bindColors(record)
     }
 
+    @MainThread
     private fun clear() {
         itemView.project.text = ""
         itemView.task.text = ""
@@ -90,6 +93,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         itemView.note.text = ""
     }
 
+    @MainThread
     private fun bindColors(record: TimeRecord) {
         val projectId = record.project.id
         val taskId = record.task.id

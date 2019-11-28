@@ -29,47 +29,36 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time
 
-import android.content.Context
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil.ItemCallback
-import androidx.recyclerview.widget.ListAdapter
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.time.TimeRecord
+package com.tikalk.worktracker.project
 
-class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : ListAdapter<TimeRecord, TimeListViewHolder>(TimeDiffer()) {
+import android.view.View
+import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.model.Project
+import kotlinx.android.synthetic.main.project_item.view.*
 
-    interface OnTimeListListener {
-        /**
-         * Callback to be invoked when an item in this list has been clicked.
-         */
-        fun onRecordClick(record: TimeRecord)
+class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        /**
-         * Callback to be invoked when an item in this list has been swiped.
-         */
-        fun onRecordSwipe(record: TimeRecord)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeListViewHolder {
-        val context: Context = parent.context
-        val view = LayoutInflater.from(context).inflate(R.layout.time_item, parent, false)
-        return TimeListViewHolder(view, clickListener)
-    }
-
-    override fun onBindViewHolder(holder: TimeListViewHolder, position: Int) {
-        holder.record = getItem(position)
-    }
-
-    private class TimeDiffer : ItemCallback<TimeRecord>() {
-        override fun areItemsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
-            return oldItem.id == newItem.id
+    var project: Project? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                bind(value)
+            } else {
+                clear()
+            }
         }
 
-        override fun areContentsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
-           return oldItem == newItem
-        }
+    @MainThread
+    private fun bind(project: Project) {
+        itemView.name.text = project.name
+        itemView.description.text = project.description
+    }
+
+    @MainThread
+    private fun clear() {
+        itemView.name.text = ""
+        itemView.description.text = ""
     }
 }

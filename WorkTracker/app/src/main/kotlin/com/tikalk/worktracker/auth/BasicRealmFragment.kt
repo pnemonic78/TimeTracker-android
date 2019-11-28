@@ -51,11 +51,7 @@ import timber.log.Timber
 /**
  * An authentication screen for Basic Realm via email/password.
  */
-class BasicRealmFragment : InternetFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
+class BasicRealmFragment : InternetFragment() {
 
     var realmName = "(realm)"
         set(value) {

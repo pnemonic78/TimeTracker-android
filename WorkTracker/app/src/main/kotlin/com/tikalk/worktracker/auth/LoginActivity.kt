@@ -100,15 +100,15 @@ class LoginActivity : InternetActivity(),
         progress.showAnimated(show)
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, email: String) {
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         Timber.i("login success")
         val result = Intent()
-        result.putExtra(LoginFragment.EXTRA_EMAIL, email)
+        result.putExtra(LoginFragment.EXTRA_LOGIN, login)
         setResult(Activity.RESULT_OK, result)
         finish()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 }

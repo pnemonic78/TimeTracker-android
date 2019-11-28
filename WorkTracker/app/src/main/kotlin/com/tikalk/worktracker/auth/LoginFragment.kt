@@ -129,8 +129,8 @@ class LoginFragment : InternetFragment,
         Timber.v("run")
         val args = this.arguments ?: return
 
-        if (args.containsKey(EXTRA_EMAIL)) {
-            loginInput.setText(args.getString(EXTRA_EMAIL))
+        if (args.containsKey(EXTRA_LOGIN)) {
+            loginInput.setText(args.getString(EXTRA_LOGIN))
             passwordInput.text = null
 
             if (args.containsKey(EXTRA_PASSWORD)) {
@@ -320,7 +320,7 @@ class LoginFragment : InternetFragment,
 
     companion object {
         const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
-        const val EXTRA_EMAIL = "login"
+        const val EXTRA_LOGIN = "login"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
 
