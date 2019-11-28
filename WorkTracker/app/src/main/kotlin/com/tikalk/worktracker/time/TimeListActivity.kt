@@ -84,7 +84,7 @@ class TimeListActivity : InternetActivity(),
                 showProfile()
                 return true
             }
-            R.id.menu_projects ->{
+            R.id.menu_projects -> {
                 showProjects()
                 return true
             }
@@ -138,16 +138,28 @@ class TimeListActivity : InternetActivity(),
     }
 
     private fun showSettings() {
-        findNavController().navigate(R.id.action_timeList_to_settings)
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id == R.id.timeListFragment) {
+            navController.navigate(R.id.action_timeList_to_settings)
+        }
     }
 
     private fun showProfile() {
-        val args = Bundle()
-        findNavController().navigate(R.id.action_timeList_to_profile, args)
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id == R.id.timeListFragment) {
+            val args = Bundle()
+            navController.navigate(R.id.action_timeList_to_profile, args)
+        }
     }
 
     private fun showProjects() {
-        findNavController().navigate(R.id.action_timeList_to_projects)
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id == R.id.timeListFragment) {
+            navController.navigate(R.id.action_timeList_to_projects)
+        }
     }
 
     companion object {
