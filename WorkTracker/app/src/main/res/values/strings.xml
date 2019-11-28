@@ -80,7 +80,7 @@
 
     <!-- Projects and Tasks -->
     <string name="projects">Projects</string>
-    <string name="tasks">Task</string>
+    <string name="tasks">Tasks</string>
     <string name="name_label">Name</string>
     <string name="description_label">Description</string>
     <string name="menu_projects" translatable="false">@string/projects</string>

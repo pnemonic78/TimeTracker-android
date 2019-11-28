@@ -50,7 +50,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_time_list.*
+import kotlinx.android.synthetic.main.fragment_projects.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -155,8 +155,8 @@ class ProjectsFragment() : InternetFragment() {
     }
 
     private fun populateList(html: String) {
-        val projects = ArrayList<Project>()
         val doc: Document = Jsoup.parse(html)
+        val projects = ArrayList<Project>()
 
         // The first row of the table is the header
         val table = findProjectsTable(doc)
@@ -176,7 +176,7 @@ class ProjectsFragment() : InternetFragment() {
     }
 
     /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
+     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
      */
     private fun findProjectsTable(doc: Document): Element? {
         val body = doc.body()
@@ -216,13 +216,13 @@ class ProjectsFragment() : InternetFragment() {
     private fun parseProject(row: Element): Project? {
         val cols = row.getElementsByTag("td")
 
-        val tdProject = cols[0]
-        val projectName = tdProject.ownText()
+        val tdName = cols[0]
+        val name = tdName.ownText()
 
         val tdDescription = cols[1]
-        val projectDescription = tdDescription.ownText()
+        val description = tdDescription.ownText()
 
-        return Project(projectName, projectDescription)
+        return Project(name, description)
     }
 
     private fun bindList(projects: List<Project>) {

@@ -35,12 +35,12 @@ package com.tikalk.worktracker.project
 import android.view.View
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
 import kotlinx.android.synthetic.main.project_item.view.*
 
-class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class ProjectTaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    var project: Project? = null
+    var task: ProjectTask? = null
         set(value) {
             field = value
             if (value != null) {
@@ -51,7 +51,7 @@ class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         }
 
     @MainThread
-    private fun bind(project: Project) {
+    private fun bind(project: ProjectTask) {
         itemView.name.text = project.name
         itemView.description.text = project.description
     }

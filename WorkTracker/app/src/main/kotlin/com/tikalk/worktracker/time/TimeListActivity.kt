@@ -88,6 +88,10 @@ class TimeListActivity : InternetActivity(),
                 showProjects()
                 return true
             }
+            R.id.menu_tasks -> {
+                showTasks()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -159,6 +163,14 @@ class TimeListActivity : InternetActivity(),
         val destination = navController.currentDestination ?: return
         if (destination.id != R.id.projectsFragment) {
             navController.navigate(R.id.action_show_projects)
+        }
+    }
+
+    private fun showTasks() {
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.tasksFragment) {
+            navController.navigate(R.id.action_show_tasks)
         }
     }
 

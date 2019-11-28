@@ -67,7 +67,7 @@
             app:destination="@id/login" />
     </fragment>
     <fragment
-        android:id="@+id/projectTasksFragment"
+        android:id="@+id/tasksFragment"
         android:name="com.tikalk.worktracker.task.ProjectTasksFragment"
         android:label="ProjectTasksFragment" >
         <action
@@ -84,6 +84,6 @@
         android:id="@+id/action_show_projects"
         app:destination="@id/projectsFragment" />
     <action
-        android:id="@+id/action_show_projectTasks"
-        app:destination="@id/projectTasksFragment" />
+        android:id="@+id/action_show_tasks"
+        app:destination="@id/tasksFragment" />
 </navigation>

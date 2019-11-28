@@ -32,33 +32,33 @@
 
 package com.tikalk.worktracker.project
 
-import android.view.View
-import androidx.annotation.MainThread
-import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.model.Project
-import kotlinx.android.synthetic.main.project_item.view.*
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.ProjectTask
 
-class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class ProjectTasksAdapter : ListAdapter<ProjectTask, ProjectTaskViewHolder>(TaskDiffer()) {
 
-    var project: Project? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                bind(value)
-            } else {
-                clear()
-            }
-        }
-
-    @MainThread
-    private fun bind(project: Project) {
-        itemView.name.text = project.name
-        itemView.description.text = project.description
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectTaskViewHolder {
+        val context: Context = parent.context
+        val view = LayoutInflater.from(context).inflate(R.layout.task_item, parent, false)
+        return ProjectTaskViewHolder(view)
     }
 
-    @MainThread
-    private fun clear() {
-        itemView.name.text = ""
-        itemView.description.text = ""
+    override fun onBindViewHolder(holder: ProjectTaskViewHolder, position: Int) {
+        holder.task = getItem(position)
+    }
+
+    private class TaskDiffer : DiffUtil.ItemCallback<ProjectTask>() {
+        override fun areItemsTheSame(oldItem: ProjectTask, newItem: ProjectTask): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: ProjectTask, newItem: ProjectTask): Boolean {
+            return oldItem == newItem
+        }
     }
 }
