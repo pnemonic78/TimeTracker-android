@@ -86,6 +86,13 @@ class ProfileFragment : InternetFragment() {
             if (caller is OnProfileListener) {
                 this.listener = caller
             }
+        } else {
+            val activity = this.activity
+            if (activity != null) {
+                if (activity is OnProfileListener) {
+                    this.listener = activity
+                }
+            }
         }
     }
 

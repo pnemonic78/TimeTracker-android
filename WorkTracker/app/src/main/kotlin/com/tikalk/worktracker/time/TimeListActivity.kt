@@ -34,13 +34,21 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
+import androidx.navigation.NavController
+import androidx.navigation.Navigation.findNavController
 import com.tikalk.app.findFragmentByClass
+import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.ProfileFragment
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
+import timber.log.Timber
 
-class TimeListActivity : InternetActivity() {
+class TimeListActivity : InternetActivity(),
+    ProfileFragment.OnProfileListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +70,22 @@ class TimeListActivity : InternetActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.clear()
+        menuInflater.inflate(R.menu.main, menu)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_settings -> {
+                showSettings()
+                return true
+            }
+            R.id.menu_profile -> {
+                showProfile()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun showProgress(show: Boolean) {
@@ -92,6 +115,31 @@ class TimeListActivity : InternetActivity() {
     private fun findMainFragment(): TimeListFragment? {
         val navFragment = supportFragmentManager.primaryNavigationFragment ?: return null
         return navFragment.childFragmentManager.findFragmentByClass(TimeListFragment::class.java)
+    }
+
+    private fun findNavController(): NavController {
+        return findNavController(this, R.id.nav_host_fragment)
+    }
+
+    private fun showSettings() {
+        findNavController().navigate(R.id.action_timeList_to_settings)
+    }
+
+    private fun showProfile() {
+        val args = Bundle()
+        findNavController().navigate(R.id.action_timeList_to_profile, args)
+    }
+
+    override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
+        Timber.i("profile success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        findMainFragment()?.user = user
+    }
+
+    override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {
+        Timber.e("profile failure: $reason")
     }
 
     companion object {
