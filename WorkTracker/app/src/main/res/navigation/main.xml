@@ -52,7 +52,7 @@
         android:label="TimeSettingsFragment" />
     <dialog
         android:id="@+id/profileFragment"
-        android:name="com.tikalk.worktracker.auth.ProfileFragment"
+        android:name="com.tikalk.worktracker.user.ProfileFragment"
         android:label="ProfileFragment" >
         <action
             android:id="@+id/action_profile_to_login"

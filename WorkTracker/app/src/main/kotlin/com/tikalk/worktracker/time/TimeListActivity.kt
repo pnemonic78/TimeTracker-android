@@ -41,7 +41,7 @@ import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.ProfileFragment
+import com.tikalk.worktracker.user.ProfileFragment
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
