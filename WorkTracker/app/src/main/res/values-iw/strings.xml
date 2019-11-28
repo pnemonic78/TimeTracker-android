@@ -67,4 +67,10 @@
     <string name="prompt_confirmPassword">אשר סיסמה</string>
     <string name="error_match_password">סיסמאות אינן זהות</string>
 
+    <!-- Projects and Tasks -->
+    <string name="projects">פרויקטים</string>
+    <string name="tasks">משימות</string>
+    <string name="name_label">שם</string>
+    <string name="description_label">תיאור</string>
+
 </resources>

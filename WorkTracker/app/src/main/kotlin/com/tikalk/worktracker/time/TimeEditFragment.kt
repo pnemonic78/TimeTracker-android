@@ -73,12 +73,8 @@ import timber.log.Timber
 import java.util.*
 import kotlin.math.max
 
-class TimeEditFragment : TimeFormFragment,
+class TimeEditFragment : TimeFormFragment(),
     LoginFragment.OnLoginListener {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
 
     private var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
@@ -397,7 +393,7 @@ class TimeEditFragment : TimeFormFragment,
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, email: String) {
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         Timber.i("login success")
         if (fragment.isShowing()) {
             findNavController().popBackStack()
@@ -405,7 +401,7 @@ class TimeEditFragment : TimeFormFragment,
         fetchPage(date, record.id)
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, email: String, reason: String) {
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
         activity?.finish()
     }

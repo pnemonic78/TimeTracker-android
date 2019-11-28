@@ -65,11 +65,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
-class TimerFragment : TimeFormFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
+class TimerFragment : TimeFormFragment() {
 
     private var timer: Disposable? = null
 
@@ -114,6 +110,7 @@ class TimerFragment : TimeFormFragment {
     override fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
         val context: Context = requireContext()
+        if (!isVisible) return
         val projectItems = projects.toTypedArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {

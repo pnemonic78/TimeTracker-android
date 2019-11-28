@@ -62,11 +62,7 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
+class ProfileFragment : InternetFragment() {
 
     var listener: OnProfileListener? = null
     private var userCredentials = UserCredentials.EMPTY
@@ -89,6 +85,13 @@ class ProfileFragment : InternetFragment {
         if (caller != null) {
             if (caller is OnProfileListener) {
                 this.listener = caller
+            }
+        } else {
+            val activity = this.activity
+            if (activity != null) {
+                if (activity is OnProfileListener) {
+                    this.listener = activity
+                }
             }
         }
     }
@@ -121,6 +124,7 @@ class ProfileFragment : InternetFragment {
         run()
     }
 
+    @MainThread
     private fun bindForm() {
         val user = this.user
         val credentials = this.userCredentials
@@ -309,7 +313,7 @@ class ProfileFragment : InternetFragment {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
-                if (progress) showProgressMain(false)
+                if (progress) showProgress(false)
             })
             .addTo(disposables)
     }

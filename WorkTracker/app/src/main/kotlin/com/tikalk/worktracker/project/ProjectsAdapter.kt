@@ -29,47 +29,36 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time
+
+package com.tikalk.worktracker.project
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil.ItemCallback
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.Project
 
-class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : ListAdapter<TimeRecord, TimeListViewHolder>(TimeDiffer()) {
+class ProjectsAdapter : ListAdapter<Project, ProjectViewHolder>(ProjectDiffer()) {
 
-    interface OnTimeListListener {
-        /**
-         * Callback to be invoked when an item in this list has been clicked.
-         */
-        fun onRecordClick(record: TimeRecord)
-
-        /**
-         * Callback to be invoked when an item in this list has been swiped.
-         */
-        fun onRecordSwipe(record: TimeRecord)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeListViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectViewHolder {
         val context: Context = parent.context
-        val view = LayoutInflater.from(context).inflate(R.layout.time_item, parent, false)
-        return TimeListViewHolder(view, clickListener)
+        val view = LayoutInflater.from(context).inflate(R.layout.project_item, parent, false)
+        return ProjectViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: TimeListViewHolder, position: Int) {
-        holder.record = getItem(position)
+    override fun onBindViewHolder(holder: ProjectViewHolder, position: Int) {
+        holder.project = getItem(position)
     }
 
-    private class TimeDiffer : ItemCallback<TimeRecord>() {
-        override fun areItemsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
+    private class ProjectDiffer : DiffUtil.ItemCallback<Project>() {
+        override fun areItemsTheSame(oldItem: Project, newItem: Project): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
-           return oldItem == newItem
+        override fun areContentsTheSame(oldItem: Project, newItem: Project): Boolean {
+            return oldItem == newItem
         }
     }
 }

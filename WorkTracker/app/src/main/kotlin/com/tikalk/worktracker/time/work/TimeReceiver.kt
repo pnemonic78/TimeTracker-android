@@ -45,10 +45,9 @@ class TimeReceiver : BroadcastReceiver() {
 
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_MY_PACKAGE_REPLACED ->
-                TimerWorker.maybeShowNotification(context)
-            TimerWorker.ACTION_STOP ->
-                TimerWorker.stopTimer(context, intent)
+            Intent.ACTION_MY_PACKAGE_REPLACED -> TimerWorker.maybeShowNotification(context)
+            TimerWorker.ACTION_STOP -> TimerWorker.stopTimer(context, intent)
+            TimerWorker.ACTION_LAUNCH -> TimerWorker.launchApp(context)
         }
     }
 }

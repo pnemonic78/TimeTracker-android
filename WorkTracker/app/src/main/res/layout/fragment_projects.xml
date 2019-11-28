@@ -31,34 +31,15 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_timer"
-    app:startDestination="@id/timerFragment">
-    <include app:graph="@navigation/login" />
-    <fragment
-        android:id="@+id/timeEditFragment"
-        android:name="com.tikalk.worktracker.time.TimeEditFragment"
-        android:label="TimeEditFragment"
-        tools:layout="@layout/time_form">
-        <action
-            android:id="@+id/action_timeEdit_to_login"
-            app:destination="@id/login" />
-    </fragment>
-    <fragment
-        android:id="@+id/timerFragment"
-        android:name="com.tikalk.worktracker.time.TimerFragment"
-        android:label="TimerFragment" >
-        <action
-            android:id="@+id/action_timer_to_timeEdit"
-            app:destination="@id/timeEditFragment"
-            app:enterAnim="@anim/slide_in_form"
-            app:exitAnim="@anim/slide_out_form"
-            app:popEnterAnim="@anim/slide_in_form"
-            app:popExitAnim="@anim/slide_out_form" />
-        <action
-            android:id="@+id/action_timer_to_login"
-            app:destination="@id/login" />
-    </fragment>
-</navigation>
+    android:id="@android:id/list"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginStart="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+    tools:listitem="@layout/project_item" />
