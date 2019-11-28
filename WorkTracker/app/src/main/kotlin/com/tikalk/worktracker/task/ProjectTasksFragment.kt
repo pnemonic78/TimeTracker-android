@@ -30,37 +30,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.admin
+package com.tikalk.worktracker.task
 
-import android.content.Context
-import android.view.View
-import androidx.annotation.MainThread
-import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.model.Project
-import kotlinx.android.synthetic.main.project_item.view.*
+import com.tikalk.worktracker.net.InternetFragment
 
-class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-    var project: Project? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                bind(value)
-            } else {
-                clear()
-            }
-        }
-
-    @MainThread
-    private fun bind(project: Project) {
-        val context: Context = itemView.context
-        itemView.name.text = project.name
-        itemView.description.text = project.description
-    }
-
-    @MainThread
-    private fun clear() {
-        itemView.name.text = ""
-        itemView.description.text = ""
-    }
+class ProjectTasksFragment : InternetFragment() {
 }

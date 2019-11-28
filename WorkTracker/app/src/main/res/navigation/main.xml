@@ -60,7 +60,7 @@
     </dialog>
     <fragment
         android:id="@+id/projectsFragment"
-        android:name="com.tikalk.worktracker.admin.ProjectsFragment"
+        android:name="com.tikalk.worktracker.project.ProjectsFragment"
         android:label="ProjectsFragment" >
         <action
             android:id="@+id/action_projects_to_login"
@@ -68,7 +68,7 @@
     </fragment>
     <fragment
         android:id="@+id/projectTasksFragment"
-        android:name="com.tikalk.worktracker.admin.ProjectTasksFragment"
+        android:name="com.tikalk.worktracker.task.ProjectTasksFragment"
         android:label="ProjectTasksFragment" >
         <action
             android:id="@+id/action_projectTasks_to_login"

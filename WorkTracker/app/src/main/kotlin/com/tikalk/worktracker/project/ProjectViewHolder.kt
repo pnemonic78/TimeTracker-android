@@ -30,35 +30,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.admin
+package com.tikalk.worktracker.project
 
 import android.content.Context
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import com.tikalk.worktracker.R
+import android.view.View
+import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.model.Project
+import kotlinx.android.synthetic.main.project_item.view.*
 
-class ProjectsAdapter : ListAdapter<Project, ProjectViewHolder>(ProjectDiffer()) {
+class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectViewHolder {
-        val context: Context = parent.context
-        val view = LayoutInflater.from(context).inflate(R.layout.project_item, parent, false)
-        return ProjectViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ProjectViewHolder, position: Int) {
-        holder.project = getItem(position)
-    }
-
-    private class ProjectDiffer : DiffUtil.ItemCallback<Project>() {
-        override fun areItemsTheSame(oldItem: Project, newItem: Project): Boolean {
-            return oldItem.id == newItem.id
+    var project: Project? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                bind(value)
+            } else {
+                clear()
+            }
         }
 
-        override fun areContentsTheSame(oldItem: Project, newItem: Project): Boolean {
-            return oldItem == newItem
-        }
+    @MainThread
+    private fun bind(project: Project) {
+        val context: Context = itemView.context
+        itemView.name.text = project.name
+        itemView.description.text = project.description
+    }
+
+    @MainThread
+    private fun clear() {
+        itemView.name.text = ""
+        itemView.description.text = ""
     }
 }

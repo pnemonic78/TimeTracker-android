@@ -30,9 +30,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.admin
+package com.tikalk.worktracker.project
 
-import com.tikalk.worktracker.net.InternetFragment
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.Project
 
-class ProjectTasksFragment : InternetFragment() {
+class ProjectsAdapter : ListAdapter<Project, ProjectViewHolder>(ProjectDiffer()) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectViewHolder {
+        val context: Context = parent.context
+        val view = LayoutInflater.from(context).inflate(R.layout.project_item, parent, false)
+        return ProjectViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ProjectViewHolder, position: Int) {
+        holder.project = getItem(position)
+    }
+
+    private class ProjectDiffer : DiffUtil.ItemCallback<Project>() {
+        override fun areItemsTheSame(oldItem: Project, newItem: Project): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Project, newItem: Project): Boolean {
+            return oldItem == newItem
+        }
+    }
 }
