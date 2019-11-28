@@ -45,24 +45,11 @@
         <action
             android:id="@+id/action_timeList_to_login"
             app:destination="@id/login" />
-        <action
-            android:id="@+id/action_timeList_to_settings"
-            app:destination="@id/timeSettingsFragment" />
-        <action
-            android:id="@+id/action_timeList_to_profile"
-            app:destination="@id/profileFragment" />
-        <action
-            android:id="@+id/action_timeList_to_projects"
-            app:destination="@id/projectsFragment" />
-        <action
-            android:id="@+id/action_timeList_to_projectTasks"
-            app:destination="@id/projectTasksFragment" />
     </fragment>
     <fragment
         android:id="@+id/timeSettingsFragment"
         android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
-        android:label="TimeSettingsFragment"
-        tools:layout="@layout/preference_list_fragment"/>
+        android:label="TimeSettingsFragment" />
     <dialog
         android:id="@+id/profileFragment"
         android:name="com.tikalk.worktracker.auth.ProfileFragment"
@@ -87,4 +74,16 @@
             android:id="@+id/action_projectTasks_to_login"
             app:destination="@id/login" />
     </fragment>
+    <action
+        android:id="@+id/action_show_settings"
+        app:destination="@id/timeSettingsFragment" />
+    <action
+        android:id="@+id/action_show_profile"
+        app:destination="@id/profileFragment" />
+    <action
+        android:id="@+id/action_show_projects"
+        app:destination="@id/projectsFragment" />
+    <action
+        android:id="@+id/action_show_projectTasks"
+        app:destination="@id/projectTasksFragment" />
 </navigation>

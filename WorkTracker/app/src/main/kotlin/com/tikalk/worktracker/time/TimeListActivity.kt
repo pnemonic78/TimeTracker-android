@@ -140,25 +140,25 @@ class TimeListActivity : InternetActivity(),
     private fun showSettings() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
-        if (destination.id == R.id.timeListFragment) {
-            navController.navigate(R.id.action_timeList_to_settings)
+        if (destination.id != R.id.timeSettingsFragment) {
+            navController.navigate(R.id.action_show_settings)
         }
     }
 
     private fun showProfile() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
-        if (destination.id == R.id.timeListFragment) {
+        if (destination.id != R.id.profileFragment) {
             val args = Bundle()
-            navController.navigate(R.id.action_timeList_to_profile, args)
+            navController.navigate(R.id.action_show_profile, args)
         }
     }
 
     private fun showProjects() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
-        if (destination.id == R.id.timeListFragment) {
-            navController.navigate(R.id.action_timeList_to_projects)
+        if (destination.id != R.id.projectsFragment) {
+            navController.navigate(R.id.action_show_projects)
         }
     }
 
