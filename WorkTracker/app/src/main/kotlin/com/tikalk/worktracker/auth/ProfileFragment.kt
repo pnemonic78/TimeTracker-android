@@ -313,7 +313,7 @@ class ProfileFragment : InternetFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
-                if (progress) showProgressMain(false)
+                if (progress) showProgress(false)
             })
             .addTo(disposables)
     }

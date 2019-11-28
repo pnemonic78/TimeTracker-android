@@ -78,4 +78,12 @@
     <string name="menu_profile" translatable="false">@string/profile</string>
     <string name="error_match_password">Passwords are not the same</string>
 
+    <!-- Projects and Tasks -->
+    <string name="projects">Projects</string>
+    <string name="tasks">Task</string>
+    <string name="name_label">Name</string>
+    <string name="description_label">Description</string>
+    <string name="menu_projects" translatable="false">@string/projects</string>
+    <string name="menu_tasks" translatable="false">@string/tasks</string>
+
 </resources>

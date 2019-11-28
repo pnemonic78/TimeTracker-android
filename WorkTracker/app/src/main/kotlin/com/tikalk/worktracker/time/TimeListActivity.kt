@@ -84,6 +84,10 @@ class TimeListActivity : InternetActivity(),
                 showProfile()
                 return true
             }
+            R.id.menu_projects ->{
+                showProjects()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -112,6 +116,18 @@ class TimeListActivity : InternetActivity(),
         super.onBackPressed()
     }
 
+    override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
+        Timber.i("profile success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        findMainFragment()?.user = user
+    }
+
+    override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {
+        Timber.e("profile failure: $reason")
+    }
+
     private fun findMainFragment(): TimeListFragment? {
         val navFragment = supportFragmentManager.primaryNavigationFragment ?: return null
         return navFragment.childFragmentManager.findFragmentByClass(TimeListFragment::class.java)
@@ -130,16 +146,8 @@ class TimeListActivity : InternetActivity(),
         findNavController().navigate(R.id.action_timeList_to_profile, args)
     }
 
-    override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
-        Timber.i("profile success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
-        findMainFragment()?.user = user
-    }
-
-    override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {
-        Timber.e("profile failure: $reason")
+    private fun showProjects() {
+        findNavController().navigate(R.id.action_timeList_to_projects)
     }
 
     companion object {

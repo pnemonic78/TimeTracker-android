@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ BSD 3-Clause License
   ~
   ~ Copyright (c) 2019, Tikal Knowledge, Ltd.
@@ -30,25 +31,6 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item
-        android:id="@+id/menu_profile"
-        android:icon="@drawable/ic_menu_profile"
-        android:orderInCategory="910"
-        android:title="@string/menu_profile"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/menu_projects"
-        android:icon="@drawable/ic_menu_projects"
-        android:orderInCategory="920"
-        android:title="@string/menu_projects"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/menu_settings"
-        android:icon="@drawable/ic_menu_settings"
-        android:orderInCategory="999"
-        android:title="@string/menu_settings"
-        app:showAsAction="never" />
-</menu>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_business" />
+</selector>

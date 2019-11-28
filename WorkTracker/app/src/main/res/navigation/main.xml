@@ -51,6 +51,12 @@
         <action
             android:id="@+id/action_timeList_to_profile"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_timeList_to_projects"
+            app:destination="@id/projectsFragment" />
+        <action
+            android:id="@+id/action_timeList_to_projectTasks"
+            app:destination="@id/projectTasksFragment" />
     </fragment>
     <fragment
         android:id="@+id/timeSettingsFragment"
@@ -65,4 +71,20 @@
             android:id="@+id/action_profile_to_login"
             app:destination="@id/login" />
     </dialog>
+    <fragment
+        android:id="@+id/projectsFragment"
+        android:name="com.tikalk.worktracker.admin.ProjectsFragment"
+        android:label="ProjectsFragment" >
+        <action
+            android:id="@+id/action_projects_to_login"
+            app:destination="@id/login" />
+    </fragment>
+    <fragment
+        android:id="@+id/projectTasksFragment"
+        android:name="com.tikalk.worktracker.admin.ProjectTasksFragment"
+        android:label="ProjectTasksFragment" >
+        <action
+            android:id="@+id/action_projectTasks_to_login"
+            app:destination="@id/login" />
+    </fragment>
 </navigation>

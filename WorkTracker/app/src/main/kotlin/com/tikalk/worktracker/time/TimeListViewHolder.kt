@@ -84,6 +84,7 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         bindColors(record)
     }
 
+    @MainThread
     private fun clear() {
         itemView.project.text = ""
         itemView.task.text = ""
