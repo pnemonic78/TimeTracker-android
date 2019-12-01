@@ -55,6 +55,10 @@ class TimeListActivity : InternetActivity(),
 
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
+
+        findNavController().addOnDestinationChangedListener { controller, destination, arguments ->
+            supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -172,6 +176,13 @@ class TimeListActivity : InternetActivity(),
         if (destination.id != R.id.tasksFragment) {
             navController.navigate(R.id.action_show_tasks)
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        if (findNavController().navigateUp()) {
+            return true
+        }
+        return super.onSupportNavigateUp()
     }
 
     companion object {
