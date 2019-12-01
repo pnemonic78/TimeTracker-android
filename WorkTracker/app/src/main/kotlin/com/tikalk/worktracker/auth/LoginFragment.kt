@@ -46,6 +46,7 @@ import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
 import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
@@ -259,15 +260,13 @@ class LoginFragment : InternetFragment,
         val indexAt = username.indexOf('@')
         val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        if (destination.id != R.id.basicRealmFragment) {
+        if (!isNavDestination(R.id.basicRealmFragment)) {
             val args = Bundle().apply {
                 putString(BasicRealmFragment.EXTRA_REALM, realm)
                 putString(BasicRealmFragment.EXTRA_USER, userClean)
             }
             requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
-            navController.navigate(R.id.action_basicRealmLogin, args)
+            findNavController().navigate(R.id.action_basicRealmLogin, args)
         }
     }
 

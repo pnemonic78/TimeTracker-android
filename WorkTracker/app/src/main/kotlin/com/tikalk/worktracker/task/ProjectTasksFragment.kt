@@ -39,6 +39,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -145,10 +146,12 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        val args = Bundle()
-        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        findNavController().navigate(R.id.action_projectTasks_to_login, args)
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_projectTasks_to_login, args)
+        }
     }
 
     private fun processPage(html: String) {

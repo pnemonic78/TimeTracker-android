@@ -34,10 +34,12 @@ package com.tikalk.app
 
 import android.app.Dialog
 import android.os.Bundle
+import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.fragment.findNavController
 import io.reactivex.disposables.CompositeDisposable
 
 open class TikalFragment() : AppCompatDialogFragment() {
@@ -100,4 +102,10 @@ fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {
         parent = parent.parentFragment
     }
     return null
+}
+
+fun Fragment.isNavDestination(@IdRes resId: Int): Boolean {
+    val navController = findNavController()
+    val destination = navController.currentDestination ?: return false
+    return (destination.id == resId)
 }
