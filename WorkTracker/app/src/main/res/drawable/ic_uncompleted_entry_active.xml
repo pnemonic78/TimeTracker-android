@@ -32,7 +32,11 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/uncompleted_entry_active" />
+    <gradient
+        android:endColor="@color/uncompleted_entry_active"
+        android:gradientRadius="75%p"
+        android:startColor="@color/white"
+        android:type="radial" />
     <stroke
         android:width="2dp"
         android:color="@color/uncompleted_entry_active_border" />

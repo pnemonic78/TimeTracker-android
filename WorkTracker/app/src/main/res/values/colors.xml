@@ -12,8 +12,8 @@
     <color name="icon">@color/black</color>
     <color name="icon_disabled">@color/black_x40</color>
 
-    <color name="uncompleted_entry_normal">@color/silver</color>
-    <color name="uncompleted_entry_normal_border">@color/black_x80</color>
+    <color name="uncompleted_entry_normal">@color/green</color>
+    <color name="uncompleted_entry_normal_border">@color/black_x40</color>
     <color name="uncompleted_entry_active">@color/red</color>
-    <color name="uncompleted_entry_active_border">@color/black_x80</color>
+    <color name="uncompleted_entry_active_border">@color/black_x40</color>
 </resources>
