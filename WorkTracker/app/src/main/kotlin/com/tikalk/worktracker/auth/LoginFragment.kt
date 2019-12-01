@@ -259,12 +259,16 @@ class LoginFragment : InternetFragment,
         val indexAt = username.indexOf('@')
         val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
-        val args = Bundle().apply {
-            putString(BasicRealmFragment.EXTRA_REALM, realm)
-            putString(BasicRealmFragment.EXTRA_USER, userClean)
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.basicRealmFragment) {
+            val args = Bundle().apply {
+                putString(BasicRealmFragment.EXTRA_REALM, realm)
+                putString(BasicRealmFragment.EXTRA_USER, userClean)
+            }
+            requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
+            navController.navigate(R.id.action_basicRealmLogin, args)
         }
-        requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
-        findNavController().navigate(R.id.action_basicRealmLogin, args)
     }
 
     override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
