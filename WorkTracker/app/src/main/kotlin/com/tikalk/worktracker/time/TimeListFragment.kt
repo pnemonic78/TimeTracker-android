@@ -43,9 +43,7 @@ import android.view.*
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.findFragmentByClass
-import com.tikalk.app.isShowing
-import com.tikalk.app.runOnUiThread
+import com.tikalk.app.*
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -79,7 +77,7 @@ import kotlin.math.abs
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
-    TimeEditFragment.OnEditRecordListener{
+    TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -91,6 +89,7 @@ class TimeListFragment : TimeFormFragment(),
     private var records: List<TimeRecord> = ArrayList()
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
+    private var loginAutomatic = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,7 +176,7 @@ class TimeListFragment : TimeFormFragment(),
                             val html = response.body()!!
                             processPage(html, date, progress)
                         } else {
-                            authenticate(true)
+                            authenticate(loginAutomatic)
                         }
                         fetchingPage = false
                     }, { err ->
@@ -279,10 +278,12 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        val args = Bundle()
-        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        findNavController().navigate(R.id.action_timeList_to_login, args)
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_timeList_to_login, args)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -329,40 +330,27 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
-        val tables = body.select("table")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
+        val candidates = body.select("td[class='tableHeader']")
         var td: Element
-        var classAttr: String
         var label: String
 
-        for (table in tables) {
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.children().size < 6) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols[0]
-            classAttr = td.attr("class")
+        for (candidate in candidates) {
+            td = candidate
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Project")) {
+            if (label != "Project") {
                 continue
             }
-            td = cols[1]
-            classAttr = td.attr("class")
+            td = td.nextElementSibling() ?: continue
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Task")) {
+            if (label != "Task") {
                 continue
             }
-            td = cols[2]
-            classAttr = td.attr("class")
+            td = td.nextElementSibling() ?: continue
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Start")) {
+            if (label != "Start") {
                 continue
             }
-            return table
+            return td.parent().parent()
         }
 
         return null
@@ -716,6 +704,7 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
+        loginAutomatic = false
         if (login.isEmpty() or (reason == "onCancel")) {
             activity?.finish()
         }

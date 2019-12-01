@@ -39,6 +39,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isNavDestination
+import com.tikalk.app.isShowing
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -54,11 +56,10 @@ import kotlinx.android.synthetic.main.fragment_projects.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
-class ProjectsFragment() : InternetFragment() {
+class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val listAdapter = ProjectsAdapter()
@@ -143,10 +144,12 @@ class ProjectsFragment() : InternetFragment() {
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        val args = Bundle()
-        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        findNavController().navigate(R.id.action_projects_to_login, args)
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_projects_to_login, args)
+        }
     }
 
     private fun processPage(html: String) {
@@ -180,34 +183,22 @@ class ProjectsFragment() : InternetFragment() {
      */
     private fun findProjectsTable(doc: Document): Element? {
         val body = doc.body()
-        val tables = body.select("table[width='100%']")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
+        val candidates = body.select("td[class='tableHeader']")
         var td: Element
-        var classAttr: String
         var label: String
 
-        for (table in tables) {
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.children().size != 2) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols[0]
-            classAttr = td.attr("class")
+        for (candidate in candidates) {
+            td = candidate
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Name")) {
+            if (label != "Name") {
                 continue
             }
-            td = cols[1]
-            classAttr = td.attr("class")
+            td = td.nextElementSibling() ?: continue
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Description")) {
+            if (label != "Description") {
                 continue
             }
-            return table
+            return td.parent().parent()
         }
 
         return null
@@ -230,5 +221,17 @@ class ProjectsFragment() : InternetFragment() {
         if (projects === this.projects) {
             listAdapter.notifyDataSetChanged()
         }
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        run()
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 }

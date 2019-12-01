@@ -29,59 +29,48 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
 
-import android.net.Uri
-import android.os.Parcel
-import com.tikalk.net.createUriFromParcel
+package com.tikalk.worktracker.user
 
-/**
- * User entity.
- *
- * @author Moshe Waisberg.
- */
-data class User(
-    /**
-     * Unique username.
-     */
-    var username: String,
-    /**
-     * The e-mail address for communications.
-     */
-    var email: String? = null,
-    /**
-     * The display name, e.g. full name.
-     */
-    var displayName: String? = null,
-    /**
-     * The telephone number for communications.
-     */
-    var telephone: String? = null,
-    /**
-     * The photo URI.
-     */
-    var photo: Uri? = null,
-    /**
-     * The roles.
-     */
-    var roles: List<String>? = null
-) : TikalEntity() {
+import android.view.View
+import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.User
+import kotlinx.android.synthetic.main.user_item.view.*
 
-    var isUncompletedEntry: Boolean = false
+class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        createUriFromParcel(parcel),
-        parcel.createStringArrayList())
+    var user: User? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                bind(value)
+            } else {
+                clear()
+            }
+        }
 
-    fun isEmpty(): Boolean {
-        return username.isEmpty()
+    @MainThread
+    private fun bind(user: User) {
+        itemView.name.text = user.displayName
+        itemView.login.text = user.username
+        itemView.role.text = user.roles?.joinToString(", ") ?: ""
+        itemView.uncompletedEntry.setImageLevel(if (user.isUncompletedEntry) LEVEL_ACTIVE else LEVEL_NORMAL)
+        itemView.uncompletedEntry.contentDescription = itemView.context.getString(R.string.uncompleted_entry)
+    }
+
+    @MainThread
+    private fun clear() {
+        itemView.name.text = ""
+        itemView.login.text = ""
+        itemView.role.text = ""
+        itemView.uncompletedEntry.setImageLevel(LEVEL_NORMAL)
+        itemView.uncompletedEntry.contentDescription = ""
     }
 
     companion object {
-        val EMPTY = User("")
+        private const val LEVEL_NORMAL = 0
+        private const val LEVEL_ACTIVE = 1
     }
 }
