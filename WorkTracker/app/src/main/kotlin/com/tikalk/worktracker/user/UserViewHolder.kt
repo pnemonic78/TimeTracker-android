@@ -35,6 +35,7 @@ package com.tikalk.worktracker.user
 import android.view.View
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.User
 import kotlinx.android.synthetic.main.user_item.view.*
 
@@ -55,6 +56,8 @@ class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.name.text = user.displayName
         itemView.login.text = user.username
         itemView.role.text = user.roles?.joinToString(", ") ?: ""
+        itemView.uncompletedEntry.setImageLevel(if (user.isUncompletedEntry) LEVEL_ACTIVE else LEVEL_NORMAL)
+        itemView.uncompletedEntry.contentDescription = itemView.context.getString(R.string.uncompleted_entry)
     }
 
     @MainThread
@@ -62,5 +65,12 @@ class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.name.text = ""
         itemView.login.text = ""
         itemView.role.text = ""
+        itemView.uncompletedEntry.setImageLevel(LEVEL_NORMAL)
+        itemView.uncompletedEntry.contentDescription = ""
+    }
+
+    companion object {
+        private const val LEVEL_NORMAL = 0
+        private const val LEVEL_ACTIVE = 1
     }
 }

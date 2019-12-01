@@ -214,6 +214,12 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
         val tdName = cols[0]
         val name = tdName.ownText()
+        val spans = tdName.select("span")
+        var isUncompletedEntry = false
+        for (span in spans) {
+            val classAttribute = span.attr("class")
+            isUncompletedEntry = isUncompletedEntry or (classAttribute == "uncompleted-entry active")
+        }
 
         val tdLogin = cols[1]
         val username = tdLogin.ownText()
@@ -221,7 +227,9 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
         val tdRole = cols[2]
         val roles = tdRole.ownText()
 
-        return User(username, username, name, null, null, roles.split(","))
+        val user = User(username, username, name, null, null, roles.split(","))
+        user.isUncompletedEntry = isUncompletedEntry
+        return user
     }
 
     private fun bindList(users: List<User>) {

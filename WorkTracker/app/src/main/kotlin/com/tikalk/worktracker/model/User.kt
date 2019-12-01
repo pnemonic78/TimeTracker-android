@@ -66,6 +66,9 @@ data class User(
      */
     var roles: List<String>? = null
 ) : TikalEntity() {
+
+    var isUncompletedEntry: Boolean = false
+
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString(),
