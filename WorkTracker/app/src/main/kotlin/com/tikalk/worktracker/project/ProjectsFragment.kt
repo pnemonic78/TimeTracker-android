@@ -39,6 +39,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -58,7 +59,7 @@ import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
-class ProjectsFragment() : InternetFragment() {
+class ProjectsFragment() : InternetFragment(), LoginFragment.OnLoginListener {
 
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val listAdapter = ProjectsAdapter()
@@ -230,5 +231,17 @@ class ProjectsFragment() : InternetFragment() {
         if (projects === this.projects) {
             listAdapter.notifyDataSetChanged()
         }
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        run()
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 }
