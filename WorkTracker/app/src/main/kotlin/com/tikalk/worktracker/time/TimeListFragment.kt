@@ -89,6 +89,7 @@ class TimeListFragment : TimeFormFragment(),
     private var records: List<TimeRecord> = ArrayList()
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
+    private var loginAutomatic = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -175,7 +176,7 @@ class TimeListFragment : TimeFormFragment(),
                             val html = response.body()!!
                             processPage(html, date, progress)
                         } else {
-                            authenticate(true)
+                            authenticate(loginAutomatic)
                         }
                         fetchingPage = false
                     }, { err ->
@@ -703,6 +704,7 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
+        loginAutomatic = false
         if (login.isEmpty() or (reason == "onCancel")) {
             activity?.finish()
         }
