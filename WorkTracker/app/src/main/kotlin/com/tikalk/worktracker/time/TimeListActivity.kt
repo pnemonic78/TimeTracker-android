@@ -57,7 +57,7 @@ class TimeListActivity : InternetActivity(),
         setContentView(R.layout.activity_time_list)
 
         findNavController().addOnDestinationChangedListener { controller, destination, arguments ->
-            supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment)
+            runOnUiThread { supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment) }
         }
     }
 
