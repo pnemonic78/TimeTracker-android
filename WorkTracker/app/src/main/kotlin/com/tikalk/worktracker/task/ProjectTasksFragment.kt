@@ -194,7 +194,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
             if (label != "Name") {
                 continue
             }
-            td = td.nextElementSibling()
+            td = td.nextElementSibling() ?: continue
             label = td.ownText()
             if (label != "Description") {
                 continue

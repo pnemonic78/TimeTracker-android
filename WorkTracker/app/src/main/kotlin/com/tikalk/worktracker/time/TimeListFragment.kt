@@ -77,7 +77,7 @@ import kotlin.math.abs
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
     LoginFragment.OnLoginListener,
-    TimeEditFragment.OnEditRecordListener{
+    TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -329,40 +329,27 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
-        val tables = body.select("table")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
+        val candidates = body.select("td[class='tableHeader']")
         var td: Element
-        var classAttr: String
         var label: String
 
-        for (table in tables) {
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.children().size < 6) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols[0]
-            classAttr = td.attr("class")
+        for (candidate in candidates) {
+            td = candidate
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Project")) {
+            if (label != "Project") {
                 continue
             }
-            td = cols[1]
-            classAttr = td.attr("class")
+            td = td.nextElementSibling() ?: continue
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Task")) {
+            if (label != "Task") {
                 continue
             }
-            td = cols[2]
-            classAttr = td.attr("class")
+            td = td.nextElementSibling() ?: continue
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Start")) {
+            if (label != "Start") {
                 continue
             }
-            return table
+            return td.parent().parent()
         }
 
         return null
