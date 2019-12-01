@@ -42,6 +42,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
 import com.tikalk.worktracker.R
@@ -63,7 +64,7 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment() {
+class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     var listener: OnProfileListener? = null
     private var userCredentials = UserCredentials.EMPTY
@@ -394,6 +395,18 @@ class ProfileFragment : InternetFragment() {
          * @param reason the failure reason.
          */
         fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String)
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        run()
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 
     companion object {
