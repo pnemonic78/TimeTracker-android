@@ -29,56 +29,38 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
 
-import android.net.Uri
-import android.os.Parcel
-import com.tikalk.net.createUriFromParcel
+package com.tikalk.worktracker.user
 
-/**
- * User entity.
- *
- * @author Moshe Waisberg.
- */
-data class User(
-    /**
-     * Unique username.
-     */
-    var username: String,
-    /**
-     * The e-mail address for communications.
-     */
-    var email: String? = null,
-    /**
-     * The display name, e.g. full name.
-     */
-    var displayName: String? = null,
-    /**
-     * The telephone number for communications.
-     */
-    var telephone: String? = null,
-    /**
-     * The photo URI.
-     */
-    var photo: Uri? = null,
-    /**
-     * The roles.
-     */
-    var roles: List<String>? = null
-) : TikalEntity() {
-    constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        createUriFromParcel(parcel),
-        parcel.createStringArrayList())
+import android.view.View
+import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.model.User
+import kotlinx.android.synthetic.main.user_item.view.*
 
-    fun isEmpty(): Boolean {
-        return username.isEmpty()
+class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+    var user: User? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                bind(value)
+            } else {
+                clear()
+            }
+        }
+
+    @MainThread
+    private fun bind(user: User) {
+        itemView.name.text = user.displayName
+        itemView.login.text = user.username
+        itemView.role.text = user.roles?.joinToString(", ") ?: ""
     }
 
-    companion object {
-        val EMPTY = User("")
+    @MainThread
+    private fun clear() {
+        itemView.name.text = ""
+        itemView.login.text = ""
+        itemView.role.text = ""
     }
 }

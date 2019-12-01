@@ -63,9 +63,12 @@
 
     <!-- Profile -->
     <string name="profile">פרופיל</string>
-    <string name="prompt_name">שם</string>
+    <string name="name">שם</string>
     <string name="prompt_confirmPassword">אשר סיסמה</string>
     <string name="error_match_password">סיסמאות אינן זהות</string>
+    <string name="uncompleted_entry">משתמש עם הזנת זמן לא הושלמה</string>
+    <string name="role_label">תפקיד</string>
+    <string name="menu_users">משתמשים</string>
 
     <!-- Projects and Tasks -->
     <string name="projects">פרויקטים</string>

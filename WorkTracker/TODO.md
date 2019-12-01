@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* User screen
 * LiveData
 * MVVM
 * Reports screen

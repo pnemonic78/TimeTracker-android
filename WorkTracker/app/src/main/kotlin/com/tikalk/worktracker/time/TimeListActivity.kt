@@ -96,6 +96,10 @@ class TimeListActivity : InternetActivity(),
                 showTasks()
                 return true
             }
+            R.id.menu_users -> {
+                showUsers()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -175,6 +179,14 @@ class TimeListActivity : InternetActivity(),
         val destination = navController.currentDestination ?: return
         if (destination.id != R.id.tasksFragment) {
             navController.navigate(R.id.action_show_tasks)
+        }
+    }
+
+    private fun showUsers() {
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.usersFragment) {
+            navController.navigate(R.id.action_show_users)
         }
     }
 

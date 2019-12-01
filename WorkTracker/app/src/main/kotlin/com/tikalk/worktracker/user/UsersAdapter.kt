@@ -29,56 +29,36 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
 
-import android.net.Uri
-import android.os.Parcel
-import com.tikalk.net.createUriFromParcel
+package com.tikalk.worktracker.user
 
-/**
- * User entity.
- *
- * @author Moshe Waisberg.
- */
-data class User(
-    /**
-     * Unique username.
-     */
-    var username: String,
-    /**
-     * The e-mail address for communications.
-     */
-    var email: String? = null,
-    /**
-     * The display name, e.g. full name.
-     */
-    var displayName: String? = null,
-    /**
-     * The telephone number for communications.
-     */
-    var telephone: String? = null,
-    /**
-     * The photo URI.
-     */
-    var photo: Uri? = null,
-    /**
-     * The roles.
-     */
-    var roles: List<String>? = null
-) : TikalEntity() {
-    constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        createUriFromParcel(parcel),
-        parcel.createStringArrayList())
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.User
 
-    fun isEmpty(): Boolean {
-        return username.isEmpty()
+class UsersAdapter : ListAdapter<User, UserViewHolder>(UserDiffer()) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+        val context: Context = parent.context
+        val view = LayoutInflater.from(context).inflate(R.layout.user_item, parent, false)
+        return UserViewHolder(view)
     }
 
-    companion object {
-        val EMPTY = User("")
+    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+        holder.user = getItem(position)
+    }
+
+    private class UserDiffer : DiffUtil.ItemCallback<User>() {
+        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem == newItem
+        }
     }
 }
