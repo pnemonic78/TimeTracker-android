@@ -56,11 +56,10 @@ import kotlinx.android.synthetic.main.fragment_projects.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
-class ProjectsFragment() : InternetFragment(), LoginFragment.OnLoginListener {
+class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val listAdapter = ProjectsAdapter()
@@ -184,34 +183,22 @@ class ProjectsFragment() : InternetFragment(), LoginFragment.OnLoginListener {
      */
     private fun findProjectsTable(doc: Document): Element? {
         val body = doc.body()
-        val tables = body.select("table[width='100%']")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
+        val candidates = body.select("td[class='tableHeader']")
         var td: Element
-        var classAttr: String
         var label: String
 
-        for (table in tables) {
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.children().size != 2) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols[0]
-            classAttr = td.attr("class")
+        for (candidate in candidates) {
+            td = candidate
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Name")) {
+            if (label != "Name") {
                 continue
             }
-            td = cols[1]
-            classAttr = td.attr("class")
+            td = td.nextElementSibling()
             label = td.ownText()
-            if ((classAttr != "tableHeader") || (label != "Description")) {
+            if (label != "Description") {
                 continue
             }
-            return table
+            return td.parent().parent()
         }
 
         return null
