@@ -76,6 +76,7 @@
             android:id="@+id/login"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:autoLink="email"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/guideline"
             app:layout_constraintTop_toTopOf="@+id/loginLabel"
