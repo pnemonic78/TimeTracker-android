@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.task
+package com.tikalk.worktracker.user
 
 import android.content.Context
 import android.os.Bundle
@@ -44,29 +44,27 @@ import com.tikalk.app.isShowing
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
-import com.tikalk.worktracker.project.ProjectTasksAdapter
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_tasks.*
+import kotlinx.android.synthetic.main.fragment_users.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
-class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
+class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
-    private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
-    private val listAdapter = ProjectTasksAdapter()
+    private val users: MutableList<User> = CopyOnWriteArrayList()
+    private val listAdapter = UsersAdapter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_tasks, container, false)
+        return inflater.inflate(R.layout.fragment_users, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -85,7 +83,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
         showProgress(true)
         loadPage()
             .subscribe({
-                bindList(tasks)
+                bindList(users)
                 fetchPage()
                 showProgress(false)
             }, { err ->
@@ -100,21 +98,22 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
             val context: Context = this.context ?: return@fromCallable
 
             val db = TrackerDatabase.getDatabase(context)
-            loadTasks(db)
+            loadUsers(db)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun loadTasks(db: TrackerDatabase) {
-        val taskDao = db.taskDao()
-        val tasksDb = taskDao.queryAll()
-        setTasks(tasksDb.filter { it.id != TikalEntity.ID_NONE })
+    private fun loadUsers(db: TrackerDatabase) {
+        //TODO implement me!
+        //val usersDao = db.userDao()
+        //val usersDb = usersDao.queryAll()
+        //setUsers(usersDb.filter { it.id != TikalEntity.ID_NONE })
     }
 
-    private fun setTasks(tasks: Collection<ProjectTask>) {
-        this.tasks.clear()
-        this.tasks.addAll(tasks.sortedBy { it.name })
+    private fun setUsers(users: Collection<User>) {
+        this.users.clear()
+        this.users.addAll(users.sortedBy { it.displayName })
     }
 
     private fun fetchPage() {
@@ -125,7 +124,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
         // Fetch from remote server.
         val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
-        service.fetchProjectTasks()
+        service.fetchUsers()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
@@ -149,40 +148,40 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            findNavController().navigate(R.id.action_projectTasks_to_login, args)
+            findNavController().navigate(R.id.action_users_to_login, args)
         }
     }
 
     private fun processPage(html: String) {
         populateList(html)
-        bindList(tasks)
+        bindList(users)
     }
 
     private fun populateList(html: String) {
         val doc: Document = Jsoup.parse(html)
-        val tasks = ArrayList<ProjectTask>()
+        val users = ArrayList<User>()
 
         // The first row of the table is the header
-        val table = findProjectsTable(doc)
+        val table = findUsersTable(doc)
         if (table != null) {
             // loop through all the rows and parse each record
             // First row is the header, so drop it.
             val rows = table.getElementsByTag("tr").drop(1)
             for (tr in rows) {
-                val task = parseTask(tr)
-                if (task != null) {
-                    tasks.add(task)
+                val user = parseUser(tr)
+                if (user != null) {
+                    users.add(user)
                 }
             }
         }
 
-        setTasks(tasks)
+        setUsers(users)
     }
 
     /**
      * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
      */
-    private fun findProjectsTable(doc: Document): Element? {
+    private fun findUsersTable(doc: Document): Element? {
         val body = doc.body()
         val candidates = body.select("td[class='tableHeader']")
         var td: Element
@@ -196,7 +195,12 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
             }
             td = td.nextElementSibling() ?: continue
             label = td.ownText()
-            if (label != "Description") {
+            if (label != "Login") {
+                continue
+            }
+            td = td.nextElementSibling() ?: continue
+            label = td.ownText()
+            if (label != "Role") {
                 continue
             }
             return td.parent().parent()
@@ -205,21 +209,32 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
         return null
     }
 
-    private fun parseTask(row: Element): ProjectTask? {
+    private fun parseUser(row: Element): User? {
         val cols = row.getElementsByTag("td")
 
         val tdName = cols[0]
         val name = tdName.ownText()
+        val spans = tdName.select("span")
+        var isUncompletedEntry = false
+        for (span in spans) {
+            val classAttribute = span.attr("class")
+            isUncompletedEntry = isUncompletedEntry or (classAttribute == "uncompleted-entry active")
+        }
 
-        val tdDescription = cols[1]
-        val description = tdDescription.ownText()
+        val tdLogin = cols[1]
+        val username = tdLogin.ownText()
 
-        return ProjectTask(name, description)
+        val tdRole = cols[2]
+        val roles = tdRole.ownText()
+
+        val user = User(username, username, name, null, null, roles.split(","))
+        user.isUncompletedEntry = isUncompletedEntry
+        return user
     }
 
-    private fun bindList(tasks: List<ProjectTask>) {
-        listAdapter.submitList(tasks)
-        if (tasks === this.tasks) {
+    private fun bindList(users: List<User>) {
+        listAdapter.submitList(users)
+        if (users === this.users) {
             listAdapter.notifyDataSetChanged()
         }
     }

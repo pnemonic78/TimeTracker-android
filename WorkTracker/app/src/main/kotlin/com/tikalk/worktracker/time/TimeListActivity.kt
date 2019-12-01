@@ -41,7 +41,7 @@ import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.ProfileFragment
+import com.tikalk.worktracker.user.ProfileFragment
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetActivity
 import kotlinx.android.synthetic.main.progress.*
@@ -55,6 +55,10 @@ class TimeListActivity : InternetActivity(),
 
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
+
+        findNavController().addOnDestinationChangedListener { controller, destination, arguments ->
+            runOnUiThread { supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment) }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -90,6 +94,10 @@ class TimeListActivity : InternetActivity(),
             }
             R.id.menu_tasks -> {
                 showTasks()
+                return true
+            }
+            R.id.menu_users -> {
+                showUsers()
                 return true
             }
         }
@@ -172,6 +180,21 @@ class TimeListActivity : InternetActivity(),
         if (destination.id != R.id.tasksFragment) {
             navController.navigate(R.id.action_show_tasks)
         }
+    }
+
+    private fun showUsers() {
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.usersFragment) {
+            navController.navigate(R.id.action_show_users)
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        if (findNavController().navigateUp()) {
+            return true
+        }
+        return super.onSupportNavigateUp()
     }
 
     companion object {

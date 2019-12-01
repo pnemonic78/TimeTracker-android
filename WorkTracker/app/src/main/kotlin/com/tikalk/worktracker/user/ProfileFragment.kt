@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.auth
+package com.tikalk.worktracker.user
 
 import android.app.Dialog
 import android.content.Context
@@ -42,10 +42,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isNavDestination
+import com.tikalk.app.isShowing
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetFragment
@@ -62,7 +65,7 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment() {
+class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     var listener: OnProfileListener? = null
     private var userCredentials = UserCredentials.EMPTY
@@ -287,10 +290,12 @@ class ProfileFragment : InternetFragment() {
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        val args = Bundle()
-        requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
-        args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-        findNavController().navigate(R.id.action_profile_to_login, args)
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_profile_to_login, args)
+        }
     }
 
     private fun fetchPage(progress: Boolean = true) {
@@ -393,6 +398,18 @@ class ProfileFragment : InternetFragment() {
          * @param reason the failure reason.
          */
         fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String)
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        run()
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 
     companion object {

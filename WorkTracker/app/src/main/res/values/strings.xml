@@ -73,10 +73,15 @@
 
     <!-- Profile -->
     <string name="profile">Profile</string>
-    <string name="prompt_name">Name</string>
+    <string name="name">Name</string>
+    <string name="prompt_name" translatable="false">@string/name</string>
     <string name="prompt_confirmPassword">Confirm Password</string>
     <string name="menu_profile" translatable="false">@string/profile</string>
     <string name="error_match_password">Passwords are not the same</string>
+    <string name="uncompleted_entry">User has an uncompleted time entry</string>
+    <string name="login_label" translatable="false">@string/prompt_login</string>
+    <string name="role_label">Role</string>
+    <string name="menu_users">Users</string>
 
     <!-- Projects and Tasks -->
     <string name="projects">Projects</string>

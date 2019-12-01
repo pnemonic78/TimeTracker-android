@@ -57,28 +57,48 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/uncompletedEntry"
             app:layout_constraintStart_toEndOf="@+id/guideline"
             app:layout_constraintTop_toTopOf="@+id/nameLabel"
-            tools:text="@string/project_label" />
+            tools:text="@tools:sample/lorem" />
 
         <TextView
-            android:id="@+id/descriptionLabel"
+            android:id="@+id/loginLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/description_label"
+            android:text="@string/login_label"
             app:layout_constraintEnd_toStartOf="@+id/guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/nameLabel" />
 
         <TextView
-            android:id="@+id/description"
+            android:id="@+id/login"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:autoLink="email"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="@+id/loginLabel"
+            tools:text="@tools:sample/lorem" />
+
+        <TextView
+            android:id="@+id/roleLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/role_label"
+            app:layout_constraintEnd_toStartOf="@+id/guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/loginLabel" />
+
+        <TextView
+            android:id="@+id/role"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/guideline"
-            app:layout_constraintTop_toTopOf="@+id/descriptionLabel"
+            app:layout_constraintTop_toTopOf="@+id/roleLabel"
             tools:text="@tools:sample/lorem" />
 
         <androidx.constraintlayout.widget.Guideline
@@ -87,5 +107,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.3" />
+
+        <ImageView
+            android:id="@+id/uncompletedEntry"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_uncompleted_entry"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/name"
+            app:layout_constraintTop_toTopOf="@+id/name" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

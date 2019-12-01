@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ BSD 3-Clause License
   ~
@@ -51,6 +50,12 @@
         android:icon="@drawable/ic_menu_tasks"
         android:orderInCategory="921"
         android:title="@string/menu_tasks"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_users"
+        android:icon="@drawable/ic_menu_users"
+        android:orderInCategory="922"
+        android:title="@string/menu_users"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_settings"
