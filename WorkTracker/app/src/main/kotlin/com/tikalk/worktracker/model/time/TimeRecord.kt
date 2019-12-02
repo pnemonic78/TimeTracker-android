@@ -45,7 +45,7 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-data class TimeRecord(
+open class TimeRecord(
     override var id: Long = ID_NONE,
     var project: Project,
     var task: ProjectTask,
@@ -101,6 +101,32 @@ data class TimeRecord(
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    open fun copy(): TimeRecord {
+        return TimeRecord(
+            id,
+            project,
+            task,
+            start,
+            finish,
+            note,
+            cost,
+            status
+        )
+    }
+
+    fun copy(start: Calendar?, finish: Calendar?): TimeRecord {
+        return TimeRecord(
+            id,
+            project,
+            task,
+            start,
+            finish,
+            note,
+            cost,
+            status
+        )
     }
 
     companion object {

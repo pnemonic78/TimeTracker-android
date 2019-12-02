@@ -31,26 +31,22 @@
  */
 package com.tikalk.worktracker.model.time
 
-import androidx.room.Entity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
-import com.tikalk.worktracker.model.TikalEntity
-
-import java.sql.Date
+import java.util.*
 
 /**
  * Report filter entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-data class ReportFilter(
-    var project: Project = Project.EMPTY,
-    var task: ProjectTask = ProjectTask.EMPTY,
+class ReportFilter(
+    project: Project = Project.EMPTY,
+    task: ProjectTask = ProjectTask.EMPTY,
+    start: Calendar? = null,
+    finish: Calendar? = null,
     var period: ReportTimePeriod = ReportTimePeriod.THIS_MONTH,
-    var start: Date? = null,
-    var finish: Date? = null,
     var favorite: String? = null,
     var showProjectField: Boolean = false,
     var showTaskField: Boolean = false,
@@ -59,4 +55,6 @@ data class ReportFilter(
     var showDurationField: Boolean = false,
     var showNotesField: Boolean = false,
     var showCostField: Boolean = false
-) : TikalEntity()
+) : TimeRecord(
+    0L, project, task, start, finish
+)
