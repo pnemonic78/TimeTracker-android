@@ -193,7 +193,7 @@ class ReportFormFragment : TimeFormFragment() {
     private fun fetchPage() {
         val context: Context = requireContext()
         Timber.d("fetchPage")
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
         val service = TimeTrackerServiceProvider.providePlain(context, preferences)

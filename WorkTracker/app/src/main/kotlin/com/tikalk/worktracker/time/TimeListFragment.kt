@@ -153,7 +153,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.d("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         if (progress) showProgress(true)
 
         // Fetch from local database first.
@@ -434,8 +434,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun deleteRecord(record: TimeRecord) {
         Timber.d("deleteRecord record=$record")
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to delete the record.
         showProgress(true)
 
         val context: Context = requireContext()

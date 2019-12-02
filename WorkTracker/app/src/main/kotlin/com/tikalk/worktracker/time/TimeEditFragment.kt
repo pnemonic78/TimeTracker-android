@@ -407,7 +407,7 @@ class TimeEditFragment : TimeFormFragment() {
         val context: Context = requireContext()
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted")
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
         val service = TimeTrackerServiceProvider.providePlain(context, preferences)
@@ -505,8 +505,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
         Timber.v("submit $record first=$first last=$last")
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to submit the form.
         if (first) {
             showProgress(true)
             errorLabel.text = ""
@@ -572,8 +571,7 @@ class TimeEditFragment : TimeFormFragment() {
             return
         }
 
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
         val service = TimeTrackerServiceProvider.providePlain(context, preferences)

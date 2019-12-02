@@ -236,8 +236,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
             // form field with an error.
             focusView!!.requestFocus()
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
+            // Show a progress spinner, and kick off a background task to perform the user update attempt.
             showProgress(true)
             actionSave.isEnabled = false
 
@@ -300,7 +299,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun fetchPage(progress: Boolean = true) {
         Timber.d("fetchPage")
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the profile.
         if (progress) showProgress(true)
 
         // Fetch from remote server.
