@@ -46,8 +46,8 @@ import java.sql.Date
  */
 @Entity
 data class ReportFilter(
-    var project: Project? = null,
-    var task: ProjectTask? = null,
+    var project: Project = Project.EMPTY,
+    var task: ProjectTask = ProjectTask.EMPTY,
     var period: ReportTimePeriod = ReportTimePeriod.THIS_MONTH,
     var start: Date? = null,
     var finish: Date? = null,

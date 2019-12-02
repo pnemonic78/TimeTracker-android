@@ -92,6 +92,10 @@ class TimeListActivity : InternetActivity(),
                 showProjects()
                 return true
             }
+            R.id.menu_reports -> {
+                showReports()
+                return true
+            }
             R.id.menu_tasks -> {
                 showTasks()
                 return true
@@ -171,6 +175,14 @@ class TimeListActivity : InternetActivity(),
         val destination = navController.currentDestination ?: return
         if (destination.id != R.id.projectsFragment) {
             navController.navigate(R.id.action_show_projects)
+        }
+    }
+
+    private fun showReports() {
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.reportFormFragment) {
+            navController.navigate(R.id.action_show_reportForm)
         }
     }
 

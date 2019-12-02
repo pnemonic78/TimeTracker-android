@@ -96,4 +96,15 @@
     <action
         android:id="@+id/action_show_users"
         app:destination="@id/usersFragment" />
+    <fragment
+        android:id="@+id/reportFormFragment"
+        android:name="com.tikalk.worktracker.report.ReportFormFragment"
+        android:label="ReportFormFragment" >
+        <action
+            android:id="@+id/action_reportForm_to_login"
+            app:destination="@id/login" />
+    </fragment>
+    <action
+        android:id="@+id/action_show_reportForm"
+        app:destination="@id/reportFormFragment" />
 </navigation>

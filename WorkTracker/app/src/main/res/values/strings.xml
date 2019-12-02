@@ -91,4 +91,9 @@
     <string name="menu_projects" translatable="false">@string/projects</string>
     <string name="menu_tasks" translatable="false">@string/tasks</string>
 
+    <!-- Reports -->
+    <string name="reports">Reports</string>
+    <string name="menu_reports" translatable="false">@string/reports</string>
+    <string name="action_generate">Generate</string>
+
 </resources>

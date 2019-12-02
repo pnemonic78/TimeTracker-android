@@ -76,4 +76,8 @@
     <string name="name_label">שם</string>
     <string name="description_label">תיאור</string>
 
+    <!-- Reports -->
+    <string name="reports">דיווחים</string>
+    <string name="action_generate">ליצור</string>
+
 </resources>
