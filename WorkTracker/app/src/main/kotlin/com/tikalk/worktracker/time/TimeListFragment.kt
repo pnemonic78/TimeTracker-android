@@ -386,7 +386,7 @@ class TimeListFragment : TimeFormFragment(),
         val editLink = tdEdit.child(0).attr("href")
         val id = parseRecordId(editLink)
 
-        return TimeRecord(id, project, task, start, finish, note, TaskRecordStatus.CURRENT)
+        return TimeRecord(id, project, task, start, finish, note, 0.0, TaskRecordStatus.CURRENT)
     }
 
     private fun parseRecordProject(name: String): Project? {

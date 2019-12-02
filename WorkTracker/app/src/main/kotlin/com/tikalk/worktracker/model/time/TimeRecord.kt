@@ -52,6 +52,7 @@ data class TimeRecord(
     var start: Calendar? = null,
     var finish: Calendar? = null,
     var note: String = "",
+    var cost: Double = 0.0,
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
 ) : TikalEntity(id), Parcelable {
 

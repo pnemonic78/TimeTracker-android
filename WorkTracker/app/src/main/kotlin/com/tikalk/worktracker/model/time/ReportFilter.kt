@@ -57,5 +57,6 @@ data class ReportFilter(
     var showStartField: Boolean = false,
     var showFinishField: Boolean = false,
     var showDurationField: Boolean = false,
-    var showNotesField: Boolean = false
+    var showNotesField: Boolean = false,
+    var showCostField: Boolean = false
 ) : TikalEntity()
