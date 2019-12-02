@@ -34,9 +34,12 @@ package com.tikalk.worktracker.time
 
 import android.text.format.DateUtils
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
@@ -54,9 +57,10 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
-abstract class TimeFormFragment : InternetFragment() {
+abstract class TimeFormFragment : InternetFragment(),
+    LoginFragment.OnLoginListener {
 
-    var record: TimeRecord = TimeRecord.EMPTY.copy()
+    open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projects: MutableList<Project> = CopyOnWriteArrayList()
     val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     var projectEmpty: Project = Project.EMPTY
@@ -394,6 +398,17 @@ abstract class TimeFormFragment : InternetFragment() {
         val record = this.record
         populateForm(record)
         runOnUiThread { bindForm(record) }
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 
     companion object {

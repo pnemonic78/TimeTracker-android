@@ -76,7 +76,6 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    LoginFragment.OnLoginListener,
     TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
@@ -694,16 +693,13 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        super.onLoginSuccess(fragment, login)
         this.user = preferences.user
         fetchPage(date)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
+        super.onLoginFailure(fragment, login, reason)
         loginAutomatic = false
         if (login.isEmpty() or (reason == "onCancel")) {
             activity?.finish()

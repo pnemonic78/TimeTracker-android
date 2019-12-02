@@ -45,7 +45,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
-import com.tikalk.app.isShowing
+import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
@@ -73,8 +73,7 @@ import timber.log.Timber
 import java.util.*
 import kotlin.math.max
 
-class TimeEditFragment : TimeFormFragment(),
-    LoginFragment.OnLoginListener {
+class TimeEditFragment : TimeFormFragment() {
 
     private var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
@@ -206,7 +205,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     override fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm $record")
+        Timber.v("bindForm record=$record")
         val context: Context = requireContext()
 
         val projectItems = projects.toTypedArray()
@@ -394,15 +393,12 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        super.onLoginSuccess(fragment, login)
         fetchPage(date, record.id)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
+        super.onLoginFailure(fragment, login, reason)
         activity?.finish()
     }
 
@@ -474,7 +470,12 @@ class TimeEditFragment : TimeFormFragment(),
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, this)
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_timeEdit_to_login, args)
+        }
     }
 
     private fun submit() {

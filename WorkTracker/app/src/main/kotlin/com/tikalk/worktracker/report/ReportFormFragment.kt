@@ -32,26 +32,53 @@
 
 package com.tikalk.worktracker.report
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.findTask
+import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import com.tikalk.worktracker.time.TimeFormFragment
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.reports_form.*
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.math.max
 
 class ReportFormFragment : TimeFormFragment() {
 
+    private val date: Calendar = Calendar.getInstance()
     private var filter = ReportFilter()
+    override var record: TimeRecord
+        get() = filter
+        set(value) {
+            filter.project = value.project
+            filter.task = value.task
+            filter.start = value.start
+            filter.finish = value.finish
+            filter.cost = value.cost
+        }
+    private var startPickerDialog: TimePickerDialog? = null
+    private var finishPickerDialog: TimePickerDialog? = null
+    private var errorMessage: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_report_form, container, false)
@@ -85,15 +112,11 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun populateForm(record: TimeRecord) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Timber.v("populateForm $record")
     }
 
     override fun bindForm(record: TimeRecord) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    private fun generateReport() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Timber.v("bindForm record=$record")
     }
 
     private fun projectItemSelected(project: Project) {
@@ -117,5 +140,125 @@ class ReportFormFragment : TimeFormFragment() {
         options.addAll(filtered)
         taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         taskInput.setSelection(findTask(options, filter.task))
+    }
+
+    fun run() {
+        Timber.v("run")
+
+        Single.fromCallable { loadForm() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                populateForm(filter)
+                bindForm(filter)
+                if (projects.isEmpty() or tasks.isEmpty()) {
+                    fetchPage()
+                }
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
+            })
+            .addTo(disposables)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        run()
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        super.onLoginSuccess(fragment, login)
+        run()
+    }
+
+    private fun authenticate(submit: Boolean = false) {
+        Timber.v("authenticate submit=$submit")
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_reportForm_to_login, args)
+        }
+    }
+
+    private fun fetchPage() {
+        val context: Context = requireContext()
+        Timber.d("fetchPage")
+        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        showProgress(true)
+
+        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
+
+        service.fetchReports()
+            .subscribeOn(Schedulers.io())
+            .subscribe({ response ->
+                if (isValidResponse(response)) {
+                    val body = response.body()!!
+                    populateForm(date, body)
+                    showProgressMain(false)
+                } else {
+                    authenticate()
+                }
+            }, { err ->
+                Timber.e(err, "Error fetching page: ${err.message}")
+                showProgressMain(false)
+            })
+            .addTo(disposables)
+    }
+
+    private fun populateForm(filter: ReportFilter) {
+        if (filter.project.isNullOrEmpty() and filter.task.isNullOrEmpty()) {
+            val projectFavorite = preferences.getFavoriteProject()
+            if (projectFavorite != TikalEntity.ID_NONE) {
+                filter.project = projects.firstOrNull { it.id == projectFavorite } ?: projectEmpty
+            }
+            val taskFavorite = preferences.getFavoriteTask()
+            if (taskFavorite != TikalEntity.ID_NONE) {
+                filter.task = tasks.firstOrNull { it.id == taskFavorite } ?: taskEmpty
+            }
+        }
+    }
+
+    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
+        super.populateForm(date, doc, form, inputProjects, inputTasks)
+
+        //TODO populate dates
+        //TODO populate checkboxes
+    }
+
+    private fun bindForm(filter: ReportFilter) {
+        Timber.v("bindForm record=$record")
+        val context: Context = requireContext()
+
+        val projectItems = projects.toTypedArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+        }
+        val taskItems = arrayOf(taskEmpty)
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
+        projectInput.requestFocus()
+
+        val startTime = filter.startTime
+        startInput.text = if (startTime > 0L)
+            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
+        else
+            ""
+        startInput.error = null
+        startPickerDialog = null
+
+        val finishTime = filter.finishTime
+        finishInput.text = if (finishTime > 0L)
+            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
+        else
+            ""
+        finishInput.error = null
+        finishPickerDialog = null
+
+        errorLabel.text = errorMessage
+    }
+
+    private fun generateReport() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
