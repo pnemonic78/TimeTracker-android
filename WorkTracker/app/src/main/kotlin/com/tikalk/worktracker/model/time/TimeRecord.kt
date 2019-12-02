@@ -129,6 +129,10 @@ open class TimeRecord(
         )
     }
 
+    override fun toString(): String {
+        return "{id: $id, project: $project, task: $task, start: $startTime, finish: $finishTime, status: $status}"
+    }
+
     companion object {
         val EMPTY: TimeRecord = TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 
