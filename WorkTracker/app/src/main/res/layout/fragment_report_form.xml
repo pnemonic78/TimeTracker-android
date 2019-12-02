@@ -30,122 +30,15 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="@dimen/dialog_form_paddingStart"
-    android:paddingTop="@dimen/dialog_form_paddingTop"
-    android:paddingEnd="@dimen/dialog_form_paddingEnd"
-    android:paddingBottom="@dimen/dialog_form_paddingBottom">
+    android:layout_marginStart="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    app:cardCornerRadius="@dimen/card_cornerRadius">
 
-    <ImageView
-        android:id="@+id/projectIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/project_label"
-        app:layout_constraintBottom_toBottomOf="@+id/projectInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/projectInput"
-        app:srcCompat="@drawable/ic_business" />
-
-    <Spinner
-        android:id="@+id/projectInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:prompt="@string/project_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/projectIcon"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@android:layout/simple_list_item_1" />
-
-    <ImageView
-        android:id="@+id/taskIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/task_label"
-        app:layout_constraintBottom_toBottomOf="@+id/taskInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/taskInput"
-        app:srcCompat="@drawable/ic_folder" />
-
-    <Spinner
-        android:id="@+id/taskInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:prompt="@string/task_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/taskIcon"
-        app:layout_constraintTop_toBottomOf="@+id/projectInput"
-        tools:listitem="@android:layout/simple_list_item_1" />
-
-    <ImageView
-        android:id="@+id/startIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/start_label"
-        app:layout_constraintBottom_toBottomOf="@+id/startInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/startInput"
-        app:srcCompat="@drawable/ic_timer" />
-
-    <Button
-        android:id="@+id/startInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:hint="@string/start_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/startIcon"
-        app:layout_constraintTop_toBottomOf="@+id/taskInput" />
-
-    <ImageView
-        android:id="@+id/finishIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/finish_label"
-        app:layout_constraintBottom_toBottomOf="@+id/finishInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/finishInput"
-        app:srcCompat="@drawable/ic_timer_off" />
-
-    <Button
-        android:id="@+id/finishInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:hint="@string/finish_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/finishIcon"
-        app:layout_constraintTop_toBottomOf="@+id/startInput" />
-
-    <TextView
-        android:id="@+id/errorLabel"
-        style="@style/Widget.TextView.Error"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        app:layout_constraintTop_toBottomOf="@+id/finishInput"
-        tools:text="@tools:sample/lorem" />
-
-    <Button
-        android:id="@+id/actionGenerate"
-        style="@style/Widget.Button.Start"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/action_generate"
-        android:theme="@style/Widget.Button.Start"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorLabel">
-
-        <requestFocus />
-    </Button>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <include layout="@layout/reports_form" />
+</androidx.cardview.widget.CardView>

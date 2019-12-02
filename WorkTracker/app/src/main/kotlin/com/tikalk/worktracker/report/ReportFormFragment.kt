@@ -46,7 +46,7 @@ import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.TimeFormFragment
-import kotlinx.android.synthetic.main.fragment_report_form.*
+import kotlinx.android.synthetic.main.reports_form.*
 import timber.log.Timber
 
 class ReportFormFragment : TimeFormFragment() {
