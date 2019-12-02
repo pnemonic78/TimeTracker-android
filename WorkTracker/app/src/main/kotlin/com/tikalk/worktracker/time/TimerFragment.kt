@@ -48,7 +48,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.time.work.TimerWorker
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers

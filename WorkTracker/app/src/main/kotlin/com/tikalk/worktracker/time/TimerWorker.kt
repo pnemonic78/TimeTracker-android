@@ -29,7 +29,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time.work
+package com.tikalk.worktracker.time
 
 import android.app.*
 import android.content.Context
@@ -50,7 +50,6 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import com.tikalk.worktracker.time.TimeListActivity
 import timber.log.Timber
 
 class TimerWorker(private val context: Context, private val workerParams: Bundle) {
@@ -145,7 +144,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
         fun restartApp(context: Context) {
             val intent = Intent(context, TimeReceiver::class.java)
-            intent.action = TimerWorker.ACTION_LAUNCH
+            intent.action = ACTION_LAUNCH
             val operation = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + (2 * DateUtils.SECOND_IN_MILLIS), operation)
