@@ -42,6 +42,9 @@ const val SYSTEM_DATE_PATTERN = "yyyy-MM-dd"
 const val SYSTEM_TIME_PATTERN = "HH:mm"
 const val SYSTEM_HOURS_PATTERN = "HH:mm"
 
+const val FORMAT_TIME_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
+const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_WEEKDAY
+
 fun formatSystemDate(date: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
 fun formatSystemDate(date: Date?): String = if (date == null) "" else formatSystemDate(date.time)
@@ -84,6 +87,20 @@ fun parseSystemTime(date: Calendar, time: String?): Calendar? {
         cal.minute = parsed.minutes
         cal.second = parsed.seconds
         cal.millis = 0
+        return cal
+    }
+    return null
+}
+
+@Suppress("DEPRECATION")
+fun parseSystemDate(date: String?): Calendar? {
+    if (date.isNullOrEmpty()) {
+        return null
+    }
+    val parsed = SimpleDateFormat(SYSTEM_DATE_PATTERN, Locale.US).parse(date)
+    if (parsed != null) {
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = parsed.time
         return cal
     }
     return null

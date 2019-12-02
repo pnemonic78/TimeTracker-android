@@ -198,7 +198,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     open fun populateForm(date: Calendar, doc: Document) {
-        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement? ?: return
+        val form = findForm(doc) ?: return
         populateForm(date, doc, form)
     }
 
@@ -215,6 +215,10 @@ abstract class TimeFormFragment : InternetFragment(),
 
         record.project = findSelectedProject(inputProjects, projects)
         record.task = findSelectedTask(inputTasks, tasks)
+    }
+
+    protected open fun findForm(doc: Document): FormElement? {
+        return doc.selectFirst("form[name='timeRecordForm']") as FormElement?
     }
 
     fun savePage() {
@@ -422,7 +426,5 @@ abstract class TimeFormFragment : InternetFragment(),
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
-
-        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }

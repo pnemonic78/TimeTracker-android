@@ -219,7 +219,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val startTime = record.startTime
         startInput.text = if (startTime > 0L)
-            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
+            DateUtils.formatDateTime(context, startTime, FORMAT_TIME_BUTTON)
         else
             ""
         startInput.error = null
@@ -227,7 +227,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val finishTime = record.finishTime
         finishInput.text = if (finishTime > 0L)
-            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
+            DateUtils.formatDateTime(context, finishTime, FORMAT_TIME_BUTTON)
         else
             ""
         finishInput.error = null
@@ -244,16 +244,17 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickStartTime() {
         if (startPickerDialog == null) {
+            val context = requireContext()
             val cal = getCalendar(record.start)
             val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
+                cal.hourOfDay = hour
+                cal.minute = minute
                 record.start = cal
-                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
+                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
                 startInput.error = null
             }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val minute = cal.get(Calendar.MINUTE)
+            val hour = cal.hourOfDay
+            val minute = cal.minute
             startPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
         }
         startPickerDialog!!.show()
@@ -263,14 +264,14 @@ class TimeEditFragment : TimeFormFragment() {
         if (finishPickerDialog == null) {
             val cal = getCalendar(record.finish)
             val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
+                cal.hourOfDay = hour
+                cal.minute = minute
                 record.finish = cal
-                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
+                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
                 finishInput.error = null
             }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val minute = cal.get(Calendar.MINUTE)
+            val hour = cal.hourOfDay
+            val minute = cal.minute
             finishPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
         }
         finishPickerDialog!!.show()

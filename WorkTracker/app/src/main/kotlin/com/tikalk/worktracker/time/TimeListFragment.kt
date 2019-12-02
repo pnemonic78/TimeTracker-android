@@ -197,6 +197,7 @@ class TimeListFragment : TimeFormFragment(),
         populateList(html)
         savePage()
         runOnUiThread {
+            if (view == null) return@runOnUiThread
             bindList(date, records)
             bindTotals(totals)
             if (progress) showProgressMain(false)
@@ -305,16 +306,16 @@ class TimeListFragment : TimeFormFragment(),
     private fun pickDate() {
         if (datePickerDialog == null) {
             val cal = date
-            val listener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-                cal.set(Calendar.YEAR, year)
-                cal.set(Calendar.MONTH, month)
-                cal.set(Calendar.DAY_OF_MONTH, day)
+            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                cal.year = year
+                cal.month = month
+                cal.dayOfMonth = dayOfMonth
                 fetchPage(cal)
                 hideEditor()
             }
-            val year = cal.get(Calendar.YEAR)
-            val month = cal.get(Calendar.MONTH)
-            val day = cal.get(Calendar.DAY_OF_MONTH)
+            val year = cal.year
+            val month = cal.month
+            val day = cal.dayOfMonth
             datePickerDialog = DatePickerDialog(requireContext(), listener, year, month, day)
         }
         datePickerDialog!!.show()
@@ -821,7 +822,5 @@ class TimeListFragment : TimeFormFragment(),
         const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
-
-        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }

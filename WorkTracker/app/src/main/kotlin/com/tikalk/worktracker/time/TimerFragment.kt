@@ -311,9 +311,13 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
+    private fun loadPage(): Single<Unit> {
+        return Single.fromCallable { loadForm() }
+    }
+
     fun run() {
         Timber.v("run")
-        Single.fromCallable { loadForm() }
+        loadPage()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

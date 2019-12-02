@@ -32,7 +32,7 @@
 
 package com.tikalk.worktracker.report
 
-import android.app.TimePickerDialog
+import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -43,13 +43,17 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.findProject
+import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
-import com.tikalk.worktracker.time.TimeFormFragment
+import com.tikalk.worktracker.time.*
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -76,8 +80,8 @@ class ReportFormFragment : TimeFormFragment() {
             filter.finish = value.finish
             filter.cost = value.cost
         }
-    private var startPickerDialog: TimePickerDialog? = null
-    private var finishPickerDialog: TimePickerDialog? = null
+    private var startPickerDialog: DatePickerDialog? = null
+    private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -107,6 +111,8 @@ class ReportFormFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
+        startInput.setOnClickListener { pickStartDate() }
+        finishInput.setOnClickListener { pickFinishDate() }
 
         actionGenerate.setOnClickListener { generateReport() }
     }
@@ -117,6 +123,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
+        bindFilter(record as ReportFilter)
     }
 
     private fun projectItemSelected(project: Project) {
@@ -145,15 +152,13 @@ class ReportFormFragment : TimeFormFragment() {
     fun run() {
         Timber.v("run")
 
-        Single.fromCallable { loadForm() }
+        loadPage()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 populateForm(filter)
                 bindForm(filter)
-                if (projects.isEmpty() or tasks.isEmpty()) {
-                    fetchPage()
-                }
+                fetchPage()
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 showProgress(false)
@@ -181,6 +186,10 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
+    private fun loadPage(): Single<Unit> {
+        return Single.fromCallable { loadForm() }
+    }
+
     private fun fetchPage() {
         val context: Context = requireContext()
         Timber.d("fetchPage")
@@ -191,43 +200,47 @@ class ReportFormFragment : TimeFormFragment() {
 
         service.fetchReports()
             .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val body = response.body()!!
                     populateForm(date, body)
-                    showProgressMain(false)
+                    bindForm(filter)
+                    showProgress(false)
                 } else {
                     authenticate()
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
-                showProgressMain(false)
+                showProgress(false)
             })
             .addTo(disposables)
     }
 
+    override fun findForm(doc: Document): FormElement? {
+        return doc.selectFirst("form[name='reportForm']") as FormElement?
+    }
+
     private fun populateForm(filter: ReportFilter) {
-        if (filter.project.isNullOrEmpty() and filter.task.isNullOrEmpty()) {
-            val projectFavorite = preferences.getFavoriteProject()
-            if (projectFavorite != TikalEntity.ID_NONE) {
-                filter.project = projects.firstOrNull { it.id == projectFavorite } ?: projectEmpty
-            }
-            val taskFavorite = preferences.getFavoriteTask()
-            if (taskFavorite != TikalEntity.ID_NONE) {
-                filter.task = tasks.firstOrNull { it.id == taskFavorite } ?: taskEmpty
-            }
-        }
     }
 
     override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
-        //TODO populate dates
+        val inputStart = form.selectByName("start_date") ?: return
+        val startValue = inputStart.attr("value")
+
+        val inputFinish = form.selectByName("end_date") ?: return
+        val finishValue = inputFinish.attr("value")
+
+        filter.start = parseSystemDate(startValue)
+        filter.finish = parseSystemDate(finishValue)
+
         //TODO populate checkboxes
     }
 
-    private fun bindForm(filter: ReportFilter) {
-        Timber.v("bindForm record=$record")
+    private fun bindFilter(filter: ReportFilter) {
+        Timber.v("bindFilter filter=$filter")
         val context: Context = requireContext()
 
         val projectItems = projects.toTypedArray()
@@ -256,6 +269,55 @@ class ReportFormFragment : TimeFormFragment() {
         finishPickerDialog = null
 
         errorLabel.text = errorMessage
+    }
+
+    private fun pickStartDate() {
+        if (startPickerDialog == null) {
+            val context = requireContext()
+            val cal = getCalendar(filter.start)
+            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                cal.year = year
+                cal.month = month
+                cal.dayOfMonth = dayOfMonth
+                filter.start = cal
+                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
+                startInput.error = null
+            }
+            val year = cal.year
+            val month = cal.month
+            val day = cal.dayOfMonth
+            startPickerDialog = DatePickerDialog(context, listener, year, month, day)
+        }
+        startPickerDialog!!.show()
+    }
+
+    private fun pickFinishDate() {
+        if (finishPickerDialog == null) {
+            val context = requireContext()
+            val cal = getCalendar(filter.finish)
+            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                cal.year = year
+                cal.month = month
+                cal.dayOfMonth = dayOfMonth
+                filter.finish = cal
+                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
+                finishInput.error = null
+            }
+            val year = cal.year
+            val month = cal.month
+            val day = cal.dayOfMonth
+            finishPickerDialog = DatePickerDialog(context, listener, year, month, day)
+        }
+        finishPickerDialog!!.show()
+    }
+
+    private fun getCalendar(cal: Calendar?): Calendar {
+        if (cal == null) {
+            val calDate = Calendar.getInstance()
+            calDate.timeInMillis = date.timeInMillis
+            return calDate
+        }
+        return cal
     }
 
     private fun generateReport() {
