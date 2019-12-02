@@ -37,6 +37,8 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
@@ -56,7 +58,9 @@ class TimeListActivity : InternetActivity(),
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
 
-        findNavController().addOnDestinationChangedListener { controller, destination, arguments ->
+        val navController = findNavController()
+        setupActionBarWithNavController(navController, AppBarConfiguration.Builder(navController.graph).build())
+        navController.addOnDestinationChangedListener { _, destination, arguments ->
             runOnUiThread { supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment) }
         }
     }

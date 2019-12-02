@@ -39,7 +39,7 @@
     <fragment
         android:id="@+id/timeListFragment"
         android:name="com.tikalk.worktracker.time.TimeListFragment"
-        android:label="TimeListFragment"
+        android:label="@string/timeList_title"
         tools:layout="@layout/fragment_time_list">
         <action
             android:id="@+id/action_timeList_to_login"
@@ -48,11 +48,11 @@
     <fragment
         android:id="@+id/timeSettingsFragment"
         android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
-        android:label="TimeSettingsFragment" />
+        android:label="@string/settings_label" />
     <dialog
         android:id="@+id/profileFragment"
         android:name="com.tikalk.worktracker.user.ProfileFragment"
-        android:label="ProfileFragment"
+        android:label="@string/profile_title"
         tools:layout="@layout/fragment_profile">
         <action
             android:id="@+id/action_profile_to_login"
@@ -61,7 +61,7 @@
     <fragment
         android:id="@+id/projectsFragment"
         android:name="com.tikalk.worktracker.project.ProjectsFragment"
-        android:label="ProjectsFragment"
+        android:label="@string/projects_title"
         tools:layout="@layout/fragment_projects">
         <action
             android:id="@+id/action_projects_to_login"
@@ -70,7 +70,7 @@
     <fragment
         android:id="@+id/tasksFragment"
         android:name="com.tikalk.worktracker.task.ProjectTasksFragment"
-        android:label="ProjectTasksFragment"
+        android:label="@string/tasks_title"
         tools:layout="@layout/fragment_tasks">
         <action
             android:id="@+id/action_projectTasks_to_login"
@@ -91,7 +91,7 @@
     <fragment
         android:id="@+id/usersFragment"
         android:name="com.tikalk.worktracker.user.UsersFragment"
-        android:label="UsersFragment"
+        android:label="@string/users_title"
         tools:layout="@layout/fragment_users">
         <action
             android:id="@+id/action_users_to_login"
@@ -103,7 +103,7 @@
     <fragment
         android:id="@+id/reportFormFragment"
         android:name="com.tikalk.worktracker.report.ReportFormFragment"
-        android:label="ReportFormFragment"
+        android:label="@string/reports_title"
         tools:layout="@layout/fragment_report_form">
         <action
             android:id="@+id/action_reportForm_to_login"

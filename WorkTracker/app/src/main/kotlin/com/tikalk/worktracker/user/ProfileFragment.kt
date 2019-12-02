@@ -101,7 +101,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setTitle(R.string.profile)
+        dialog.setTitle(R.string.profile_title)
         return dialog
     }
 
