@@ -196,7 +196,7 @@ class ReportFragment : InternetFragment(),
 
     @MainThread
     private fun bindList(records: List<TimeRecord>) {
-        if (view == null) return
+        if (!isVisible) return
         listAdapter.submitList(records)
         if (records === this.records) {
             listAdapter.notifyDataSetChanged()

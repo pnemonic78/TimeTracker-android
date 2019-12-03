@@ -46,10 +46,7 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.findProject
-import com.tikalk.worktracker.model.findTask
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
@@ -84,6 +81,7 @@ class ReportFormFragment : TimeFormFragment() {
     private var startPickerDialog: DatePickerDialog? = null
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
+    private val periods = ReportTimePeriod.values()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_report_form, container, false)
@@ -110,6 +108,16 @@ class ReportFormFragment : TimeFormFragment() {
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val task = adapterView.adapter.getItem(position) as ProjectTask
                 taskItemSelected(task)
+            }
+        }
+        periodInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                periodItemSelected(ReportTimePeriod.CUSTOM)
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val period = periods[position]
+                periodItemSelected(period)
             }
         }
         startInput.setOnClickListener { pickStartDate() }
@@ -148,6 +156,18 @@ class ReportFormFragment : TimeFormFragment() {
         options.addAll(filtered)
         taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         taskInput.setSelection(findTask(options, filter.task))
+    }
+
+    private fun periodItemSelected(period: ReportTimePeriod) {
+        Timber.d("periodItemSelected period=$period")
+        filter.period = period
+        if (!isVisible) return
+        val custom = (period == ReportTimePeriod.CUSTOM)
+        val visibility = if (custom) View.VISIBLE else View.GONE
+        startIcon.visibility = visibility
+        startInput.visibility = visibility
+        finishIcon.visibility = visibility
+        finishInput.visibility = visibility
     }
 
     fun run() {
@@ -278,11 +298,19 @@ class ReportFormFragment : TimeFormFragment() {
         val projectItems = projects.toTypedArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
         }
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
         projectInput.requestFocus()
+
+        val periodList = ArrayList<String>(periods.size)
+        for (period in periods) {
+            periodList.add(context.getString(period.labelId))
+        }
+        val periodItems = periodList.toTypedArray()
+        periodInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, periodItems)
+        periodInput.setSelection(filter.period.ordinal)
 
         val startTime = filter.startTime
         startInput.text = if (startTime > 0L)

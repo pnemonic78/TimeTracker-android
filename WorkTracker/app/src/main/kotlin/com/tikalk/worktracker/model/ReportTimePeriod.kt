@@ -31,27 +31,30 @@
  */
 package com.tikalk.worktracker.model
 
+import androidx.annotation.StringRes
+import com.tikalk.worktracker.R
+
 /**
  * Time period for report filter.
  *
  * @author Moshe Waisberg.
  */
-enum class ReportTimePeriod(val value: String) {
+enum class ReportTimePeriod(val value: String, @StringRes val labelId: Int) {
 
     /** Custom (start, finish). */
-    CUSTOM(""),
+    CUSTOM("", R.string.period_custom),
     /** Today. */
-    TODAY("1"),
+    TODAY("1", R.string.period_today),
     /** This week. */
-    THIS_WEEK("2"),
+    THIS_WEEK("2", R.string.period_this_week),
     /** This month. */
-    THIS_MONTH("3"),
-    /** The previous Week. */
-    PREVIOUS_WEEK("6"),
-    /** The previous Month. */
-    PREVIOUS_MONTH("7"),
+    THIS_MONTH("3", R.string.period_this_month),
+    /** The previous week. */
+    PREVIOUS_WEEK("6", R.string.period_previous_week),
+    /** The previous month. */
+    PREVIOUS_MONTH("7", R.string.period_previous_month),
     /** Yesterday. */
-    YESTERDAY("8");
+    YESTERDAY("8", R.string.period_yesterday);
 
     override fun toString(): String {
         return value

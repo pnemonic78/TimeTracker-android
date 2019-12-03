@@ -82,5 +82,13 @@
     <string name="finish_date_label">תאריך סיום</string>
     <string name="action_generate">ליצור</string>
     <string name="error_no_results">אין תוצאות</string>
+    <string name="period_label">תקופת זמן</string>
+    <string name="period_custom">מותאם אישית</string>
+    <string name="period_today">היום</string>
+    <string name="period_this_week">השבוע</string>
+    <string name="period_this_month">החודש</string>
+    <string name="period_previous_week">השבוע הקודם</string>
+    <string name="period_previous_month">החודש הקודם</string>
+    <string name="period_yesterday">אתמול</string>
 
 </resources>
