@@ -29,25 +29,35 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.time.work
+package com.tikalk.worktracker.report
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import timber.log.Timber
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil.ItemCallback
+import androidx.recyclerview.widget.ListAdapter
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.time.TimeRecord
 
-/**
- * Time broadcast receiver.
- */
-class TimeReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        Timber.v("onReceive $intent")
+class ReportAdapter : ListAdapter<TimeRecord, ReportViewHolder>(ReportDiffer()) {
 
-        when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_MY_PACKAGE_REPLACED -> TimerWorker.maybeShowNotification(context)
-            TimerWorker.ACTION_STOP -> TimerWorker.stopTimer(context, intent)
-            TimerWorker.ACTION_LAUNCH -> TimerWorker.launchApp(context)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReportViewHolder {
+        val context: Context = parent.context
+        val view = LayoutInflater.from(context).inflate(R.layout.report_item, parent, false)
+        return ReportViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ReportViewHolder, position: Int) {
+        holder.record = getItem(position)
+    }
+
+    private class ReportDiffer : ItemCallback<TimeRecord>() {
+        override fun areItemsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
+            return oldItem == newItem
         }
     }
 }

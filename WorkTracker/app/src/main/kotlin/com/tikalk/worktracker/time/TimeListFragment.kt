@@ -76,7 +76,6 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    LoginFragment.OnLoginListener,
     TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
@@ -154,8 +153,8 @@ class TimeListFragment : TimeFormFragment(),
         Timber.d("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
-        if (progress) showProgress(true)
+        // Show a progress spinner, and kick off a background task to fetch the page.
+        if (progress) showProgressMain(true)
 
         // Fetch from local database first.
         loadPage()
@@ -198,9 +197,10 @@ class TimeListFragment : TimeFormFragment(),
         populateList(html)
         savePage()
         runOnUiThread {
+            if (view == null) return@runOnUiThread
             bindList(date, records)
             bindTotals(totals)
-            if (progress) showProgressMain(false)
+            if (progress) showProgress(false)
         }
     }
 
@@ -306,16 +306,16 @@ class TimeListFragment : TimeFormFragment(),
     private fun pickDate() {
         if (datePickerDialog == null) {
             val cal = date
-            val listener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-                cal.set(Calendar.YEAR, year)
-                cal.set(Calendar.MONTH, month)
-                cal.set(Calendar.DAY_OF_MONTH, day)
+            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                cal.year = year
+                cal.month = month
+                cal.dayOfMonth = dayOfMonth
                 fetchPage(cal)
                 hideEditor()
             }
-            val year = cal.get(Calendar.YEAR)
-            val month = cal.get(Calendar.MONTH)
-            val day = cal.get(Calendar.DAY_OF_MONTH)
+            val year = cal.year
+            val month = cal.month
+            val day = cal.dayOfMonth
             datePickerDialog = DatePickerDialog(requireContext(), listener, year, month, day)
         }
         datePickerDialog!!.show()
@@ -386,7 +386,7 @@ class TimeListFragment : TimeFormFragment(),
         val editLink = tdEdit.child(0).attr("href")
         val id = parseRecordId(editLink)
 
-        return TimeRecord(id, project, task, start, finish, note, TaskRecordStatus.CURRENT)
+        return TimeRecord(id, project, task, start, finish, note, 0.0, TaskRecordStatus.CURRENT)
     }
 
     private fun parseRecordProject(name: String): Project? {
@@ -434,8 +434,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun deleteRecord(record: TimeRecord) {
         Timber.d("deleteRecord record=$record")
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to delete the record.
         showProgress(true)
 
         val context: Context = requireContext()
@@ -694,16 +693,13 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        super.onLoginSuccess(fragment, login)
         this.user = preferences.user
         fetchPage(date)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
+        super.onLoginFailure(fragment, login, reason)
         loginAutomatic = false
         if (login.isEmpty() or (reason == "onCancel")) {
             activity?.finish()
@@ -825,7 +821,5 @@ class TimeListFragment : TimeFormFragment(),
         const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
-
-        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }

@@ -29,31 +29,25 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.time
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import timber.log.Timber
 
 /**
- * Time period for report filter.
- *
- * @author Moshe Waisberg.
+ * Time broadcast receiver.
  */
-enum class ReportTimePeriod(val value: String) {
+class TimeReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        Timber.v("onReceive $intent")
 
-    /** Custom (start, finish). */
-    CUSTOM(""),
-    /** Today. */
-    TODAY("1"),
-    /** This week. */
-    THIS_WEEK("2"),
-    /** This month. */
-    THIS_MONTH("3"),
-    /** The previous Week. */
-    PREVIOUS_WEEK("6"),
-    /** The previous Month. */
-    PREVIOUS_MONTH("7"),
-    /** Yesterday. */
-    YESTERDAY("8");
-
-    override fun toString(): String {
-        return value
+        when (intent.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED -> TimerWorker.maybeShowNotification(context)
+            TimerWorker.ACTION_STOP -> TimerWorker.stopTimer(context, intent)
+            TimerWorker.ACTION_LAUNCH -> TimerWorker.launchApp(context)
+        }
     }
 }

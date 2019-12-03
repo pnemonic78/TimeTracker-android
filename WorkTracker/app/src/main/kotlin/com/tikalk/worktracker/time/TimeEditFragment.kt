@@ -45,7 +45,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
-import com.tikalk.app.isShowing
+import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
@@ -73,8 +73,7 @@ import timber.log.Timber
 import java.util.*
 import kotlin.math.max
 
-class TimeEditFragment : TimeFormFragment(),
-    LoginFragment.OnLoginListener {
+class TimeEditFragment : TimeFormFragment() {
 
     private var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
@@ -206,7 +205,7 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     override fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm $record")
+        Timber.v("bindForm record=$record")
         val context: Context = requireContext()
 
         val projectItems = projects.toTypedArray()
@@ -220,7 +219,7 @@ class TimeEditFragment : TimeFormFragment(),
 
         val startTime = record.startTime
         startInput.text = if (startTime > 0L)
-            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
+            DateUtils.formatDateTime(context, startTime, FORMAT_TIME_BUTTON)
         else
             ""
         startInput.error = null
@@ -228,7 +227,7 @@ class TimeEditFragment : TimeFormFragment(),
 
         val finishTime = record.finishTime
         finishInput.text = if (finishTime > 0L)
-            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
+            DateUtils.formatDateTime(context, finishTime, FORMAT_TIME_BUTTON)
         else
             ""
         finishInput.error = null
@@ -245,16 +244,17 @@ class TimeEditFragment : TimeFormFragment(),
 
     private fun pickStartTime() {
         if (startPickerDialog == null) {
+            val context = requireContext()
             val cal = getCalendar(record.start)
             val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
+                cal.hourOfDay = hour
+                cal.minute = minute
                 record.start = cal
-                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
+                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
                 startInput.error = null
             }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val minute = cal.get(Calendar.MINUTE)
+            val hour = cal.hourOfDay
+            val minute = cal.minute
             startPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
         }
         startPickerDialog!!.show()
@@ -264,14 +264,14 @@ class TimeEditFragment : TimeFormFragment(),
         if (finishPickerDialog == null) {
             val cal = getCalendar(record.finish)
             val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hour)
-                cal.set(Calendar.MINUTE, minute)
+                cal.hourOfDay = hour
+                cal.minute = minute
                 record.finish = cal
-                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
+                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
                 finishInput.error = null
             }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val minute = cal.get(Calendar.MINUTE)
+            val hour = cal.hourOfDay
+            val minute = cal.minute
             finishPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
         }
         finishPickerDialog!!.show()
@@ -394,15 +394,12 @@ class TimeEditFragment : TimeFormFragment(),
     }
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        super.onLoginSuccess(fragment, login)
         fetchPage(date, record.id)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
+        super.onLoginFailure(fragment, login, reason)
         activity?.finish()
     }
 
@@ -410,7 +407,7 @@ class TimeEditFragment : TimeFormFragment(),
         val context: Context = requireContext()
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted")
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
         val service = TimeTrackerServiceProvider.providePlain(context, preferences)
@@ -474,7 +471,12 @@ class TimeEditFragment : TimeFormFragment(),
 
     private fun authenticate(submit: Boolean = false) {
         Timber.v("authenticate submit=$submit")
-        LoginFragment.show(this, submit, this)
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_timeEdit_to_login, args)
+        }
     }
 
     private fun submit() {
@@ -503,8 +505,7 @@ class TimeEditFragment : TimeFormFragment(),
 
     private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
         Timber.v("submit $record first=$first last=$last")
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to submit the form.
         if (first) {
             showProgress(true)
             errorLabel.text = ""
@@ -530,14 +531,13 @@ class TimeEditFragment : TimeFormFragment(),
         }
         submitter
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 if (record.id != TikalEntity.ID_NONE) {
                     saveRecord(record)
                 }
 
                 if (last) {
-                    showProgress(false)
+                    showProgressMain(false)
                 }
 
                 if (isValidResponse(response)) {
@@ -554,7 +554,7 @@ class TimeEditFragment : TimeFormFragment(),
                 }
             }, { err ->
                 Timber.e(err, "Error saving record: ${err.message}")
-                showProgress(false)
+                showProgressMain(false)
             })
             .addTo(disposables)
     }
@@ -570,8 +570,7 @@ class TimeEditFragment : TimeFormFragment(),
             return
         }
 
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
         val service = TimeTrackerServiceProvider.providePlain(context, preferences)

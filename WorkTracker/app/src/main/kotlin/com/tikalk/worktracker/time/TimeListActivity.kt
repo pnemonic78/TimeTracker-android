@@ -37,6 +37,8 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
@@ -56,7 +58,9 @@ class TimeListActivity : InternetActivity(),
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
 
-        findNavController().addOnDestinationChangedListener { controller, destination, arguments ->
+        val navController = findNavController()
+        setupActionBarWithNavController(navController, AppBarConfiguration.Builder(navController.graph).build())
+        navController.addOnDestinationChangedListener { _, destination, arguments ->
             runOnUiThread { supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment) }
         }
     }
@@ -90,6 +94,10 @@ class TimeListActivity : InternetActivity(),
             }
             R.id.menu_projects -> {
                 showProjects()
+                return true
+            }
+            R.id.menu_reports -> {
+                showReports()
                 return true
             }
             R.id.menu_tasks -> {
@@ -171,6 +179,14 @@ class TimeListActivity : InternetActivity(),
         val destination = navController.currentDestination ?: return
         if (destination.id != R.id.projectsFragment) {
             navController.navigate(R.id.action_show_projects)
+        }
+    }
+
+    private fun showReports() {
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.reportFormFragment) {
+            navController.navigate(R.id.action_show_reportForm)
         }
     }
 

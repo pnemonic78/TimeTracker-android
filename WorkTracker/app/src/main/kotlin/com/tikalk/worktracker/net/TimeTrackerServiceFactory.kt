@@ -78,7 +78,7 @@ class TimeTrackerServiceFactory {
 
             if (BuildConfig.DEBUG) {
                 val interceptorLogging = HttpLoggingInterceptor()
-                interceptorLogging.level = HttpLoggingInterceptor.Level.HEADERS
+                interceptorLogging.level = HttpLoggingInterceptor.Level.BODY
                 httpClientBuilder.addInterceptor(interceptorLogging)
             }
 

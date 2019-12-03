@@ -34,9 +34,12 @@ package com.tikalk.worktracker.time
 
 import android.text.format.DateUtils
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.findNavController
+import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
@@ -54,15 +57,16 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
-abstract class TimeFormFragment : InternetFragment() {
+abstract class TimeFormFragment : InternetFragment(),
+    LoginFragment.OnLoginListener {
 
-    var record: TimeRecord = TimeRecord.EMPTY.copy()
+    open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projects: MutableList<Project> = CopyOnWriteArrayList()
     val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
-    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
+    protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
         var scriptText: String
         var indexStart: Int
@@ -158,32 +162,33 @@ abstract class TimeFormFragment : InternetFragment() {
         target.addAll(tasks)
     }
 
-    fun populateTaskIds(doc: Document, projects: List<Project>) {
-        Timber.v("populateTaskIds")
+    protected open fun findTaskIds(doc: Document): String? {
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
+        return findScript(doc, tokenStart, tokenEnd)
+    }
 
-        for (project in projects) {
-            project.clearTasks()
-        }
+    open fun populateTaskIds(doc: Document, projects: List<Project>) {
+        Timber.v("populateTaskIds")
+        val scriptText = findTaskIds(doc) ?: return
 
         if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val projectId = matcher.group(1)!!.toLong()
-                    val project = projects.find { it.id == projectId }
+            for (project in projects) {
+                project.clearTasks()
+            }
 
-                    val taskIds: List<Long> = matcher.group(2)!!
-                        .split(",")
-                        .map { it.toLong() }
-                    val tasks = this.tasks.filter { it.id in taskIds }
+            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\";")
+            val matcher = pattern.matcher(scriptText)
+            while (matcher.find()) {
+                val projectId = matcher.group(1)!!.toLong()
+                val project = projects.find { it.id == projectId }
 
-                    project?.addTasks(tasks)
-                }
+                val taskIds: List<Long> = matcher.group(2)!!
+                    .split(",")
+                    .map { it.toLong() }
+                val tasks = this.tasks.filter { it.id in taskIds }
+
+                project?.addTasks(tasks)
             }
         }
     }
@@ -194,7 +199,7 @@ abstract class TimeFormFragment : InternetFragment() {
     }
 
     open fun populateForm(date: Calendar, doc: Document) {
-        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement? ?: return
+        val form = findForm(doc) ?: return
         populateForm(date, doc, form)
     }
 
@@ -211,6 +216,10 @@ abstract class TimeFormFragment : InternetFragment() {
 
         record.project = findSelectedProject(inputProjects, projects)
         record.task = findSelectedTask(inputTasks, tasks)
+    }
+
+    protected open fun findForm(doc: Document): FormElement? {
+        return doc.selectFirst("form[name='timeRecordForm']") as FormElement?
     }
 
     fun savePage() {
@@ -396,6 +405,17 @@ abstract class TimeFormFragment : InternetFragment() {
         runOnUiThread { bindForm(record) }
     }
 
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
+    }
+
     companion object {
         const val STATE_RECORD_ID = "record_id"
         const val STATE_RECORD = "record"
@@ -407,7 +427,5 @@ abstract class TimeFormFragment : InternetFragment() {
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
-
-        const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
     }
 }

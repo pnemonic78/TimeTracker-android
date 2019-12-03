@@ -41,7 +41,7 @@ import com.tikalk.app.TikalApplication
 import com.tikalk.util.LogTree
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.time.work.TimerWorker
+import com.tikalk.worktracker.time.TimerWorker
 import io.fabric.sdk.android.Fabric
 import timber.log.Timber
 import kotlin.math.max

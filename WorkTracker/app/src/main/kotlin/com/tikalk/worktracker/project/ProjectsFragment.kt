@@ -118,7 +118,7 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun fetchPage() {
         Timber.d("fetchPage")
-        // Show a progress spinner, and kick off a background task to perform the user login attempt.
+        // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
         // Fetch from remote server.

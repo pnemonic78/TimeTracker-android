@@ -38,7 +38,7 @@
     <dialog
         android:id="@+id/loginFragment"
         android:name="com.tikalk.worktracker.auth.LoginFragment"
-        android:label="LoginFragment"
+        android:label="@string/activity_login"
         tools:layout="@layout/fragment_login">
         <argument
             android:name="callerId"
@@ -60,7 +60,7 @@
     <dialog
         android:id="@+id/basicRealmFragment"
         android:name="com.tikalk.worktracker.auth.BasicRealmFragment"
-        android:label="BasicRealmFragment"
+        android:label="@string/activity_basic_realm"
         tools:layout="@layout/fragment_basic_realm">
         <argument
             android:name="callerId"
