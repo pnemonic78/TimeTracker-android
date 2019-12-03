@@ -48,7 +48,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.time.work.TimerWorker
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -312,9 +311,13 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
+    private fun loadPage(): Single<Unit> {
+        return Single.fromCallable { loadForm() }
+    }
+
     fun run() {
         Timber.v("run")
-        Single.fromCallable { loadForm() }
+        loadPage()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

@@ -47,6 +47,7 @@
     <string name="action_favorite">Favourite</string>
 
     <!-- Time list -->
+    <string name="timeList_title" translatable="false">@string/activity_time</string>
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
     <string name="day_total">Day total</string>
     <string name="remaining_quota">Remaining quota</string>
@@ -73,6 +74,7 @@
 
     <!-- Profile -->
     <string name="profile">Profile</string>
+    <string name="profile_title" translatable="false">@string/profile</string>
     <string name="name">Name</string>
     <string name="prompt_name" translatable="false">@string/name</string>
     <string name="prompt_confirmPassword">Confirm Password</string>
@@ -80,8 +82,11 @@
     <string name="error_match_password">Passwords are not the same</string>
     <string name="uncompleted_entry">User has an uncompleted time entry</string>
     <string name="login_label" translatable="false">@string/prompt_login</string>
-    <string name="role_label">Role</string>
-    <string name="menu_users">Users</string>
+    <string name="role">Role</string>
+    <string name="role_label" translatable="false">@string/role</string>
+    <string name="users">Users</string>
+    <string name="menu_users" translatable="false">@string/users</string>
+    <string name="users_title" translatable="false">@string/users</string>
 
     <!-- Projects and Tasks -->
     <string name="projects">Projects</string>
@@ -90,5 +95,16 @@
     <string name="description_label">Description</string>
     <string name="menu_projects" translatable="false">@string/projects</string>
     <string name="menu_tasks" translatable="false">@string/tasks</string>
+    <string name="projects_title" translatable="false">@string/projects</string>
+    <string name="tasks_title" translatable="false">@string/tasks</string>
+
+    <!-- Reports -->
+    <string name="reports">Reports</string>
+    <string name="menu_reports" translatable="false">@string/reports</string>
+    <string name="reports_title" translatable="false">@string/reports</string>
+    <string name="start_date_label">Start Date</string>
+    <string name="finish_date_label">Finish Date</string>
+    <string name="action_generate">Generate</string>
+    <string name="error_no_results">No results</string>
 
 </resources>

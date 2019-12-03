@@ -67,6 +67,8 @@ data class TimeRecordEntity(
     var finish: Calendar? = null,
     @ColumnInfo(name = "note")
     var note: String = "",
+    @ColumnInfo(name = "cost")
+    var cost: Double = 0.0,
     @ColumnInfo(name = "status")
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
 ) : TikalEntity(id)
@@ -87,6 +89,7 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         this.start,
         this.finish,
         this.note,
+        this.cost,
         this.status
     )
 
@@ -104,6 +107,7 @@ fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: 
         value.start,
         value.finish,
         value.note,
+        value.cost,
         value.status
     )
 }

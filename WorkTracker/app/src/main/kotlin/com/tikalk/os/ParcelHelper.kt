@@ -29,31 +29,15 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.model
 
-/**
- * Time period for report filter.
- *
- * @author Moshe Waisberg.
- */
-enum class ReportTimePeriod(val value: String) {
+package com.tikalk.os
 
-    /** Custom (start, finish). */
-    CUSTOM(""),
-    /** Today. */
-    TODAY("1"),
-    /** This week. */
-    THIS_WEEK("2"),
-    /** This month. */
-    THIS_MONTH("3"),
-    /** The previous Week. */
-    PREVIOUS_WEEK("6"),
-    /** The previous Month. */
-    PREVIOUS_MONTH("7"),
-    /** Yesterday. */
-    YESTERDAY("8");
+import android.os.Parcel
 
-    override fun toString(): String {
-        return value
-    }
+fun Parcel.writeBool(value: Boolean) {
+    writeInt(if (value) 1 else 0)
+}
+
+fun Parcel.readBool(): Boolean {
+    return readInt() != 0
 }

@@ -67,13 +67,20 @@
     <string name="prompt_confirmPassword">אשר סיסמה</string>
     <string name="error_match_password">סיסמאות אינן זהות</string>
     <string name="uncompleted_entry">משתמש עם הזנת זמן לא הושלמה</string>
-    <string name="role_label">תפקיד</string>
-    <string name="menu_users">משתמשים</string>
+    <string name="role">תפקיד</string>
+    <string name="users">משתמשים</string>
 
     <!-- Projects and Tasks -->
     <string name="projects">פרויקטים</string>
     <string name="tasks">משימות</string>
     <string name="name_label">שם</string>
     <string name="description_label">תיאור</string>
+
+    <!-- Reports -->
+    <string name="reports">דיווחים</string>
+    <string name="start_date_label">תאריך התחלה</string>
+    <string name="finish_date_label">תאריך סיום</string>
+    <string name="action_generate">ליצור</string>
+    <string name="error_no_results">אין תוצאות</string>
 
 </resources>

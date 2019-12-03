@@ -52,6 +52,8 @@ interface TimeTrackerService {
         const val PHP_PROJECTS = "projects.php"
         const val PHP_TASKS = "tasks.php"
         const val PHP_USERS = "users.php"
+        const val PHP_REPORTS = "reports.php"
+        const val PHP_REPORT = "report.php"
     }
 
     @FormUrlEncoded
@@ -116,4 +118,11 @@ interface TimeTrackerService {
 
     @GET(PHP_USERS)
     fun fetchUsers(): Single<Response<String>>
+
+    @GET(PHP_REPORTS)
+    fun fetchReports(): Single<Response<String>>
+
+    @FormUrlEncoded
+    @POST(PHP_REPORTS)
+    fun generateReport(@FieldMap fields: Map<String, String>): Single<Response<String>>
 }

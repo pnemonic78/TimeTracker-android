@@ -23,7 +23,9 @@ class TimeTest {
     fun splitRecords() {
         val record = TimeRecord(TikalEntity.ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy(), null, null)
         record.project.id = 1
+        record.project.name = "Project"
         record.task.id = 1
+        record.task.name = "Task"
         var splits: List<TimeRecord>
 
         splits = record.split()
@@ -31,7 +33,8 @@ class TimeTest {
         assertTrue(splits.isEmpty())
 
         val start = Calendar.getInstance()
-        val finish = Calendar.getInstance()
+        start.hourOfDay = 12
+        val finish = start.clone() as Calendar
 
         // No finish.
         record.start = start

@@ -29,93 +29,83 @@
   ~ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
+
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="2dp"
-    android:layout_marginBottom="4dp"
     app:cardCornerRadius="@dimen/card_cornerRadius"
     app:contentPadding="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
 
         <TextView
-            android:id="@+id/nameLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/name_label"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/name"
+            android:id="@+id/project"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:contentDescription="@string/project_label"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/uncompletedEntry"
-            app:layout_constraintStart_toEndOf="@+id/barrier"
-            app:layout_constraintTop_toTopOf="@+id/nameLabel"
+            app:layout_constraintEnd_toStartOf="@+id/timeRange"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/project_label" />
 
         <TextView
-            android:id="@+id/loginLabel"
-            android:layout_width="wrap_content"
+            android:id="@+id/task"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/login_label"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameLabel" />
+            android:contentDescription="@string/task_label"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintStart_toStartOf="@+id/project"
+            app:layout_constraintTop_toBottomOf="@+id/project"
+            tools:text="@string/task_label" />
 
         <TextView
-            android:id="@+id/login"
-            android:layout_width="0dp"
+            android:id="@+id/timeRange"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:autoLink="email"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/barrier"
-            app:layout_constraintTop_toTopOf="@+id/loginLabel"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@tools:sample/date/hhmmss" />
+
+        <TextView
+            android:id="@+id/timeDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/timeRange"
+            tools:text="@tools:sample/date/hhmm" />
+
+        <TextView
+            android:id="@+id/note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/note_hint"
+            android:ellipsize="end"
+            android:maxLength="80"
+            android:maxLines="2"
+            app:layout_constraintStart_toStartOf="@+id/task"
+            app:layout_constraintTop_toBottomOf="@+id/task"
+            tools:text="@tools:sample/lorem/random" />
+
+        <TextView
+            android:id="@+id/cost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/note"
             tools:text="@tools:sample/lorem" />
 
-        <TextView
-            android:id="@+id/roleLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/role_label"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/loginLabel" />
-
-        <TextView
-            android:id="@+id/role"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/barrier"
-            app:layout_constraintTop_toTopOf="@+id/roleLabel"
-            tools:text="@tools:sample/lorem" />
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/barrier"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="end"
-            app:constraint_referenced_ids="nameLabel,loginLabel,roleLabel" />
-
-        <ImageView
-            android:id="@+id/uncompletedEntry"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:contentDescription="@string/uncompleted_entry"
-            android:src="@drawable/ic_uncompleted_entry"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/name"
-            app:layout_constraintTop_toTopOf="@+id/name" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

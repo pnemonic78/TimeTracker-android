@@ -31,31 +31,143 @@
  */
 package com.tikalk.worktracker.model.time
 
-import androidx.room.Entity
+import android.os.Parcel
+import android.os.Parcelable
+import com.tikalk.os.readBool
+import com.tikalk.os.writeBool
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
 import com.tikalk.worktracker.model.TikalEntity
-
-import java.sql.Date
+import com.tikalk.worktracker.time.formatSystemDate
+import java.util.*
 
 /**
  * Report filter entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity
-data class ReportFilter(
-    var project: Project? = null,
-    var task: ProjectTask? = null,
-    var period: ReportTimePeriod = ReportTimePeriod.THIS_MONTH,
-    var start: Date? = null,
-    var finish: Date? = null,
-    var favorite: String? = null,
-    var showProjectField: Boolean = false,
-    var showTaskField: Boolean = false,
-    var showStartField: Boolean = false,
-    var showFinishField: Boolean = false,
-    var showDurationField: Boolean = false,
-    var showNotesField: Boolean = false
-) : TikalEntity()
+class ReportFilter : TimeRecord {
+
+    var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
+    var favorite: String? = null
+    var showProjectField: Boolean = true
+    var showTaskField: Boolean = true
+    var showStartField: Boolean = true
+    var showFinishField: Boolean = true
+    var showDurationField: Boolean = true
+    var showNotesField: Boolean = true
+    var showCostField: Boolean = false
+
+    constructor() : super(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
+
+    constructor(
+        project: Project = Project.EMPTY,
+        task: ProjectTask = ProjectTask.EMPTY,
+        start: Calendar? = null,
+        finish: Calendar? = null,
+        period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
+        favorite: String? = null,
+        showProjectField: Boolean = true,
+        showTaskField: Boolean = true,
+        showStartField: Boolean = true,
+        showFinishField: Boolean = true,
+        showDurationField: Boolean = true,
+        showNotesField: Boolean = true,
+        showCostField: Boolean = false
+    ) : super(ID_NONE, project, task, start, finish) {
+        this.period = period
+        this.favorite = favorite
+        this.showProjectField = showProjectField
+        this.showTaskField = showTaskField
+        this.showStartField = showStartField
+        this.showFinishField = showFinishField
+        this.showDurationField = showDurationField
+        this.showNotesField = showNotesField
+        this.showCostField = showCostField
+    }
+
+    constructor(parcel: Parcel) : super(parcel) {
+        period = ReportTimePeriod.values()[parcel.readInt()]
+        favorite = parcel.readString()
+        showProjectField = parcel.readBool()
+        showTaskField = parcel.readBool()
+        showStartField = parcel.readBool()
+        showFinishField = parcel.readBool()
+        showDurationField = parcel.readBool()
+        showNotesField = parcel.readBool()
+        showCostField = parcel.readBool()
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        super.writeToParcel(parcel, flags)
+        parcel.writeInt(period.ordinal)
+        parcel.writeString(favorite)
+        parcel.writeBool(showProjectField)
+        parcel.writeBool(showTaskField)
+        parcel.writeBool(showStartField)
+        parcel.writeBool(showFinishField)
+        parcel.writeBool(showDurationField)
+        parcel.writeBool(showNotesField)
+        parcel.writeBool(showCostField)
+    }
+
+    fun toFields(): Map<String, String> {
+        return HashMap<String, String>().apply {
+            // Main form
+            put("project", if (project.id == TikalEntity.ID_NONE) "" else project.id.toString())
+            put("task", if (task.id == TikalEntity.ID_NONE) "" else task.id.toString())
+            put("period", period.toString())
+            put("start_date", formatSystemDate(start))
+            put("end_date", formatSystemDate(finish))
+            if (showProjectField) {
+                put("chproject", "1")
+            }
+            if (showTaskField) {
+                put("chtask", "1")
+            }
+            if (showStartField) {
+                put("chstart", "1")
+            }
+            if (showFinishField) {
+                put("chfinish", "1")
+            }
+            if (showDurationField) {
+                put("chduration", "1")
+            }
+            if (showNotesField) {
+                put("chnote", "1")
+            }
+            if (showCostField) {
+                put("chcost", "1")
+            }
+            //put("chtotalsonly", "1")
+
+            // Grouping
+            put("group_by1", "no_grouping")
+            put("group_by2", "no_grouping")
+            put("group_by3", "no_grouping")
+
+            // Favorite
+            put("favorite_report", "-1")
+            put("new_fav_report", "")
+            put("fav_report_changed", "")
+
+            put("btn_generate", "Generate")
+        }
+    }
+
+    companion object {
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<ReportFilter> {
+            override fun createFromParcel(parcel: Parcel): ReportFilter {
+                return ReportFilter(parcel)
+            }
+
+            override fun newArray(size: Int): Array<ReportFilter?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+}
