@@ -64,6 +64,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
@@ -239,6 +240,37 @@ class ReportFormFragment : TimeFormFragment() {
         //TODO populate checkboxes
     }
 
+    override fun findTaskIds(doc: Document): String? {
+        val tokenStart = "// Populate obj_tasks with task ids for each relevant project."
+        val tokenEnd = "// Prepare an array of task names."
+        return findScript(doc, tokenStart, tokenEnd)
+    }
+
+    override fun populateTaskIds(doc: Document, projects: List<Project>) {
+        Timber.v("populateTaskIds")
+        val scriptText = findTaskIds(doc) ?: return
+
+        if (scriptText.isNotEmpty()) {
+            for (project in projects) {
+                project.clearTasks()
+            }
+
+            val pattern = Pattern.compile("project_property = project_prefix [+] (\\d+);\\s+obj_tasks\\[project_property\\] = \"(.+)\";")
+            val matcher = pattern.matcher(scriptText)
+            while (matcher.find()) {
+                val projectId = matcher.group(1)!!.toLong()
+                val project = projects.find { it.id == projectId }
+
+                val taskIds: List<Long> = matcher.group(2)!!
+                    .split(",")
+                    .map { it.toLong() }
+                val tasks = this.tasks.filter { it.id in taskIds }
+
+                project?.addTasks(tasks)
+            }
+        }
+    }
+
     private fun bindFilter(filter: ReportFilter) {
         Timber.v("bindFilter filter=$filter")
         val context: Context = requireContext()
@@ -321,6 +353,14 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun generateReport() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Timber.v("generateReport filter=$filter")
+        /*
+        if (!isNavDestination(R.id.reportFragment)) {
+            val args = Bundle()
+            requireFragmentManager().putFragment(args, ReportFragment.EXTRA_CALLER, this)
+            args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
+            findNavController().navigate(R.id.action_reportForm_to_reportList, args)
+        }
+        */
     }
 }

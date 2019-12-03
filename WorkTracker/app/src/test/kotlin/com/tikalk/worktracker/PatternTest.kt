@@ -54,7 +54,7 @@ class PatternTest {
     }
 
     @Test
-    fun parseTaskIds() {
+    fun parseTaskIdsTime() {
         val html = readResource("time_script_1.php")
         assertTrue(html.isNotEmpty())
         val doc: Document = Jsoup.parse(html)
@@ -64,6 +64,8 @@ class PatternTest {
         val tokenEnd = "// Prepare an array of task names."
         val scriptText = findScript(doc, tokenStart, tokenEnd)
         assertNotNull(scriptText)
+        val projects = ArrayList<Long>()
+        val tasks = ArrayList<List<Long>>()
 
         if (scriptText.isNotEmpty()) {
             val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\";")
@@ -71,13 +73,50 @@ class PatternTest {
             while (matcher.find()) {
                 val projectId = matcher.group(1)!!.toLong()
                 assertNotEquals(0, projectId)
+                projects.add(projectId)
 
                 val taskIds: List<Long> = matcher.group(2)!!
                     .split(",")
                     .map { it.toLong() }
                 assertTrue(taskIds.isNotEmpty())
+                tasks.add(taskIds)
             }
         }
+        assertEquals(6, projects.size)
+        assertEquals(6, tasks.size)
+    }
+
+    @Test
+    fun parseTaskIdsReports() {
+        val html = readResource("reports_script_1.php")
+        assertTrue(html.isNotEmpty())
+        val doc: Document = Jsoup.parse(html)
+        assertNotNull(doc)
+
+        val tokenStart = "// Populate obj_tasks with task ids for each relevant project."
+        val tokenEnd = "// Prepare an array of task names."
+        val scriptText = findScript(doc, tokenStart, tokenEnd)
+        assertNotNull(scriptText)
+        val projects = ArrayList<Long>()
+        val tasks = ArrayList<List<Long>>()
+
+        if (scriptText.isNotEmpty()) {
+            val pattern = Pattern.compile("project_property = project_prefix [+] (\\d+);\\s+obj_tasks\\[project_property\\] = \"(.+)\";")
+            val matcher = pattern.matcher(scriptText)
+            while (matcher.find()) {
+                val projectId = matcher.group(1)!!.toLong()
+                assertNotEquals(0, projectId)
+                projects.add(projectId)
+
+                val taskIds: List<Long> = matcher.group(2)!!
+                    .split(",")
+                    .map { it.toLong() }
+                assertTrue(taskIds.isNotEmpty())
+                tasks.add(taskIds)
+            }
+        }
+        assertEquals(6, projects.size)
+        assertEquals(6, tasks.size)
     }
 
     protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
