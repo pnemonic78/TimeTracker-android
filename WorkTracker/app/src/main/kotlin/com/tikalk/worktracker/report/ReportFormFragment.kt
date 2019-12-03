@@ -248,12 +248,16 @@ class ReportFormFragment : TimeFormFragment() {
     override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
+        val inputPeriod = form.selectByName("period") ?: return
+        val periodSelected = findSelectedPeriod(inputPeriod, periods)
+
         val inputStart = form.selectByName("start_date") ?: return
         val startValue = inputStart.attr("value")
 
         val inputFinish = form.selectByName("end_date") ?: return
         val finishValue = inputFinish.attr("value")
 
+        filter.period = periodSelected
         filter.start = parseSystemDate(startValue)
         filter.finish = parseSystemDate(finishValue)
 
@@ -289,6 +293,19 @@ class ReportFormFragment : TimeFormFragment() {
                 project?.addTasks(tasks)
             }
         }
+    }
+
+    fun findSelectedPeriod(periodInput: Element, periods: Array<ReportTimePeriod>): ReportTimePeriod {
+        for (option in periodInput.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.attr("value")
+                if (value.isNotEmpty()) {
+                    return periods.find { value == it.value }!!
+                }
+                break
+            }
+        }
+        return ReportTimePeriod.CUSTOM
     }
 
     private fun bindFilter(filter: ReportFilter) {
