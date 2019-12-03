@@ -105,5 +105,6 @@
     <string name="start_date_label">Start Date</string>
     <string name="finish_date_label">Finish Date</string>
     <string name="action_generate">Generate</string>
+    <string name="error_no_results">No results</string>
 
 </resources>

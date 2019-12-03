@@ -31,7 +31,6 @@
  */
 package com.tikalk.worktracker.net
 
-import com.tikalk.worktracker.model.ReportTimePeriod
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Single
 import retrofit2.Response
@@ -54,6 +53,7 @@ interface TimeTrackerService {
         const val PHP_TASKS = "tasks.php"
         const val PHP_USERS = "users.php"
         const val PHP_REPORTS = "reports.php"
+        const val PHP_REPORT = "report.php"
     }
 
     @FormUrlEncoded
@@ -124,24 +124,5 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_REPORTS)
-    fun generateReport(@Field("project") projectId: Long,
-                       @Field("task") taskId: Long,
-                       @Field("period") period: ReportTimePeriod,
-                       @Field("start_date") start: String,
-                       @Field("end_date") finish: String,
-                       @Field("chproject") showProject: Boolean = true,
-                       @Field("chtask") showTask: Boolean = true,
-                       @Field("chstart") showStart: Boolean = true,
-                       @Field("chfinish") showFinish: Boolean = true,
-                       @Field("chduration") showDuration: Boolean = true,
-                       @Field("chnote") showNote: Boolean = true,
-                       @Field("chcost") showCost: Boolean = true,
-                       @Field("chtotalsonly") showTotalsOnly: Boolean = true,
-                       @Field("group_by1") groupBy1: String = "no_grouping",
-                       @Field("group_by2") groupBy2: String = "no_grouping",
-                       @Field("group_by3") groupBy3: String = "no_grouping",
-                       @Field("new_fav_report") favorite: String = "",
-                       @Field("fav_report_changed") favoriteChanged: Boolean = false,
-                       @Field("btn_save") saveFavorite: String = "Save",
-                       @Field("btn_generate") submit: String = "Generate"): Single<Response<String>>
+    fun generateReport(@FieldMap fields: Map<String, String>): Single<Response<String>>
 }

@@ -38,7 +38,9 @@ import com.tikalk.os.writeBool
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.time.formatSystemDate
 import java.util.*
+import kotlin.collections.LinkedHashMap
 
 /**
  * Report filter entity.
@@ -108,6 +110,37 @@ class ReportFilter : TimeRecord {
         parcel.writeBool(showDurationField)
         parcel.writeBool(showNotesField)
         parcel.writeBool(showCostField)
+    }
+
+    fun toFields(): Map<String, String> {
+        return LinkedHashMap<String, String>().apply {
+            // Main form
+            put("project", "")
+            put("task", "")
+            put("period", "")
+            put("start_date", formatSystemDate(start))
+            put("end_date", formatSystemDate(finish))
+            put("chproject", "1")
+            put("chtask", "1")
+            put("chstart", "1")
+            put("chfinish", "1")
+            put("chduration", "1")
+            put("chnote", "1")
+            //put("chcost", "1")
+            //put("chtotalsonly", "1")
+
+            // Grouping
+            put("group_by1", "no_grouping")
+            put("group_by2", "no_grouping")
+            put("group_by3", "no_grouping")
+
+            // Favorite
+            put("favorite_report", "-1")
+            put("new_fav_report", "")
+            put("fav_report_changed", "")
+
+            put("btn_generate", "Generate")
+        }
     }
 
     companion object {

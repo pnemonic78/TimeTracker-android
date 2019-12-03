@@ -59,8 +59,10 @@ open class InternetFragment : TrackerFragment {
                 if (networkUrl == priorUrl) {
                     return true
                 }
-                if (networkUrl.pathSegments()[networkUrl.pathSize() - 1] == TimeTrackerService.PHP_TIME) {
-                    return true
+                when (networkUrl.pathSegments()[networkUrl.pathSize() - 1]) {
+                    TimeTrackerService.PHP_TIME,
+                    TimeTrackerService.PHP_REPORT ->
+                        return true
                 }
                 return false
             }

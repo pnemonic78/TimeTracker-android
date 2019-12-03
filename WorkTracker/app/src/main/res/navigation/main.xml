@@ -108,8 +108,23 @@
         <action
             android:id="@+id/action_reportForm_to_login"
             app:destination="@id/login" />
+        <action
+            android:id="@+id/action_reportForm_to_reportList"
+            app:destination="@id/reportFragment" />
     </fragment>
     <action
         android:id="@+id/action_show_reportForm"
         app:destination="@id/reportFormFragment" />
+    <fragment
+        android:id="@+id/reportFragment"
+        android:name="com.tikalk.worktracker.report.ReportFragment"
+        android:label="@string/reports_title"
+        tools:layout="@layout/fragment_report_list">
+        <action
+            android:id="@+id/action_reportList_to_login"
+            app:destination="@id/login" />
+        <argument
+            android:name="filter"
+            app:argType="com.tikalk.worktracker.model.time.ReportFilter" />
+    </fragment>
 </navigation>

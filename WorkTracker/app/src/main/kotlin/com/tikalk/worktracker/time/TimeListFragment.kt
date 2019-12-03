@@ -200,7 +200,7 @@ class TimeListFragment : TimeFormFragment(),
             if (view == null) return@runOnUiThread
             bindList(date, records)
             bindTotals(totals)
-            if (progress) showProgressMain(false)
+            if (progress) showProgress(false)
         }
     }
 

@@ -81,5 +81,6 @@
     <string name="start_date_label">תאריך התחלה</string>
     <string name="finish_date_label">תאריך סיום</string>
     <string name="action_generate">ליצור</string>
+    <string name="error_no_results">אין תוצאות</string>
 
 </resources>

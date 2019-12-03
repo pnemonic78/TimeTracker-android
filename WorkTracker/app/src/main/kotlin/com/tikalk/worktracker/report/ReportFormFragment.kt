@@ -354,13 +354,11 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun generateReport() {
         Timber.v("generateReport filter=$filter")
-        /*
         if (!isNavDestination(R.id.reportFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, ReportFragment.EXTRA_CALLER, this)
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
             findNavController().navigate(R.id.action_reportForm_to_reportList, args)
         }
-        */
     }
 }
