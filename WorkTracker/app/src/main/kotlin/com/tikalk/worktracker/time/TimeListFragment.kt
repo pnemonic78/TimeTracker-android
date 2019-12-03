@@ -154,7 +154,7 @@ class TimeListFragment : TimeFormFragment(),
         if (fetchingPage) return
         fetchingPage = true
         // Show a progress spinner, and kick off a background task to fetch the page.
-        if (progress) showProgress(true)
+        if (progress) showProgressMain(true)
 
         // Fetch from local database first.
         loadPage()

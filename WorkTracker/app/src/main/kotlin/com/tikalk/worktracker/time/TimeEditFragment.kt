@@ -531,14 +531,13 @@ class TimeEditFragment : TimeFormFragment() {
         }
         submitter
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 if (record.id != TikalEntity.ID_NONE) {
                     saveRecord(record)
                 }
 
                 if (last) {
-                    showProgress(false)
+                    showProgressMain(false)
                 }
 
                 if (isValidResponse(response)) {
@@ -555,7 +554,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error saving record: ${err.message}")
-                showProgress(false)
+                showProgressMain(false)
             })
             .addTo(disposables)
     }
