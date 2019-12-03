@@ -66,20 +66,16 @@ class PatternTest {
         assertNotNull(scriptText)
 
         if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val projectId = matcher.group(1)!!.toLong()
-                    assertNotEquals(0, projectId)
+            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\";")
+            val matcher = pattern.matcher(scriptText)
+            while (matcher.find()) {
+                val projectId = matcher.group(1)!!.toLong()
+                assertNotEquals(0, projectId)
 
-                    val taskIds: List<Long> = matcher.group(2)!!
-                        .split(",")
-                        .map { it.toLong() }
-
-                    assertTrue(taskIds.isNotEmpty())
-                }
+                val taskIds: List<Long> = matcher.group(2)!!
+                    .split(",")
+                    .map { it.toLong() }
+                assertTrue(taskIds.isNotEmpty())
             }
         }
     }

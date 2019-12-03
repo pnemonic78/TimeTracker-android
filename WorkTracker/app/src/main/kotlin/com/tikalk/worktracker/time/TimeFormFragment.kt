@@ -66,7 +66,7 @@ abstract class TimeFormFragment : InternetFragment(),
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
-    private fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
+    protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
         var scriptText: String
         var indexStart: Int
@@ -162,32 +162,33 @@ abstract class TimeFormFragment : InternetFragment(),
         target.addAll(tasks)
     }
 
-    fun populateTaskIds(doc: Document, projects: List<Project>) {
-        Timber.v("populateTaskIds")
+    protected open fun findTaskIds(doc: Document): String? {
         val tokenStart = "var task_ids = new Array();"
         val tokenEnd = "// Prepare an array of task names."
-        val scriptText = findScript(doc, tokenStart, tokenEnd)
+        return findScript(doc, tokenStart, tokenEnd)
+    }
 
-        for (project in projects) {
-            project.clearTasks()
-        }
+    open fun populateTaskIds(doc: Document, projects: List<Project>) {
+        Timber.v("populateTaskIds")
+        val scriptText = findTaskIds(doc) ?: return
 
         if (scriptText.isNotEmpty()) {
-            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\"")
-            val lines = scriptText.split(";")
-            for (line in lines) {
-                val matcher = pattern.matcher(line)
-                if (matcher.find()) {
-                    val projectId = matcher.group(1)!!.toLong()
-                    val project = projects.find { it.id == projectId }
+            for (project in projects) {
+                project.clearTasks()
+            }
 
-                    val taskIds: List<Long> = matcher.group(2)!!
-                        .split(",")
-                        .map { it.toLong() }
-                    val tasks = this.tasks.filter { it.id in taskIds }
+            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\";")
+            val matcher = pattern.matcher(scriptText)
+            while (matcher.find()) {
+                val projectId = matcher.group(1)!!.toLong()
+                val project = projects.find { it.id == projectId }
 
-                    project?.addTasks(tasks)
-                }
+                val taskIds: List<Long> = matcher.group(2)!!
+                    .split(",")
+                    .map { it.toLong() }
+                val tasks = this.tasks.filter { it.id in taskIds }
+
+                project?.addTasks(tasks)
             }
         }
     }
