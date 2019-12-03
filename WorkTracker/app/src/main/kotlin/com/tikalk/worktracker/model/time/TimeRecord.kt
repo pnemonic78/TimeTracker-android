@@ -45,16 +45,15 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-open class TimeRecord(
-    override var id: Long = ID_NONE,
-    var project: Project,
-    var task: ProjectTask,
-    var start: Calendar? = null,
-    var finish: Calendar? = null,
-    var note: String = "",
-    var cost: Double = 0.0,
+open class TimeRecord : TikalEntity, Parcelable {
+
+    var project: Project
+    var task: ProjectTask
+    var start: Calendar? = null
+    var finish: Calendar? = null
+    var note: String = ""
+    var cost: Double = 0.0
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
-) : TikalEntity(id), Parcelable {
 
     var startTime: Long
         get() = start?.timeInMillis ?: 0L
@@ -75,6 +74,26 @@ open class TimeRecord(
         return project.isEmpty()
             || task.isEmpty()
             || (startTime <= 0L)
+    }
+
+    constructor(
+        id: Long = ID_NONE,
+        project: Project,
+        task: ProjectTask,
+        start: Calendar? = null,
+        finish: Calendar? = null,
+        note: String = "",
+        cost: Double = 0.0,
+        status: TaskRecordStatus = TaskRecordStatus.DRAFT
+    ) {
+        this.id = id
+        this.project = project
+        this.task = task
+        this.start = start
+        this.finish = finish
+        this.note = note
+        this.cost = cost
+        this.status = status
     }
 
     constructor(parcel: Parcel) : this(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
@@ -127,6 +146,17 @@ open class TimeRecord(
             cost,
             status
         )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is TimeRecord) {
+            return (this.id == other.id)
+                && (this.project == other.project)
+                && (this.task == other.task)
+                && (this.startTime == other.startTime)
+                && (this.finishTime == other.finishTime)
+        }
+        return super.equals(other)
     }
 
     override fun toString(): String {
