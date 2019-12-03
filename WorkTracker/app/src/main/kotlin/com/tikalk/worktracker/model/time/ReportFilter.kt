@@ -38,9 +38,9 @@ import com.tikalk.os.writeBool
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.time.formatSystemDate
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 /**
  * Report filter entity.
@@ -49,7 +49,7 @@ import kotlin.collections.LinkedHashMap
  */
 class ReportFilter : TimeRecord {
 
-    var period: ReportTimePeriod = ReportTimePeriod.THIS_MONTH
+    var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
     var favorite: String? = null
     var showProjectField: Boolean = true
     var showTaskField: Boolean = true
@@ -66,7 +66,7 @@ class ReportFilter : TimeRecord {
         task: ProjectTask = ProjectTask.EMPTY,
         start: Calendar? = null,
         finish: Calendar? = null,
-        period: ReportTimePeriod = ReportTimePeriod.THIS_MONTH,
+        period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
         favorite: String? = null,
         showProjectField: Boolean = true,
         showTaskField: Boolean = true,
@@ -113,20 +113,34 @@ class ReportFilter : TimeRecord {
     }
 
     fun toFields(): Map<String, String> {
-        return LinkedHashMap<String, String>().apply {
+        return HashMap<String, String>().apply {
             // Main form
-            put("project", "")
-            put("task", "")
-            put("period", "")
+            put("project", if (project.id == TikalEntity.ID_NONE) "" else project.id.toString())
+            put("task", if (task.id == TikalEntity.ID_NONE) "" else task.id.toString())
+            put("period", period.toString())
             put("start_date", formatSystemDate(start))
             put("end_date", formatSystemDate(finish))
-            put("chproject", "1")
-            put("chtask", "1")
-            put("chstart", "1")
-            put("chfinish", "1")
-            put("chduration", "1")
-            put("chnote", "1")
-            //put("chcost", "1")
+            if (showProjectField) {
+                put("chproject", "1")
+            }
+            if (showTaskField) {
+                put("chtask", "1")
+            }
+            if (showStartField) {
+                put("chstart", "1")
+            }
+            if (showFinishField) {
+                put("chfinish", "1")
+            }
+            if (showDurationField) {
+                put("chduration", "1")
+            }
+            if (showNotesField) {
+                put("chnote", "1")
+            }
+            if (showCostField) {
+                put("chcost", "1")
+            }
             //put("chtotalsonly", "1")
 
             // Grouping
