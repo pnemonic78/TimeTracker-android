@@ -44,7 +44,7 @@ class ReportAdapter(val filter: ReportFilter) : ListAdapter<TimeRecord, ReportVi
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReportViewHolder {
         val context: Context = parent.context
-        val view = LayoutInflater.from(context).inflate(R.layout.report_item, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.time_item, parent, false)
         return ReportViewHolder(view, filter)
     }
 
