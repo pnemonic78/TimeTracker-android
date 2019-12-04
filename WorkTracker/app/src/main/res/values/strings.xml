@@ -25,6 +25,7 @@
     <string name="date_label">Date</string>
     <string name="start_label">Start Time</string>
     <string name="finish_label">Finish Time</string>
+    <string name="duration_label">Duration</string>
     <string name="cancel" translatable="false">@android:string/cancel</string>
     <string name="submit">Save</string>
     <string name="note_hint">Note</string>
@@ -106,5 +107,15 @@
     <string name="finish_date_label">Finish Date</string>
     <string name="action_generate">Generate</string>
     <string name="error_no_results">No results</string>
+    <string name="period_label">Time Period</string>
+    <string name="period_custom">Custom</string>
+    <string name="period_today">Today</string>
+    <string name="period_this_week">This week</string>
+    <string name="period_this_month">This month</string>
+    <string name="period_previous_week">The previous week</string>
+    <string name="period_previous_month">The previous month</string>
+    <string name="period_yesterday">Yesterday</string>
+    <string name="duration_total">Total hours</string>
+    <string name="cost_total">Total cost</string>
 
 </resources>

@@ -31,38 +31,32 @@
  */
 package com.tikalk.worktracker.model.time
 
-import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 /**
- * Totals for the day.
+ * Totals for a report.
  *
  * @author Moshe Waisberg.
  */
 @Parcelize
-data class TimeTotals(
-    var daily: Long = 0,
-    var weekly: Long = 0,
-    var monthly: Long = 0,
-    var remaining: Long = 0
+data class ReportTotals(
+    var duration: Long = 0,
+    var cost: Double = 0.0
 ) : Parcelable {
 
     fun clear(unknown: Boolean = false) {
         if (unknown) {
-            daily = UNKNOWN
-            weekly = UNKNOWN
-            monthly = UNKNOWN
-            remaining = UNKNOWN
+            duration = UNKNOWN
+            cost = UNKNOWN_COST
         } else {
-            daily = 0
-            weekly = 0
-            monthly = 0
-            remaining = 0
+            duration = 0
+            cost = 0.0
         }
     }
 
     companion object {
         const val UNKNOWN = -1L
+        const val UNKNOWN_COST = -1.0
     }
 }

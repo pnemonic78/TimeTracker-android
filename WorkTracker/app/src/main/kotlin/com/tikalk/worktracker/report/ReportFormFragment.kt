@@ -44,12 +44,10 @@ import android.widget.ArrayAdapter
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.html.selectByName
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.findProject
-import com.tikalk.worktracker.model.findTask
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
@@ -58,7 +56,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.reports_form.*
+import kotlinx.android.synthetic.main.report_form.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
@@ -84,6 +82,8 @@ class ReportFormFragment : TimeFormFragment() {
     private var startPickerDialog: DatePickerDialog? = null
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
+    private val periods = ReportTimePeriod.values()
+    private var firstRun = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_report_form, container, false)
@@ -110,6 +110,16 @@ class ReportFormFragment : TimeFormFragment() {
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val task = adapterView.adapter.getItem(position) as ProjectTask
                 taskItemSelected(task)
+            }
+        }
+        periodInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                periodItemSelected(ReportTimePeriod.CUSTOM)
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val period = periods[position]
+                periodItemSelected(period)
             }
         }
         startInput.setOnClickListener { pickStartDate() }
@@ -150,6 +160,18 @@ class ReportFormFragment : TimeFormFragment() {
         taskInput.setSelection(findTask(options, filter.task))
     }
 
+    private fun periodItemSelected(period: ReportTimePeriod) {
+        Timber.d("periodItemSelected period=$period")
+        filter.period = period
+        if (!isVisible) return
+        val custom = (period == ReportTimePeriod.CUSTOM)
+        val visibility = if (custom) View.VISIBLE else View.GONE
+        startIcon.visibility = visibility
+        startInput.visibility = visibility
+        finishIcon.visibility = visibility
+        finishInput.visibility = visibility
+    }
+
     fun run() {
         Timber.v("run")
 
@@ -159,7 +181,9 @@ class ReportFormFragment : TimeFormFragment() {
             .subscribe({
                 populateForm(filter)
                 bindForm(filter)
-                fetchPage()
+                if (firstRun) {
+                    fetchPage()
+                }
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 showProgress(false)
@@ -228,12 +252,16 @@ class ReportFormFragment : TimeFormFragment() {
     override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
+        val inputPeriod = form.selectByName("period") ?: return
+        val periodSelected = findSelectedPeriod(inputPeriod, periods)
+
         val inputStart = form.selectByName("start_date") ?: return
         val startValue = inputStart.attr("value")
 
         val inputFinish = form.selectByName("end_date") ?: return
         val finishValue = inputFinish.attr("value")
 
+        filter.period = periodSelected
         filter.start = parseSystemDate(startValue)
         filter.finish = parseSystemDate(finishValue)
 
@@ -271,6 +299,19 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
+    fun findSelectedPeriod(periodInput: Element, periods: Array<ReportTimePeriod>): ReportTimePeriod {
+        for (option in periodInput.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.attr("value")
+                if (value.isNotEmpty()) {
+                    return periods.find { value == it.value }!!
+                }
+                break
+            }
+        }
+        return ReportTimePeriod.CUSTOM
+    }
+
     private fun bindFilter(filter: ReportFilter) {
         Timber.v("bindFilter filter=$filter")
         val context: Context = requireContext()
@@ -278,11 +319,19 @@ class ReportFormFragment : TimeFormFragment() {
         val projectItems = projects.toTypedArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
         }
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
         projectInput.requestFocus()
+
+        val periodList = ArrayList<String>(periods.size)
+        for (period in periods) {
+            periodList.add(context.getString(period.labelId))
+        }
+        val periodItems = periodList.toTypedArray()
+        periodInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, periodItems)
+        periodInput.setSelection(filter.period.ordinal)
 
         val startTime = filter.startTime
         startInput.text = if (startTime > 0L)
@@ -299,6 +348,13 @@ class ReportFormFragment : TimeFormFragment() {
             ""
         finishInput.error = null
         finishPickerDialog = null
+
+        showProjectField.isChecked = filter.showProjectField
+        showTaskField.isChecked = filter.showTaskField
+        showStartField.isChecked = filter.showStartField
+        showFinishField.isChecked = filter.showFinishField
+        showDurationField.isChecked = filter.showDurationField
+        showNotesField.isChecked = filter.showNotesField
 
         errorLabel.text = errorMessage
     }
@@ -352,13 +408,47 @@ class ReportFormFragment : TimeFormFragment() {
         return cal
     }
 
+    private fun populateFilter() {
+        Timber.v("populateFilter filter=$filter")
+        filter.showProjectField = showProjectField.isChecked
+        filter.showTaskField = showTaskField.isChecked
+        filter.showStartField = showStartField.isChecked
+        filter.showFinishField = showFinishField.isChecked
+        filter.showDurationField = showDurationField.isChecked
+        filter.showNotesField = showNotesField.isChecked
+    }
+
     private fun generateReport() {
         Timber.v("generateReport filter=$filter")
+        populateFilter()
+
         if (!isNavDestination(R.id.reportFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, ReportFragment.EXTRA_CALLER, this)
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
             findNavController().navigate(R.id.action_reportForm_to_reportList, args)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        Timber.v("onSaveInstanceState")
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(STATE_FILTER, filter)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        Timber.v("onRestoreInstanceState")
+        super.onRestoreInstanceState(savedInstanceState)
+        val filter = savedInstanceState.getParcelable<ReportFilter>(STATE_FILTER)
+
+        if (filter != null) {
+            this.filter = filter
+            this.firstRun = false
+            bindFilter(filter)
+        }
+    }
+
+    companion object {
+        private const val STATE_FILTER = BuildConfig.APPLICATION_ID + ".FILTER"
     }
 }

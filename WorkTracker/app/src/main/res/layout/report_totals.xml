@@ -30,31 +30,46 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:ignore="RtlHardcoded">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        app:cardCornerRadius="@dimen/card_cornerRadius">
+    <TableRow>
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/durationTotalLabel"
+            style="@style/Widget.TextView.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/duration_total" />
 
-            <include layout="@layout/report_form" />
-        </ScrollView>
-    </androidx.cardview.widget.CardView>
+        <TextView
+            android:id="@+id/durationTotal"
+            style="@style/Widget.TextView.Value.Time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginStart="4dp"
+            tools:text="@tools:sample/date/hhmm" />
 
-    <!-- Progress indicator -->
-    <include
-        layout="@layout/progress"
-        tools:visibility="gone" />
-</FrameLayout>
+        <TextView
+            android:id="@+id/costTotalLabel"
+            style="@style/Widget.TextView.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/cost_total" />
+
+        <TextView
+            android:id="@+id/costTotal"
+            style="@style/Widget.TextView.Value.Time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginStart="4dp"
+            tools:text="@tools:sample/date/hhmm" />
+    </TableRow>
+
+</TableLayout>
