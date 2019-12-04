@@ -45,7 +45,12 @@
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         app:cardCornerRadius="@dimen/card_cornerRadius">
 
-        <include layout="@layout/reports_form" />
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include layout="@layout/report_form" />
+        </ScrollView>
     </androidx.cardview.widget.CardView>
 
     <!-- Progress indicator -->

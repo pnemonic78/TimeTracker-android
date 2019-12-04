@@ -124,5 +124,6 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_REPORTS)
-    fun generateReport(@FieldMap fields: Map<String, String>): Single<Response<String>>
+    fun generateReport(@FieldMap filter: Map<String, String>,
+                       @Field("btn_generate") submit: String = "Generate"): Single<Response<String>>
 }
