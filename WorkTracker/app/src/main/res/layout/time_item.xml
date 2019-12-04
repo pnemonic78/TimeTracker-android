@@ -78,7 +78,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/task"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/task"
-            app:srcCompat="@drawable/ic_folder" />
+            app:srcCompat="@drawable/ic_folder_open" />
 
         <TextView
             android:id="@+id/task"
