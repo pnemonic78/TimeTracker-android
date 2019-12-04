@@ -349,6 +349,13 @@ class ReportFormFragment : TimeFormFragment() {
         finishInput.error = null
         finishPickerDialog = null
 
+        showProjectField.isChecked = filter.showProjectField
+        showTaskField.isChecked = filter.showTaskField
+        showStartField.isChecked = filter.showStartField
+        showFinishField.isChecked = filter.showFinishField
+        showDurationField.isChecked = filter.showDurationField
+        showNotesField.isChecked = filter.showNotesField
+
         errorLabel.text = errorMessage
     }
 
@@ -401,8 +408,20 @@ class ReportFormFragment : TimeFormFragment() {
         return cal
     }
 
+    private fun populateFilter() {
+        Timber.v("populateFilter filter=$filter")
+        filter.showProjectField = showProjectField.isChecked
+        filter.showTaskField = showTaskField.isChecked
+        filter.showStartField = showStartField.isChecked
+        filter.showFinishField = showFinishField.isChecked
+        filter.showDurationField = showDurationField.isChecked
+        filter.showNotesField = showNotesField.isChecked
+    }
+
     private fun generateReport() {
         Timber.v("generateReport filter=$filter")
+        populateFilter()
+
         if (!isNavDestination(R.id.reportFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, ReportFragment.EXTRA_CALLER, this)

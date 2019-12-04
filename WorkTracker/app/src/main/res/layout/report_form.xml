@@ -147,13 +147,76 @@
         app:layout_constraintStart_toEndOf="@+id/finishIcon"
         app:layout_constraintTop_toBottomOf="@+id/startInput" />
 
+    <CheckBox
+        android:id="@+id/showProjectField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:checked="true"
+        android:text="@string/project_label"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_v50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/finishInput" />
+
+    <CheckBox
+        android:id="@+id/showTaskField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="@string/task_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline_v50"
+        app:layout_constraintTop_toTopOf="@+id/showProjectField" />
+
+    <CheckBox
+        android:id="@+id/showStartField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:checked="true"
+        android:text="@string/start_label"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_v50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showProjectField" />
+
+    <CheckBox
+        android:id="@+id/showFinishField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="@string/finish_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline_v50"
+        app:layout_constraintTop_toTopOf="@+id/showStartField" />
+
+    <CheckBox
+        android:id="@+id/showDurationField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:checked="true"
+        android:text="@string/duration_label"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_v50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showStartField" />
+
+    <CheckBox
+        android:id="@+id/showNotesField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="@string/note_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline_v50"
+        app:layout_constraintTop_toTopOf="@+id/showDurationField" />
+
     <TextView
         android:id="@+id/errorLabel"
         style="@style/Widget.TextView.Error"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/time_list_marginTop"
-        app:layout_constraintTop_toBottomOf="@+id/finishInput"
+        app:layout_constraintTop_toBottomOf="@+id/showDurationField"
         tools:text="@tools:sample/lorem" />
 
     <Button
@@ -170,4 +233,11 @@
 
         <requestFocus />
     </Button>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_v50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 </androidx.constraintlayout.widget.ConstraintLayout>
