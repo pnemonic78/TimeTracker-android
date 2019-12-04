@@ -50,11 +50,12 @@ import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.net.TimeTrackerServiceProvider
+import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
@@ -63,7 +64,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_report_list.*
-import kotlinx.android.synthetic.main.time_totals.*
+import kotlinx.android.synthetic.main.report_totals.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -77,6 +78,7 @@ class ReportFragment : InternetFragment(),
 
     private val listAdapter = ReportAdapter()
     private var records: List<TimeRecord> = ArrayList()
+    private var totals: ReportTotals = ReportTotals()
     private var filter: ReportFilter = ReportFilter()
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
@@ -105,6 +107,7 @@ class ReportFragment : InternetFragment(),
         loadPage()
             .subscribe({
                 bindList(records)
+                bindTotals(totals)
 
                 // Fetch from remote server.
                 val service = TimeTrackerServiceProvider.providePlain(context, preferences)
@@ -133,9 +136,11 @@ class ReportFragment : InternetFragment(),
     private fun processPage(html: String, progress: Boolean = true) {
         val records = ArrayList<TimeRecord>()
         populateList(html, records)
+        populateTotals(records, totals)
         this.records = records
         runOnUiThread {
             bindList(records)
+            bindTotals(totals)
             if (progress) showProgress(false)
         }
     }
@@ -197,6 +202,19 @@ class ReportFragment : InternetFragment(),
         }
     }
 
+    private fun populateTotals(records: List<TimeRecord>, totals: ReportTotals) {
+        totals.clear(false)
+
+        var duration: Long
+        for (record in records) {
+            duration = record.finishTime - record.startTime
+            if (duration > 0L) {
+                totals.duration += duration
+            }
+            totals.cost += record.cost
+        }
+    }
+
     @MainThread
     private fun bindList(records: List<TimeRecord>) {
         if (!isVisible) return
@@ -212,41 +230,25 @@ class ReportFragment : InternetFragment(),
     }
 
     @MainThread
-    private fun bindTotals(totals: TimeTotals) {
+    private fun bindTotals(totals: ReportTotals) {
         val context: Context = requireContext()
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
-        if (totals.daily == TimeTotals.UNKNOWN) {
-            dayTotalLabel.visibility = View.INVISIBLE
-            dayTotal.text = null
+        if (totals.duration == ReportTotals.UNKNOWN) {
+            durationTotalLabel.visibility = View.INVISIBLE
+            durationTotal.text = null
         } else {
-            dayTotalLabel.visibility = View.VISIBLE
-            dayTotal.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
+            durationTotalLabel.visibility = View.VISIBLE
+            durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
         }
-        if (totals.weekly == TimeTotals.UNKNOWN) {
-            weekTotalLabel.visibility = View.INVISIBLE
-            weekTotal.text = null
+        if (totals.cost == ReportTotals.UNKNOWN_COST) {
+            costTotalLabel.visibility = View.INVISIBLE
+            costTotal.text = null
         } else {
             timeBuffer.setLength(0)
-            weekTotalLabel.visibility = View.VISIBLE
-            weekTotal.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
-        }
-        if (totals.monthly == TimeTotals.UNKNOWN) {
-            monthTotalLabel.visibility = View.INVISIBLE
-            monthTotal.text = null
-        } else {
-            timeBuffer.setLength(0)
-            monthTotalLabel.visibility = View.VISIBLE
-            monthTotal.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
-        }
-        if (totals.remaining == TimeTotals.UNKNOWN) {
-            remainingQuotaLabel.visibility = View.INVISIBLE
-            remainingQuota.text = null
-        } else {
-            timeBuffer.setLength(0)
-            remainingQuotaLabel.visibility = View.VISIBLE
-            remainingQuota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
+            costTotalLabel.visibility = View.VISIBLE
+            costTotal.text = formatCurrency(context, timeFormatter, totals.cost).toString()
         }
     }
 
@@ -407,6 +409,7 @@ class ReportFragment : InternetFragment(),
         loadPage()
             .subscribe({
                 bindList(records)
+                bindTotals(totals)
                 handleArguments()
                 fetchPage(filter)
                 showProgress(false)

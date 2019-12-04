@@ -30,26 +30,30 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginStart="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+    android:layout_marginBottom="@dimen/activity_vertical_margin">
 
     <ViewSwitcher
         android:id="@+id/listSwitcher"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:measureAllChildren="true">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:measureAllChildren="true"
+        app:layout_constraintBottom_toTopOf="@+id/totals_divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/report_item" />
 
@@ -60,8 +64,28 @@
             android:text="@string/error_no_results" />
     </ViewSwitcher>
 
+    <!-- Totals -->
+    <View
+        android:id="@+id/totals_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/divider_horizontal_dark"
+        app:layout_constraintBottom_toTopOf="@+id/totals" />
+
+    <include
+        android:id="@+id/totals"
+        layout="@layout/report_totals"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <!-- Progress indicator -->
     <include
         layout="@layout/progress"
         tools:visibility="gone" />
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
