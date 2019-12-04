@@ -23,6 +23,7 @@
     <string name="date_label">תאריך</string>
     <string name="start_label">שעת התחלה</string>
     <string name="finish_label">שעת סיום</string>
+    <string name="duration_label">משך הזמן</string>
     <string name="submit">שמור</string>
     <string name="note_hint">הערה</string>
     <string name="error_project_field_required">פרויקט חובה</string>
@@ -82,5 +83,14 @@
     <string name="finish_date_label">תאריך סיום</string>
     <string name="action_generate">ליצור</string>
     <string name="error_no_results">אין תוצאות</string>
-
+    <string name="period_label">תקופת זמן</string>
+    <string name="period_custom">מותאם אישית</string>
+    <string name="period_today">היום</string>
+    <string name="period_this_week">השבוע</string>
+    <string name="period_this_month">החודש</string>
+    <string name="period_previous_week">השבוע הקודם</string>
+    <string name="period_previous_month">החודש הקודם</string>
+    <string name="period_yesterday">אתמול</string>
+    <string name="duration_total">סה\"כ שעות</string>
+    <string name="cost_total">סה\"כ עליות</string>
 </resources>

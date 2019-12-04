@@ -88,8 +88,8 @@ abstract class TimeFormFragment : InternetFragment(),
         return ""
     }
 
-    fun findSelectedProject(project: Element, projects: List<Project>): Project {
-        for (option in project.children()) {
+    fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
+        for (option in projectInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.attr("value")
                 if (value.isNotEmpty()) {
@@ -102,8 +102,8 @@ abstract class TimeFormFragment : InternetFragment(),
         return projectEmpty
     }
 
-    fun findSelectedTask(task: Element, tasks: List<ProjectTask>): ProjectTask {
-        for (option in task.children()) {
+    fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
+        for (option in taskInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.attr("value")
                 if (value.isNotEmpty()) {

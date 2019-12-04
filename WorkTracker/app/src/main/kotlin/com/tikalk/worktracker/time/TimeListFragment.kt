@@ -197,7 +197,7 @@ class TimeListFragment : TimeFormFragment(),
         populateList(html)
         savePage()
         runOnUiThread {
-            if (view == null) return@runOnUiThread
+            if (!isVisible) return@runOnUiThread
             bindList(date, records)
             bindTotals(totals)
             if (progress) showProgress(false)

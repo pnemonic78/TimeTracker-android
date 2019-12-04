@@ -43,18 +43,19 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 import kotlinx.android.synthetic.main.time_item.view.*
 
-class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
+open class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
     View.OnClickListener {
 
-    private val timeBuffer = StringBuilder(20)
-    private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
-    private val night = (itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    protected val timeBuffer = StringBuilder(20)
+    protected val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+    protected val night = (itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
     var record: TimeRecord? = null
         set(value) {
             field = value
             if (value != null) {
                 bind(value)
+                bindColors(value)
             } else {
                 clear()
             }
@@ -67,30 +68,30 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
     }
 
     @MainThread
-    private fun bind(record: TimeRecord) {
+    protected open fun bind(record: TimeRecord) {
         val context: Context = itemView.context
         itemView.project.text = record.project.name
         itemView.task.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
         timeBuffer.setLength(0)
-        val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME)
+        val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
         itemView.timeRange.text = formatterRange.out() as CharSequence
         timeBuffer.setLength(0)
         val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
         itemView.timeDuration.text = formatterElapsed.out() as CharSequence
         itemView.note.text = record.note
-
-        bindColors(record)
+        itemView.cost.text = formatCost(record.cost)
     }
 
     @MainThread
-    private fun clear() {
+    protected open fun clear() {
         itemView.project.text = ""
         itemView.task.text = ""
         itemView.timeRange.text = ""
         itemView.timeDuration.text = ""
         itemView.note.text = ""
+        itemView.cost.text = ""
     }
 
     @MainThread
@@ -108,9 +109,19 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         val b = blueBits * 24 //*32 => some colors too bright
         val color = if (night) Color.rgb(255 - r, 255 - g, 255 - b) else Color.rgb(r, g, b)
 
+        bindColors(record, color)
+    }
+
+    @MainThread
+    protected open fun bindColors(record: TimeRecord, color: Int) {
         itemView.project.setTextColor(color)
         itemView.task.setTextColor(color)
         itemView.note.setTextColor(color)
+        itemView.cost.setTextColor(color)
+    }
+
+    private fun formatCost(cost: Double): CharSequence {
+        return if (cost <= 0.0) "" else cost.toString()
     }
 
     override fun onClick(v: View) {
@@ -118,5 +129,9 @@ class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdap
         if (record != null) {
             clickListener?.onRecordClick(record)
         }
+    }
+
+    companion object {
+        private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
     }
 }
