@@ -29,7 +29,6 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.tikalk.worktracker.report
 
 import android.content.Context
@@ -106,6 +105,7 @@ class ReportViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.project.setTextColor(color)
         itemView.task.setTextColor(color)
         itemView.note.setTextColor(color)
+        itemView.cost.setTextColor(color)
     }
 
     private fun formatCost(cost: Double): CharSequence {

@@ -69,6 +69,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
 
 class ReportFragment : InternetFragment(),
@@ -77,6 +78,8 @@ class ReportFragment : InternetFragment(),
     private val listAdapter = ReportAdapter()
     private var records: List<TimeRecord> = ArrayList()
     private var filter: ReportFilter = ReportFilter()
+    private val projects: MutableList<Project> = CopyOnWriteArrayList()
+    private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -338,11 +341,11 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun parseRecordProject(name: String): Project? {
-        return Project(name)
+        return projects.find { name == it.name } ?: Project(name)
     }
 
     private fun parseRecordTask(project: Project, name: String): ProjectTask? {
-        return ProjectTask(name)
+        return project.tasks.find { task -> (task.name == name) } ?: ProjectTask(name)
     }
 
     private fun parseRecordTime(date: Calendar, text: String): Calendar? {
@@ -362,6 +365,7 @@ class ReportFragment : InternetFragment(),
             val context: Context = this.context ?: return@fromCallable
 
             val db = TrackerDatabase.getDatabase(context)
+            loadProjectsWithTasks(db)
             loadRecords(db, filter.startTime, filter.finishTime)
         }
             .subscribeOn(Schedulers.io())
@@ -370,12 +374,30 @@ class ReportFragment : InternetFragment(),
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
         val recordsDb = queryRecords(db, start, finish)
-        records = recordsDb.map { it.toTimeRecord(null, null) }
+        records = recordsDb.map { it.toTimeRecord(projects, tasks) }
     }
 
     private fun queryRecords(db: TrackerDatabase, start: Long, finish: Long): List<TimeRecordEntity> {
         val recordsDao = db.timeRecordDao()
         return recordsDao.queryByDate(start, finish)
+    }
+
+    private fun loadProjectsWithTasks(db: TrackerDatabase) {
+        val projectsDao = db.projectDao()
+        val projectsWithTasks = projectsDao.queryAllWithTasks()
+        val projectsDb = ArrayList<Project>()
+        val tasksDb = HashSet<ProjectTask>()
+        for (projectWithTasks in projectsWithTasks) {
+            val project = projectWithTasks.project
+            project.tasks = projectWithTasks.tasks
+            projectsDb.add(project)
+            tasksDb.addAll(projectWithTasks.tasks)
+        }
+        projects.clear()
+        projects.addAll(projectsDb)
+
+        tasks.clear()
+        tasks.addAll(tasksDb)
     }
 
     @MainThread
