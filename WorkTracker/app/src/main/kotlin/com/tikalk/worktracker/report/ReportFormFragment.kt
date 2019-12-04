@@ -44,6 +44,7 @@ import android.widget.ArrayAdapter
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.html.selectByName
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.*
@@ -82,6 +83,7 @@ class ReportFormFragment : TimeFormFragment() {
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
     private val periods = ReportTimePeriod.values()
+    private var firstRun = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_report_form, container, false)
@@ -179,7 +181,9 @@ class ReportFormFragment : TimeFormFragment() {
             .subscribe({
                 populateForm(filter)
                 bindForm(filter)
-                fetchPage()
+                if (firstRun) {
+                    fetchPage()
+                }
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 showProgress(false)
@@ -405,5 +409,27 @@ class ReportFormFragment : TimeFormFragment() {
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
             findNavController().navigate(R.id.action_reportForm_to_reportList, args)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        Timber.v("onSaveInstanceState")
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(STATE_FILTER, filter)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        Timber.v("onRestoreInstanceState")
+        super.onRestoreInstanceState(savedInstanceState)
+        val filter = savedInstanceState.getParcelable<ReportFilter>(STATE_FILTER)
+
+        if (filter != null) {
+            this.filter = filter
+            this.firstRun = false
+            bindFilter(filter)
+        }
+    }
+
+    companion object {
+        private const val STATE_FILTER = BuildConfig.APPLICATION_ID + ".FILTER"
     }
 }
