@@ -115,32 +115,19 @@ class ReportFilter : TimeRecord {
     fun toFields(): Map<String, String> {
         return HashMap<String, String>().apply {
             // Main form
-            put("project", if (project.id == TikalEntity.ID_NONE) "" else project.id.toString())
-            put("task", if (task.id == TikalEntity.ID_NONE) "" else task.id.toString())
+            put("project", if (project.id == ID_NONE) "" else project.id.toString())
+            put("task", if (task.id == ID_NONE) "" else task.id.toString())
             put("period", period.toString())
             put("start_date", formatSystemDate(start))
             put("end_date", formatSystemDate(finish))
-            if (showProjectField) {
-                put("chproject", "1")
-            }
-            if (showTaskField) {
-                put("chtask", "1")
-            }
-            if (showStartField) {
-                put("chstart", "1")
-            }
-            if (showFinishField) {
-                put("chfinish", "1")
-            }
-            if (showDurationField) {
-                put("chduration", "1")
-            }
-            if (showNotesField) {
-                put("chnote", "1")
-            }
-            if (showCostField) {
-                put("chcost", "1")
-            }
+
+            // Always fetch these fields - just hide them in UI.
+            put("chproject", "1")
+            put("chtask", "1")
+            put("chstart", "1")
+            put("chfinish", "1")
+            put("chnote", "1")
+            //put("chcost", "1")
             //put("chtotalsonly", "1")
 
             // Grouping
@@ -152,8 +139,6 @@ class ReportFilter : TimeRecord {
             put("favorite_report", "-1")
             put("new_fav_report", "")
             put("fav_report_changed", "")
-
-            put("btn_generate", "Generate")
         }
     }
 

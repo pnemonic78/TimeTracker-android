@@ -38,12 +38,13 @@ import android.text.format.DateUtils
 import android.view.View
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatElapsedTime
 import kotlinx.android.synthetic.main.report_item.view.*
 import java.util.*
 
-class ReportViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class ReportViewHolder(itemView: View, val filter: ReportFilter) : RecyclerView.ViewHolder(itemView) {
 
     private val timeBuffer = StringBuilder(20)
     private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
@@ -66,9 +67,17 @@ class ReportViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.task.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
-        timeBuffer.setLength(0)
-        val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE)
-        itemView.timeRange.text = formatterRange.out() as CharSequence
+        if (filter.showStartField) {
+            if (filter.showFinishField) {
+                timeBuffer.setLength(0)
+                val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
+                itemView.timeRange.text = formatterRange.out() as CharSequence
+            } else {
+                itemView.timeRange.text = DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)
+            }
+        } else if (filter.showFinishField) {
+            itemView.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
+        }
         timeBuffer.setLength(0)
         val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
         itemView.timeDuration.text = formatterElapsed.out() as CharSequence
@@ -76,6 +85,7 @@ class ReportViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.cost.text = formatCost(record.cost)
 
         bindColors(record)
+        bindFilter()
     }
 
     @MainThread
@@ -85,6 +95,8 @@ class ReportViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.timeRange.text = ""
         itemView.timeDuration.text = ""
         itemView.note.text = ""
+        itemView.cost.text = ""
+        bindFilter()
     }
 
     @MainThread
@@ -108,7 +120,21 @@ class ReportViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         itemView.cost.setTextColor(color)
     }
 
+    @MainThread
+    private fun bindFilter() {
+        itemView.project.visibility = if (filter.showProjectField) View.VISIBLE else View.GONE
+        itemView.task.visibility = if (filter.showTaskField) View.VISIBLE else View.GONE
+        itemView.timeRange.visibility = if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
+        itemView.timeDuration.visibility = if (filter.showDurationField) View.VISIBLE else View.GONE
+        itemView.note.visibility = if (filter.showNotesField) View.VISIBLE else View.GONE
+        itemView.cost.visibility = if (filter.showCostField) View.VISIBLE else View.GONE
+    }
+
     private fun formatCost(cost: Double): CharSequence {
-        return if (cost == 0.0) "" else cost.toString()
+        return if (cost <= 0.0) "" else cost.toString()
+    }
+
+    companion object {
+        private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE
     }
 }

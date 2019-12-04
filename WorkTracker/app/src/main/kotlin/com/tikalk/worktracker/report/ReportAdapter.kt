@@ -37,14 +37,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil.ItemCallback
 import androidx.recyclerview.widget.ListAdapter
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 
-class ReportAdapter : ListAdapter<TimeRecord, ReportViewHolder>(ReportDiffer()) {
+class ReportAdapter(val filter: ReportFilter) : ListAdapter<TimeRecord, ReportViewHolder>(ReportDiffer()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReportViewHolder {
         val context: Context = parent.context
         val view = LayoutInflater.from(context).inflate(R.layout.report_item, parent, false)
-        return ReportViewHolder(view)
+        return ReportViewHolder(view, filter)
     }
 
     override fun onBindViewHolder(holder: ReportViewHolder, position: Int) {

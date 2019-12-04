@@ -77,10 +77,10 @@ import kotlin.collections.ArrayList
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
-    private val listAdapter = ReportAdapter()
     private var records: List<TimeRecord> = ArrayList()
     private var totals: ReportTotals = ReportTotals()
     private var filter: ReportFilter = ReportFilter()
+    private var listAdapter = ReportAdapter(filter)
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
 
@@ -428,6 +428,8 @@ class ReportFragment : InternetFragment(),
                 val filter = args.getParcelable<ReportFilter>(EXTRA_FILTER)
                 if (filter != null) {
                     this.filter = filter
+                    this.listAdapter = ReportAdapter(filter)
+                    list.adapter = listAdapter
                 }
             }
         }
