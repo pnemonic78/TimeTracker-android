@@ -117,5 +117,14 @@
     <string name="period_yesterday">Yesterday</string>
     <string name="duration_total">Total hours</string>
     <string name="cost_total">Total cost</string>
-
+    <string name="cost">Cost</string>
+    <string name="action_export_csv">Export CSV</string>
+    <string name="date_header" translatable="false">@string/date_label</string>
+    <string name="project_header" translatable="false">@string/project_label</string>
+    <string name="task_header" translatable="false">@string/task_label</string>
+    <string name="start_header" translatable="false">@string/start_date_label</string>
+    <string name="finish_header" translatable="false">@string/finish_date_label</string>
+    <string name="duration_header" translatable="false">@string/duration_label</string>
+    <string name="note_header" translatable="false">@string/note_hint</string>
+    <string name="cost_header" translatable="false">@string/cost</string>
 </resources>

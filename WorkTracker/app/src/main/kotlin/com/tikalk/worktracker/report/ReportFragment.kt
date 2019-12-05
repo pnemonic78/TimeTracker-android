@@ -34,9 +34,7 @@ package com.tikalk.worktracker.report
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -70,6 +68,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
+import java.io.File
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
@@ -136,7 +135,8 @@ class ReportFragment : InternetFragment(),
 
     private fun processPage(html: String, progress: Boolean = true) {
         val records = ArrayList<TimeRecord>()
-        populateList(html, records)
+        val doc: Document = Jsoup.parse(html)
+        populateList(doc, records)
         populateTotals(records, totals)
         this.records = records
         runOnUiThread {
@@ -147,9 +147,9 @@ class ReportFragment : InternetFragment(),
     }
 
     /** Populate the list. */
-    private fun populateList(html: String, records: MutableList<TimeRecord>) {
+    private fun populateList(doc: Document, records: MutableList<TimeRecord>) {
         records.clear()
-        val doc: Document = Jsoup.parse(html)
+
         var columnIndexDate = -1
         var columnIndexProject = -1
         var columnIndexTask = -1
@@ -450,6 +450,48 @@ class ReportFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.report, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_export_csv -> {
+                exportCSV(item)
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun exportCSV(item: MenuItem? = null) {
+        item?.isEnabled = false
+        showProgress(true)
+
+        val context = requireContext()
+        val folder = context.filesDir
+
+        ReportExporterCSV(context, records, filter, folder)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ file ->
+                Timber.v("Exported CSV to $file")
+                shareFile(file, ReportExporterCSV.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error updating profile: ${err.message}")
+                showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun shareFile(file: File, mimeType: String) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     companion object {

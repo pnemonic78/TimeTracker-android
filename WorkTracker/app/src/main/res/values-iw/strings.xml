@@ -93,4 +93,6 @@
     <string name="period_yesterday">אתמול</string>
     <string name="duration_total">סה\"כ שעות</string>
     <string name="cost_total">סה\"כ עליות</string>
+    <string name="cost">עלות</string>
+    <string name="action_export_csv">ייצא CSV</string>
 </resources>
