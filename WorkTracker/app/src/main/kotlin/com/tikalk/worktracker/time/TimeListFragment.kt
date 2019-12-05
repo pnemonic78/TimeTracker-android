@@ -642,10 +642,10 @@ class TimeListFragment : TimeFormFragment(),
             cal.second = 0
             cal.millis = 0
             val start = cal.timeInMillis
-            cal.hourOfDay = cal.getMaximum(Calendar.HOUR_OF_DAY)
-            cal.minute = cal.getMaximum(Calendar.MINUTE)
-            cal.second = cal.getMaximum(Calendar.SECOND)
-            cal.millis = cal.getMaximum(Calendar.MILLISECOND)
+            cal.hourOfDay = cal.getActualMaximum(Calendar.HOUR_OF_DAY)
+            cal.minute = cal.getActualMaximum(Calendar.MINUTE)
+            cal.second = cal.getActualMaximum(Calendar.SECOND)
+            cal.millis = cal.getActualMaximum(Calendar.MILLISECOND)
             val finish = cal.timeInMillis
             recordsDao.queryByDate(start, finish)
         }
