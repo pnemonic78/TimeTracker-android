@@ -95,5 +95,6 @@
     <string name="cost_total">סה\"כ עליות</string>
     <string name="cost">עלות</string>
     <string name="action_export_csv">ייצא CSV</string>
+    <string name="action_export_html">ייצא HTML</string>
     <string name="action_export_xml">ייצא XML</string>
 </resources>

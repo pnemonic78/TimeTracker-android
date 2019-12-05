@@ -98,3 +98,14 @@ private fun appendNormalisedText(accum: StringBuilder, textNode: TextNode) {
 private fun lastCharIsWhitespace(sb: StringBuilder): Boolean {
     return sb.isNotEmpty() && (sb[sb.lastIndex] == ' ')
 }
+
+fun findParentElement(element: Element, parentTag: String): Element? {
+    var parent = element.parent()
+    while (parent != null) {
+        if (parent.tagName() == parentTag) {
+            return parent
+        }
+        parent = parent.parent()
+    }
+    return null
+}

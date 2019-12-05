@@ -45,6 +45,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
+import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -83,6 +84,7 @@ import kotlin.collections.ArrayList
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
+    private var table: Element? = null
     private var records: List<TimeRecord> = ArrayList()
     private var totals: ReportTotals = ReportTotals()
     private var filter: ReportFilter = ReportFilter()
@@ -167,6 +169,7 @@ class ReportFragment : InternetFragment(),
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
+        this.table = table
         if (table != null) {
             // loop through all the rows and parse each record
             val rows = table.getElementsByTag("tr")
@@ -280,7 +283,7 @@ class ReportFragment : InternetFragment(),
 
         val label = td.ownText()
         if (label == "Date") {
-            return td.parent().parent()
+            return findParentElement(td, "table")
         }
 
         return null
@@ -470,6 +473,10 @@ class ReportFragment : InternetFragment(),
                 exportCSV(item)
                 return true
             }
+            R.id.menu_export_html -> {
+                exportHTML(item)
+                return true
+            }
             R.id.menu_export_xml -> {
                 exportXML(item)
                 return true
@@ -491,6 +498,31 @@ class ReportFragment : InternetFragment(),
             .subscribe({ file ->
                 Timber.v("Exported CSV to $file")
                 shareFile(context, file, ReportExporterCSV.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error updating profile: ${err.message}")
+                showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun exportHTML(item: MenuItem? = null) {
+        val table = this.table ?: return
+
+        item?.isEnabled = false
+        showProgress(true)
+
+        val context = requireContext()
+        val folder = File(context.filesDir, FOLDER_EXPORT)
+
+        ReportExporterHTML(context, table, filter, folder)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ file ->
+                Timber.v("Exported HTML to $file")
+                shareFile(context, file, ReportExporterHTML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->

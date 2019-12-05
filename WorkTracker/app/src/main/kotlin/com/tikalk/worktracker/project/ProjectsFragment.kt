@@ -41,6 +41,7 @@ import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
+import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -198,7 +199,7 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
             if (label != "Description") {
                 continue
             }
-            return td.parent().parent()
+            return findParentElement(td, "table")
         }
 
         return null

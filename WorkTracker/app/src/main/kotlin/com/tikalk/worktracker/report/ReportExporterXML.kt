@@ -47,15 +47,15 @@ import java.io.Writer
 import java.util.*
 
 /**
- * Write the list of records as a XML file.
+ * Write the list of records as an XML file.
  */
 class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File) : ReportExporter(context, records, filter, folder) {
 
     override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>): ReportExporterRunner {
-        return ReportExporterCSVRunner(context, records, filter, folder, observer)
+        return ReportExporterXMLRunner(context, records, filter, folder, observer)
     }
 
-    private class ReportExporterCSVRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>) : ReportExporterRunner(context, records, filter, folder, observer) {
+    private class ReportExporterXMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>) : ReportExporterRunner(context, records, filter, folder, observer) {
         override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField

@@ -44,6 +44,7 @@ import androidx.annotation.MainThread
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.*
+import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -350,7 +351,7 @@ class TimeListFragment : TimeFormFragment(),
             if (label != "Start") {
                 continue
             }
-            return td.parent().parent()
+            return findParentElement(td, "table")
         }
 
         return null
