@@ -33,13 +33,19 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.core.app.ShareCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -72,6 +78,7 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
+
 
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
@@ -476,7 +483,7 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
-        val folder = context.filesDir
+        val folder = File(context.filesDir, FOLDER_EXPORT)
 
         ReportExporterCSV(context, records, filter, folder)
             .subscribeOn(Schedulers.io())
@@ -499,7 +506,7 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
-        val folder = context.filesDir
+        val folder = File(context.filesDir, FOLDER_EXPORT)
 
         ReportExporterXML(context, records, filter, folder)
             .subscribeOn(Schedulers.io())
@@ -517,8 +524,25 @@ class ReportFragment : InternetFragment(),
             .addTo(disposables)
     }
 
-    private fun shareFile(file: File, mimeType: String) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun shareFile(file: File, mimeType: String? = null) {
+        val activity = this.activity ?: return
+        val context = requireContext()
+        val fileUri: Uri? = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.files", file)
+        if (fileUri != null) {
+            val intent = ShareCompat.IntentBuilder.from(activity)
+                .addStream(fileUri)
+                .setType(mimeType ?: context.contentResolver.getType(fileUri))
+                .intent
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+            // validate that the device can open your File!
+            val pm = context.packageManager
+            if (intent.resolveActivity(pm) != null) {
+                startActivity(intent)
+            } else {
+                Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG)
+            }
+        }
     }
 
     companion object {
@@ -527,5 +551,7 @@ class ReportFragment : InternetFragment(),
 
         private const val CHILD_LIST = 0
         private const val CHILD_EMPTY = 1
+
+        private const val FOLDER_EXPORT = "exports"
     }
 }
