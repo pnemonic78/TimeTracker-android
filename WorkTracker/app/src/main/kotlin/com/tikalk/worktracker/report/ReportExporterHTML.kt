@@ -36,9 +36,11 @@ import android.content.Context
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import io.reactivex.SingleObserver
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.io.File
 import java.io.FileWriter
+import java.io.InputStreamReader
 import java.io.Writer
 
 /**
@@ -65,7 +67,16 @@ class ReportExporterHTML(context: Context, val table: Element, filter: ReportFil
             val writer: Writer = FileWriter(file)
             out = writer
 
-            val html = table.outerHtml()
+            val cssStream = context.assets.open("default.css")
+            val cssReader = InputStreamReader(cssStream)
+            val css = cssReader.readText()
+
+            val doc = Document.createShell("")
+            val style = doc.createElement("style")
+            style.append(css)
+            doc.head().appendChild(style)
+            doc.body().appendChild(table)
+            val html = doc.html()
             writer.write(html)
 
             writer.close()
