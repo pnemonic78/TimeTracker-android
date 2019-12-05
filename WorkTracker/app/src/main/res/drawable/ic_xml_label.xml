@@ -30,19 +30,21 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item
-        android:id="@+id/menu_export_xml"
-        android:icon="@drawable/ic_menu_export_xml"
-        android:orderInCategory="10"
-        android:title="@string/action_export_xml"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/menu_export_csv"
-        android:icon="@drawable/ic_menu_export_csv"
-        android:orderInCategory="20"
-        android:title="@string/action_export_csv"
-        app:showAsAction="ifRoom" />
-</menu>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:alpha="0.75"
+    android:tint="@color/selector_icon"
+    android:tintMode="multiply"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0">
+    <path
+        android:fillColor="@color/white"
+        android:pathData="m9.5537,11.2251 l-1.5059,2.1563 1.5029,2.2061L8.8799,15.5874l-1.1895,-1.7959 -1.2188,1.7959L5.8389,15.5874L7.3594,13.4077 5.874,11.2251h0.668l1.1748,1.7725 1.2012,-1.7725z" />
+    <path
+        android:fillColor="@color/white"
+        android:pathData="m14.2236,15.5874h-0.5801v-3.7588l-1.2129,2.5576h-0.3457l-1.2041,-2.5576v3.7588h-0.542v-4.3623h0.791l1.1631,2.4287 1.125,-2.4287h0.8057z" />
+    <path
+        android:fillColor="@color/white"
+        android:pathData="m18.1611,15.5874h-2.7598v-4.3623h0.5801v3.8467h2.1797z" />
+</vector>

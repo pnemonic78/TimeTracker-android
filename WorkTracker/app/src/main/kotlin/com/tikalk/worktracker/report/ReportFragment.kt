@@ -463,6 +463,10 @@ class ReportFragment : InternetFragment(),
                 exportCSV(item)
                 return true
             }
+            R.id.menu_export_xml -> {
+                exportXML(item)
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -480,6 +484,29 @@ class ReportFragment : InternetFragment(),
             .subscribe({ file ->
                 Timber.v("Exported CSV to $file")
                 shareFile(file, ReportExporterCSV.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error updating profile: ${err.message}")
+                showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun exportXML(item: MenuItem? = null) {
+        item?.isEnabled = false
+        showProgress(true)
+
+        val context = requireContext()
+        val folder = context.filesDir
+
+        ReportExporterXML(context, records, filter, folder)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ file ->
+                Timber.v("Exported XML to $file")
+                shareFile(file, ReportExporterXML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->

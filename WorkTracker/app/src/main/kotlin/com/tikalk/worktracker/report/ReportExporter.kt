@@ -44,6 +44,9 @@ import java.io.File
 import java.io.IOException
 import java.io.Writer
 
+/**
+ * Write the list of records to a file.
+ */
 abstract class ReportExporter(val context: Context, val records: List<TimeRecord>, val filter: ReportFilter, val folder: File) : Single<File>(), Disposable {
 
     private var runner: ReportExporterRunner? = null

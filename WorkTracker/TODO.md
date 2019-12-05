@@ -1,8 +1,7 @@
 To-Do List
 ====
 
-* Reports - export - xml
-* Reports - export - opendoc
+* Reports - export - opendoc spreadsheet
 * Reports - group by
 * Reports - favorites
 * Reports - master/detail

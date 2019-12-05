@@ -30,19 +30,7 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item
-        android:id="@+id/menu_export_xml"
-        android:icon="@drawable/ic_menu_export_xml"
-        android:orderInCategory="10"
-        android:title="@string/action_export_xml"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/menu_export_csv"
-        android:icon="@drawable/ic_menu_export_csv"
-        android:orderInCategory="20"
-        android:title="@string/action_export_csv"
-        app:showAsAction="ifRoom" />
-</menu>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_folder_open" />
+    <item android:drawable="@drawable/ic_xml_label" />
+</layer-list>

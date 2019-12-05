@@ -34,25 +34,22 @@ package com.tikalk.worktracker.report
 
 import android.content.Context
 import android.text.format.DateUtils
-import com.opencsv.CSVWriterBuilder
-import com.opencsv.ICSVWriter
-import com.tikalk.worktracker.R
+import android.util.Xml
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
 import io.reactivex.SingleObserver
+import org.xmlpull.v1.XmlSerializer
 import java.io.File
 import java.io.FileWriter
 import java.io.Writer
 import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 /**
- * Write the list of records as a CSV file.
+ * Write the list of records as a XML file.
  */
-class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File) : ReportExporter(context, records, filter, folder) {
+class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File) : ReportExporter(context, records, filter, folder) {
 
     override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>): ReportExporterRunner {
         return ReportExporterCSVRunner(context, records, filter, folder, observer)
@@ -71,71 +68,71 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
             out = writer
-            val csvWriter: ICSVWriter = CSVWriterBuilder(writer).build()
+            val xmlWriter: XmlSerializer = Xml.newSerializer()
 
-            val headerRecord = ArrayList<String>()
-            headerRecord.add(context.getString(R.string.date_header))
-            if (showProjectField) {
-                headerRecord.add(context.getString(R.string.project_header))
-            }
-            if (showTaskField) {
-                headerRecord.add(context.getString(R.string.task_header))
-            }
-            if (showStartField) {
-                headerRecord.add(context.getString(R.string.start_header))
-            }
-            if (showFinishField) {
-                headerRecord.add(context.getString(R.string.finish_header))
-            }
-            if (showDurationField) {
-                headerRecord.add(context.getString(R.string.duration_header))
-            }
-            if (showNotesField) {
-                headerRecord.add(context.getString(R.string.note_header))
-            }
-            if (showCostField) {
-                headerRecord.add(context.getString(R.string.cost_header))
-            }
-            csvWriter.writeNext(headerRecord.toTypedArray())
+            val ns: String? = null
+            xmlWriter.setOutput(writer)
+            xmlWriter.setFeature(FEATURE_INDENT, true)
+            xmlWriter.startDocument(null, true)
+            xmlWriter.startTag(ns, "rows")
 
-            val row = ArrayList<String>()
             for (record in records) {
-                row.clear()
-                row.add(formatSystemDate(record.start))
+                xmlWriter.startTag(ns, "row")
+                xmlWriter.startTag(ns, "date")
+                xmlWriter.text(formatSystemDate(record.start))
+                xmlWriter.endTag(ns, "date")
                 if (showProjectField) {
-                    row.add(record.project.name)
+                    xmlWriter.startTag(ns, "project")
+                    xmlWriter.text(record.project.name)
+                    xmlWriter.endTag(ns, "project")
                 }
                 if (showTaskField) {
-                    row.add(record.task.name)
+                    xmlWriter.startTag(ns, "task")
+                    xmlWriter.text(record.task.name)
+                    xmlWriter.endTag(ns, "task")
                 }
                 if (showStartField) {
-                    row.add(formatSystemTime(record.start))
+                    xmlWriter.startTag(ns, "start")
+                    xmlWriter.text(formatSystemTime(record.start))
+                    xmlWriter.endTag(ns, "start")
                 }
                 if (showFinishField) {
-                    row.add(formatSystemTime(record.finish))
+                    xmlWriter.startTag(ns, "finish")
+                    xmlWriter.text(formatSystemTime(record.finish))
+                    xmlWriter.endTag(ns, "finish")
                 }
                 if (showDurationField) {
                     val durationMs = record.finishTime - record.startTime
                     val durationHs = durationMs.toDouble() / DateUtils.HOUR_IN_MILLIS
-                    row.add(String.format(Locale.US, "%.2f", durationHs))
+                    xmlWriter.startTag(ns, "duration")
+                    xmlWriter.text(String.format(Locale.US, "%.2f", durationHs))
+                    xmlWriter.endTag(ns, "duration")
                 }
                 if (showNotesField) {
-                    row.add(record.note)
+                    xmlWriter.startTag(ns, "note")
+                    xmlWriter.text(record.note)
+                    xmlWriter.endTag(ns, "note")
                 }
                 if (showCostField) {
-                    row.add(String.format(Locale.US, "%.2f", record.cost))
+                    xmlWriter.startTag(ns, "cost")
+                    xmlWriter.text(String.format(Locale.US, "%.2f", record.cost))
+                    xmlWriter.endTag(ns, "cost")
                 }
-                csvWriter.writeNext(row.toTypedArray())
+                xmlWriter.endTag(ns, "row")
             }
 
-            csvWriter.close()
+            xmlWriter.endTag(ns, "rows")
+            xmlWriter.endDocument()
             writer.close()
+
             return file
         }
     }
 
     companion object {
-        const val MIME_TYPE = "application/csv"
-        const val EXTENSION = ".csv"
+        const val MIME_TYPE = "application/xml"
+        const val EXTENSION = ".xml"
+
+        private const val FEATURE_INDENT = "http://xmlpull.org/v1/doc/features.html#indent-output"
     }
 }
