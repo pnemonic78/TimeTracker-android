@@ -1,10 +1,12 @@
 To-Do List
 ====
 
-* Reports - export - opendoc spreadsheet
+* Reports - export - html
 * Reports - group by
 * Reports - favorites
 * Reports - master/detail
+* Reports - export - opendoc spreadsheet
+* Reports - export - pdf
 * Sidebar navigation
 * koin for web service
 * LiveData
