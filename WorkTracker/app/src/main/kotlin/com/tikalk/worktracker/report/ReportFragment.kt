@@ -490,7 +490,7 @@ class ReportFragment : InternetFragment(),
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
                 Timber.v("Exported CSV to $file")
-                shareFile(file, ReportExporterCSV.MIME_TYPE)
+                shareFile(context, file, ReportExporterCSV.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
@@ -513,7 +513,7 @@ class ReportFragment : InternetFragment(),
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
                 Timber.v("Exported XML to $file")
-                shareFile(file, ReportExporterXML.MIME_TYPE)
+                shareFile(context, file, ReportExporterXML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
@@ -524,23 +524,22 @@ class ReportFragment : InternetFragment(),
             .addTo(disposables)
     }
 
-    private fun shareFile(file: File, mimeType: String? = null) {
-        val activity = this.activity ?: return
-        val context = requireContext()
+    private fun shareFile(context: Context, file: File, mimeType: String? = null) {
         val fileUri: Uri? = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.files", file)
         if (fileUri != null) {
+            val activity = this.activity ?: return
             val intent = ShareCompat.IntentBuilder.from(activity)
                 .addStream(fileUri)
                 .setType(mimeType ?: context.contentResolver.getType(fileUri))
                 .intent
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-            // validate that the device can open your File!
+            // Validate that the device can open your File!
             val pm = context.packageManager
             if (intent.resolveActivity(pm) != null) {
                 startActivity(intent)
             } else {
-                Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG)
+                Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
             }
         }
     }
