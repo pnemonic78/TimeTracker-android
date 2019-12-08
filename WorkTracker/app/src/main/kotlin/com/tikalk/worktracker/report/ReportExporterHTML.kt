@@ -65,10 +65,6 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val showNotesField = filter.showNotesField
             val showCostField = filter.showCostField
 
-            val file = File(folder, filenamePrefix + EXTENSION)
-            val writer: Writer = FileWriter(file)
-            out = writer
-
             val doc = Document.createShell("")
 
             val cssStream = context.assets.open("default.css")
@@ -84,10 +80,12 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
 
             }
 
-            val html = doc.html()
-            writer.write(html)
-
+            val file = File(folder, filenamePrefix + EXTENSION)
+            val writer: Writer = FileWriter(file)
+            out = writer
+            doc.html(writer)
             writer.close()
+            out = null
 
             return file
         }

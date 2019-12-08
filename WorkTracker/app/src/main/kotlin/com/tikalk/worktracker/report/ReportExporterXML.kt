@@ -125,6 +125,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
             xmlWriter.endTag(ns, "rows")
             xmlWriter.endDocument()
             writer.close()
+            out = null
 
             return file
         }

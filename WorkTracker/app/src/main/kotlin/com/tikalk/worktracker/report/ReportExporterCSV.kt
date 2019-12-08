@@ -130,6 +130,8 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
 
             csvWriter.close()
             writer.close()
+            out = null
+
             return file
         }
     }
