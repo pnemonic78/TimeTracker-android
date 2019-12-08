@@ -45,6 +45,7 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
+//TODO @Parcelize
 open class TimeRecord : TikalEntity, Parcelable {
 
     var project: Project
@@ -69,12 +70,6 @@ open class TimeRecord : TikalEntity, Parcelable {
             cal.timeInMillis = value
             finish = cal
         }
-
-    fun isEmpty(): Boolean {
-        return project.isEmpty()
-            || task.isEmpty()
-            || (startTime <= 0L)
-    }
 
     constructor(
         id: Long = ID_NONE,
@@ -120,6 +115,12 @@ open class TimeRecord : TikalEntity, Parcelable {
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun isEmpty(): Boolean {
+        return project.isEmpty()
+            || task.isEmpty()
+            || (startTime <= 0L)
     }
 
     open fun copy(): TimeRecord {
@@ -195,10 +196,10 @@ fun TimeRecord.split(): List<TimeRecord> {
         // The first day.
         val startFirst = start
         val finishFirst = startFirst.clone() as Calendar
-        finishFirst.hourOfDay = finishFirst.getMaximum(Calendar.HOUR_OF_DAY)
-        finishFirst.minute = finishFirst.getMaximum(Calendar.MINUTE)
-        finishFirst.second = finishFirst.getMaximum(Calendar.SECOND)
-        finishFirst.millis = finishFirst.getMaximum(Calendar.MILLISECOND)
+        finishFirst.hourOfDay = finishFirst.getActualMaximum(Calendar.HOUR_OF_DAY)
+        finishFirst.minute = finishFirst.getActualMaximum(Calendar.MINUTE)
+        finishFirst.second = finishFirst.getActualMaximum(Calendar.SECOND)
+        finishFirst.millis = finishFirst.getActualMaximum(Calendar.MILLISECOND)
         results.add(this.copy(start = startFirst, finish = finishFirst))
         diffMillis -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
 
@@ -213,10 +214,10 @@ fun TimeRecord.split(): List<TimeRecord> {
             startDay.second = 0
             startDay.millis = 0
             finishDay = startDay.clone() as Calendar
-            finishDay.hourOfDay = finishDay.getMaximum(Calendar.HOUR_OF_DAY)
-            finishDay.minute = finishDay.getMaximum(Calendar.MINUTE)
-            finishDay.second = finishDay.getMaximum(Calendar.SECOND)
-            finishDay.millis = finishDay.getMaximum(Calendar.MILLISECOND)
+            finishDay.hourOfDay = finishDay.getActualMaximum(Calendar.HOUR_OF_DAY)
+            finishDay.minute = finishDay.getActualMaximum(Calendar.MINUTE)
+            finishDay.second = finishDay.getActualMaximum(Calendar.SECOND)
+            finishDay.millis = finishDay.getActualMaximum(Calendar.MILLISECOND)
             results.add(this.copy(start = startDay, finish = finishDay))
             diffMillis -= DateUtils.DAY_IN_MILLIS
         }

@@ -47,15 +47,15 @@ const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SH
 
 fun formatSystemDate(date: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemDate(date: Date?): String = if (date == null) "" else formatSystemDate(date.time)
+fun formatSystemDate(date: Date?): String = if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemDate(date: Calendar?): String = if (date == null) "" else formatSystemDate(date.timeInMillis)
+fun formatSystemDate(date: Calendar?): String = if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
 fun formatSystemTime(time: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Date?): String = if (time == null) "" else formatSystemTime(time.time)
+fun formatSystemTime(time: Date?): String = if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Calendar?): String = if (time == null) "" else formatSystemTime(time.timeInMillis)
+fun formatSystemTime(time: Calendar?): String = if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
 fun parseSystemTime(date: Long, time: String?): Calendar? {
     if (time.isNullOrEmpty()) {
@@ -146,6 +146,14 @@ var Calendar.dayOfMonth: Int
     }
     set(value) {
         set(Calendar.DAY_OF_MONTH, value)
+    }
+
+var Calendar.dayOfWeek: Int
+    get() {
+        return get(Calendar.DAY_OF_WEEK)
+    }
+    set(value) {
+        set(Calendar.DAY_OF_WEEK, value)
     }
 
 var Calendar.hourOfDay: Int

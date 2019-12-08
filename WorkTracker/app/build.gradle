@@ -69,6 +69,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
     kotlinOptions {
         freeCompilerArgs += ["-Xallow-result-return-type"]
     }
@@ -122,4 +127,8 @@ dependencies {
     // Navigation
     implementation 'androidx.navigation:navigation-fragment-ktx:2.1.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
+
+    // Export
+    implementation 'com.opencsv:opencsv:5.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-html-jvm:0.6.10'
 }

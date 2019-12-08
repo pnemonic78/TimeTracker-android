@@ -1,0 +1,50 @@
+<!--
+  ~ BSD 3-Clause License
+  ~
+  ~ Copyright (c) 2019, Tikal Knowledge, Ltd.
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ • Redistributions of source code must retain the above copyright notice, this
+  ~   list of conditions and the following disclaimer.
+  ~
+  ~ • Redistributions in binary form must reproduce the above copyright notice,
+  ~   this list of conditions and the following disclaimer in the documentation
+  ~   and/or other materials provided with the distribution.
+  ~
+  ~ • Neither the name of the copyright holder nor the names of its
+  ~   contributors may be used to endorse or promote products derived from
+  ~   this software without specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  ~ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  ~ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  ~ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  ~ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  ~ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:alpha="0.75"
+    android:tint="@color/selector_icon"
+    android:tintMode="multiply"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0">
+    <path
+        android:fillColor="@color/white"
+        android:pathData="m9.6255,15.4719q-0.1611,0.0703 -0.293,0.1318 -0.1289,0.0615 -0.3398,0.1289 -0.1787,0.0557 -0.3896,0.0938 -0.208,0.041 -0.46,0.041 -0.4746,0 -0.8643,-0.1318 -0.3867,-0.1348 -0.6738,-0.4189 -0.2813,-0.2783 -0.4395,-0.7061 -0.1582,-0.4307 -0.1582,-0.999 0,-0.5391 0.1523,-0.9639 0.1523,-0.4248 0.4395,-0.7178 0.2783,-0.2842 0.6709,-0.4336 0.3955,-0.1494 0.876,-0.1494 0.3516,0 0.7002,0.085 0.3516,0.085 0.7793,0.2988v0.6885L9.5815,12.4192Q9.2212,12.1174 8.8667,11.9797 8.5122,11.842 8.1079,11.842q-0.3311,0 -0.5977,0.1084 -0.2637,0.1055 -0.4717,0.3311 -0.2021,0.2197 -0.3164,0.5566 -0.1113,0.334 -0.1113,0.7734 0,0.46 0.123,0.791 0.126,0.3311 0.3223,0.5391 0.2051,0.2168 0.4775,0.3223 0.2754,0.1025 0.5801,0.1025 0.4189,0 0.7852,-0.1436 0.3662,-0.1436 0.6855,-0.4307h0.041z" />
+    <path
+        android:fillColor="@color/white"
+        android:pathData="m13.6216,14.5432q0,0.2549 -0.1201,0.5039 -0.1172,0.249 -0.3311,0.4219 -0.2344,0.1875 -0.5479,0.293 -0.3105,0.1055 -0.75,0.1055 -0.4717,0 -0.8496,-0.0879 -0.375,-0.0879 -0.7646,-0.2607L10.2583,14.7922h0.041q0.3311,0.2754 0.7646,0.4248 0.4336,0.1494 0.8145,0.1494 0.5391,0 0.8379,-0.2021 0.3018,-0.2021 0.3018,-0.5391 0,-0.29 -0.1436,-0.4277 -0.1406,-0.1377 -0.4307,-0.2139 -0.2197,-0.0586 -0.4775,-0.0967 -0.2549,-0.0381 -0.542,-0.0967 -0.5801,-0.123 -0.8613,-0.4189 -0.2783,-0.2988 -0.2783,-0.7764 0,-0.5479 0.4629,-0.8965 0.4629,-0.3516 1.1748,-0.3516 0.46,0 0.8438,0.0879 0.3838,0.0879 0.6797,0.2168v0.6855h-0.041q-0.249,-0.2109 -0.6563,-0.3486 -0.4043,-0.1406 -0.8291,-0.1406 -0.4658,0 -0.75,0.1934 -0.2813,0.1934 -0.2813,0.498 0,0.2725 0.1406,0.4277 0.1406,0.1553 0.4951,0.2373 0.1875,0.041 0.5332,0.0996 0.3457,0.0586 0.5859,0.1201 0.4863,0.1289 0.7324,0.3896 0.2461,0.2607 0.2461,0.7295z" />
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M17.9927,11.426 L16.4048,15.7883L15.6313,15.7883L14.0435,11.426h0.6211l1.3682,3.8379 1.3682,-3.8379z" />
+</vector>
