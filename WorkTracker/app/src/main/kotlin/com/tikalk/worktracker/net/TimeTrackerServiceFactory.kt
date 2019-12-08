@@ -117,10 +117,18 @@ class TimeTrackerServiceFactory {
     }
 }
 
+val preferencesModule = module {
+    fun providePreferences(context: Context): TimeTrackerPrefs {
+        return TimeTrackerPrefs(context)
+    }
+
+    single { providePreferences(get()) }
+}
+
 val apiModule = module {
-    fun providePlain(context: Context, preferences: TimeTrackerPrefs = TimeTrackerPrefs(context)): TimeTrackerService {
+    fun providePlain(context: Context, preferences: TimeTrackerPrefs): TimeTrackerService {
         return TimeTrackerServiceFactory.createPlain(context, preferences)
     }
 
-    single { providePlain(get()) }
+    single { providePlain(get(), get()) }
 }
