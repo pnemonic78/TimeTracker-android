@@ -32,16 +32,7 @@
 
 package com.tikalk.worktracker.app
 
-import android.os.Bundle
 import com.tikalk.app.TikalActivity
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
 abstract class TrackerActivity : TikalActivity() {
-
-    protected lateinit var preferences: TimeTrackerPrefs
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        preferences = TimeTrackerPrefs(context)
-    }
 }

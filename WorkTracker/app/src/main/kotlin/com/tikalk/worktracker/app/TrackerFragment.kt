@@ -48,7 +48,7 @@ abstract class TrackerFragment : TikalFragment {
 
     constructor(args: Bundle) : super(args)
 
-    protected lateinit var preferences: TimeTrackerPrefs
+    protected val preferences by inject<TimeTrackerPrefs>()
     var user: User = User.EMPTY
     protected val db by inject<TrackerDatabase>()
 
@@ -57,7 +57,6 @@ abstract class TrackerFragment : TikalFragment {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        preferences = TimeTrackerPrefs(context)
         user = preferences.user
     }
 
