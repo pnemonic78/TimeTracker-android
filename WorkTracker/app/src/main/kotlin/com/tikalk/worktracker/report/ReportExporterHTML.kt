@@ -37,7 +37,9 @@ import android.net.Uri
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.formatSystemDate
+import com.tikalk.worktracker.time.formatSystemTime
 import io.reactivex.SingleObserver
 import kotlinx.html.*
 import kotlinx.html.consumers.DelayedConsumer
@@ -46,6 +48,7 @@ import java.io.File
 import java.io.FileWriter
 import java.io.InputStreamReader
 import java.io.Writer
+import java.util.*
 
 /**
  * Write the list of records as an HTML file.
@@ -76,6 +79,9 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val cssReader = InputStreamReader(cssStream)
             val css = cssReader.readText()
 
+            val timeBuffer = StringBuilder(20)
+            val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
+
             val consumer = DelayedConsumer(HTMLStreamBuilder(writer, prettyPrint = true, xhtmlCompatible = true)).html {
                 head {
                     title(titleText)
@@ -99,8 +105,100 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                         }
                     }
 
-                    for (record in records) {
+                    table {
+                        attributes["border"] = "0"
+                        attributes["cellpadding"] = "3"
+                        attributes["cellspacing"] = "1"
+                        attributes["width"] = "100%"
 
+                        tr {
+                            td("tableHeader") {
+                                +context.getString(R.string.date_header)
+                            }
+                            if (showProjectField) {
+                                td("tableHeader") {
+                                    +context.getString(R.string.project_header)
+                                }
+                            }
+                            if (showTaskField) {
+                                td("tableHeader") {
+                                    +context.getString(R.string.task_header)
+                                }
+                            }
+                            if (showStartField) {
+                                td("tableHeaderCentered") {
+                                    +context.getString(R.string.start_header)
+                                }
+                            }
+                            if (showFinishField) {
+                                td("tableHeaderCentered") {
+                                    +context.getString(R.string.finish_header)
+                                }
+                            }
+                            if (showDurationField) {
+                                td("tableHeaderCentered") {
+                                    +context.getString(R.string.duration_header)
+                                }
+                            }
+                            if (showNotesField) {
+                                td("tableHeader") {
+                                    +context.getString(R.string.note_header)
+                                }
+                            }
+                            if (showCostField) {
+                                td("tableHeaderCentered") {
+                                    +context.getString(R.string.cost_header)
+                                }
+                            }
+                        }
+
+                        for (i in records.indices) {
+                            val record = records[i]
+
+                            tr(if (i.rem(2) == 0) "rowReportItem" else "rowReportItemAlt") {
+                                td("cellLeftAligned") {
+                                    +formatSystemDate(record.start)
+                                }
+                                if (showProjectField) {
+                                    td("cellLeftAligned") {
+                                        +record.project.name
+                                    }
+                                }
+                                if (showTaskField) {
+                                    td("cellLeftAligned") {
+                                        +record.task.name
+                                    }
+                                }
+                                if (showStartField) {
+                                    td("cellRightAligned") {
+                                        +formatSystemTime(record.start)
+                                    }
+                                }
+                                if (showFinishField) {
+                                    td("cellRightAligned") {
+                                        +formatSystemTime(record.finish)
+                                    }
+                                }
+                                if (showDurationField) {
+                                    timeBuffer.setLength(0)
+                                    val durationMs = record.finishTime - record.startTime
+                                    formatElapsedTime(context, timeFormatter, durationMs)
+                                    td("cellRightAligned") {
+                                        +timeFormatter.toString()
+                                    }
+                                }
+                                if (showNotesField) {
+                                    td("cellLeftAligned") {
+                                        +record.note
+                                    }
+                                }
+                                if (showCostField) {
+                                    td("cellRightAligned") {
+                                        +String.format(Locale.US, "%.2f", record.cost)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
