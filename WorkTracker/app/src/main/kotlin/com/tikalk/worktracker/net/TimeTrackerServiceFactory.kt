@@ -73,7 +73,7 @@ class TimeTrackerServiceFactory {
             return cookieHandler
         }
 
-        private fun createHttpClient(context: Context?, authToken: String? = null): OkHttpClient {
+        fun createHttpClient(context: Context?, preferences: TimeTrackerPrefs? = null): OkHttpClient {
             val httpClientBuilder = OkHttpClient.Builder()
 
             if (BuildConfig.DEBUG) {
@@ -82,8 +82,8 @@ class TimeTrackerServiceFactory {
                 httpClientBuilder.addInterceptor(interceptorLogging)
             }
 
-            if (authToken != null) {
-                val interceptorAuth = AuthenticationInterceptor(authToken)
+            if (preferences != null) {
+                val interceptorAuth = AuthenticationInterceptor(preferences)
                 httpClientBuilder.addInterceptor(interceptorAuth)
             }
 
@@ -92,21 +92,19 @@ class TimeTrackerServiceFactory {
             return httpClientBuilder.build()
         }
 
-        fun createPlain(context: Context?, authToken: String? = null): TimeTrackerService {
-            val httpClient = createHttpClient(context, authToken)
-
-            val retrofit = Retrofit.Builder()
+        fun createRetrofit(httpClient: OkHttpClient): Retrofit {
+            return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(httpClient)
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
-            return retrofit.create(TimeTrackerService::class.java)
         }
 
-        fun createPlain(context: Context?, preferences: TimeTrackerPrefs): TimeTrackerService {
-            val authToken = preferences.basicCredentials.authToken()
-            return createPlain(context, authToken)
+        fun createPlain(context: Context?, preferences: TimeTrackerPrefs? = null): TimeTrackerService {
+            val httpClient = createHttpClient(context, preferences)
+            val retrofit = createRetrofit(httpClient)
+            return retrofit.create(TimeTrackerService::class.java)
         }
 
         fun clearCookies() {

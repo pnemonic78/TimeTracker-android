@@ -70,7 +70,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         startKoin {
             androidLogger(if (BuildConfig.DEBUG) Level.DEBUG else Level.INFO)
             androidContext(this@TrackerApplication)
-            modules(listOf(preferencesModule, apiModule, databaseModule))
+            modules(listOf(preferencesModule, databaseModule, retrofitModule, apiModule))
         }
     }
 

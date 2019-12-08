@@ -37,7 +37,9 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import okhttp3.OkHttpClient
 import org.koin.dsl.module
+import retrofit2.Retrofit
 
 val databaseModule = module {
     fun provideDatabase(context: Context): TrackerDatabase {
@@ -61,4 +63,17 @@ val apiModule = module {
     }
 
     single { providePlain(get(), get()) }
+}
+
+val retrofitModule = module {
+    fun provideHttpClient(context: Context, preferences: TimeTrackerPrefs? = null): OkHttpClient {
+        return TimeTrackerServiceFactory.createHttpClient(context, preferences)
+    }
+
+    fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
+        return TimeTrackerServiceFactory.createRetrofit(httpClient)
+    }
+
+    single { provideHttpClient(get(), get()) }
+    single { provideRetrofit(get()) }
 }
