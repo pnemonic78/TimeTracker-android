@@ -116,6 +116,7 @@
     <string name="period_previous_week">The previous week</string>
     <string name="period_previous_month">The previous month</string>
     <string name="period_yesterday">Yesterday</string>
+    <string name="total">Total</string>
     <string name="duration_total">Total hours</string>
     <string name="cost_total">Total cost</string>
     <string name="cost">Cost</string>

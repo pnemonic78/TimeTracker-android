@@ -92,6 +92,7 @@
     <string name="period_previous_week">השבוע הקודם</string>
     <string name="period_previous_month">החודש הקודם</string>
     <string name="period_yesterday">אתמול</string>
+    <string name="total">סה\"כ</string>
     <string name="duration_total">סה\"כ שעות</string>
     <string name="cost_total">סה\"כ עליות</string>
     <string name="cost">עלות</string>

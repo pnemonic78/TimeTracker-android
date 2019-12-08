@@ -209,7 +209,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun populateTotals(records: List<TimeRecord>, totals: ReportTotals) {
-        totals.clear(false)
+        totals.clear()
 
         var duration: Long
         for (record in records) {
@@ -241,20 +241,21 @@ class ReportFragment : InternetFragment(),
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
-        if (totals.duration == ReportTotals.UNKNOWN) {
-            durationTotalLabel.visibility = View.INVISIBLE
-            durationTotal.text = null
-        } else {
+        if (filter.showDurationField) {
+            timeBuffer.setLength(0)
             durationTotalLabel.visibility = View.VISIBLE
             durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
-        }
-        if (totals.cost == ReportTotals.UNKNOWN_COST) {
-            costTotalLabel.visibility = View.INVISIBLE
-            costTotal.text = null
         } else {
+            durationTotalLabel.visibility = View.INVISIBLE
+            durationTotal.text = null
+        }
+        if (filter.showCostField) {
             timeBuffer.setLength(0)
             costTotalLabel.visibility = View.VISIBLE
             costTotal.text = formatCurrency(context, timeFormatter, totals.cost).toString()
+        } else {
+            costTotalLabel.visibility = View.INVISIBLE
+            costTotal.text = null
         }
     }
 
@@ -508,7 +509,7 @@ class ReportFragment : InternetFragment(),
 
         val context = requireContext()
 
-        ReportExporterHTML(context, records, filter)
+        ReportExporterHTML(context, records, filter, totals)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->

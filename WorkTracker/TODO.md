@@ -1,6 +1,8 @@
 To-Do List
 ====
 
+* Play store - screenshots - English
+* Play store - screenshots - Hebrew
 * Reports - save records in SQL table
 * koin for web service
 * Sidebar navigation

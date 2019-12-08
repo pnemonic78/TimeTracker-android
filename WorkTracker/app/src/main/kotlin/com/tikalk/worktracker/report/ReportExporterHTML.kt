@@ -36,7 +36,9 @@ import android.content.Context
 import android.net.Uri
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
@@ -53,13 +55,13 @@ import java.util.*
 /**
  * Write the list of records as an HTML file.
  */
-class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
+class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: ReportFilter, val totals: ReportTotals) : ReportExporter(context, records, filter) {
 
     override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
-        return ReportExporterHTMLRunner(context, records, filter, observer)
+        return ReportExporterHTMLRunner(context, records, filter, totals, observer)
     }
 
-    private class ReportExporterHTMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
+    private class ReportExporterHTMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, private val totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
         override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
@@ -196,6 +198,45 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                     td("cellRightAligned") {
                                         +String.format(Locale.US, "%.2f", record.cost)
                                     }
+                                }
+                            }
+                        }
+
+                        tr {
+                            td {
+                                +Entities.nbsp
+                            }
+                        }
+
+                        tr("rowReportSubtotal") {
+                            td("cellLeftAlignedSubtotal") {
+                                +context.getString(R.string.total)
+                            }
+                            if (showProjectField) {
+                                td {}
+                            }
+                            if (showTaskField) {
+                                td {}
+                            }
+                            if (showStartField) {
+                                td {}
+                            }
+                            if (showFinishField) {
+                                td {}
+                            }
+                            if (showDurationField) {
+                                td("cellRightAlignedSubtotal") {
+                                    timeBuffer.setLength(0)
+                                    +formatElapsedTime(context, timeFormatter, totals.duration).toString()
+                                }
+                            }
+                            if (showNotesField) {
+                                td {}
+                            }
+                            if (showCostField) {
+                                td("cellRightAlignedSubtotal") {
+                                    timeBuffer.setLength(0)
+                                    +formatCurrency(context, timeFormatter, totals.cost).toString()
                                 }
                             }
                         }

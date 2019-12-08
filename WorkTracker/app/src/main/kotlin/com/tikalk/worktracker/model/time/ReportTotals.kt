@@ -45,18 +45,8 @@ data class ReportTotals(
     var cost: Double = 0.0
 ) : Parcelable {
 
-    fun clear(unknown: Boolean = false) {
-        if (unknown) {
-            duration = UNKNOWN
-            cost = UNKNOWN_COST
-        } else {
-            duration = 0
-            cost = 0.0
-        }
-    }
-
-    companion object {
-        const val UNKNOWN = -1L
-        const val UNKNOWN_COST = -1.0
+    fun clear() {
+        duration = 0
+        cost = 0.0
     }
 }
