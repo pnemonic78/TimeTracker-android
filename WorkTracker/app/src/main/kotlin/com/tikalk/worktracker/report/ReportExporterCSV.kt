@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
+import android.net.Uri
 import android.text.format.DateUtils
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
@@ -46,19 +47,18 @@ import java.io.File
 import java.io.FileWriter
 import java.io.Writer
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 /**
  * Write the list of records as a CSV file.
  */
-class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File) : ReportExporter(context, records, filter, folder) {
+class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>): ReportExporterRunner {
-        return ReportExporterCSVRunner(context, records, filter, folder, observer)
+    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
+        return ReportExporterCSVRunner(context, records, filter, observer)
     }
 
-    private class ReportExporterCSVRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>) : ReportExporterRunner(context, records, filter, folder, observer) {
+    private class ReportExporterCSVRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
         override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField

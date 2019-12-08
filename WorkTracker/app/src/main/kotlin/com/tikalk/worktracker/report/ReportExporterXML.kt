@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
+import android.net.Uri
 import android.text.format.DateUtils
 import android.util.Xml
 import com.tikalk.worktracker.model.time.ReportFilter
@@ -49,13 +50,13 @@ import java.util.*
 /**
  * Write the list of records as an XML file.
  */
-class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File) : ReportExporter(context, records, filter, folder) {
+class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>): ReportExporterRunner {
-        return ReportExporterXMLRunner(context, records, filter, folder, observer)
+    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
+        return ReportExporterXMLRunner(context, records, filter, observer)
     }
 
-    private class ReportExporterXMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>) : ReportExporterRunner(context, records, filter, folder, observer) {
+    private class ReportExporterXMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
         override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField

@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
+import android.net.Uri
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import io.reactivex.SingleObserver
@@ -46,13 +47,13 @@ import java.io.Writer
 /**
  * Write the list of records as an HTML file.
  */
-class ReportExporterHTML(context: Context, val table: Element, filter: ReportFilter, folder: File) : ReportExporter(context, emptyList(), filter, folder) {
+class ReportExporterHTML(context: Context, val table: Element, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, observer: SingleObserver<in File>): ReportExporterRunner {
-        return ReportExporterHTMLRunner(context, table, filter, folder, observer)
+    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
+        return ReportExporterHTMLRunner(context, table, records, filter, observer)
     }
 
-    private class ReportExporterHTMLRunner(context: Context, val table: Element, filter: ReportFilter, folder: File, observer: SingleObserver<in File>) : ReportExporterRunner(context, emptyList(), filter, folder, observer) {
+    private class ReportExporterHTMLRunner(context: Context, val table: Element, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
         override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
             val table = this.table
             val showProjectField = filter.showProjectField

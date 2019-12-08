@@ -40,13 +40,11 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.ShareCompat
-import androidx.core.content.FileProvider
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -75,7 +73,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
-import java.io.File
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
@@ -490,14 +487,13 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
-        val folder = File(context.filesDir, FOLDER_EXPORT)
 
-        ReportExporterCSV(context, records, filter, folder)
+        ReportExporterCSV(context, records, filter)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ file ->
-                Timber.v("Exported CSV to $file")
-                shareFile(context, file, ReportExporterCSV.MIME_TYPE)
+            .subscribe({ uri ->
+                Timber.v("Exported CSV to $uri")
+                shareFile(context, uri, ReportExporterCSV.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
@@ -515,9 +511,8 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
-        val folder = File(context.filesDir, FOLDER_EXPORT)
 
-        ReportExporterHTML(context, table, filter, folder)
+        ReportExporterHTML(context, table, records, filter)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
@@ -538,9 +533,8 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
-        val folder = File(context.filesDir, FOLDER_EXPORT)
 
-        ReportExporterXML(context, records, filter, folder)
+        ReportExporterXML(context, records, filter)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
@@ -556,23 +550,20 @@ class ReportFragment : InternetFragment(),
             .addTo(disposables)
     }
 
-    private fun shareFile(context: Context, file: File, mimeType: String? = null) {
-        val fileUri: Uri? = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.files", file)
-        if (fileUri != null) {
-            val activity = this.activity ?: return
-            val intent = ShareCompat.IntentBuilder.from(activity)
-                .addStream(fileUri)
-                .setType(mimeType ?: context.contentResolver.getType(fileUri))
-                .intent
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    private fun shareFile(context: Context, fileUri: Uri, mimeType: String? = null) {
+        val activity = this.activity ?: return
+        val intent = ShareCompat.IntentBuilder.from(activity)
+            .addStream(fileUri)
+            .setType(mimeType ?: context.contentResolver.getType(fileUri))
+            .intent
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-            // Validate that the device can open your File!
-            val pm = context.packageManager
-            if (intent.resolveActivity(pm) != null) {
-                startActivity(intent)
-            } else {
-                Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
-            }
+        // Validate that the device can open your File!
+        val pm = context.packageManager
+        if (intent.resolveActivity(pm) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -582,7 +573,5 @@ class ReportFragment : InternetFragment(),
 
         private const val CHILD_LIST = 0
         private const val CHILD_EMPTY = 1
-
-        private const val FOLDER_EXPORT = "exports"
     }
 }
