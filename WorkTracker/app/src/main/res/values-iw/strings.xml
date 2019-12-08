@@ -79,6 +79,7 @@
 
     <!-- Reports -->
     <string name="reports">דיווחים</string>
+    <string name="reports_header">דיווח: %1$s - %2$s</string>
     <string name="start_date_label">תאריך התחלה</string>
     <string name="finish_date_label">תאריך סיום</string>
     <string name="action_generate">ליצור</string>
