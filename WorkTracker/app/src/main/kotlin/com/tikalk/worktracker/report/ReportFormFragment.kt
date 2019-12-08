@@ -50,7 +50,6 @@ import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import com.tikalk.worktracker.time.*
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -242,8 +241,7 @@ class ReportFormFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
+        // Fetch from remote server.
         service.fetchReports()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

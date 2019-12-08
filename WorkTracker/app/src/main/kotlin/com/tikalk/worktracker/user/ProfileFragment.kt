@@ -52,7 +52,6 @@ import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
@@ -240,8 +239,6 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
             showProgress(true)
             actionSave.isEnabled = false
 
-            val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
             service.editProfile(nameValue, loginValue, passwordValue, confirmPasswordValue, emailValue)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -303,8 +300,6 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
         if (progress) showProgress(true)
 
         // Fetch from remote server.
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
         service.fetchProfile()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

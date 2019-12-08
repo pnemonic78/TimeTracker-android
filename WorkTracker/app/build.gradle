@@ -117,4 +117,9 @@ dependencies {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
     implementation 'org.jetbrains.kotlinx:kotlinx-html-jvm:0.6.10'
+
+    // Koin
+    implementation 'org.koin:koin-android:2.0.1'
+    implementation 'org.koin:koin-androidx-scope:2.0.1'
+    //implementation 'org.koin:koin-androidx-viewmodel:2.0.1'
 }

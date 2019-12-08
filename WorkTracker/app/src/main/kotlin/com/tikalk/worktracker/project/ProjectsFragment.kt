@@ -48,7 +48,6 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -123,8 +122,6 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
         showProgress(true)
 
         // Fetch from remote server.
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
         service.fetchProjects()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

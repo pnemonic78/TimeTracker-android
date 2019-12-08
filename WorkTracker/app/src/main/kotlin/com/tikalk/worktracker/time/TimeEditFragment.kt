@@ -59,7 +59,6 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -410,8 +409,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
+        // Fetch from remote server.
         val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
             service.fetchTimes(dateFormatted)
         } else {
@@ -511,8 +509,6 @@ class TimeEditFragment : TimeFormFragment() {
             errorLabel.text = ""
         }
 
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             service.addTime(record.project.id,
                 record.task.id,
@@ -573,8 +569,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
+        // Fetch from remote server.
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
