@@ -85,6 +85,11 @@ class ReportFormFragment : TimeFormFragment() {
     private val periods = ReportTimePeriod.values()
     private var firstRun = true
 
+    init {
+        date.timeZone = TimeZone.getTimeZone("UTC")
+        date.hourOfDay = 12
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_report_form, container, false)
     }
@@ -163,6 +168,8 @@ class ReportFormFragment : TimeFormFragment() {
     private fun periodItemSelected(period: ReportTimePeriod) {
         Timber.d("periodItemSelected period=$period")
         filter.period = period
+        filter.updateDates(date)
+
         if (!isVisible) return
         val custom = (period == ReportTimePeriod.CUSTOM)
         val visibility = if (custom) View.VISIBLE else View.GONE
@@ -170,6 +177,20 @@ class ReportFormFragment : TimeFormFragment() {
         startInput.visibility = visibility
         finishIcon.visibility = visibility
         finishInput.visibility = visibility
+
+        val startTime = filter.startTime
+        startInput.text = if (startTime > 0L)
+            DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
+        else
+            ""
+        startInput.error = null
+
+        val finishTime = filter.finishTime
+        finishInput.text = if (finishTime > 0L)
+            DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
+        else
+            ""
+        finishInput.error = null
     }
 
     fun run() {
@@ -360,41 +381,45 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun pickStartDate() {
+        val cal = getCalendar(filter.start)
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
         if (startPickerDialog == null) {
             val context = requireContext()
-            val cal = getCalendar(filter.start)
-            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                cal.year = year
-                cal.month = month
-                cal.dayOfMonth = dayOfMonth
+            val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
+                cal.year = pickedYear
+                cal.month = pickedMonth
+                cal.dayOfMonth = pickedDayOfMonth
                 filter.start = cal
                 startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 startInput.error = null
             }
-            val year = cal.year
-            val month = cal.month
-            val day = cal.dayOfMonth
-            startPickerDialog = DatePickerDialog(context, listener, year, month, day)
+            startPickerDialog = DatePickerDialog(context, listener, year, month, dayOfMonth)
+        } else {
+            startPickerDialog!!.updateDate(year, month, dayOfMonth)
         }
         startPickerDialog!!.show()
     }
 
     private fun pickFinishDate() {
+        val cal = getCalendar(filter.finish)
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
         if (finishPickerDialog == null) {
             val context = requireContext()
-            val cal = getCalendar(filter.finish)
-            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                cal.year = year
-                cal.month = month
-                cal.dayOfMonth = dayOfMonth
+            val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
+                cal.year = pickedYear
+                cal.month = pickedMonth
+                cal.dayOfMonth = pickedDayOfMonth
                 filter.finish = cal
                 finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 finishInput.error = null
             }
-            val year = cal.year
-            val month = cal.month
-            val day = cal.dayOfMonth
-            finishPickerDialog = DatePickerDialog(context, listener, year, month, day)
+            finishPickerDialog = DatePickerDialog(context, listener, year, month, dayOfMonth)
+        } else {
+            finishPickerDialog!!.updateDate(year, month, dayOfMonth)
         }
         finishPickerDialog!!.show()
     }

@@ -69,7 +69,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/taskInput"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/taskInput"
-        app:srcCompat="@drawable/ic_folder" />
+        app:srcCompat="@drawable/ic_folder_open" />
 
     <Spinner
         android:id="@+id/taskInput"
