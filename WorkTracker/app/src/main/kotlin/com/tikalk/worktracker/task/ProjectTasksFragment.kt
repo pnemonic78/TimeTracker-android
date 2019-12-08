@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.task
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -96,12 +95,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
     }
 
     private fun loadPage(): Single<Unit> {
-        return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
-            loadTasks(db)
-        }
+        return Single.fromCallable { loadTasks(db) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }

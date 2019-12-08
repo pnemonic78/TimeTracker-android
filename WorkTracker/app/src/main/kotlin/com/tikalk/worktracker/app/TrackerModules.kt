@@ -33,63 +33,32 @@
 package com.tikalk.worktracker.app
 
 import android.content.Context
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import com.tikalk.app.TikalFragment
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import org.koin.android.ext.android.inject
+import org.koin.dsl.module
 
-abstract class TrackerFragment : TikalFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    protected lateinit var preferences: TimeTrackerPrefs
-    var user: User = User.EMPTY
-    protected val db by inject<TrackerDatabase>()
-
-    protected var caller: Fragment? = null
-        private set
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        preferences = TimeTrackerPrefs(context)
-        user = preferences.user
+val databaseModule = module {
+    fun provideDatabase(context: Context): TrackerDatabase {
+        return TrackerDatabase.getDatabase(context)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val args = this.arguments
-        if (args != null) {
-            if (args.containsKey(EXTRA_CALLER)) {
-                caller = findCaller(args)
-            }
-        }
+    single { provideDatabase(get()) }
+}
+
+val preferencesModule = module {
+    fun providePreferences(context: Context): TimeTrackerPrefs {
+        return TimeTrackerPrefs(context)
     }
 
-    private fun findCaller(args: Bundle): Fragment? {
-        var fragment: Fragment = this
-        while (true) {
-            val fm = fragment.fragmentManager ?: return null
-            try {
-                val caller = fm.getFragment(args, EXTRA_CALLER)
-                if (caller != null) {
-                    return caller
-                }
-            } catch (e: IllegalStateException) {
-            }
-            fragment = fragment.parentFragment ?: return null
-        }
+    single { providePreferences(get()) }
+}
+
+val apiModule = module {
+    fun providePlain(context: Context, preferences: TimeTrackerPrefs): TimeTrackerService {
+        return TimeTrackerServiceFactory.createPlain(context, preferences)
     }
 
-    companion object {
-        const val EXTRA_CALLER = "callerId"
-        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
-
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
-    }
+    single { providePlain(get(), get()) }
 }

@@ -367,9 +367,6 @@ class ReportFragment : InternetFragment(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
             loadProjectsWithTasks(db)
             loadRecords(db, filter.startTime, filter.finishTime)
         }

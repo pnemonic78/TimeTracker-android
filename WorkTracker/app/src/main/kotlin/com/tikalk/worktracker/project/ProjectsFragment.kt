@@ -98,7 +98,6 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
         return Single.fromCallable {
             val context: Context = this.context ?: return@fromCallable
 
-            val db = TrackerDatabase.getDatabase(context)
             loadProjects(db)
         }
             .subscribeOn(Schedulers.io())

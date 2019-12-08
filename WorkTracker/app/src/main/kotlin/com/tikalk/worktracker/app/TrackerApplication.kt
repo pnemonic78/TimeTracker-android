@@ -40,8 +40,6 @@ import com.tikalk.app.TikalApplication
 import com.tikalk.util.LogTree
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.apiModule
-import com.tikalk.worktracker.net.preferencesModule
 import com.tikalk.worktracker.time.TimerWorker
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -72,7 +70,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         startKoin {
             androidLogger(if (BuildConfig.DEBUG) Level.DEBUG else Level.INFO)
             androidContext(this@TrackerApplication)
-            modules(listOf(preferencesModule, apiModule))
+            modules(listOf(preferencesModule, apiModule, databaseModule))
         }
     }
 

@@ -571,9 +571,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
             loadFormFromDb(db)
             loadRecords(db, date)
         }
@@ -583,8 +580,6 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun saveFormToDb() {
         findTopFormFragment().savePage()
-
-        val db = TrackerDatabase.getDatabase(requireContext())
         saveRecords(db, date)
     }
 

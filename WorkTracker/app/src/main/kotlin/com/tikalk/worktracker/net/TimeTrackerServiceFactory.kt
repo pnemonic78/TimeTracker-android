@@ -38,7 +38,6 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -115,20 +114,4 @@ class TimeTrackerServiceFactory {
             cookieHandlerPersistent?.cookieStore?.removeAll()
         }
     }
-}
-
-val preferencesModule = module {
-    fun providePreferences(context: Context): TimeTrackerPrefs {
-        return TimeTrackerPrefs(context)
-    }
-
-    single { providePreferences(get()) }
-}
-
-val apiModule = module {
-    fun providePlain(context: Context, preferences: TimeTrackerPrefs): TimeTrackerService {
-        return TimeTrackerServiceFactory.createPlain(context, preferences)
-    }
-
-    single { providePlain(get(), get()) }
 }

@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.user
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -94,12 +93,7 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
     }
 
     private fun loadPage(): Single<Unit> {
-        return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
-            loadUsers(db)
-        }
+        return Single.fromCallable { loadUsers(db) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
