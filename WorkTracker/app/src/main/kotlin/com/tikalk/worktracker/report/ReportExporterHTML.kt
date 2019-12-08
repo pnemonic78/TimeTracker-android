@@ -49,15 +49,14 @@ import java.io.Writer
 /**
  * Write the list of records as an HTML file.
  */
-class ReportExporterHTML(context: Context, val table: Element, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
+class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
 
     override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
-        return ReportExporterHTMLRunner(context, table, records, filter, observer)
+        return ReportExporterHTMLRunner(context, records, filter, observer)
     }
 
-    private class ReportExporterHTMLRunner(context: Context, val table: Element, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
+    private class ReportExporterHTMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
         override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
-            val table = this.table
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
             val showStartField = filter.showStartField
@@ -70,26 +69,51 @@ class ReportExporterHTML(context: Context, val table: Element, records: List<Tim
             val writer: Writer = FileWriter(file)
             out = writer
 
-            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
+            val doc = Document.createShell("")
 
             val cssStream = context.assets.open("default.css")
             val cssReader = InputStreamReader(cssStream)
             val css = cssReader.readText()
-
-            val doc = Document.createShell("")
-            val title = doc.createElement("title")
-            title.text(titleText)
-            doc.head().appendChild(title)
             val style = doc.createElement("style")
             style.text(css)
             doc.head().appendChild(style)
-            doc.body().appendChild(table)
+
+            writeTitle(doc)
+
+            for (record in records) {
+
+            }
+
             val html = doc.html()
             writer.write(html)
 
             writer.close()
 
             return file
+        }
+
+        private fun writeTitle(doc: Document) {
+            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
+
+            val title = doc.createElement("title")
+            title.text(titleText)
+            doc.head().appendChild(title)
+
+            val pageTitle = doc.createElement("div")
+            pageTitle.attr("class", "pageTitle")
+            pageTitle.text(titleText)
+            val pageTitleCell = doc.createElement("td")
+            pageTitleCell.attr("class", "sectionHeader")
+            pageTitleCell.appendChild(pageTitle)
+            val pageTitleRow = doc.createElement("tr")
+            pageTitleRow.appendChild(pageTitleCell)
+            val pageTitleTable = doc.createElement("table")
+            pageTitleTable.attr("border", "0")
+            pageTitleTable.attr("cellpadding", "5")
+            pageTitleTable.attr("cellspacing", "0")
+            pageTitleTable.attr("width", "100%")
+            pageTitleTable.appendChild(pageTitleRow)
+            doc.body().appendChild(pageTitleTable)
         }
     }
 

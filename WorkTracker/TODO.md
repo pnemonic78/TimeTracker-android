@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* Reports - export - html
 * Reports - save records in SQL table
 * koin for web service
 * Sidebar navigation

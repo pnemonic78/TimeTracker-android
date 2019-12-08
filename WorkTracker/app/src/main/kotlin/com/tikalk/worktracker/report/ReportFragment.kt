@@ -81,7 +81,6 @@ import kotlin.collections.ArrayList
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
-    private var table: Element? = null
     private var records: List<TimeRecord> = ArrayList()
     private var totals: ReportTotals = ReportTotals()
     private var filter: ReportFilter = ReportFilter()
@@ -166,7 +165,6 @@ class ReportFragment : InternetFragment(),
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
-        this.table = table
         if (table != null) {
             // loop through all the rows and parse each record
             val rows = table.getElementsByTag("tr")
@@ -505,14 +503,12 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun exportHTML(item: MenuItem? = null) {
-        val table = this.table ?: return
-
         item?.isEnabled = false
         showProgress(true)
 
         val context = requireContext()
 
-        ReportExporterHTML(context, table, records, filter)
+        ReportExporterHTML(context, records, filter)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
