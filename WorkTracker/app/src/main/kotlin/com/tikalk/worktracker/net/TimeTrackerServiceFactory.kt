@@ -73,7 +73,7 @@ class TimeTrackerServiceFactory {
             return cookieHandler
         }
 
-        fun createHttpClient(context: Context?, preferences: TimeTrackerPrefs? = null): OkHttpClient {
+        fun createHttpClient(preferences: TimeTrackerPrefs? = null, cookieHandler: CookieHandler): OkHttpClient {
             val httpClientBuilder = OkHttpClient.Builder()
 
             if (BuildConfig.DEBUG) {
@@ -87,7 +87,7 @@ class TimeTrackerServiceFactory {
                 httpClientBuilder.addInterceptor(interceptorAuth)
             }
 
-            httpClientBuilder.cookieJar(JavaNetCookieJar(createCookieHandler(context)))
+            httpClientBuilder.cookieJar(JavaNetCookieJar(cookieHandler))
 
             return httpClientBuilder.build()
         }
@@ -101,9 +101,7 @@ class TimeTrackerServiceFactory {
                 .build()
         }
 
-        fun createPlain(context: Context?, preferences: TimeTrackerPrefs? = null): TimeTrackerService {
-            val httpClient = createHttpClient(context, preferences)
-            val retrofit = createRetrofit(httpClient)
+        fun createTimeTracker(retrofit: Retrofit): TimeTrackerService {
             return retrofit.create(TimeTrackerService::class.java)
         }
 

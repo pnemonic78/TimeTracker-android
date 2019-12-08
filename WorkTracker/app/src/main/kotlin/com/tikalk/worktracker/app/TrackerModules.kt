@@ -35,11 +35,15 @@ package com.tikalk.worktracker.app
 import android.content.Context
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createCookieHandler
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createHttpClient
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createRetrofit
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createTimeTracker
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit
+import java.net.CookieHandler
 
 val databaseModule = module {
     fun provideDatabase(context: Context): TrackerDatabase {
@@ -58,22 +62,27 @@ val preferencesModule = module {
 }
 
 val apiModule = module {
-    fun providePlain(context: Context, preferences: TimeTrackerPrefs): TimeTrackerService {
-        return TimeTrackerServiceFactory.createPlain(context, preferences)
+    fun provideTimeTracker(retrofit: Retrofit): TimeTrackerService {
+        return createTimeTracker(retrofit)
     }
 
-    single { providePlain(get(), get()) }
+    single { provideTimeTracker(get()) }
 }
 
 val retrofitModule = module {
-    fun provideHttpClient(context: Context, preferences: TimeTrackerPrefs? = null): OkHttpClient {
-        return TimeTrackerServiceFactory.createHttpClient(context, preferences)
+    fun provideCookieHandler(context: Context? = null): CookieHandler {
+        return createCookieHandler(context)
+    }
+
+    fun provideHttpClient(preferences: TimeTrackerPrefs? = null, cookieHandler: CookieHandler): OkHttpClient {
+        return createHttpClient(preferences, cookieHandler)
     }
 
     fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
-        return TimeTrackerServiceFactory.createRetrofit(httpClient)
+        return createRetrofit(httpClient)
     }
 
+    single { provideCookieHandler(get()) }
     single { provideHttpClient(get(), get()) }
     single { provideRetrofit(get()) }
 }
