@@ -39,8 +39,9 @@ import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.SingleObserver
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
+import kotlinx.html.*
+import kotlinx.html.consumers.DelayedConsumer
+import kotlinx.html.stream.HTMLStreamBuilder
 import java.io.File
 import java.io.FileWriter
 import java.io.InputStreamReader
@@ -65,53 +66,49 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val showNotesField = filter.showNotesField
             val showCostField = filter.showCostField
 
-            val doc = Document.createShell("")
+            val file = File(folder, filenamePrefix + EXTENSION)
+            val writer: Writer = FileWriter(file)
+            out = writer
+
+            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
 
             val cssStream = context.assets.open("default.css")
             val cssReader = InputStreamReader(cssStream)
             val css = cssReader.readText()
-            val style = doc.createElement("style")
-            style.text(css)
-            doc.head().appendChild(style)
 
-            writeTitle(doc)
+            val consumer = DelayedConsumer(HTMLStreamBuilder(writer, prettyPrint = true, xhtmlCompatible = true)).html {
+                head {
+                    title(titleText)
+                    style {
+                        +css
+                    }
+                }
+                body {
+                    table {
+                        attributes["border"] = "0"
+                        attributes["cellpadding"] = "5"
+                        attributes["cellspacing"] = "0"
+                        attributes["width"] = "100%"
 
-            for (record in records) {
+                        tr {
+                            td("sectionHeader") {
+                                div("pageTitle") {
+                                    +titleText
+                                }
+                            }
+                        }
+                    }
 
+                    for (record in records) {
+
+                    }
+                }
             }
 
-            val file = File(folder, filenamePrefix + EXTENSION)
-            val writer: Writer = FileWriter(file)
-            out = writer
-            doc.html(writer)
-            writer.close()
+            consumer.close()
             out = null
 
             return file
-        }
-
-        private fun writeTitle(doc: Document) {
-            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
-
-            val title = doc.createElement("title")
-            title.text(titleText)
-            doc.head().appendChild(title)
-
-            val pageTitle = doc.createElement("div")
-            pageTitle.attr("class", "pageTitle")
-            pageTitle.text(titleText)
-            val pageTitleCell = doc.createElement("td")
-            pageTitleCell.attr("class", "sectionHeader")
-            pageTitleCell.appendChild(pageTitle)
-            val pageTitleRow = doc.createElement("tr")
-            pageTitleRow.appendChild(pageTitleCell)
-            val pageTitleTable = doc.createElement("table")
-            pageTitleTable.attr("border", "0")
-            pageTitleTable.attr("cellpadding", "5")
-            pageTitleTable.attr("cellspacing", "0")
-            pageTitleTable.attr("width", "100%")
-            pageTitleTable.appendChild(pageTitleRow)
-            doc.body().appendChild(pageTitleTable)
         }
     }
 
