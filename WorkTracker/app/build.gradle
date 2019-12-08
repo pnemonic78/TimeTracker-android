@@ -113,6 +113,8 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
 
     // Export
-    implementation 'com.opencsv:opencsv:5.0'
+    implementation('com.opencsv:opencsv:5.0') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
     implementation 'org.jetbrains.kotlinx:kotlinx-html-jvm:0.6.10'
 }
