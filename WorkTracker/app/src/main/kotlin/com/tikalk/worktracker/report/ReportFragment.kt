@@ -33,15 +33,18 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.core.app.ShareCompat
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
+import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -73,6 +76,7 @@ import timber.log.Timber
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
+
 
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
@@ -136,7 +140,8 @@ class ReportFragment : InternetFragment(),
 
     private fun processPage(html: String, progress: Boolean = true) {
         val records = ArrayList<TimeRecord>()
-        populateList(html, records)
+        val doc: Document = Jsoup.parse(html)
+        populateList(doc, records)
         populateTotals(records, totals)
         this.records = records
         runOnUiThread {
@@ -147,9 +152,9 @@ class ReportFragment : InternetFragment(),
     }
 
     /** Populate the list. */
-    private fun populateList(html: String, records: MutableList<TimeRecord>) {
+    private fun populateList(doc: Document, records: MutableList<TimeRecord>) {
         records.clear()
-        val doc: Document = Jsoup.parse(html)
+
         var columnIndexDate = -1
         var columnIndexProject = -1
         var columnIndexTask = -1
@@ -204,7 +209,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun populateTotals(records: List<TimeRecord>, totals: ReportTotals) {
-        totals.clear(false)
+        totals.clear()
 
         var duration: Long
         for (record in records) {
@@ -236,20 +241,21 @@ class ReportFragment : InternetFragment(),
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
-        if (totals.duration == ReportTotals.UNKNOWN) {
-            durationTotalLabel.visibility = View.INVISIBLE
-            durationTotal.text = null
-        } else {
+        if (filter.showDurationField) {
+            timeBuffer.setLength(0)
             durationTotalLabel.visibility = View.VISIBLE
             durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
-        }
-        if (totals.cost == ReportTotals.UNKNOWN_COST) {
-            costTotalLabel.visibility = View.INVISIBLE
-            costTotal.text = null
         } else {
+            durationTotalLabel.visibility = View.INVISIBLE
+            durationTotal.text = null
+        }
+        if (filter.showCostField) {
             timeBuffer.setLength(0)
             costTotalLabel.visibility = View.VISIBLE
             costTotal.text = formatCurrency(context, timeFormatter, totals.cost).toString()
+        } else {
+            costTotalLabel.visibility = View.INVISIBLE
+            costTotal.text = null
         }
     }
 
@@ -273,7 +279,7 @@ class ReportFragment : InternetFragment(),
 
         val label = td.ownText()
         if (label == "Date") {
-            return td.parent().parent()
+            return findParentElement(td, "table")
         }
 
         return null
@@ -450,6 +456,112 @@ class ReportFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.report, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_export_csv -> {
+                exportCSV(item)
+                return true
+            }
+            R.id.menu_export_html -> {
+                exportHTML(item)
+                return true
+            }
+            R.id.menu_export_xml -> {
+                exportXML(item)
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun exportCSV(item: MenuItem? = null) {
+        item?.isEnabled = false
+        showProgress(true)
+
+        val context = requireContext()
+
+        ReportExporterCSV(context, records, filter)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ uri ->
+                Timber.v("Exported CSV to $uri")
+                shareFile(context, uri, ReportExporterCSV.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error updating profile: ${err.message}")
+                showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun exportHTML(item: MenuItem? = null) {
+        item?.isEnabled = false
+        showProgress(true)
+
+        val context = requireContext()
+
+        ReportExporterHTML(context, records, filter, totals)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ file ->
+                Timber.v("Exported HTML to $file")
+                shareFile(context, file, ReportExporterHTML.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error updating profile: ${err.message}")
+                showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun exportXML(item: MenuItem? = null) {
+        item?.isEnabled = false
+        showProgress(true)
+
+        val context = requireContext()
+
+        ReportExporterXML(context, records, filter)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ file ->
+                Timber.v("Exported XML to $file")
+                shareFile(context, file, ReportExporterXML.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error updating profile: ${err.message}")
+                showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun shareFile(context: Context, fileUri: Uri, mimeType: String? = null) {
+        val activity = this.activity ?: return
+        val intent = ShareCompat.IntentBuilder.from(activity)
+            .addStream(fileUri)
+            .setType(mimeType ?: context.contentResolver.getType(fileUri))
+            .intent
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        // Validate that the device can open your File!
+        val pm = context.packageManager
+        if (intent.resolveActivity(pm) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
+        }
     }
 
     companion object {

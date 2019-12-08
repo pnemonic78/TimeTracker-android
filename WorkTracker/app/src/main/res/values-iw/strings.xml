@@ -79,6 +79,7 @@
 
     <!-- Reports -->
     <string name="reports">דיווחים</string>
+    <string name="reports_header">דיווח: %1$s - %2$s</string>
     <string name="start_date_label">תאריך התחלה</string>
     <string name="finish_date_label">תאריך סיום</string>
     <string name="action_generate">ליצור</string>
@@ -91,6 +92,12 @@
     <string name="period_previous_week">השבוע הקודם</string>
     <string name="period_previous_month">החודש הקודם</string>
     <string name="period_yesterday">אתמול</string>
+    <string name="total">סה\"כ</string>
     <string name="duration_total">סה\"כ שעות</string>
     <string name="cost_total">סה\"כ עליות</string>
+    <string name="cost">עלות</string>
+    <string name="action_export">ייצא</string>
+    <string name="action_export_csv">ייצא CSV</string>
+    <string name="action_export_html">ייצא HTML</string>
+    <string name="action_export_xml">ייצא XML</string>
 </resources>

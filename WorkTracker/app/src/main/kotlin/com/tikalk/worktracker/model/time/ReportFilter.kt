@@ -38,8 +38,10 @@ import com.tikalk.os.writeBool
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.time.dayOfMonth
+import com.tikalk.worktracker.time.dayOfWeek
 import com.tikalk.worktracker.time.formatSystemDate
+import com.tikalk.worktracker.time.month
 import java.util.*
 
 /**
@@ -47,6 +49,7 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
+//TODO @Parcelize
 class ReportFilter : TimeRecord {
 
     var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
@@ -139,6 +142,63 @@ class ReportFilter : TimeRecord {
             put("favorite_report", "-1")
             put("new_fav_report", "")
             put("fav_report_changed", "")
+        }
+    }
+
+    fun updateDates(today: Calendar) {
+        when (period) {
+            ReportTimePeriod.CUSTOM -> {
+                if (start == null) {
+                    this.start = today
+                }
+                if (finish == null) {
+                    this.finish = today
+                }
+            }
+            ReportTimePeriod.PREVIOUS_MONTH -> {
+                val first = today.clone() as Calendar
+                first.month--
+                first.dayOfMonth = 1
+                val last = first.clone() as Calendar
+                last.dayOfMonth = last.getActualMaximum(Calendar.DAY_OF_MONTH)
+                this.start = first
+                this.finish = last
+            }
+            ReportTimePeriod.PREVIOUS_WEEK -> {
+                val first = today.clone() as Calendar
+                first.dayOfWeek = first.firstDayOfWeek
+                first.dayOfMonth -= 7
+                val last = first.clone() as Calendar
+                last.dayOfMonth += 6
+                this.start = first
+                this.finish = last
+            }
+            ReportTimePeriod.THIS_MONTH -> {
+                val first = today.clone() as Calendar
+                first.dayOfMonth = 1
+                val last = today.clone() as Calendar
+                last.dayOfMonth = last.getActualMaximum(Calendar.DAY_OF_MONTH)
+                this.start = first
+                this.finish = last
+            }
+            ReportTimePeriod.THIS_WEEK -> {
+                val first = today.clone() as Calendar
+                first.dayOfWeek = first.firstDayOfWeek
+                val last = first.clone() as Calendar
+                last.dayOfMonth += 6
+                this.start = first
+                this.finish = last
+            }
+            ReportTimePeriod.TODAY -> {
+                this.start = today
+                this.finish = today
+            }
+            ReportTimePeriod.YESTERDAY -> {
+                val yesterday = today.clone() as Calendar
+                yesterday.dayOfMonth--
+                this.start = yesterday
+                this.finish = yesterday
+            }
         }
     }
 
