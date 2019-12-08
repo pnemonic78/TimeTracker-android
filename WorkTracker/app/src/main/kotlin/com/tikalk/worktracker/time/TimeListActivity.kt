@@ -185,7 +185,7 @@ class TimeListActivity : InternetActivity(),
     private fun showReports() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
-        if (destination.id != R.id.reportFormFragment) {
+        if ((destination.id != R.id.reportFormFragment) and (destination.id != R.id.reportFragment)) {
             navController.navigate(R.id.action_show_reportForm)
         }
     }
