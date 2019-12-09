@@ -179,61 +179,61 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
         // Check for a valid name, if the user entered one.
         if (nameValue.isEmpty()) {
             nameInput.error = getString(R.string.error_field_required)
-            focusView = nameInput
+            if (focusView == null) focusView = nameInput
             cancel = true
         }
 
         // Check for a valid email address.
         if (emailValue.isEmpty()) {
             emailInput.error = getString(R.string.error_field_required)
-            focusView = emailInput
+            if (focusView == null) focusView = emailInput
             cancel = true
         } else if (!isEmailValid(emailValue)) {
             emailInput.error = getString(R.string.error_invalid_email)
-            focusView = emailInput
+            if (focusView == null) focusView = emailInput
             cancel = true
         }
 
         // Check for a valid login name.
         if (loginValue.isEmpty()) {
             loginInput.error = getString(R.string.error_field_required)
-            focusView = loginInput
+            if (focusView == null) focusView = loginInput
             cancel = true
         } else if (!isLoginValid(loginValue)) {
             loginInput.error = getString(R.string.error_invalid_login)
-            focusView = loginInput
+            if (focusView == null) focusView = loginInput
             cancel = true
         }
 
         // Check for a valid password, if the user entered one.
         if (passwordValue.isEmpty()) {
             passwordInput.error = getString(R.string.error_field_required)
-            focusView = passwordInput
+            if (focusView == null) focusView = passwordInput
             cancel = true
         } else if (!isPasswordValid(passwordValue)) {
             passwordInput.error = getString(R.string.error_invalid_password)
-            focusView = passwordInput
+            if (focusView == null) focusView = passwordInput
             cancel = true
         }
 
         if (confirmPasswordValue.isEmpty()) {
             confirmPasswordInput.error = getString(R.string.error_field_required)
-            focusView = confirmPasswordInput
+            if (focusView == null) focusView = confirmPasswordInput
             cancel = true
         } else if (!isPasswordValid(confirmPasswordValue)) {
             confirmPasswordInput.error = getString(R.string.error_invalid_password)
-            focusView = confirmPasswordInput
+            if (focusView == null) focusView = confirmPasswordInput
             cancel = true
         } else if (passwordValue != confirmPasswordValue) {
             confirmPasswordInput.error = getString(R.string.error_match_password)
-            focusView = confirmPasswordInput
+            if (focusView == null) focusView = confirmPasswordInput
             cancel = true
         }
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
-            focusView!!.requestFocus()
+            focusView?.requestFocus()
         } else {
             // Show a progress spinner, and kick off a background task to perform the user update attempt.
             showProgress(true)
