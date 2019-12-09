@@ -43,6 +43,10 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.TimerWorker
 import io.fabric.sdk.android.Fabric
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 import timber.log.Timber
 import kotlin.math.max
 
@@ -65,6 +69,12 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         Fabric.with(this, Crashlytics())
 
         registerActivityLifecycleCallbacks(this)
+
+        startKoin {
+            androidLogger(if (BuildConfig.DEBUG) Level.DEBUG else Level.INFO)
+            androidContext(this@TrackerApplication)
+            modules(listOf(preferencesModule, databaseModule, retrofitModule, apiModule))
+        }
     }
 
     override fun onTerminate() {

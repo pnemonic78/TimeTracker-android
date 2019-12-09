@@ -51,7 +51,6 @@ import com.tikalk.html.selectByName
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
@@ -59,7 +58,6 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -410,8 +408,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
+        // Fetch from remote server.
         val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
             service.fetchTimes(dateFormatted)
         } else {
@@ -443,14 +440,12 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun loadFormFromDb(recordId: Long = TikalEntity.ID_NONE) {
-        val db = TrackerDatabase.getDatabase(requireContext())
         loadFormFromDb(db)
         loadRecord(recordId)
     }
 
     private fun loadRecord(recordId: Long) {
         if (recordId != TikalEntity.ID_NONE) {
-            val db = TrackerDatabase.getDatabase(requireContext())
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
@@ -460,7 +455,6 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun saveRecord(record: TimeRecord) {
-        val db = TrackerDatabase.getDatabase(requireContext())
         val recordDao = db.timeRecordDao()
         if (record.id == TikalEntity.ID_NONE) {
             recordDao.insert(record.toTimeRecordEntity())
@@ -510,8 +504,6 @@ class TimeEditFragment : TimeFormFragment() {
             showProgress(true)
             errorLabel.text = ""
         }
-
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
 
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             service.addTime(record.project.id,
@@ -573,8 +565,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
+        // Fetch from remote server.
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

@@ -51,7 +51,17 @@ open class TimeRecord : TikalEntity, Parcelable {
     var project: Project
     var task: ProjectTask
     var start: Calendar? = null
+        set(value) {
+            // Server granularity is seconds.
+            value?.millis = 0
+            field = value
+        }
     var finish: Calendar? = null
+        set(value) {
+            // Server granularity is seconds.
+            value?.millis = 0
+            field = value
+        }
     var note: String = ""
     var cost: Double = 0.0
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT

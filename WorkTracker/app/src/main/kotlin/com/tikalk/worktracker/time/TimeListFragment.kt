@@ -43,7 +43,9 @@ import android.view.*
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.*
+import com.tikalk.app.findFragmentByClass
+import com.tikalk.app.isNavDestination
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -58,7 +60,6 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -164,8 +165,6 @@ class TimeListFragment : TimeFormFragment(),
                 bindList(date, records)
 
                 // Fetch from remote server.
-                val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
                     .subscribe({ response ->
@@ -438,9 +437,6 @@ class TimeListFragment : TimeFormFragment(),
         // Show a progress spinner, and kick off a background task to delete the record.
         showProgress(true)
 
-        val context: Context = requireContext()
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
             //.observeOn(AndroidSchedulers.mainThread())
@@ -575,9 +571,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
             loadFormFromDb(db)
             loadRecords(db, date)
         }
@@ -587,8 +580,6 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun saveFormToDb() {
         findTopFormFragment().savePage()
-
-        val db = TrackerDatabase.getDatabase(requireContext())
         saveRecords(db, date)
     }
 

@@ -142,8 +142,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:drawableEnd="@drawable/ic_save"
-        android:text="@string/action_submit">
+        android:text="@string/action_submit"
+        app:drawableEndCompat="@drawable/ic_save">
 
         <requestFocus />
     </Button>

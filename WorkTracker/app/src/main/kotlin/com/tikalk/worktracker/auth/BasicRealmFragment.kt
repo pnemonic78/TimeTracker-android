@@ -159,29 +159,29 @@ class BasicRealmFragment : InternetFragment() {
         // Check for a valid name.
         if (username.isEmpty()) {
             usernameInput.error = getString(R.string.error_field_required)
-            focusView = usernameInput
+            if (focusView == null) focusView = usernameInput
             cancel = true
         } else if (!isUsernameValid(username)) {
             usernameInput.error = getString(R.string.error_invalid_email)
-            focusView = usernameInput
+            if (focusView == null) focusView = usernameInput
             cancel = true
         }
 
         // Check for a valid password, if the user entered one.
         if (password.isEmpty()) {
             passwordInput.error = getString(R.string.error_field_required)
-            focusView = passwordInput
+            if (focusView == null) focusView = passwordInput
             cancel = true
         } else if (!isPasswordValid(password)) {
             passwordInput.error = getString(R.string.error_invalid_password)
-            focusView = passwordInput
+            if (focusView == null) focusView = passwordInput
             cancel = true
         }
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
-            focusView!!.requestFocus()
+            focusView?.requestFocus()
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.

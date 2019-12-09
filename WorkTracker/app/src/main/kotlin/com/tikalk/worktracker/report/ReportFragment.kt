@@ -58,7 +58,6 @@ import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.parseSystemDate
@@ -76,7 +75,6 @@ import timber.log.Timber
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
-
 
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
@@ -115,8 +113,6 @@ class ReportFragment : InternetFragment(),
                 bindTotals(totals)
 
                 // Fetch from remote server.
-                val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
                 service.generateReport(filter.toFields())
                     .subscribeOn(Schedulers.io())
                     .subscribe({ response ->
@@ -371,9 +367,6 @@ class ReportFragment : InternetFragment(),
 
     private fun loadPage(): Single<Unit> {
         return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
             loadProjectsWithTasks(db)
             loadRecords(db, filter.startTime, filter.finishTime)
         }
