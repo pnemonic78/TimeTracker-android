@@ -107,6 +107,11 @@ class TimeListActivity : InternetActivity(),
                 drawerLayout.closeDrawers()
                 return true
             }
+            R.id.timeListFragment -> {
+                showMainFragment()
+                drawerLayout.closeDrawers()
+                return true
+            }
             R.id.timeSettingsFragment -> {
                 showSettings()
                 drawerLayout.closeDrawers()
@@ -164,6 +169,14 @@ class TimeListActivity : InternetActivity(),
 
     private fun findNavController(): NavController {
         return findNavController(this, R.id.nav_host_fragment)
+    }
+
+    private fun showMainFragment() {
+        val navController = findNavController()
+        val destination = navController.currentDestination ?: return
+        if (destination.id != R.id.timeListFragment) {
+            navController.popBackStack(R.id.timeListFragment, false)
+        }
     }
 
     private fun showSettings() {
