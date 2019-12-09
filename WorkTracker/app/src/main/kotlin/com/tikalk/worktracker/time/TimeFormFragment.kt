@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.text.format.DateUtils
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isShowing
@@ -228,8 +227,6 @@ abstract class TimeFormFragment : InternetFragment(),
 
     open fun saveFormToDb() {
         Timber.v("saveFormToDb")
-        val db = TrackerDatabase.getDatabase(requireContext())
-
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
@@ -355,7 +352,6 @@ abstract class TimeFormFragment : InternetFragment(),
 
     protected fun loadFormFromDb() {
         Timber.v("loadFormFromDb")
-        val db = TrackerDatabase.getDatabase(requireContext())
         loadFormFromDb(db)
     }
 

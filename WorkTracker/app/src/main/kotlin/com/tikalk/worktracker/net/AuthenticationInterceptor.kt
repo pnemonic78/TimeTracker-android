@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.net
 
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -39,8 +40,9 @@ import okhttp3.Response
  * @author moshe on 2018/05/13.
  * @see https://futurestud.io/tutorials/android-basic-authentication-with-retrofit
  */
-class AuthenticationInterceptor(private val authToken: String) : Interceptor {
+class AuthenticationInterceptor(private val preferences: TimeTrackerPrefs) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
+        val authToken = preferences.basicCredentials.authToken()
         val original = chain.request()
         val request = original.newBuilder()
                 .header("Authorization", authToken)

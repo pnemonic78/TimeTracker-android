@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.task
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -48,7 +47,6 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.net.TimeTrackerServiceProvider
 import com.tikalk.worktracker.project.ProjectTasksAdapter
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -97,12 +95,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
     }
 
     private fun loadPage(): Single<Unit> {
-        return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            val db = TrackerDatabase.getDatabase(context)
-            loadTasks(db)
-        }
+        return Single.fromCallable { loadTasks(db) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
@@ -124,8 +117,6 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
         showProgress(true)
 
         // Fetch from remote server.
-        val service = TimeTrackerServiceProvider.providePlain(context, preferences)
-
         service.fetchProjectTasks()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

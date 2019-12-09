@@ -33,62 +33,56 @@
 package com.tikalk.worktracker.app
 
 import android.content.Context
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import com.tikalk.app.TikalFragment
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createCookieHandler
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createHttpClient
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createRetrofit
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createTimeTracker
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import org.koin.android.ext.android.inject
+import okhttp3.OkHttpClient
+import org.koin.dsl.module
+import retrofit2.Retrofit
+import java.net.CookieHandler
 
-abstract class TrackerFragment : TikalFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    protected val preferences by inject<TimeTrackerPrefs>()
-    var user: User = User.EMPTY
-    protected val db by inject<TrackerDatabase>()
-
-    protected var caller: Fragment? = null
-        private set
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        user = preferences.user
+val databaseModule = module {
+    fun provideDatabase(context: Context): TrackerDatabase {
+        return TrackerDatabase.getDatabase(context)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val args = this.arguments
-        if (args != null) {
-            if (args.containsKey(EXTRA_CALLER)) {
-                caller = findCaller(args)
-            }
-        }
+    single { provideDatabase(get()) }
+}
+
+val preferencesModule = module {
+    fun providePreferences(context: Context): TimeTrackerPrefs {
+        return TimeTrackerPrefs(context)
     }
 
-    private fun findCaller(args: Bundle): Fragment? {
-        var fragment: Fragment = this
-        while (true) {
-            val fm = fragment.fragmentManager ?: return null
-            try {
-                val caller = fm.getFragment(args, EXTRA_CALLER)
-                if (caller != null) {
-                    return caller
-                }
-            } catch (e: IllegalStateException) {
-            }
-            fragment = fragment.parentFragment ?: return null
-        }
+    single { providePreferences(get()) }
+}
+
+val apiModule = module {
+    fun provideTimeTracker(retrofit: Retrofit): TimeTrackerService {
+        return createTimeTracker(retrofit)
     }
 
-    companion object {
-        const val EXTRA_CALLER = "callerId"
-        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+    single { provideTimeTracker(get()) }
+}
 
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
+val retrofitModule = module {
+    fun provideCookieHandler(context: Context? = null): CookieHandler {
+        return createCookieHandler(context)
     }
+
+    fun provideHttpClient(preferences: TimeTrackerPrefs? = null, cookieHandler: CookieHandler): OkHttpClient {
+        return createHttpClient(preferences, cookieHandler)
+    }
+
+    fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
+        return createRetrofit(httpClient)
+    }
+
+    single { provideCookieHandler(get()) }
+    single { provideHttpClient(get(), get()) }
+    single { provideRetrofit(get()) }
 }

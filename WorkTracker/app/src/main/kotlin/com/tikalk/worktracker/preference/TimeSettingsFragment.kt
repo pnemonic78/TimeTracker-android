@@ -43,8 +43,11 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import org.koin.android.ext.android.inject
 
 class TimeSettingsFragment : TikalPreferenceFragment() {
+
+    private val preferences by inject<TimeTrackerPrefs>()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
@@ -81,11 +84,9 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
     }
 
     private fun deleteUser() {
-        val context = requireContext()
-        val prefs = TimeTrackerPrefs(context)
-        prefs.user = User.EMPTY
-        prefs.userCredentials = UserCredentials.EMPTY
-        prefs.basicCredentials = BasicCredentials.EMPTY
+        preferences.user = User.EMPTY
+        preferences.userCredentials = UserCredentials.EMPTY
+        preferences.basicCredentials = BasicCredentials.EMPTY
         TimeTrackerServiceFactory.clearCookies()
     }
 

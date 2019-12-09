@@ -36,16 +36,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="2dp"
-    android:minHeight="?listPreferredItemHeight"
-    app:cardCornerRadius="@dimen/card_cornerRadius"
-    app:contentPadding="8dp">
+    android:minHeight="?listPreferredItemHeightSmall"
+    app:cardCornerRadius="@dimen/card_cornerRadius">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?selectableItemBackground"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:padding="8dp">
 
         <ImageView
             android:id="@+id/projectIcon"

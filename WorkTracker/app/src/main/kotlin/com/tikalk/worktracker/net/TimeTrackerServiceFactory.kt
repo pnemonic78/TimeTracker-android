@@ -57,7 +57,7 @@ class TimeTrackerServiceFactory {
         private var cookieHandlerDefault: CookieManager? = null
         private var cookieHandlerPersistent: CookieManager? = null
 
-         fun createCookieHandler(context: Context?): CookieHandler {
+        fun createCookieHandler(context: Context?): CookieHandler {
             val cookieHandler: CookieHandler
             if (context == null) {
                 if (cookieHandlerDefault == null) {
@@ -73,7 +73,7 @@ class TimeTrackerServiceFactory {
             return cookieHandler
         }
 
-        private fun createHttpClient(context: Context?, authToken: String? = null): OkHttpClient {
+        fun createHttpClient(preferences: TimeTrackerPrefs? = null, cookieHandler: CookieHandler): OkHttpClient {
             val httpClientBuilder = OkHttpClient.Builder()
 
             if (BuildConfig.DEBUG) {
@@ -82,31 +82,27 @@ class TimeTrackerServiceFactory {
                 httpClientBuilder.addInterceptor(interceptorLogging)
             }
 
-            if (authToken != null) {
-                val interceptorAuth = AuthenticationInterceptor(authToken)
+            if (preferences != null) {
+                val interceptorAuth = AuthenticationInterceptor(preferences)
                 httpClientBuilder.addInterceptor(interceptorAuth)
             }
 
-            httpClientBuilder.cookieJar(JavaNetCookieJar(createCookieHandler(context)))
+            httpClientBuilder.cookieJar(JavaNetCookieJar(cookieHandler))
 
             return httpClientBuilder.build()
         }
 
-        fun createPlain(context: Context?, authToken: String? = null): TimeTrackerService {
-            val httpClient = createHttpClient(context, authToken)
-
-            val retrofit = Retrofit.Builder()
+        fun createRetrofit(httpClient: OkHttpClient): Retrofit {
+            return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(httpClient)
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
-            return retrofit.create(TimeTrackerService::class.java)
         }
 
-        fun createPlain(context: Context?, preferences: TimeTrackerPrefs): TimeTrackerService {
-            val authToken = preferences.basicCredentials.authToken()
-            return createPlain(context, authToken)
+        fun createTimeTracker(retrofit: Retrofit): TimeTrackerService {
+            return retrofit.create(TimeTrackerService::class.java)
         }
 
         fun clearCookies() {
