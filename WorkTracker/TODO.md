@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* Sidebar navigation
 * Reports - save records in SQL table
 * Reports - group by
 * Reports - favorites

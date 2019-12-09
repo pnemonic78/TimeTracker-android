@@ -42,6 +42,7 @@
     <string name="action_favorite">מועדף</string>
 
     <!-- Time list -->
+    <string name="timeList_title">זמנים</string>
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
     <string name="day_total">סה\"כ יום</string>
     <string name="remaining_quota">מכסה נותרת</string>

@@ -33,23 +33,26 @@ package com.tikalk.worktracker.time
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.navigation.NavigationView
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.user.ProfileFragment
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetActivity
+import com.tikalk.worktracker.user.ProfileFragment
+import kotlinx.android.synthetic.main.activity_time_list.*
 import kotlinx.android.synthetic.main.progress.*
 import timber.log.Timber
 
 class TimeListActivity : InternetActivity(),
+    NavigationView.OnNavigationItemSelectedListener,
     ProfileFragment.OnProfileListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,9 +61,15 @@ class TimeListActivity : InternetActivity(),
         // Set up the form and list.
         setContentView(R.layout.activity_time_list)
 
+        // Set up navigation - action bar and sidebar.
         val navController = findNavController()
-        setupActionBarWithNavController(navController, AppBarConfiguration.Builder(navController.graph).build())
-        navController.addOnDestinationChangedListener { _, destination, arguments ->
+        val appBarConfiguration = AppBarConfiguration.Builder(navController.graph)
+            .setDrawerLayout(drawerLayout)
+            .build()
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        nav_view.setupWithNavController(navController)
+        nav_view.setNavigationItemSelectedListener(this)
+        navController.addOnDestinationChangedListener { _, destination, _ ->
             runOnUiThread { supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment) }
         }
     }
@@ -76,40 +85,40 @@ class TimeListActivity : InternetActivity(),
         handleIntent(intent)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menu.clear()
-        menuInflater.inflate(R.menu.main, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_settings -> {
-                showSettings()
-                return true
-            }
-            R.id.menu_profile -> {
+            R.id.profileFragment -> {
                 showProfile()
+                drawerLayout.closeDrawers()
                 return true
             }
-            R.id.menu_projects -> {
+            R.id.projectsFragment -> {
                 showProjects()
+                drawerLayout.closeDrawers()
                 return true
             }
-            R.id.menu_reports -> {
+            R.id.reportFormFragment -> {
                 showReports()
+                drawerLayout.closeDrawers()
                 return true
             }
-            R.id.menu_tasks -> {
+            R.id.tasksFragment -> {
                 showTasks()
+                drawerLayout.closeDrawers()
                 return true
             }
-            R.id.menu_users -> {
+            R.id.timeSettingsFragment -> {
+                showSettings()
+                drawerLayout.closeDrawers()
+                return true
+            }
+            R.id.usersFragment -> {
                 showUsers()
+                drawerLayout.closeDrawers()
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return false
     }
 
     override fun showProgress(show: Boolean) {
