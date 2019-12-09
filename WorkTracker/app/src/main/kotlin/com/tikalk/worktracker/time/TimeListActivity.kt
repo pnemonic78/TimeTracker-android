@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.view.GravityCompat
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -67,11 +68,11 @@ class TimeListActivity : InternetActivity(),
             .setDrawerLayout(drawerLayout)
             .build()
         setupActionBarWithNavController(navController, appBarConfiguration)
+        // Let the navigation view check/uncheck the menu items.
         nav_view.setupWithNavController(navController)
         nav_view.setNavigationItemSelectedListener(this)
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            runOnUiThread { supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.timeListFragment) }
-        }
+        // Show the hamburger and back icons
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -83,6 +84,26 @@ class TimeListActivity : InternetActivity(),
     override fun onStart() {
         super.onStart()
         handleIntent(intent)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawers()
+                } else {
+                    val navController = findNavController()
+                    val destination = navController.currentDestination
+                    if (destination != null) {
+                        if (destination.id == R.id.timeListFragment) {
+                            drawerLayout.openDrawer(GravityCompat.START)
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
