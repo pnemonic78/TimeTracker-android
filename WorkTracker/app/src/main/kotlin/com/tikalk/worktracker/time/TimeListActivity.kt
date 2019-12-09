@@ -90,15 +90,15 @@ class TimeListActivity : InternetActivity(),
         when (item.itemId) {
             android.R.id.home -> {
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawers()
-                } else {
-                    val navController = findNavController()
-                    val destination = navController.currentDestination
-                    if (destination != null) {
-                        if (destination.id == R.id.timeListFragment) {
-                            drawerLayout.openDrawer(GravityCompat.START)
-                            return true
-                        }
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    return true
+                }
+                val navController = findNavController()
+                val destination = navController.currentDestination
+                if (destination != null) {
+                    if (destination.id == R.id.timeListFragment) {
+                        drawerLayout.openDrawer(GravityCompat.START)
+                        return true
                     }
                 }
             }
