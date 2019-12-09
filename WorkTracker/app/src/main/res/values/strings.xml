@@ -3,6 +3,9 @@
 
     <string name="activity_splash" translatable="false">@string/app_name</string>
 
+    <string name="drawer_open" translatable="false">@string/nav_app_bar_open_drawer_description</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
     <!-- Strings related to login -->
     <string name="activity_login">Sign in</string>
     <string name="prompt_login">Login name</string>

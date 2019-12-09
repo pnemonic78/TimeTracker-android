@@ -34,11 +34,9 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.core.view.GravityCompat
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.tikalk.app.findFragmentByClass
@@ -56,6 +54,8 @@ class TimeListActivity : InternetActivity(),
     NavigationView.OnNavigationItemSelectedListener,
     ProfileFragment.OnProfileListener {
 
+    private lateinit var drawerToggle: ActionBarDrawerToggle
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,16 +63,14 @@ class TimeListActivity : InternetActivity(),
         setContentView(R.layout.activity_time_list)
 
         // Set up navigation - action bar and sidebar.
-        val navController = findNavController()
-        val appBarConfiguration = AppBarConfiguration.Builder(navController.graph)
-            .setDrawerLayout(drawerLayout)
-            .build()
-        setupActionBarWithNavController(navController, appBarConfiguration)
         // Let the navigation view check/uncheck the menu items.
+        val navController = findNavController()
         nav_view.setupWithNavController(navController)
         nav_view.setNavigationItemSelectedListener(this)
+
         // Show the hamburger and back icons
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        drawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -86,22 +84,14 @@ class TimeListActivity : InternetActivity(),
         handleIntent(intent)
     }
 
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        drawerToggle.syncState()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    return true
-                }
-                val navController = findNavController()
-                val destination = navController.currentDestination
-                if (destination != null) {
-                    if (destination.id == R.id.timeListFragment) {
-                        drawerLayout.openDrawer(GravityCompat.START)
-                        return true
-                    }
-                }
-            }
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true
         }
         return super.onOptionsItemSelected(item)
     }
