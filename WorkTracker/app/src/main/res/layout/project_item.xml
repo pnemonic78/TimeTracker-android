@@ -36,12 +36,12 @@
     android:layout_height="wrap_content"
     android:layout_margin="2dp"
     android:layout_marginBottom="4dp"
-    app:cardCornerRadius="@dimen/card_cornerRadius"
-    app:contentPadding="8dp">
+    app:cardCornerRadius="@dimen/card_cornerRadius">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="8dp">
 
         <TextView
             android:id="@+id/nameLabel"
