@@ -136,4 +136,9 @@
     <string name="duration_header" translatable="false">@string/duration_label</string>
     <string name="note_header" translatable="false">@string/note_hint</string>
     <string name="cost_header" translatable="false">@string/cost</string>
+
+    <!-- Errors -->
+    <string name="error">Error</string>
+    <string name="error_title" translatable="false">@string/error</string>
+    <string name="error_unknownHost">Cannot resolve the remote server.</string>
 </resources>

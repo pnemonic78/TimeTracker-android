@@ -167,6 +167,7 @@ class TimeListFragment : TimeFormFragment(),
                 // Fetch from remote server.
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ response ->
                         if (this.date != date) {
                             this.date.timeInMillis = date.timeInMillis
@@ -175,12 +176,13 @@ class TimeListFragment : TimeFormFragment(),
                             val html = response.body()!!
                             processPage(html, date, progress)
                         } else {
-                            authenticateMain(loginAutomatic)
+                            authenticate(loginAutomatic)
                         }
                         fetchingPage = false
                     }, { err ->
                         Timber.e(err, "Error fetching page: ${err.message}")
-                        if (progress) showProgressMain(false)
+                        handleError(err)
+                        if (progress) showProgress(false)
                         fetchingPage = false
                     })
                     .addTo(disposables)
