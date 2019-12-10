@@ -63,14 +63,15 @@ class TimeListActivity : InternetActivity(),
         setContentView(R.layout.activity_time_list)
 
         // Set up navigation - action bar and sidebar.
-        // Let the navigation view check/uncheck the menu items.
+        /// Let the navigation view check/uncheck the menu items.
         val navController = findNavController()
         nav_view.setupWithNavController(navController)
         nav_view.setNavigationItemSelectedListener(this)
 
-        // Show the hamburger and back icons
+        /// Show the hamburger and back icons
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close)
+        drawerLayout.addDrawerListener(drawerToggle)
     }
 
     override fun onNewIntent(intent: Intent) {

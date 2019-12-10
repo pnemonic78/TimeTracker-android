@@ -32,20 +32,17 @@
 package com.tikalk.worktracker.db
 
 import androidx.room.*
-import com.tikalk.worktracker.model.Converters
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 
 /**
- * Time record database entity.
+ * Report time record for database entity.
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "record",
+@Entity(tableName = "report",
     foreignKeys = [
         ForeignKey(entity = Project::class,
             parentColumns = ["id"],
@@ -53,41 +50,31 @@ import java.util.*
         ForeignKey(entity = ProjectTask::class,
             parentColumns = ["id"],
             childColumns = ["task_id"])
-    ],
-    indices = [Index("project_id"), Index("task_id")]
+    ]
 )
 @TypeConverters(TimeRecordConverters::class)
-open class TimeRecordEntity(
+class ReportRecord(
     id: Long,
-    @ColumnInfo(name = "project_id")
-    var projectId: Long,
-    @ColumnInfo(name = "task_id")
-    var taskId: Long,
-    @ColumnInfo(name = "start")
-    var start: Calendar? = null,
-    @ColumnInfo(name = "finish")
-    var finish: Calendar? = null,
-    @ColumnInfo(name = "note")
-    var note: String = "",
-    @ColumnInfo(name = "cost")
-    var cost: Double = 0.0,
-    @ColumnInfo(name = "status")
-    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
-) : TikalEntity(id)
+    projectId: Long,
+    @ColumnInfo(name = "project_name")
+    var projectName: String,
+    taskId: Long,
+    @ColumnInfo(name = "task_name")
+    var taskName: String,
+    start: Calendar? = null,
+    finish: Calendar? = null,
+    note: String = "",
+    cost: Double = 0.0,
+    status: TaskRecordStatus = TaskRecordStatus.DRAFT
+) : TimeRecordEntity(id, projectId, taskId, start, finish, note, cost, status)
 
-open class TimeRecordConverters : Converters() {
-    @TypeConverter
-    fun fromRecordStatus(value: TaskRecordStatus): Int = value.ordinal
-
-    @TypeConverter
-    fun toRecordStatus(value: Int): TaskRecordStatus = TaskRecordStatus.values()[value]
-}
-
-fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
-    TimeRecordEntity(
+fun TimeRecord.toReportRecord(): ReportRecord =
+    ReportRecord(
         this.id,
         this.project.id,
+        this.project.name,
         this.task.id,
+        this.task.name,
         this.start,
         this.finish,
         this.note,
@@ -95,11 +82,13 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         this.status
     )
 
-fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
-    val value: TimeRecordEntity = this
+fun ReportRecord.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+    val value: ReportRecord = this
     val project = projects?.firstOrNull { it.id == value.projectId }
+        ?: projects?.firstOrNull { it.name == value.projectName }
         ?: Project.EMPTY.copy().apply { id = value.projectId }
     val task = tasks?.firstOrNull { it.id == value.taskId }
+        ?: tasks?.firstOrNull { it.name == value.taskName }
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
     return TimeRecord(
