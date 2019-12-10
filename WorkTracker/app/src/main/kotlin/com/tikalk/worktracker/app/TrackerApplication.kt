@@ -66,7 +66,9 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         super.onCreate()
 
         Timber.plant(LogTree(BuildConfig.DEBUG))
-        Fabric.with(this, Crashlytics())
+        if (!BuildConfig.DEBUG) {
+            Fabric.with(this, Crashlytics())
+        }
 
         registerActivityLifecycleCallbacks(this)
 
