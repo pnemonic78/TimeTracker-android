@@ -242,6 +242,10 @@ class LoginFragment : InternetFragment,
         return password.trim().length > 4
     }
 
+    override fun authenticate(submit: Boolean) {
+        authenticateBasicRealm("", "")
+    }
+
     private fun authenticate(login: String, response: Response): Boolean {
         val challenges = response.challenges()
         for (challenge in challenges) {

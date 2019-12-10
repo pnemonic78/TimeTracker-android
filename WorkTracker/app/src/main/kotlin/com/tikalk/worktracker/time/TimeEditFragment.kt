@@ -424,7 +424,7 @@ class TimeEditFragment : TimeFormFragment() {
                     savePage()
                     showProgressMain(false)
                 } else {
-                    authenticate()
+                    authenticateMain()
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
@@ -463,7 +463,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun authenticate(submit: Boolean = false) {
+    override fun authenticate(submit: Boolean) {
         Timber.v("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
@@ -542,7 +542,7 @@ class TimeEditFragment : TimeFormFragment() {
                         listener?.onRecordEditFailure(this, record, errorMessage)
                     }
                 } else {
-                    authenticate(true)
+                    authenticateMain(true)
                 }
             }, { err ->
                 Timber.e(err, "Error saving record: ${err.message}")

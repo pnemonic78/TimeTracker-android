@@ -213,6 +213,9 @@ class BasicRealmFragment : InternetFragment() {
         notifyLoginFailure(realmName, "", "onCancel")
     }
 
+    override fun authenticate(submit: Boolean) {
+    }
+
     /**
      * Listener for basic realm login callbacks.
      */

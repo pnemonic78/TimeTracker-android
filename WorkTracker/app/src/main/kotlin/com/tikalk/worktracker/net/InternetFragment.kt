@@ -43,7 +43,7 @@ import retrofit2.Response
 /**
  * Fragment that is Internet-aware.
  */
-open class InternetFragment : TrackerFragment {
+abstract class InternetFragment : TrackerFragment {
 
     constructor() : super()
 

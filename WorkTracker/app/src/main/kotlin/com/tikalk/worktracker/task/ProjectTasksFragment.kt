@@ -135,7 +135,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
             .addTo(disposables)
     }
 
-    private fun authenticate(submit: Boolean = false) {
+    override fun authenticate(submit: Boolean) {
         Timber.v("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()

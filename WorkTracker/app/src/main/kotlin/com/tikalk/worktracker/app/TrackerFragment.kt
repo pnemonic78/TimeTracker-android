@@ -36,6 +36,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
+import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.User
@@ -82,6 +83,14 @@ abstract class TrackerFragment : TikalFragment {
             } catch (e: IllegalStateException) {
             }
             fragment = fragment.parentFragment ?: return null
+        }
+    }
+
+    protected abstract fun authenticate(submit: Boolean = false)
+
+    protected fun authenticateMain(submit: Boolean = false) {
+        runOnUiThread {
+            authenticate(submit)
         }
     }
 
