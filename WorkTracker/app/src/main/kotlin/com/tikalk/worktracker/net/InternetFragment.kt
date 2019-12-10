@@ -34,6 +34,8 @@ package com.tikalk.worktracker.net
 
 import android.app.AlertDialog
 import android.os.Bundle
+import androidx.annotation.StringRes
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.textBr
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -123,12 +125,26 @@ abstract class InternetFragment : TrackerFragment {
         }
     }
 
-    protected fun showUnknownHostError() {
+    /**
+     * Handle an error, on the main threadd.
+     * @param error the error.
+     */
+    protected fun handleErrorMain(error: Throwable) {
+        runOnUiThread {
+            handleError(error)
+        }
+    }
+
+    private fun showError(@StringRes messageId: Int) {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.error_title)
-            .setMessage(R.string.error_unknownHost)
+            .setMessage(messageId)
             .setIcon(R.drawable.ic_report_problem)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    protected fun showUnknownHostError() {
+        showError(R.string.error_unknownHost)
     }
 }

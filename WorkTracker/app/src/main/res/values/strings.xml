@@ -140,5 +140,5 @@
     <!-- Errors -->
     <string name="error">Error</string>
     <string name="error_title" translatable="false">@string/error</string>
-    <string name="error_unknownHost">Cannot resolve the remote server.</string>
+    <string name="error_unknownHost">Cannot connect to the remote server.</string>
 </resources>

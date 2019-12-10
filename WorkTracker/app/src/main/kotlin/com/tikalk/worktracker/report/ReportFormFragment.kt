@@ -256,6 +256,7 @@ class ReportFormFragment : TimeFormFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                handleError(err)
                 showProgress(false)
             })
             .addTo(disposables)

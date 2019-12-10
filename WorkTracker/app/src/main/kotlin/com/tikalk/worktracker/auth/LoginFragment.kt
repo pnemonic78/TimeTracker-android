@@ -227,6 +227,7 @@ class LoginFragment : InternetFragment,
                     }
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
+                    handleError(err)
                     showProgress(false)
                     actionSignIn.isEnabled = true
                 })

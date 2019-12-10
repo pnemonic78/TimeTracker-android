@@ -265,6 +265,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
                     }
                 }, { err ->
                     Timber.e(err, "Error updating profile: ${err.message}")
+                    handleError(err)
                     showProgress(false)
                     actionSave.isEnabled = true
                 })
@@ -312,6 +313,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                handleError(err)
                 if (progress) showProgress(false)
             })
             .addTo(disposables)

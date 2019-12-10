@@ -428,6 +428,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                handleErrorMain(err)
                 showProgressMain(false)
             })
             .addTo(disposables)
@@ -546,6 +547,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error saving record: ${err.message}")
+                handleErrorMain(err)
                 showProgressMain(false)
             })
             .addTo(disposables)
@@ -578,6 +580,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error deleting record: ${err.message}")
+                handleError(err)
                 showProgress(false)
             })
             .addTo(disposables)

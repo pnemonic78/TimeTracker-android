@@ -129,6 +129,7 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                handleError(err)
                 showProgress(false)
             })
             .addTo(disposables)

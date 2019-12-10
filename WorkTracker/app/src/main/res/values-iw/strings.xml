@@ -106,5 +106,5 @@
 
     <!-- Errors -->
     <string name="error">שגיה</string>
-    <string name="error_unknownHost">לא ניתן למצוא את השרת הרוחק.</string>
+    <string name="error_unknownHost">לא ניתן להתחבר לשרת המרוחק.</string>
 </resources>

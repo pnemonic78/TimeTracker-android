@@ -124,6 +124,7 @@ class ReportFragment : InternetFragment(),
                         }
                     }, { err ->
                         Timber.e(err, "Error fetching page: ${err.message}")
+                        handleErrorMain(err)
                         if (progress) showProgressMain(false)
                     })
                     .addTo(disposables)
