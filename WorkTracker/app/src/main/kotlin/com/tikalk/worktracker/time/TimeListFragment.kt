@@ -175,11 +175,12 @@ class TimeListFragment : TimeFormFragment(),
                             val html = response.body()!!
                             processPage(html, date, progress)
                         } else {
-                            authenticate(loginAutomatic)
+                            authenticateMain(loginAutomatic)
                         }
                         fetchingPage = false
                     }, { err ->
                         Timber.e(err, "Error fetching page: ${err.message}")
+                        handleErrorMain(err)
                         if (progress) showProgressMain(false)
                         fetchingPage = false
                     })
@@ -276,7 +277,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun authenticate(submit: Boolean = false) {
+    override fun authenticate(submit: Boolean) {
         Timber.v("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
@@ -439,18 +440,18 @@ class TimeListFragment : TimeFormFragment(),
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
-            //.observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { response ->
                     if (isValidResponse(response)) {
                         val html = response.body()!!
                         processPage(html, date)
                     } else {
-                        authenticate()
+                        authenticateMain()
                     }
                 },
                 { err ->
                     Timber.e(err, "Error deleting record: ${err.message}")
+                    handleErrorMain(err)
                     showProgressMain(false)
                 }
             )

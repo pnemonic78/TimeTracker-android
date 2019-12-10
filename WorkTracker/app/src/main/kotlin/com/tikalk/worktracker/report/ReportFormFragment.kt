@@ -221,7 +221,7 @@ class ReportFormFragment : TimeFormFragment() {
         run()
     }
 
-    private fun authenticate(submit: Boolean = false) {
+    override fun authenticate(submit: Boolean) {
         Timber.v("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
@@ -256,6 +256,7 @@ class ReportFormFragment : TimeFormFragment() {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                handleError(err)
                 showProgress(false)
             })
             .addTo(disposables)

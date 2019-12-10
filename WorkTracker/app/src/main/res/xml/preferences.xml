@@ -47,6 +47,7 @@
     <PreferenceCategory android:title="@string/pref_about_title">
 
         <Preference
+            android:icon="@drawable/ic_info_outline"
             android:key="about.version"
             android:title="@string/pref_version_title">
             <intent
