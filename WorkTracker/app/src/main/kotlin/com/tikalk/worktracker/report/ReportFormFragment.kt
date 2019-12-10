@@ -41,6 +41,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.html.selectByName
@@ -452,7 +454,22 @@ class ReportFormFragment : TimeFormFragment() {
             val args = Bundle()
             requireFragmentManager().putFragment(args, ReportFragment.EXTRA_CALLER, this)
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
-            findNavController().navigate(R.id.action_reportForm_to_reportList, args)
+
+            var reportFragmentController: NavController? = null
+            val reportFragment = childFragmentManager.findFragmentById(R.id.nav_host_report) as NavHostFragment?
+            if (reportFragment != null) {
+                // Existing view means ready - avoid "NavController is not available before onCreate()"
+                val reportFragmentView = view?.findViewById<View>(R.id.nav_host_report)
+                if (reportFragmentView != null) {
+                    reportFragmentController = reportFragment.navController
+                }
+            }
+
+            if (reportFragmentController != null) {
+                reportFragmentController.navigate(R.id.reportFragment, args)
+            } else {
+                findNavController().navigate(R.id.action_reportForm_to_reportList, args)
+            }
         }
     }
 
