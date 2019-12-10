@@ -31,50 +31,64 @@
  */
 package com.tikalk.worktracker.db
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
+import androidx.room.Dao
+import androidx.room.Query
+import io.reactivex.Maybe
+import io.reactivex.Single
 
 /**
- * Work Tracker database.
+ * Report time record entity DAO.
  */
-@Database(
-    entities = [
-        Project::class,
-        ProjectTask::class,
-        ProjectTaskKey::class,
-        ReportRecord::class,
-        TimeRecordEntity::class
-    ],
-    version = 7,
-    exportSchema = false
-)
-abstract class TrackerDatabase : RoomDatabase() {
-    abstract fun projectDao(): ProjectDao
-    abstract fun taskDao(): ProjectTaskDao
-    abstract fun projectTaskKeyDao(): ProjectTaskKeyDao
-    abstract fun timeRecordDao(): TimeRecordDao
-    abstract fun reportRecordDao(): ReportRecordDao
+@Dao
+interface ReportRecordDao : BaseDao<ReportRecord> {
 
-    companion object {
-        @Volatile
-        private var instance: TrackerDatabase? = null
+    /**
+     * Select all records from the table.
+     *
+     * @return all records.
+     */
+    @Query("SELECT * FROM report")
+    fun queryAll(): List<ReportRecord>
 
-        fun getDatabase(context: Context): TrackerDatabase {
-            if (instance == null) {
-                synchronized(TrackerDatabase::class.java) {
-                    if (instance == null) {
-                        // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
-                            .fallbackToDestructiveMigration()
-                            .build()
-                    }
-                }
-            }
-            return instance!!
-        }
-    }
+    /**
+     * Select all records from the table.
+     *
+     * @return all records.
+     */
+    @Query("SELECT * FROM report")
+    fun queryAllSingle(): Single<List<ReportRecord>>
+
+    /**
+     * Select a record by its id.
+     */
+    @Query("SELECT * FROM report WHERE id = :recordId")
+    fun queryById(recordId: Long): ReportRecord?
+
+    /**
+     * Select a record by its id.
+     */
+    @Query("SELECT * FROM report WHERE id = :recordId")
+    fun queryByIdMaybe(recordId: Long): Maybe<ReportRecord>
+
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDate(start: Long, finish: Long): List<ReportRecord>
+
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDateSingle(start: Long, finish: Long): Single<List<ReportRecord>>
+
+    /**
+     * Delete all records.
+     */
+    @Query("DELETE FROM report")
+    fun deleteAll(): Int
 }

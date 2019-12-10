@@ -427,6 +427,8 @@ class ReportFormFragment : TimeFormFragment() {
         if (cal == null) {
             val calDate = Calendar.getInstance()
             calDate.timeInMillis = date.timeInMillis
+            // Server granularity is seconds.
+            calDate.millis = 0
             return calDate
         }
         return cal

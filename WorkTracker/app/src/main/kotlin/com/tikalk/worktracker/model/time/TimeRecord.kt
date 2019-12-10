@@ -205,11 +205,8 @@ fun TimeRecord.split(): List<TimeRecord> {
     } else {
         // The first day.
         val startFirst = start
-        val finishFirst = startFirst.clone() as Calendar
-        finishFirst.hourOfDay = finishFirst.getActualMaximum(Calendar.HOUR_OF_DAY)
-        finishFirst.minute = finishFirst.getActualMaximum(Calendar.MINUTE)
-        finishFirst.second = finishFirst.getActualMaximum(Calendar.SECOND)
-        finishFirst.millis = finishFirst.getActualMaximum(Calendar.MILLISECOND)
+        val finishFirst = startFirst.copy()
+        setToEndOfDay(finishFirst)
         results.add(this.copy(start = startFirst, finish = finishFirst))
         diffMillis -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
 
@@ -217,28 +214,19 @@ fun TimeRecord.split(): List<TimeRecord> {
         var startDay = startFirst
         var finishDay: Calendar
         while (diffMillis >= DateUtils.DAY_IN_MILLIS) {
-            startDay = startDay.clone() as Calendar
+            startDay = startDay.copy()
             startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
-            startDay.hourOfDay = 0
-            startDay.minute = 0
-            startDay.second = 0
-            startDay.millis = 0
-            finishDay = startDay.clone() as Calendar
-            finishDay.hourOfDay = finishDay.getActualMaximum(Calendar.HOUR_OF_DAY)
-            finishDay.minute = finishDay.getActualMaximum(Calendar.MINUTE)
-            finishDay.second = finishDay.getActualMaximum(Calendar.SECOND)
-            finishDay.millis = finishDay.getActualMaximum(Calendar.MILLISECOND)
+            setToStartOfDay(startDay)
+            finishDay = startDay.copy()
+            setToEndOfDay(finishDay)
             results.add(this.copy(start = startDay, finish = finishDay))
             diffMillis -= DateUtils.DAY_IN_MILLIS
         }
 
         // The last day.
-        val startLast = finish.clone() as Calendar
+        val startLast = finish.copy()
         val finishLast = finish
-        startLast.hourOfDay = 0
-        startLast.minute = 0
-        startLast.second = 0
-        startLast.millis = 0
+        setToStartOfDay(startLast)
         results.add(this.copy(start = startLast, finish = finishLast))
     }
 

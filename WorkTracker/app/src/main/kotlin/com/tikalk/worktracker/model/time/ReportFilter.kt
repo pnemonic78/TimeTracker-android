@@ -38,10 +38,7 @@ import com.tikalk.os.writeBool
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
-import com.tikalk.worktracker.time.dayOfMonth
-import com.tikalk.worktracker.time.dayOfWeek
-import com.tikalk.worktracker.time.formatSystemDate
-import com.tikalk.worktracker.time.month
+import com.tikalk.worktracker.time.*
 import java.util.*
 
 /**
@@ -149,56 +146,66 @@ class ReportFilter : TimeRecord {
         when (period) {
             ReportTimePeriod.CUSTOM -> {
                 if (start == null) {
-                    this.start = today
+                    this.start = today.copy()
                 }
                 if (finish == null) {
-                    this.finish = today
+                    this.finish = today.copy()
                 }
             }
             ReportTimePeriod.PREVIOUS_MONTH -> {
-                val first = today.clone() as Calendar
+                val first = today.copy()
                 first.month--
                 first.dayOfMonth = 1
-                val last = first.clone() as Calendar
+                val last = first.copy()
                 last.dayOfMonth = last.getActualMaximum(Calendar.DAY_OF_MONTH)
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.PREVIOUS_WEEK -> {
-                val first = today.clone() as Calendar
+                val first = today.copy()
                 first.dayOfWeek = first.firstDayOfWeek
                 first.dayOfMonth -= 7
-                val last = first.clone() as Calendar
+                val last = first.copy()
                 last.dayOfMonth += 6
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.THIS_MONTH -> {
-                val first = today.clone() as Calendar
+                val first = today.copy()
                 first.dayOfMonth = 1
-                val last = today.clone() as Calendar
+                val last = today.copy()
                 last.dayOfMonth = last.getActualMaximum(Calendar.DAY_OF_MONTH)
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.THIS_WEEK -> {
-                val first = today.clone() as Calendar
+                val first = today.copy()
                 first.dayOfWeek = first.firstDayOfWeek
-                val last = first.clone() as Calendar
+                val last = first.copy()
                 last.dayOfMonth += 6
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.TODAY -> {
-                this.start = today
-                this.finish = today
+                this.start = today.copy()
+                this.finish = today.copy()
             }
             ReportTimePeriod.YESTERDAY -> {
-                val yesterday = today.clone() as Calendar
+                val yesterday = today.copy()
                 yesterday.dayOfMonth--
                 this.start = yesterday
-                this.finish = yesterday
+                this.finish = yesterday.copy()
             }
+        }
+
+        // Server granularity for report is days.
+        val start = this.start
+        if (start != null) {
+            setToStartOfDay(start)
+        }
+        val finish = this.finish
+        if (finish != null) {
+            setToEndOfDay(finish)
         }
     }
 

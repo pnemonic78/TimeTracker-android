@@ -621,7 +621,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
-        records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+        this.records = recordsDb.map { it.toTimeRecord(projects, tasks) }
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -629,16 +629,10 @@ class TimeListFragment : TimeFormFragment(),
         return if (day == null) {
             recordsDao.queryAll()
         } else {
-            val cal = day.clone() as Calendar
-            cal.hourOfDay = 0
-            cal.minute = 0
-            cal.second = 0
-            cal.millis = 0
+            val cal = day.copy()
+            setToStartOfDay(cal)
             val start = cal.timeInMillis
-            cal.hourOfDay = cal.getActualMaximum(Calendar.HOUR_OF_DAY)
-            cal.minute = cal.getActualMaximum(Calendar.MINUTE)
-            cal.second = cal.getActualMaximum(Calendar.SECOND)
-            cal.millis = cal.getActualMaximum(Calendar.MILLISECOND)
+            setToEndOfDay(cal)
             val finish = cal.timeInMillis
             recordsDao.queryByDate(start, finish)
         }

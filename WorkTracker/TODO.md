@@ -1,10 +1,9 @@
 To-Do List
 ====
 
-* Reports - save records in SQL table
+* Reports - master/detail
 * Reports - group by
 * Reports - favorites
-* Reports - master/detail
 * Reports - export - opendoc spreadsheet
 * Reports - export - pdf
 * LiveData
