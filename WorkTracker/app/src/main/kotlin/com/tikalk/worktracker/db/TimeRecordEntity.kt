@@ -32,7 +32,10 @@
 package com.tikalk.worktracker.db
 
 import androidx.room.*
-import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.Converters
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
@@ -54,9 +57,8 @@ import java.util.*
     indices = [Index("project_id"), Index("task_id")]
 )
 @TypeConverters(TimeRecordConverters::class)
-data class TimeRecordEntity(
-    @Ignore
-    override var id: Long,
+open class TimeRecordEntity(
+    id: Long,
     @ColumnInfo(name = "project_id")
     var projectId: Long,
     @ColumnInfo(name = "task_id")
