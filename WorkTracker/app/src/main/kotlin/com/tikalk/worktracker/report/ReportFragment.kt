@@ -48,8 +48,8 @@ import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.toReportRecord
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -85,10 +85,12 @@ class ReportFragment : InternetFragment(),
     private var listAdapter = ReportAdapter(filter)
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
+    private var firstRun = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        firstRun = (savedInstanceState == null)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -109,6 +111,7 @@ class ReportFragment : InternetFragment(),
         // Fetch from local database first.
         loadPage()
             .subscribe({
+                populateTotals(records, totals)
                 bindList(records)
                 bindTotals(totals)
 
@@ -140,7 +143,7 @@ class ReportFragment : InternetFragment(),
         val doc: Document = Jsoup.parse(html)
         populateList(doc, records)
         populateTotals(records, totals)
-        this.records = records
+        savePage(records)
         runOnUiThread {
             bindList(records)
             bindTotals(totals)
@@ -189,6 +192,7 @@ class ReportFragment : InternetFragment(),
                     for (i in 1 until totalsBlankRowIndex) {
                         val tr = rows[i]
                         val record = parseRecord(tr,
+                            i,
                             columnIndexDate,
                             columnIndexProject,
                             columnIndexTask,
@@ -203,6 +207,8 @@ class ReportFragment : InternetFragment(),
                 }
             }
         }
+
+        this.records = records
     }
 
     private fun populateTotals(records: List<TimeRecord>, totals: ReportTotals) {
@@ -283,6 +289,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun parseRecord(row: Element,
+                            index: Int,
                             columnIndexDate: Int,
                             columnIndexProject: Int,
                             columnIndexTask: Int,
@@ -292,6 +299,7 @@ class ReportFragment : InternetFragment(),
                             columnIndexCost: Int): TimeRecord? {
         val cols = row.getElementsByTag("td")
         val record = TimeRecord.EMPTY.copy()
+        record.id = index + 1L
         record.status = TaskRecordStatus.CURRENT
 
         val tdDate = cols[columnIndexDate]
@@ -376,13 +384,17 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
-        val recordsDb = queryRecords(db, start, finish)
-        records = recordsDb.map { it.toTimeRecord(projects, tasks) }
-    }
-
-    private fun queryRecords(db: TrackerDatabase, start: Long, finish: Long): List<TimeRecordEntity> {
-        val recordsDao = db.timeRecordDao()
-        return recordsDao.queryByDate(start, finish)
+        val reportRecordsDao = db.reportRecordDao()
+        val reportRecordsDb = reportRecordsDao.queryByDate(start, finish)
+        if (reportRecordsDb.isEmpty()) {
+            val recordsDao = db.timeRecordDao()
+            val recordsDb = recordsDao.queryByDate(start, finish)
+            val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+            this.records = records
+        } else {
+            val records = reportRecordsDb.map { it.toTimeRecord(projects, tasks) }
+            this.records = records
+        }
     }
 
     private fun loadProjectsWithTasks(db: TrackerDatabase) {
@@ -407,12 +419,15 @@ class ReportFragment : InternetFragment(),
     fun run() {
         Timber.v("run")
         showProgress(true)
+        handleArguments()
         loadPage()
             .subscribe({
+                populateTotals(records, totals)
                 bindList(records)
                 bindTotals(totals)
-                handleArguments()
-                fetchPage(filter)
+                if (firstRun) {
+                    fetchPage(filter)
+                }
                 showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -556,6 +571,17 @@ class ReportFragment : InternetFragment(),
         } else {
             Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun savePage(records: List<TimeRecord>) {
+        Timber.v("savePage")
+        saveRecords(db, records)
+    }
+
+    private fun saveRecords(db: TrackerDatabase, records: List<TimeRecord>) {
+        val recordsDao = db.reportRecordDao()
+        recordsDao.deleteAll()
+        recordsDao.insert(records.map { it.toReportRecord() })
     }
 
     companion object {

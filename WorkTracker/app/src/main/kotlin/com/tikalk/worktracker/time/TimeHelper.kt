@@ -82,7 +82,7 @@ fun parseSystemTime(date: Calendar, time: String?): Calendar? {
     }
     val parsed = SimpleDateFormat(SYSTEM_TIME_PATTERN, Locale.US).parse(time)
     if (parsed != null) {
-        val cal = date.clone() as Calendar
+        val cal = date.copy()
         cal.hourOfDay = parsed.hours
         cal.minute = parsed.minutes
         cal.second = parsed.seconds
@@ -203,6 +203,10 @@ fun Calendar.isSameDay(that: Calendar): Boolean {
         && (this.dayOfMonth == that.dayOfMonth)
 }
 
+fun Calendar.copy(): Calendar {
+    return clone() as Calendar
+}
+
 fun Long.toCalendar(): Calendar {
     val cal = Calendar.getInstance()
     cal.timeInMillis = this
@@ -226,4 +230,18 @@ fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): 
 
 fun formatCurrency(context: Context, formatter: Formatter, amount: Double): Any {
     return formatter.format("%.2f", amount)
+}
+
+fun setToStartOfDay(cal: Calendar) {
+    cal.hourOfDay = 0
+    cal.minute = 0
+    cal.second = 0
+    cal.millis = 0
+}
+
+fun setToEndOfDay(cal: Calendar) {
+    cal.hourOfDay = cal.getActualMaximum(Calendar.HOUR_OF_DAY)
+    cal.minute = cal.getActualMaximum(Calendar.MINUTE)
+    cal.second = cal.getActualMaximum(Calendar.SECOND)
+    cal.millis = cal.getActualMaximum(Calendar.MILLISECOND)
 }
