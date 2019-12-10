@@ -103,4 +103,8 @@
     <string name="action_export_csv">ייצא CSV</string>
     <string name="action_export_html">ייצא HTML</string>
     <string name="action_export_xml">ייצא XML</string>
+
+    <!-- Errors -->
+    <string name="error">שגיה</string>
+    <string name="error_unknownHost">לא ניתן להתחבר לשרת המרוחק.</string>
 </resources>

@@ -265,6 +265,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
                     }
                 }, { err ->
                     Timber.e(err, "Error updating profile: ${err.message}")
+                    handleError(err)
                     showProgress(false)
                     actionSave.isEnabled = true
                 })
@@ -284,7 +285,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
         return password.trim().length > 4
     }
 
-    private fun authenticate(submit: Boolean = false) {
+    override fun authenticate(submit: Boolean) {
         Timber.v("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
@@ -312,6 +313,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
+                handleError(err)
                 if (progress) showProgress(false)
             })
             .addTo(disposables)

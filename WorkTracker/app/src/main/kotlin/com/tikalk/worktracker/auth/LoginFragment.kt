@@ -227,6 +227,7 @@ class LoginFragment : InternetFragment,
                     }
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
+                    handleError(err)
                     showProgress(false)
                     actionSignIn.isEnabled = true
                 })
@@ -240,6 +241,10 @@ class LoginFragment : InternetFragment,
 
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
+    }
+
+    override fun authenticate(submit: Boolean) {
+        authenticateBasicRealm("", "")
     }
 
     private fun authenticate(login: String, response: Response): Boolean {

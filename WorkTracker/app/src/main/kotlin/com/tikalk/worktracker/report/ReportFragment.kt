@@ -120,10 +120,11 @@ class ReportFragment : InternetFragment(),
                             val html = response.body()!!
                             processPage(html, progress)
                         } else {
-                            authenticate()
+                            authenticateMain()
                         }
                     }, { err ->
                         Timber.e(err, "Error fetching page: ${err.message}")
+                        handleErrorMain(err)
                         if (progress) showProgressMain(false)
                     })
                     .addTo(disposables)
@@ -255,7 +256,7 @@ class ReportFragment : InternetFragment(),
         }
     }
 
-    private fun authenticate(submit: Boolean = false) {
+    override fun authenticate(submit: Boolean) {
         Timber.v("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()

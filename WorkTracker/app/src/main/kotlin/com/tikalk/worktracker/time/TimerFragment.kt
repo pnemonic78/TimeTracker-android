@@ -405,6 +405,10 @@ class TimerFragment : TimeFormFragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun authenticate(submit: Boolean) {
+        // Parent fragment responsible for authentication.
+    }
+
     companion object {
         const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
         const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER

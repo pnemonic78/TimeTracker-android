@@ -32,18 +32,23 @@
 
 package com.tikalk.worktracker.net
 
+import android.app.AlertDialog
 import android.os.Bundle
+import androidx.annotation.StringRes
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.textBr
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.koin.android.ext.android.inject
 import retrofit2.Response
+import java.net.UnknownHostException
 
 /**
  * Fragment that is Internet-aware.
  */
-open class InternetFragment : TrackerFragment {
+abstract class InternetFragment : TrackerFragment {
 
     constructor() : super()
 
@@ -102,7 +107,44 @@ open class InternetFragment : TrackerFragment {
         (activity as InternetActivity?)?.showProgress(show)
     }
 
+    /**
+     * Shows the progress UI and hides the login form, on the main thread.
+     * @param show visible?
+     */
     protected fun showProgressMain(show: Boolean) {
         (activity as InternetActivity?)?.showProgressMain(show)
+    }
+
+    /**
+     * Handle an error.
+     * @param error the error.
+     */
+    protected fun handleError(error: Throwable) {
+        when (error) {
+            is UnknownHostException -> showUnknownHostError()
+        }
+    }
+
+    /**
+     * Handle an error, on the main threadd.
+     * @param error the error.
+     */
+    protected fun handleErrorMain(error: Throwable) {
+        runOnUiThread {
+            handleError(error)
+        }
+    }
+
+    private fun showError(@StringRes messageId: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.error_title)
+            .setMessage(messageId)
+            .setIcon(R.drawable.ic_report_problem)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    protected fun showUnknownHostError() {
+        showError(R.string.error_unknownHost)
     }
 }
