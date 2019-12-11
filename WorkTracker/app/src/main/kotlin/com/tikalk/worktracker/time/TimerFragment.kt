@@ -286,8 +286,8 @@ class TimerFragment : TimeFormFragment() {
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
             record.project = projects.firstOrNull { it.id == recordStartedProjectId }
-                ?: projectEmpty
-            record.task = tasks.firstOrNull { it.id == recordStartedTaskId } ?: taskEmpty
+                ?: record.project
+            record.task = tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task
             record.start = recordStarted.start
         }
     }
