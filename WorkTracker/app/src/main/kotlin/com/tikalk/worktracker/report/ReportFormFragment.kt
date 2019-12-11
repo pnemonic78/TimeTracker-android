@@ -36,9 +36,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.navigation.NavController
@@ -89,6 +87,11 @@ class ReportFormFragment : TimeFormFragment() {
     init {
         date.timeZone = TimeZone.getTimeZone("UTC")
         date.hourOfDay = 12
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -378,7 +381,7 @@ class ReportFormFragment : TimeFormFragment() {
         showDurationField.isChecked = filter.showDurationField
         showNotesField.isChecked = filter.showNotesField
 
-        errorLabel.text = errorMessage
+        setErrorLabel(errorMessage)
     }
 
     private fun pickStartDate() {
@@ -386,7 +389,8 @@ class ReportFormFragment : TimeFormFragment() {
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
-        if (startPickerDialog == null) {
+        var picker = startPickerDialog
+        if (picker == null) {
             val context = requireContext()
             val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
                 cal.year = pickedYear
@@ -396,11 +400,12 @@ class ReportFormFragment : TimeFormFragment() {
                 startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 startInput.error = null
             }
-            startPickerDialog = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            startPickerDialog = picker
         } else {
-            startPickerDialog!!.updateDate(year, month, dayOfMonth)
+            picker.updateDate(year, month, dayOfMonth)
         }
-        startPickerDialog!!.show()
+        picker.show()
     }
 
     private fun pickFinishDate() {
@@ -408,7 +413,8 @@ class ReportFormFragment : TimeFormFragment() {
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
-        if (finishPickerDialog == null) {
+        var picker = finishPickerDialog
+        if (picker == null) {
             val context = requireContext()
             val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
                 cal.year = pickedYear
@@ -418,11 +424,12 @@ class ReportFormFragment : TimeFormFragment() {
                 finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 finishInput.error = null
             }
-            finishPickerDialog = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            finishPickerDialog = picker
         } else {
-            finishPickerDialog!!.updateDate(year, month, dayOfMonth)
+            picker.updateDate(year, month, dayOfMonth)
         }
-        finishPickerDialog!!.show()
+        picker.show()
     }
 
     private fun getCalendar(cal: Calendar?): Calendar {
@@ -459,8 +466,7 @@ class ReportFormFragment : TimeFormFragment() {
             val reportFragment = childFragmentManager.findFragmentById(R.id.nav_host_report) as NavHostFragment?
             if (reportFragment != null) {
                 // Existing view means ready - avoid "NavController is not available before onCreate()"
-                val reportFragmentView = view?.findViewById<View>(R.id.nav_host_report)
-                if (reportFragmentView != null) {
+                if (reportFragment.view != null) {
                     reportFragmentController = reportFragment.navController
                 }
             }
@@ -489,6 +495,26 @@ class ReportFormFragment : TimeFormFragment() {
             this.firstRun = false
             bindFilter(filter)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.report_form, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_generate -> {
+                generateReport()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun setErrorLabel(text: CharSequence) {
+        errorLabel.text = text
+        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
     }
 
     companion object {

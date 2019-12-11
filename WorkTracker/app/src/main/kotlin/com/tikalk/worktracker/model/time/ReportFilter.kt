@@ -199,14 +199,8 @@ class ReportFilter : TimeRecord {
         }
 
         // Server granularity for report is days.
-        val start = this.start
-        if (start != null) {
-            setToStartOfDay(start)
-        }
-        val finish = this.finish
-        if (finish != null) {
-            setToEndOfDay(finish)
-        }
+        this.start?.setToStartOfDay()
+        this.finish?.setToEndOfDay()
     }
 
     companion object {

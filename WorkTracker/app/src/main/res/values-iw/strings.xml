@@ -42,6 +42,7 @@
 
     <!-- Favourite / Favorite -->
     <string name="action_favorite">מועדף</string>
+    <string name="favorite_marked">פרויקט <xliff:g id="PROJECT">\"%1$s\"</xliff:g> ומשימה <xliff:g id="TASK">\"%2$s\"</xliff:g> מסומנים כמועדפים.</string>
 
     <!-- Time list -->
     <string name="timeList_title">זמנים</string>

@@ -32,12 +32,14 @@
 
 package com.tikalk.worktracker.time
 
+import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -393,6 +395,7 @@ abstract class TimeFormFragment : InternetFragment(),
     protected open fun markFavorite(record: TimeRecord) {
         Timber.v("markFavorite $record")
         preferences.setFavorite(record)
+        Toast.makeText(requireContext(), getString(R.string.favorite_marked, record.project.name, record.task.name), Toast.LENGTH_LONG).show()
     }
 
     fun populateAndBind() {

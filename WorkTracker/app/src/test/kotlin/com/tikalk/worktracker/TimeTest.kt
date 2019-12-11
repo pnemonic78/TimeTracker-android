@@ -64,7 +64,8 @@ class TimeTest {
         assertNotNull(rec1.finish)
         var start1 = start
         var finish1 = start1.copy()
-        setToEndOfDay(finish1)
+        finish1.setToEndOfDay()
+        finish1.millis = 0
         assertEquals(start1, rec1.start)
         assertEquals(finish1, rec1.finish)
         var rec2 = splits[1]
@@ -73,7 +74,7 @@ class TimeTest {
         assertNotNull(rec2.finish)
         var start2 = start.copy()
         start2.add(Calendar.DAY_OF_MONTH, 1)
-        setToStartOfDay(start2)
+        start2.setToStartOfDay()
         var finish2 = finish
         assertEquals(start2, rec2.start)
         assertEquals(finish2, rec2.finish)
@@ -88,9 +89,10 @@ class TimeTest {
         assertNotNull(rec1)
         assertNotNull(rec1.start)
         assertNotNull(rec1.finish)
-        start1 = record.start
+        start1 = record.start!!
         finish1 = start.copy()
-        setToEndOfDay(finish1)
+        finish1.setToEndOfDay()
+        finish1.millis = 0
         assertEquals(start1, rec1.start)
         assertEquals(finish1, rec1.finish)
         rec2 = splits[1]
@@ -99,19 +101,20 @@ class TimeTest {
         assertNotNull(rec2.finish)
         start2 = finish1.copy()
         start2.add(Calendar.DAY_OF_MONTH, 1)
-        setToStartOfDay(start2)
+        start2.setToStartOfDay()
         finish2 = start2.copy()
-        setToEndOfDay(finish2)
+        finish2.setToEndOfDay()
+        finish2.millis = 0
         assertEquals(start2, rec2.start)
         assertEquals(finish2, rec2.finish)
-        var rec3 = splits[2]
+        val rec3 = splits[2]
         assertNotNull(rec3)
         assertNotNull(rec3.start)
         assertNotNull(rec3.finish)
-        var start3 = finish2.copy()
+        val start3 = finish2.copy()
         start3.add(Calendar.DAY_OF_MONTH, 1)
-        setToStartOfDay(start3)
-        var finish3 = record.finish
+        start3.setToStartOfDay()
+        val finish3 = record.finish
         assertEquals(start3, rec3.start)
         assertEquals(finish3, rec3.finish)
     }

@@ -49,6 +49,7 @@
 
     <!-- Favourite / Favorite -->
     <string name="action_favorite">Favourite</string>
+    <string name="favorite_marked">Project <xliff:g id="PROJECT">\"%1$s\"</xliff:g> and task <xliff:g id="TASK">\"%2$s\"</xliff:g> marked as favorite.</string>
 
     <!-- Time list -->
     <string name="timeList_title">Times</string>
