@@ -65,6 +65,7 @@ class TimeTest {
         var start1 = start
         var finish1 = start1.copy()
         setToEndOfDay(finish1)
+        finish1.millis = 0
         assertEquals(start1, rec1.start)
         assertEquals(finish1, rec1.finish)
         var rec2 = splits[1]
@@ -91,6 +92,7 @@ class TimeTest {
         start1 = record.start
         finish1 = start.copy()
         setToEndOfDay(finish1)
+        finish1.millis = 0
         assertEquals(start1, rec1.start)
         assertEquals(finish1, rec1.finish)
         rec2 = splits[1]
@@ -102,6 +104,7 @@ class TimeTest {
         setToStartOfDay(start2)
         finish2 = start2.copy()
         setToEndOfDay(finish2)
+        finish2.millis = 0
         assertEquals(start2, rec2.start)
         assertEquals(finish2, rec2.finish)
         var rec3 = splits[2]
