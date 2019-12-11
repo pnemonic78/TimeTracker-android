@@ -206,13 +206,16 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.v("bindForm record=$record")
         val context: Context = requireContext()
 
+        // Populate the tasks spinner before projects so that it can be filtered.
+        val taskItems = arrayOf(taskEmpty)
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
+
         val projectItems = projects.toTypedArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            projectItemSelected(record.project)
         }
-        val taskItems = arrayOf(taskEmpty)
-        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
         projectInput.requestFocus()
 
         val startTime = record.startTime
@@ -356,11 +359,13 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun projectItemSelected(project: Project) {
+        Timber.d("projectItemSelected $project")
         record.project = project
         filterTasks(project)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
+        Timber.d("taskItemSelected $task")
         record.task = task
     }
 
@@ -384,9 +389,7 @@ class TimeEditFragment : TimeFormFragment() {
             .subscribe({
                 populateForm(record)
                 bindForm(record)
-                if (projects.isEmpty() or tasks.isEmpty() or (record.id != recordId)) {
-                    fetchPage(date, recordId)
-                }
+                maybeFetchPage(date, recordId)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 showProgress(false)
@@ -401,7 +404,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         super.onLoginSuccess(fragment, login)
-        fetchPage(date, record.id)
+        maybeFetchPage(date, record.id)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
@@ -410,9 +413,8 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun fetchPage(date: Calendar, id: Long) {
-        val context: Context = requireContext()
         val dateFormatted = formatSystemDate(date)
-        Timber.d("fetchPage $dateFormatted")
+        Timber.d("fetchPage $dateFormatted $id")
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
@@ -440,6 +442,12 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgressMain(false)
             })
             .addTo(disposables)
+    }
+
+    private fun maybeFetchPage(date: Calendar, id: Long) {
+        if (projects.isEmpty() or tasks.isEmpty() or ((id != TikalEntity.ID_NONE) and (id != record.id))) {
+            fetchPage(date, id)
+        }
     }
 
     private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
@@ -675,7 +683,7 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == LoginFragment.REQUEST_LOGIN) {
             if (resultCode == Activity.RESULT_OK) {
-                fetchPage(date, record.id)
+                maybeFetchPage(date, record.id)
             } else {
                 activity?.finish()
             }

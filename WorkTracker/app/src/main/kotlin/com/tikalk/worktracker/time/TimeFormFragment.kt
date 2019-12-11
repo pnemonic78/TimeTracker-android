@@ -240,7 +240,8 @@ abstract class TimeFormFragment : InternetFragment(),
         val projectsDb = projectsDao.queryAll()
         val projectsDbById: MutableMap<Long, Project> = HashMap()
         for (project in projectsDb) {
-            projectsDbById[project.id] = project
+            val projectId = project.id
+            projectsDbById[projectId] = project
         }
 
         val projectsToInsert = ArrayList<Project>()
