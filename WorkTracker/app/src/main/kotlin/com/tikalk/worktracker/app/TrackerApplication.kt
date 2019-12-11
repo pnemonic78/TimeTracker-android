@@ -63,12 +63,14 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
     override fun onCreate() {
         super.onCreate()
 
-        Timber.plant(LogTree(BuildConfig.DEBUG))
+        // Logging
+        val enableDebugLogging = BuildConfig.DEBUG
+        Timber.plant(LogTree(enableDebugLogging))
 
         registerActivityLifecycleCallbacks(this)
 
         startKoin {
-            androidLogger(if (BuildConfig.DEBUG) Level.DEBUG else Level.INFO)
+            androidLogger(if (enableDebugLogging) Level.DEBUG else Level.INFO)
             androidContext(this@TrackerApplication)
             modules(listOf(preferencesModule, databaseModule, retrofitModule, apiModule))
         }
