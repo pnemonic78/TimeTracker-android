@@ -206,7 +206,7 @@ fun TimeRecord.split(): List<TimeRecord> {
         // The first day.
         val startFirst = start
         val finishFirst = startFirst.copy()
-        setToEndOfDay(finishFirst)
+        finishFirst.setToEndOfDay()
         results.add(this.copy(start = startFirst, finish = finishFirst))
         diffMillis -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
 
@@ -216,9 +216,9 @@ fun TimeRecord.split(): List<TimeRecord> {
         while (diffMillis >= DateUtils.DAY_IN_MILLIS) {
             startDay = startDay.copy()
             startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
-            setToStartOfDay(startDay)
+            startDay.setToStartOfDay()
             finishDay = startDay.copy()
-            setToEndOfDay(finishDay)
+            finishDay.setToEndOfDay()
             results.add(this.copy(start = startDay, finish = finishDay))
             diffMillis -= DateUtils.DAY_IN_MILLIS
         }
@@ -226,7 +226,7 @@ fun TimeRecord.split(): List<TimeRecord> {
         // The last day.
         val startLast = finish.copy()
         val finishLast = finish
-        setToStartOfDay(startLast)
+        startLast.setToStartOfDay()
         results.add(this.copy(start = startLast, finish = finishLast))
     }
 

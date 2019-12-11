@@ -232,16 +232,16 @@ fun formatCurrency(context: Context, formatter: Formatter, amount: Double): Any 
     return formatter.format("%.2f", amount)
 }
 
-fun setToStartOfDay(cal: Calendar) {
-    cal.hourOfDay = 0
-    cal.minute = 0
-    cal.second = 0
-    cal.millis = 0
+fun Calendar.setToStartOfDay() {
+    this.hourOfDay = 0
+    this.minute = 0
+    this.second = 0
+    this.millis = 0
 }
 
-fun setToEndOfDay(cal: Calendar) {
-    cal.hourOfDay = cal.getActualMaximum(Calendar.HOUR_OF_DAY)
-    cal.minute = cal.getActualMaximum(Calendar.MINUTE)
-    cal.second = cal.getActualMaximum(Calendar.SECOND)
-    cal.millis = cal.getActualMaximum(Calendar.MILLISECOND)
+fun Calendar.setToEndOfDay() {
+    this.hourOfDay = getActualMaximum(Calendar.HOUR_OF_DAY)
+    this.minute = getActualMaximum(Calendar.MINUTE)
+    this.second = getActualMaximum(Calendar.SECOND)
+    this.millis = getActualMaximum(Calendar.MILLISECOND)
 }

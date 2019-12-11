@@ -630,9 +630,9 @@ class TimeListFragment : TimeFormFragment(),
             recordsDao.queryAll()
         } else {
             val cal = day.copy()
-            setToStartOfDay(cal)
+            cal.setToStartOfDay()
             val start = cal.timeInMillis
-            setToEndOfDay(cal)
+            cal.setToEndOfDay()
             val finish = cal.timeInMillis
             recordsDao.queryByDate(start, finish)
         }
