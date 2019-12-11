@@ -233,7 +233,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         noteInput.setText(record.note)
 
-        errorLabel.text = errorMessage
+        setErrorLabel(errorMessage)
     }
 
     private fun bindRecord(record: TimeRecord) {
@@ -296,39 +296,39 @@ class TimeEditFragment : TimeFormFragment() {
         startInput.isFocusableInTouchMode = false
         finishInput.error = null
         finishInput.isFocusableInTouchMode = false
-        errorLabel.text = null
+        setErrorLabel("")
 
         if (record.project.id == TikalEntity.ID_NONE) {
             projectInputView.error = getText(R.string.error_project_field_required)
-            errorLabel.text = getText(R.string.error_project_field_required)
+            setErrorLabel(getText(R.string.error_project_field_required))
             projectInputView.isFocusableInTouchMode = true
             projectInputView.post { projectInputView.requestFocus() }
             return false
         }
         if (record.task.id == TikalEntity.ID_NONE) {
             taskInputView.error = getText(R.string.error_task_field_required)
-            errorLabel.text = getText(R.string.error_task_field_required)
+            setErrorLabel(getText(R.string.error_task_field_required))
             taskInputView.isFocusableInTouchMode = true
             taskInputView.post { taskInputView.requestFocus() }
             return false
         }
         if (record.start == null) {
             startInput.error = getText(R.string.error_start_field_required)
-            errorLabel.text = getText(R.string.error_start_field_required)
+            setErrorLabel(getText(R.string.error_start_field_required))
             startInput.isFocusableInTouchMode = true
             startInput.requestFocus()
             return false
         }
         if (record.finish == null) {
             finishInput.error = getText(R.string.error_finish_field_required)
-            errorLabel.text = getText(R.string.error_finish_field_required)
+            setErrorLabel(getText(R.string.error_finish_field_required))
             finishInput.isFocusableInTouchMode = true
             finishInput.requestFocus()
             return false
         }
         if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
             finishInput.error = getText(R.string.error_finish_time_before_start_time)
-            errorLabel.text = getText(R.string.error_finish_time_before_start_time)
+            setErrorLabel(getText(R.string.error_finish_time_before_start_time))
             finishInput.isFocusableInTouchMode = true
             finishInput.requestFocus()
             return false
@@ -503,7 +503,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Show a progress spinner, and kick off a background task to submit the form.
         if (first) {
             showProgress(true)
-            errorLabel.text = ""
+            setErrorLabel("")
         }
 
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
@@ -539,7 +539,7 @@ class TimeEditFragment : TimeFormFragment() {
                     if (errorMessage.isNullOrEmpty()) {
                         listener?.onRecordEditSubmitted(this, record, last)
                     } else {
-                        errorLabel.text = errorMessage
+                        setErrorLabel(errorMessage)
                         listener?.onRecordEditFailure(this, record, errorMessage)
                     }
                 } else {
@@ -709,6 +709,11 @@ class TimeEditFragment : TimeFormFragment() {
          * @param reason the failure reason.
          */
         fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String)
+    }
+
+    private fun setErrorLabel(text: CharSequence) {
+        errorLabel.text = text
+        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
     }
 
     companion object {

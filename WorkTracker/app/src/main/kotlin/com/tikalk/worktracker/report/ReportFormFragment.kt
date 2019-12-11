@@ -36,9 +36,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.navigation.NavController
@@ -89,6 +87,11 @@ class ReportFormFragment : TimeFormFragment() {
     init {
         date.timeZone = TimeZone.getTimeZone("UTC")
         date.hourOfDay = 12
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -378,7 +381,7 @@ class ReportFormFragment : TimeFormFragment() {
         showDurationField.isChecked = filter.showDurationField
         showNotesField.isChecked = filter.showNotesField
 
-        errorLabel.text = errorMessage
+        setErrorLabel(errorMessage)
     }
 
     private fun pickStartDate() {
@@ -488,6 +491,26 @@ class ReportFormFragment : TimeFormFragment() {
             this.firstRun = false
             bindFilter(filter)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.report_form, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_generate -> {
+                generateReport()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun setErrorLabel(text: CharSequence) {
+        errorLabel.text = text
+        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
     }
 
     companion object {
