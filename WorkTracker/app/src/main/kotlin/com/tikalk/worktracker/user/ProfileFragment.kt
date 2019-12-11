@@ -68,9 +68,9 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     var listener: OnProfileListener? = null
     private var userCredentials = UserCredentials.EMPTY
-    private var nameInputEditable = true
-    private var emailInputEditable = true
-    private var loginInputEditable = true
+    private var nameInputEditable = false
+    private var emailInputEditable = false
+    private var loginInputEditable = false
     @Transient
     private var password2 = ""
     private var errorMessage: String = ""
