@@ -241,38 +241,46 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun pickStartTime() {
-        if (startPickerDialog == null) {
+        val cal = getCalendar(record.start)
+        val hour = cal.hourOfDay
+        val minute = cal.minute
+        var picker = startPickerDialog
+        if (picker == null) {
             val context = requireContext()
-            val cal = getCalendar(record.start)
-            val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                cal.hourOfDay = hour
-                cal.minute = minute
+            val listener = TimePickerDialog.OnTimeSetListener { _, pickedHour, pickedMinute ->
+                cal.hourOfDay = pickedHour
+                cal.minute = pickedMinute
                 record.start = cal
                 startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
                 startInput.error = null
             }
-            val hour = cal.hourOfDay
-            val minute = cal.minute
-            startPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
+            picker = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
+            startPickerDialog = picker
+        } else {
+            picker.updateTime(hour, minute)
         }
-        startPickerDialog!!.show()
+        picker.show()
     }
 
     private fun pickFinishTime() {
-        if (finishPickerDialog == null) {
-            val cal = getCalendar(record.finish)
-            val listener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                cal.hourOfDay = hour
-                cal.minute = minute
+        val cal = getCalendar(record.finish)
+        val hour = cal.hourOfDay
+        val minute = cal.minute
+        var picker = finishPickerDialog
+        if (picker == null) {
+            val listener = TimePickerDialog.OnTimeSetListener { _, pickedHour, pickedMinute ->
+                cal.hourOfDay = pickedHour
+                cal.minute = pickedMinute
                 record.finish = cal
                 finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
                 finishInput.error = null
             }
-            val hour = cal.hourOfDay
-            val minute = cal.minute
-            finishPickerDialog = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
+            picker = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
+            finishPickerDialog = picker
+        } else {
+            picker.updateTime(hour, minute)
         }
-        finishPickerDialog!!.show()
+        picker.show()
     }
 
     private fun getCalendar(cal: Calendar?): Calendar {

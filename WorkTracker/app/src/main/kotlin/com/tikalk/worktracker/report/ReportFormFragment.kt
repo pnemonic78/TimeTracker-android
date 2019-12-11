@@ -389,7 +389,8 @@ class ReportFormFragment : TimeFormFragment() {
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
-        if (startPickerDialog == null) {
+        var picker = startPickerDialog
+        if (picker == null) {
             val context = requireContext()
             val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
                 cal.year = pickedYear
@@ -399,11 +400,12 @@ class ReportFormFragment : TimeFormFragment() {
                 startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 startInput.error = null
             }
-            startPickerDialog = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            startPickerDialog = picker
         } else {
-            startPickerDialog!!.updateDate(year, month, dayOfMonth)
+            picker.updateDate(year, month, dayOfMonth)
         }
-        startPickerDialog!!.show()
+        picker.show()
     }
 
     private fun pickFinishDate() {
@@ -411,7 +413,8 @@ class ReportFormFragment : TimeFormFragment() {
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
-        if (finishPickerDialog == null) {
+        var picker = finishPickerDialog
+        if (picker == null) {
             val context = requireContext()
             val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
                 cal.year = pickedYear
@@ -421,11 +424,12 @@ class ReportFormFragment : TimeFormFragment() {
                 finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_DATE_BUTTON)
                 finishInput.error = null
             }
-            finishPickerDialog = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            finishPickerDialog = picker
         } else {
-            finishPickerDialog!!.updateDate(year, month, dayOfMonth)
+            picker.updateDate(year, month, dayOfMonth)
         }
-        finishPickerDialog!!.show()
+        picker.show()
     }
 
     private fun getCalendar(cal: Calendar?): Calendar {

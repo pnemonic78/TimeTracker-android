@@ -305,21 +305,25 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun pickDate() {
-        if (datePickerDialog == null) {
-            val cal = date
-            val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                cal.year = year
-                cal.month = month
-                cal.dayOfMonth = dayOfMonth
+        val cal = date
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
+        var picker = datePickerDialog
+        if (picker == null) {
+            val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
+                cal.year = pickedYear
+                cal.month = pickedMonth
+                cal.dayOfMonth = pickedDayOfMonth
                 fetchPage(cal)
                 hideEditor()
             }
-            val year = cal.year
-            val month = cal.month
-            val day = cal.dayOfMonth
-            datePickerDialog = DatePickerDialog(requireContext(), listener, year, month, day)
+            picker = DatePickerDialog(requireContext(), listener, year, month, dayOfMonth)
+            datePickerDialog = picker
+        } else {
+            picker.updateDate(year, month, dayOfMonth)
         }
-        datePickerDialog!!.show()
+        picker.show()
     }
 
     private fun addTime() {
