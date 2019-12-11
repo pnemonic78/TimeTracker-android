@@ -137,7 +137,7 @@ abstract class TimeFormFragment : InternetFragment(),
         }
 
         target.clear()
-        target.addAll(projects)
+        target.addAll(projects.sortedBy { it.name })
     }
 
     fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
@@ -160,7 +160,7 @@ abstract class TimeFormFragment : InternetFragment(),
         }
 
         target.clear()
-        target.addAll(tasks)
+        target.addAll(tasks.sortedBy { it.name })
     }
 
     protected open fun findTaskIds(doc: Document): String? {
@@ -240,7 +240,8 @@ abstract class TimeFormFragment : InternetFragment(),
         val projectsDb = projectsDao.queryAll()
         val projectsDbById: MutableMap<Long, Project> = HashMap()
         for (project in projectsDb) {
-            projectsDbById[project.id] = project
+            val projectId = project.id
+            projectsDbById[projectId] = project
         }
 
         val projectsToInsert = ArrayList<Project>()
@@ -375,11 +376,11 @@ abstract class TimeFormFragment : InternetFragment(),
             tasksDb.addAll(projectWithTasks.tasks)
         }
         projects.clear()
-        projects.addAll(projectsDb)
+        projects.addAll(projectsDb.sortedBy { it.name })
         this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
 
         tasks.clear()
-        tasks.addAll(tasksDb)
+        tasks.addAll(tasksDb.sortedBy { it.name })
         this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
     }
 

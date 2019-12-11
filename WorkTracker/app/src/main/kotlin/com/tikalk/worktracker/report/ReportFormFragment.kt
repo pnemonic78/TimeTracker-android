@@ -341,13 +341,16 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.v("bindFilter filter=$filter")
         val context: Context = requireContext()
 
+        // Populate the tasks spinner before projects so that it can be filtered.
+        val taskItems = arrayOf(taskEmpty)
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
+
         val projectItems = projects.toTypedArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
+            projectItemSelected(filter.project)
         }
-        val taskItems = arrayOf(taskEmpty)
-        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
         projectInput.requestFocus()
 
         val periodList = ArrayList<String>(periods.size)
