@@ -41,6 +41,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
@@ -64,10 +66,12 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
+class ProfileFragment : InternetFragment(),
+    LoginFragment.OnLoginListener,
+    Observer<UserCredentials> {
 
     var listener: OnProfileListener? = null
-    private var userCredentials = UserCredentials.EMPTY
+    private var userCredentialsData = MutableLiveData<UserCredentials>()
     private var nameInputEditable = false
     private var emailInputEditable = false
     private var loginInputEditable = false
@@ -77,11 +81,12 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        userCredentials = preferences.userCredentials
+        userCredentialsData.value = preferences.userCredentials
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        userCredentialsData.observe(this, this)
 
         val caller = this.caller
         if (caller != null) {
@@ -111,7 +116,6 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        bindForm()
         actionSave.setOnClickListener { attemptSave() }
     }
 
@@ -127,10 +131,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
     }
 
     @MainThread
-    private fun bindForm() {
-        val user = this.user
-        val credentials = this.userCredentials
-
+    private fun bindForm(user: User, credentials: UserCredentials) {
         var emailValue = user.email
         if (emailValue.isNullOrBlank()) {
             emailValue = credentials.login
@@ -155,8 +156,6 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
         if (!actionSave.isEnabled) {
             return
         }
-
-        val context: Context = requireContext()
 
         // Reset errors.
         nameInput.error = null
@@ -251,6 +250,7 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
                         processPage(html, true)
 
                         if (errorMessage.isEmpty()) {
+                            val userCredentials = userCredentialsData.value ?: return@subscribe
                             userCredentials.password = passwordValue
                             password2 = confirmPasswordValue
                             preferences.user = user
@@ -321,7 +321,6 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun processPage(html: String, progress: Boolean = true) {
         populateForm(html)
-        bindForm()
         if (progress) showProgress(false)
     }
 
@@ -334,10 +333,10 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
         errorMessage = findError(doc)?.trim() ?: ""
 
         val form = doc.selectFirst("form[name='profileForm']") as FormElement? ?: return
-        populateForm(doc, form)
+        populateForm(form)
     }
 
-    private fun populateForm(doc: Document, form: FormElement) {
+    private fun populateForm(form: FormElement) {
         val nameInputElement = form.selectByName("name") ?: return
         val emailInputElement = form.selectByName("email") ?: return
         val loginInputElement = form.selectByName("login") ?: return
@@ -348,17 +347,21 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
         emailInputEditable = !emailInputElement.hasAttr("readonly")
         loginInputEditable = !loginInputElement.hasAttr("readonly")
 
+        val password1 = passwordInputElement.value()
+        password2 = confirmPasswordInputElement.text()
+
         user.displayName = nameInputElement.value()
         user.email = emailInputElement.value()
         user.username = loginInputElement.value()
 
+        val userCredentials = userCredentialsData.value ?: UserCredentials.EMPTY.copy()
         userCredentials.login = user.username
-        val password1 = passwordInputElement.value()
         if (password1.isNotBlank()) {
             userCredentials.password = password1
         }
 
-        password2 = confirmPasswordInputElement.text()
+        preferences.user = user
+        userCredentialsData.value = userCredentials
     }
 
     private fun notifyProfileSuccess(user: User) {
@@ -374,6 +377,22 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         notifyProfileFailure(user, "onCancel")
+    }
+
+    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+        Timber.i("login success")
+        if (fragment.isShowing()) {
+            findNavController().popBackStack()
+        }
+        run()
+    }
+
+    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+        Timber.e("login failure: $reason")
+    }
+
+    override fun onChanged(userCredentials: UserCredentials) {
+        bindForm(user, userCredentials)
     }
 
     /**
@@ -394,18 +413,6 @@ class ProfileFragment : InternetFragment(), LoginFragment.OnLoginListener {
          * @param reason the failure reason.
          */
         fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String)
-    }
-
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
-        run()
-    }
-
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 
     companion object {

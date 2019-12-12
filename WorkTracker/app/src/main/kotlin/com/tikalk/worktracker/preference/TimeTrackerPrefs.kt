@@ -178,7 +178,7 @@ class TimeTrackerPrefs(context: Context) {
 
     private var _user: User? = null
 
-    var user: User = User.EMPTY.copy()
+    var user: User = User.EMPTY
         get() {
             if (_user == null) {
                 val username = prefs.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
