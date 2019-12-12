@@ -66,11 +66,10 @@ import timber.log.Timber
  * User's profile screen.
  */
 class ProfileFragment : InternetFragment(),
-    LoginFragment.OnLoginListener,
-    Observer<UserCredentials> {
+    LoginFragment.OnLoginListener {
 
     var listener: OnProfileListener? = null
-    private var user: User = User.EMPTY
+    private var userData = MutableLiveData<User>()
     private var userCredentialsData = MutableLiveData<UserCredentials>()
     private var nameInputEditable = false
     private var emailInputEditable = false
@@ -81,9 +80,15 @@ class ProfileFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        user = preferences.user
+        userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
-        userCredentialsData.observe(this, this)
+
+        userData.observe(this, Observer<User> { user ->
+            bindForm(user, userCredentialsData.value)
+        })
+        userCredentialsData.observe(this, Observer<UserCredentials> { userCredentials ->
+            bindForm(userData.value, userCredentials)
+        })
 
         val caller = this.caller
         if (caller != null) {
@@ -128,18 +133,18 @@ class ProfileFragment : InternetFragment(),
     }
 
     @MainThread
-    private fun bindForm(user: User, credentials: UserCredentials) {
-        var emailValue = user.email
+    private fun bindForm(user: User? = User.EMPTY, credentials: UserCredentials? = UserCredentials.EMPTY) {
+        var emailValue = user?.email
         if (emailValue.isNullOrBlank()) {
-            emailValue = credentials.login
+            emailValue = credentials?.login
         }
 
-        nameInput.setText(user.displayName)
+        nameInput.setText(user?.displayName)
         emailInput.setText(emailValue)
-        loginInput.setText(credentials.login)
-        passwordInput.setText(credentials.password)
+        loginInput.setText(credentials?.login)
+        passwordInput.setText(credentials?.password)
         confirmPasswordInput.setText(password2)
-        errorLabel.text = errorMessage
+        setErrorLabel(errorMessage)
 
         nameInput.isEnabled = nameInputEditable
         emailInput.isEnabled = emailInputEditable
@@ -245,9 +250,10 @@ class ProfileFragment : InternetFragment(),
                     if (isValidResponse(response)) {
                         val html = response.body()!!
                         processPage(html, true)
+                        val user = userData.value ?: return@subscribe
+                        val userCredentials = userCredentialsData.value ?: return@subscribe
 
                         if (errorMessage.isEmpty()) {
-                            val userCredentials = userCredentialsData.value ?: return@subscribe
                             userCredentials.password = passwordValue
                             password2 = confirmPasswordValue
                             preferences.user = user
@@ -347,6 +353,7 @@ class ProfileFragment : InternetFragment(),
         val password1 = passwordInputElement.value()
         password2 = confirmPasswordInputElement.text()
 
+        val user = userData.value ?: User.EMPTY.copy()
         user.displayName = nameInputElement.value()
         user.email = emailInputElement.value()
         user.username = loginInputElement.value()
@@ -358,6 +365,7 @@ class ProfileFragment : InternetFragment(),
         }
 
         preferences.user = user
+        userData.value = user
         userCredentialsData.value = userCredentials
     }
 
@@ -373,7 +381,7 @@ class ProfileFragment : InternetFragment(),
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyProfileFailure(user, "onCancel")
+        notifyProfileFailure(userData.value!!, "onCancel")
     }
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
@@ -388,8 +396,9 @@ class ProfileFragment : InternetFragment(),
         Timber.e("login failure: $reason")
     }
 
-    override fun onChanged(userCredentials: UserCredentials) {
-        bindForm(user, userCredentials)
+    private fun setErrorLabel(text: CharSequence) {
+        errorLabel.text = text
+        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
     }
 
     /**
