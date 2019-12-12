@@ -167,7 +167,6 @@ class TimeListActivity : InternetActivity(),
         if (fragment.isShowing()) {
             findNavController().popBackStack()
         }
-        findMainFragment()?.user = user
     }
 
     override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {

@@ -685,7 +685,6 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         super.onLoginSuccess(fragment, login)
-        this.user = preferences.user
         fetchPage(date)
     }
 
@@ -752,10 +751,6 @@ class TimeListFragment : TimeFormFragment(),
         return super.onBackPressed()
     }
 
-    private fun cancelEditRecord() {
-        showTimer()
-    }
-
     private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
         formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
         if (popInclusive) {
@@ -790,7 +785,6 @@ class TimeListFragment : TimeFormFragment(),
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == LoginFragment.REQUEST_LOGIN) {
             if (resultCode == Activity.RESULT_OK) {
-                user = preferences.user
                 // Fetch the list for the user.
                 fetchPage(date)
             } else {

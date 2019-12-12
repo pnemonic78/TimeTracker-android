@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.user
 
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Patterns
@@ -71,6 +70,7 @@ class ProfileFragment : InternetFragment(),
     Observer<UserCredentials> {
 
     var listener: OnProfileListener? = null
+    private var user: User = User.EMPTY
     private var userCredentialsData = MutableLiveData<UserCredentials>()
     private var nameInputEditable = false
     private var emailInputEditable = false
@@ -79,13 +79,10 @@ class ProfileFragment : InternetFragment(),
     private var password2 = ""
     private var errorMessage: String = ""
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        userCredentialsData.value = preferences.userCredentials
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        user = preferences.user
+        userCredentialsData.value = preferences.userCredentials
         userCredentialsData.observe(this, this)
 
         val caller = this.caller

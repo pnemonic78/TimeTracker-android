@@ -32,14 +32,12 @@
 
 package com.tikalk.worktracker.app
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
 
@@ -50,16 +48,10 @@ abstract class TrackerFragment : TikalFragment {
     constructor(args: Bundle) : super(args)
 
     protected val preferences by inject<TimeTrackerPrefs>()
-    var user: User = User.EMPTY
     protected val db by inject<TrackerDatabase>()
 
     protected var caller: Fragment? = null
         private set
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        user = preferences.user
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
