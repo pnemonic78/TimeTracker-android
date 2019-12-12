@@ -32,12 +32,13 @@
 
 package com.tikalk.worktracker.project
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
@@ -57,12 +58,18 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
-import java.util.concurrent.CopyOnWriteArrayList
 
-class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
+class ProjectsFragment : InternetFragment(),
+    LoginFragment.OnLoginListener,
+    Observer<List<Project>> {
 
-    private val projects: MutableList<Project> = CopyOnWriteArrayList()
+    private val projectsData = MutableLiveData<List<Project>>()
     private val listAdapter = ProjectsAdapter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        projectsData.observe(this, this)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_projects, container, false)
@@ -84,7 +91,6 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
         showProgress(true)
         loadPage()
             .subscribe({
-                bindList(projects)
                 fetchPage()
                 showProgress(false)
             }, { err ->
@@ -95,11 +101,7 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
     }
 
     private fun loadPage(): Single<Unit> {
-        return Single.fromCallable {
-            val context: Context = this.context ?: return@fromCallable
-
-            loadProjects(db)
-        }
+        return Single.fromCallable { loadProjects(db) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
@@ -107,12 +109,10 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
     private fun loadProjects(db: TrackerDatabase) {
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
-        setProjects(projectsDb.filter { it.id != TikalEntity.ID_NONE })
-    }
-
-    private fun setProjects(projects: Collection<Project>) {
-        this.projects.clear()
-        this.projects.addAll(projects.sortedBy { it.name })
+        val projects = projectsDb
+            .filter { it.id != TikalEntity.ID_NONE }
+            .sortedBy { it.name }
+        projectsData.postValue(projects)
     }
 
     private fun fetchPage() {
@@ -152,7 +152,6 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun processPage(html: String) {
         populateList(html)
-        bindList(projects)
     }
 
     private fun populateList(html: String) {
@@ -173,7 +172,7 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
             }
         }
 
-        setProjects(projects)
+        projectsData.postValue(projects)
     }
 
     /**
@@ -216,7 +215,7 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun bindList(projects: List<Project>) {
         listAdapter.submitList(projects)
-        if (projects === this.projects) {
+        if (projects === this.projectsData.value) {
             listAdapter.notifyDataSetChanged()
         }
     }
@@ -231,5 +230,9 @@ class ProjectsFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
+    }
+
+    override fun onChanged(projects: List<Project>) {
+        bindList(projects)
     }
 }
