@@ -173,7 +173,7 @@ class ProjectTasksFragment : InternetFragment(),
             }
         }
 
-        tasksData.postValue(tasks)
+        tasksData.value = tasks
     }
 
     /**

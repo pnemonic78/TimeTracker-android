@@ -173,7 +173,7 @@ class UsersFragment : InternetFragment(),
             }
         }
 
-        usersData.postValue(users)
+        usersData.value = users
     }
 
     /**

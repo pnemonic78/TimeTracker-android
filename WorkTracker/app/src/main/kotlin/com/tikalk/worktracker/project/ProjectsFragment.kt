@@ -172,7 +172,7 @@ class ProjectsFragment : InternetFragment(),
             }
         }
 
-        projectsData.postValue(projects)
+        projectsData.value = projects
     }
 
     /**
