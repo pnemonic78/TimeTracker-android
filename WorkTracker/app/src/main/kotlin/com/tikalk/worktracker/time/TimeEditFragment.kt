@@ -89,6 +89,13 @@ class TimeEditFragment : TimeFormFragment() {
             if (caller is OnEditRecordListener) {
                 this.listener = caller
             }
+        } else {
+            val activity = this.activity
+            if (activity != null) {
+                if (activity is OnEditRecordListener) {
+                    this.listener = activity
+                }
+            }
         }
     }
 

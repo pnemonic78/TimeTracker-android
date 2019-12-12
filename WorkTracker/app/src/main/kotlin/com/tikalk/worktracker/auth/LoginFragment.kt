@@ -93,6 +93,13 @@ class LoginFragment : InternetFragment,
             if (caller is OnLoginListener) {
                 addListener(caller)
             }
+        } else {
+            val activity = this.activity
+            if (activity != null) {
+                if (activity is OnLoginListener) {
+                    addListener(activity)
+                }
+            }
         }
     }
 
