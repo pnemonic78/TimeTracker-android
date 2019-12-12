@@ -421,7 +421,7 @@ abstract class TimeFormFragment : InternetFragment(),
         const val STATE_RECORD = "record"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".form.DATE"
-        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".form.RECORD_ID"
+        const val EXTRA_RECORD_ID = BuildConfig.APPLICATION_ID + ".form.RECORD_ID"
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".form.PROJECT_ID"
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"

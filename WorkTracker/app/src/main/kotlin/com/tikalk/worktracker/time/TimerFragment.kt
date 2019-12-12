@@ -309,7 +309,7 @@ class TimerFragment : TimeFormFragment() {
                 intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
                 intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             } else {
-                intent.putExtra(TimeEditFragment.EXTRA_RECORD, record.id)
+                intent.putExtra(TimeEditFragment.EXTRA_RECORD_ID, record.id)
             }
             startActivityForResult(intent, REQUEST_EDIT)
         }
