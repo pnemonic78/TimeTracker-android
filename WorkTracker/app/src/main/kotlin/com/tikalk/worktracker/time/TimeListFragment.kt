@@ -80,8 +80,7 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    TimeEditFragment.OnEditRecordListener,
-    Observer<List<TimeRecord>> {
+    TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -98,7 +97,9 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, this)
+        recordsData.observe(this, Observer<List<TimeRecord>> { records ->
+            bindList(date, records)
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -796,10 +797,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun findTopFormFragment(): TimeFormFragment {
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
-    }
-
-    override fun onChanged(records: List<TimeRecord>) {
-        bindList(date, records)
     }
 
     companion object {
