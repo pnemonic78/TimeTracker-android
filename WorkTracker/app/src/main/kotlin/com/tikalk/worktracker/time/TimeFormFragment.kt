@@ -215,8 +215,8 @@ abstract class TimeFormFragment : InternetFragment(),
         populateTasks(inputTasks, tasks)
         populateTaskIds(doc, projects)
 
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
+        setRecordProject(findSelectedProject(inputProjects, projects))
+        setRecordTask(findSelectedTask(inputTasks, tasks))
     }
 
     protected open fun findForm(doc: Document): FormElement? {
@@ -349,7 +349,7 @@ abstract class TimeFormFragment : InternetFragment(),
 
         val recordStarted = preferences.getStartedRecord()
         if (recordStarted != null) {
-            record = recordStarted
+            setRecordValue(recordStarted)
         }
     }
 
@@ -414,6 +414,18 @@ abstract class TimeFormFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
+    }
+
+    protected open fun setRecordValue(record: TimeRecord) {
+        this.record = record
+    }
+
+    protected open fun setRecordProject(project: Project) {
+        record.project = project
+    }
+
+    protected open fun setRecordTask(task: ProjectTask) {
+        record.task = task
     }
 
     companion object {

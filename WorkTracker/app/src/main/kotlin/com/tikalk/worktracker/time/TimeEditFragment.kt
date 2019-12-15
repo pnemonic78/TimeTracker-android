@@ -469,7 +469,7 @@ class TimeEditFragment : TimeFormFragment() {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
-                record = recordEntity.toTimeRecord(projects, tasks)
+                setRecordValue(recordEntity.toTimeRecord(projects, tasks))
             }
         }
     }
@@ -622,7 +622,7 @@ class TimeEditFragment : TimeFormFragment() {
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
 
         if (recordParcel != null) {
-            record = recordParcel
+            setRecordValue(recordParcel)
             // Is there a view?
             if (isVisible) {
                 bindForm(record)
@@ -638,7 +638,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
-        this.record = record.copy()
+        setRecordValue(record.copy())
         this.date = date
         var args = arguments
         if (args == null) {

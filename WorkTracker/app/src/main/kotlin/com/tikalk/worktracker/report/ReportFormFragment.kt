@@ -487,7 +487,7 @@ class ReportFormFragment : TimeFormFragment() {
 
         if (filter != null) {
             this.filter = filter
-            this.record = filter
+            setRecordValue(filter)
             this.firstRun = false
             bindFilter(filter)
         }
@@ -511,6 +511,9 @@ class ReportFormFragment : TimeFormFragment() {
     private fun setErrorLabel(text: CharSequence) {
         errorLabel.text = text
         errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+    }
+
+    override fun setRecordValue(record: TimeRecord) {
     }
 
     companion object {

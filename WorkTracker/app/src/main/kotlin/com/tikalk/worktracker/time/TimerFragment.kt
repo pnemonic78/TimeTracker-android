@@ -166,7 +166,7 @@ class TimerFragment : TimeFormFragment() {
         val recordStarted = getStartedRecord()
         Timber.v("stopTimer recordStarted=$recordStarted")
         if (recordStarted != null) {
-            record = recordStarted
+            setRecordValue(recordStarted)
         }
         if (record.finishTime <= 0L) {
             record.finishTime = System.currentTimeMillis()
@@ -223,7 +223,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun projectItemSelected(project: Project) {
         Timber.d("projectItemSelected project=$project")
-        record.project = project
+        setRecordProject(project)
         if (!isVisible) return
         filterTasks(project)
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
@@ -231,7 +231,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.d("taskItemSelected task=$task")
-        record.task = task
+        setRecordTask(task)
         if (!isVisible) return
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
@@ -281,18 +281,19 @@ class TimerFragment : TimeFormFragment() {
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+                setRecordProject(projects.firstOrNull { it.id == projectFavorite }
+                    ?: record.project)
             }
             val taskFavorite = preferences.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
+                setRecordTask(tasks.firstOrNull { it.id == taskFavorite } ?: record.task)
             }
         } else if (!recordStarted.isEmpty()) {
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            record.project = projects.firstOrNull { it.id == recordStartedProjectId }
-                ?: record.project
-            record.task = tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task
+            setRecordProject(projects.firstOrNull { it.id == recordStartedProjectId }
+                ?: record.project)
+            setRecordTask(tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task)
             record.start = recordStarted.start
         }
     }
@@ -368,9 +369,7 @@ class TimerFragment : TimeFormFragment() {
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
 
         if (recordParcel != null) {
-            record.project = recordParcel.project
-            record.task = recordParcel.task
-            record.start = recordParcel.start
+            setRecordValue(recordParcel)
             populateForm(record)
             bindForm(record)
         }
