@@ -295,7 +295,7 @@ class TimeListFragment : TimeFormFragment(),
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        totalsData.value = savedInstanceState.getParcelable(STATE_TOTALS)
+        totalsData.value = savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
     }
 
     private fun pickDate() {

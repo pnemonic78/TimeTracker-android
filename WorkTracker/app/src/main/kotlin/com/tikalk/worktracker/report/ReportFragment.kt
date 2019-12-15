@@ -83,8 +83,8 @@ class ReportFragment : InternetFragment(),
 
     private val recordsData = MutableLiveData<List<TimeRecord>>()
     private val totalsData = MutableLiveData<ReportTotals>()
-    private var filter = ReportFilter()
-    private var listAdapter = ReportAdapter(filter)
+    private val filterData = MutableLiveData<ReportFilter>()
+    private var listAdapter = ReportAdapter(ReportFilter())
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     private var firstRun = true
@@ -98,6 +98,23 @@ class ReportFragment : InternetFragment(),
         })
         totalsData.observe(this, Observer<ReportTotals> { totals ->
             bindTotals(totals)
+        })
+        filterData.observe(this, Observer<ReportFilter> { filter ->
+            this.listAdapter = ReportAdapter(filter)
+            list.adapter = listAdapter
+            if (firstRun) {
+                fetchPage(filter)
+            } else {
+                showProgress(true)
+                loadPage()
+                    .subscribe({
+                        populateTotals(recordsData.value)
+                    }, { err ->
+                        Timber.e(err, "Error loading page: ${err.message}")
+                        showProgressMain(false)
+                    })
+                    .addTo(disposables)
+            }
         })
     }
 
@@ -214,8 +231,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun populateTotals(records: List<TimeRecord>?) {
-        val totals = totalsData.value ?: ReportTotals()
-        totals.clear()
+        val totals = ReportTotals()
 
         var duration: Long
         if (records != null) {
@@ -250,8 +266,9 @@ class ReportFragment : InternetFragment(),
         val context: Context = requireContext()
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
+        val filter = filterData.value
 
-        if (filter.showDurationField) {
+        if (filter?.showDurationField == true) {
             timeBuffer.setLength(0)
             durationTotalLabel.visibility = View.VISIBLE
             durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
@@ -259,7 +276,7 @@ class ReportFragment : InternetFragment(),
             durationTotalLabel.visibility = View.INVISIBLE
             durationTotal.text = null
         }
-        if (filter.showCostField) {
+        if (filter?.showCostField == true) {
             timeBuffer.setLength(0)
             costTotalLabel.visibility = View.VISIBLE
             costTotal.text = formatCurrency(context, timeFormatter, totals.cost).toString()
@@ -382,12 +399,17 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun loadPage(): Single<Unit> {
+        val filter = filterData.value
+        Timber.v("loadPage $filter")
         return Single.fromCallable {
             loadProjectsWithTasks(db)
-            loadRecords(db, filter.startTime, filter.finishTime)
+            if (filter != null) {
+                loadRecords(db, filter.startTime, filter.finishTime)
+            } else {
+                loadRecords(db, 0L, 0L)
+            }
         }
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
@@ -425,31 +447,13 @@ class ReportFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.v("run")
-        showProgress(true)
-        handleArguments()
-        loadPage()
-            .subscribe({
-                populateTotals(recordsData.value)
-                if (firstRun) {
-                    fetchPage(filter)
-                }
-                showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-            })
-            .addTo(disposables)
-    }
 
-    private fun handleArguments() {
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
                 val filter = args.getParcelable<ReportFilter>(EXTRA_FILTER)
                 if (filter != null) {
-                    this.filter = filter
-                    this.listAdapter = ReportAdapter(filter)
-                    list.adapter = listAdapter
+                    filterData.value = filter
                 }
             }
         }
@@ -501,6 +505,7 @@ class ReportFragment : InternetFragment(),
 
         val context = requireContext()
         val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
 
         ReportExporterCSV(context, records, filter)
             .subscribeOn(Schedulers.io())
@@ -524,6 +529,7 @@ class ReportFragment : InternetFragment(),
 
         val context = requireContext()
         val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
         ReportExporterHTML(context, records, filter, totals)
@@ -548,6 +554,7 @@ class ReportFragment : InternetFragment(),
 
         val context = requireContext()
         val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
 
         ReportExporterXML(context, records, filter)
             .subscribeOn(Schedulers.io())

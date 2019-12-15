@@ -508,7 +508,7 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.v("onRestoreInstanceState")
         super.onRestoreInstanceState(savedInstanceState)
         this.firstRun = false
-        filterData.value = savedInstanceState.getParcelable(STATE_FILTER)
+        filterData.value = savedInstanceState.getParcelable(STATE_FILTER) ?: ReportFilter()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
