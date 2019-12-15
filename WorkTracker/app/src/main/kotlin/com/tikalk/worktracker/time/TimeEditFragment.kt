@@ -48,6 +48,7 @@ import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -89,6 +90,13 @@ class TimeEditFragment : TimeFormFragment() {
             if (caller is OnEditRecordListener) {
                 this.listener = caller
             }
+        } else {
+            val activity = this.activity
+            if (activity != null) {
+                if (activity is OnEditRecordListener) {
+                    this.listener = activity
+                }
+            }
         }
     }
 
@@ -128,7 +136,7 @@ class TimeEditFragment : TimeFormFragment() {
         populateForm(date, html)
 
         record.id = id
-        record.status = TaskRecordStatus.CURRENT
+        record.status = if (id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
 
         populateForm(record)
         runOnUiThread { bindForm(record) }
@@ -143,16 +151,17 @@ class TimeEditFragment : TimeFormFragment() {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
         val inputStart = form.selectByName("start") ?: return
-        val startValue = inputStart.attr("value")
+        val startValue = inputStart.value()
 
         val inputFinish = form.selectByName("finish") ?: return
-        val finishValue = inputFinish.attr("value")
+        val finishValue = inputFinish.value()
 
-        val inputNote = form.selectFirst("textarea[name='note']")
+        val inputNote = form.selectByName("note")
+        val noteValue = inputNote?.value()
 
         record.start = parseSystemTime(date, startValue)
         record.finish = parseSystemTime(date, finishValue)
-        record.note = inputNote?.text() ?: ""
+        record.note = noteValue ?: ""
     }
 
     override fun populateForm(record: TimeRecord) {
@@ -162,12 +171,10 @@ class TimeEditFragment : TimeFormFragment() {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
                     record.project = projects.firstOrNull { it.id == projectId } ?: record.project
-                    args.remove(EXTRA_PROJECT_ID)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     record.task = tasks.firstOrNull { it.id == taskId } ?: record.task
-                    args.remove(EXTRA_TASK_ID)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -176,7 +183,6 @@ class TimeEditFragment : TimeFormFragment() {
                     } else {
                         record.start = null
                     }
-                    args.remove(EXTRA_START_TIME)
                 }
                 if (args.containsKey(EXTRA_FINISH_TIME)) {
                     val finishTime = args.getLong(EXTRA_FINISH_TIME)
@@ -185,7 +191,6 @@ class TimeEditFragment : TimeFormFragment() {
                     } else {
                         record.finish = null
                     }
-                    args.remove(EXTRA_FINISH_TIME)
                 }
             }
         }
@@ -383,7 +388,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         date.timeInMillis = args.getLong(EXTRA_DATE, date.timeInMillis)
 
-        val recordId = args.getLong(EXTRA_RECORD, record.id)
+        val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
         loadPage(recordId)
             .subscribe({
@@ -445,7 +450,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun maybeFetchPage(date: Calendar, id: Long) {
-        if (projects.isEmpty() or tasks.isEmpty() or ((id != TikalEntity.ID_NONE) and (id != record.id))) {
+        if (projects.isEmpty() or tasks.isEmpty() or (id != record.id)) {
             fetchPage(date, id)
         }
     }
@@ -466,7 +471,7 @@ class TimeEditFragment : TimeFormFragment() {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
-                record = recordEntity.toTimeRecord(projects, tasks)
+                setRecordValue(recordEntity.toTimeRecord(projects, tasks))
             }
         }
     }
@@ -619,7 +624,7 @@ class TimeEditFragment : TimeFormFragment() {
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
 
         if (recordParcel != null) {
-            record = recordParcel
+            setRecordValue(recordParcel)
             // Is there a view?
             if (isVisible) {
                 bindForm(record)
@@ -635,7 +640,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
-        this.record = record.copy()
+        setRecordValue(record.copy())
         this.date = date
         var args = arguments
         if (args == null) {
@@ -648,7 +653,7 @@ class TimeEditFragment : TimeFormFragment() {
         args.putLong(EXTRA_TASK_ID, record.task.id)
         args.putLong(EXTRA_START_TIME, record.startTime)
         args.putLong(EXTRA_FINISH_TIME, record.finishTime)
-        args.putLong(EXTRA_RECORD, record.id)
+        args.putLong(EXTRA_RECORD_ID, record.id)
         run()
     }
 
@@ -692,6 +697,11 @@ class TimeEditFragment : TimeFormFragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    private fun setErrorLabel(text: CharSequence) {
+        errorLabel.text = text
+        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+    }
+
     /**
      * Listener for editing a record callbacks.
      */
@@ -727,11 +737,6 @@ class TimeEditFragment : TimeFormFragment() {
         fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String)
     }
 
-    private fun setErrorLabel(text: CharSequence) {
-        errorLabel.text = text
-        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
-    }
-
     companion object {
         const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
@@ -739,7 +744,7 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
-        const val EXTRA_RECORD = TimeFormFragment.EXTRA_RECORD
+        const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
 
         private const val STATE_DATE = "date"
     }

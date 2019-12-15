@@ -109,3 +109,7 @@ fun findParentElement(element: Element, parentTag: String): Element? {
     }
     return null
 }
+
+fun Element.isChecked(): Boolean {
+    return (attr("checked") == "true")
+}

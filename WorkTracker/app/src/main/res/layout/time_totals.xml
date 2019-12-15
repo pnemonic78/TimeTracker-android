@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:layout_marginStart="4dp"
-            android:textColor="@color/red_xC0"
+            android:textColor="@color/remainingQuota"
             tools:text="@tools:sample/date/hhmm" />
     </TableRow>
 

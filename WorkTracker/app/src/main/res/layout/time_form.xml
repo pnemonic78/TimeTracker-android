@@ -35,10 +35,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="@dimen/dialog_form_paddingStart"
-    android:paddingTop="@dimen/dialog_form_paddingTop"
-    android:paddingEnd="@dimen/dialog_form_paddingEnd"
-    android:paddingBottom="@dimen/dialog_form_paddingBottom"
+    android:paddingStart="@dimen/fragment_form_paddingStart"
+    android:paddingTop="@dimen/fragment_form_paddingTop"
+    android:paddingEnd="@dimen/fragment_form_paddingEnd"
+    android:paddingBottom="@dimen/fragment_form_paddingBottom"
     tools:context=".time.TimeEditActivity">
 
     <ImageView

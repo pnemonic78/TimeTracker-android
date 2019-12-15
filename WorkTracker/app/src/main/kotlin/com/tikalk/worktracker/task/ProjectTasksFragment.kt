@@ -37,6 +37,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
@@ -57,12 +59,19 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
-import java.util.concurrent.CopyOnWriteArrayList
 
-class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
+class ProjectTasksFragment : InternetFragment(),
+    LoginFragment.OnLoginListener {
 
-    private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
+    private val tasksData = MutableLiveData<List<ProjectTask>>()
     private val listAdapter = ProjectTasksAdapter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        tasksData.observe(this, Observer<List<ProjectTask>> { tasks ->
+            bindList(tasks)
+        })
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_tasks, container, false)
@@ -84,7 +93,6 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
         showProgress(true)
         loadPage()
             .subscribe({
-                bindList(tasks)
                 fetchPage()
                 showProgress(false)
             }, { err ->
@@ -103,12 +111,10 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
     private fun loadTasks(db: TrackerDatabase) {
         val taskDao = db.taskDao()
         val tasksDb = taskDao.queryAll()
-        setTasks(tasksDb.filter { it.id != TikalEntity.ID_NONE })
-    }
-
-    private fun setTasks(tasks: Collection<ProjectTask>) {
-        this.tasks.clear()
-        this.tasks.addAll(tasks.sortedBy { it.name })
+        val tasks = tasksDb
+            .filter { it.id != TikalEntity.ID_NONE }
+            .sortedBy { it.name }
+        tasksData.postValue(tasks)
     }
 
     private fun fetchPage() {
@@ -148,7 +154,6 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun processPage(html: String) {
         populateList(html)
-        bindList(tasks)
     }
 
     private fun populateList(html: String) {
@@ -169,7 +174,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
             }
         }
 
-        setTasks(tasks)
+        tasksData.value = tasks
     }
 
     /**
@@ -212,7 +217,7 @@ class ProjectTasksFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun bindList(tasks: List<ProjectTask>) {
         listAdapter.submitList(tasks)
-        if (tasks === this.tasks) {
+        if (tasks === this.tasksData.value) {
             listAdapter.notifyDataSetChanged()
         }
     }

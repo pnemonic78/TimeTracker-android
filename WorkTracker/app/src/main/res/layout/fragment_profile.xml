@@ -41,8 +41,7 @@
     android:paddingStart="@dimen/dialog_form_paddingStart"
     android:paddingTop="@dimen/dialog_form_paddingTop"
     android:paddingEnd="@dimen/dialog_form_paddingEnd"
-    android:paddingBottom="@dimen/dialog_form_paddingBottom"
-    tools:context="com.tikalk.worktracker.auth.LoginActivity">
+    android:paddingBottom="@dimen/dialog_form_paddingBottom">
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -64,6 +63,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
         app:endIconDrawable="@drawable/ic_email"
         app:endIconMode="custom">
 
@@ -81,6 +81,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
         app:endIconDrawable="@drawable/ic_lock_open"
         app:endIconMode="custom">
 
@@ -98,6 +99,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
         app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -115,6 +117,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
         app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -134,14 +137,16 @@
         style="@style/Widget.TextView.Error"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        tools:text="@tools:sample/lorem" />
+        android:layout_marginTop="@dimen/form_marginTop"
+        android:visibility="gone"
+        tools:text="@tools:sample/lorem"
+        tools:visibility="visible" />
 
     <Button
         android:id="@+id/actionSave"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/form_marginTop"
         android:text="@string/action_submit"
         app:drawableEndCompat="@drawable/ic_save">
 

@@ -65,7 +65,7 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
             val showStartField = filter.showStartField
             val showFinishField = filter.showFinishField
             val showDurationField = filter.showDurationField
-            val showNotesField = filter.showNotesField
+            val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
 
             val file = File(folder, filenamePrefix + EXTENSION)
@@ -90,7 +90,7 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
             if (showDurationField) {
                 headerRecord.add(context.getString(R.string.duration_header))
             }
-            if (showNotesField) {
+            if (showNoteField) {
                 headerRecord.add(context.getString(R.string.note_header))
             }
             if (showCostField) {
@@ -119,7 +119,7 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
                     val durationHs = durationMs.toDouble() / DateUtils.HOUR_IN_MILLIS
                     row.add(String.format(Locale.US, "%.2f", durationHs))
                 }
-                if (showNotesField) {
+                if (showNoteField) {
                     row.add(record.note)
                 }
                 if (showCostField) {

@@ -56,7 +56,7 @@ class ReportFilter : TimeRecord {
     var showStartField: Boolean = true
     var showFinishField: Boolean = true
     var showDurationField: Boolean = true
-    var showNotesField: Boolean = true
+    var showNoteField: Boolean = true
     var showCostField: Boolean = false
 
     constructor() : super(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
@@ -73,7 +73,7 @@ class ReportFilter : TimeRecord {
         showStartField: Boolean = true,
         showFinishField: Boolean = true,
         showDurationField: Boolean = true,
-        showNotesField: Boolean = true,
+        showNoteField: Boolean = true,
         showCostField: Boolean = false
     ) : super(ID_NONE, project, task, start, finish) {
         this.period = period
@@ -83,7 +83,7 @@ class ReportFilter : TimeRecord {
         this.showStartField = showStartField
         this.showFinishField = showFinishField
         this.showDurationField = showDurationField
-        this.showNotesField = showNotesField
+        this.showNoteField = showNoteField
         this.showCostField = showCostField
     }
 
@@ -95,7 +95,7 @@ class ReportFilter : TimeRecord {
         showStartField = parcel.readBool()
         showFinishField = parcel.readBool()
         showDurationField = parcel.readBool()
-        showNotesField = parcel.readBool()
+        showNoteField = parcel.readBool()
         showCostField = parcel.readBool()
     }
 
@@ -108,7 +108,7 @@ class ReportFilter : TimeRecord {
         parcel.writeBool(showStartField)
         parcel.writeBool(showFinishField)
         parcel.writeBool(showDurationField)
-        parcel.writeBool(showNotesField)
+        parcel.writeBool(showNoteField)
         parcel.writeBool(showCostField)
     }
 

@@ -42,13 +42,13 @@ import kotlinx.android.parcel.Parcelize
  */
 @Parcelize
 data class TimeTotals(
-    var daily: Long = 0,
-    var weekly: Long = 0,
-    var monthly: Long = 0,
-    var remaining: Long = 0
+    var daily: Long = UNKNOWN,
+    var weekly: Long = UNKNOWN,
+    var monthly: Long = UNKNOWN,
+    var remaining: Long = UNKNOWN
 ) : Parcelable {
 
-    fun clear(unknown: Boolean = false) {
+    fun clear(unknown: Boolean = true) {
         if (unknown) {
             daily = UNKNOWN
             weekly = UNKNOWN
@@ -63,6 +63,6 @@ data class TimeTotals(
     }
 
     companion object {
-        const val UNKNOWN = -1L
+        const val UNKNOWN = Long.MIN_VALUE
     }
 }

@@ -40,10 +40,11 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
-import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -75,14 +76,15 @@ import timber.log.Timber
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
-    private var records: List<TimeRecord> = ArrayList()
-    private var totals: ReportTotals = ReportTotals()
-    private var filter: ReportFilter = ReportFilter()
-    private var listAdapter = ReportAdapter(filter)
+    private val recordsData = MutableLiveData<List<TimeRecord>>()
+    private val totalsData = MutableLiveData<ReportTotals>()
+    private val filterData = MutableLiveData<ReportFilter>()
+    private var listAdapter = ReportAdapter(ReportFilter())
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     private var firstRun = true
@@ -91,6 +93,29 @@ class ReportFragment : InternetFragment(),
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         firstRun = (savedInstanceState == null)
+        recordsData.observe(this, Observer<List<TimeRecord>> { records ->
+            bindList(records)
+        })
+        totalsData.observe(this, Observer<ReportTotals> { totals ->
+            bindTotals(totals)
+        })
+        filterData.observe(this, Observer<ReportFilter> { filter ->
+            this.listAdapter = ReportAdapter(filter)
+            list.adapter = listAdapter
+            if (firstRun) {
+                fetchPage(filter)
+            } else {
+                showProgress(true)
+                loadPage()
+                    .subscribe({
+                        populateTotals(recordsData.value)
+                    }, { err ->
+                        Timber.e(err, "Error loading page: ${err.message}")
+                        showProgressMain(false)
+                    })
+                    .addTo(disposables)
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -111,9 +136,7 @@ class ReportFragment : InternetFragment(),
         // Fetch from local database first.
         loadPage()
             .subscribe({
-                populateTotals(records, totals)
-                bindList(records)
-                bindTotals(totals)
+                populateTotals(recordsData.value)
 
                 // Fetch from remote server.
                 service.generateReport(filter.toFields())
@@ -142,13 +165,9 @@ class ReportFragment : InternetFragment(),
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
         populateList(doc, records)
-        populateTotals(records, totals)
+        populateTotals(records)
         savePage(records)
-        runOnUiThread {
-            bindList(records)
-            bindTotals(totals)
-            if (progress) showProgress(false)
-        }
+        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -208,27 +227,31 @@ class ReportFragment : InternetFragment(),
             }
         }
 
-        this.records = records
+        recordsData.postValue(records)
     }
 
-    private fun populateTotals(records: List<TimeRecord>, totals: ReportTotals) {
-        totals.clear()
+    private fun populateTotals(records: List<TimeRecord>?) {
+        val totals = ReportTotals()
 
         var duration: Long
-        for (record in records) {
-            duration = record.finishTime - record.startTime
-            if (duration > 0L) {
-                totals.duration += duration
+        if (records != null) {
+            for (record in records) {
+                duration = record.finishTime - record.startTime
+                if (duration > 0L) {
+                    totals.duration += duration
+                }
+                totals.cost += record.cost
             }
-            totals.cost += record.cost
         }
+
+        totalsData.postValue(totals)
     }
 
     @MainThread
     private fun bindList(records: List<TimeRecord>) {
         if (!isVisible) return
         listAdapter.submitList(records)
-        if (records === this.records) {
+        if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
         }
         if (records.isNotEmpty()) {
@@ -243,8 +266,9 @@ class ReportFragment : InternetFragment(),
         val context: Context = requireContext()
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
+        val filter = filterData.value
 
-        if (filter.showDurationField) {
+        if (filter?.showDurationField == true) {
             timeBuffer.setLength(0)
             durationTotalLabel.visibility = View.VISIBLE
             durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
@@ -252,7 +276,7 @@ class ReportFragment : InternetFragment(),
             durationTotalLabel.visibility = View.INVISIBLE
             durationTotal.text = null
         }
-        if (filter.showCostField) {
+        if (filter?.showCostField == true) {
             timeBuffer.setLength(0)
             costTotalLabel.visibility = View.VISIBLE
             costTotal.text = formatCurrency(context, timeFormatter, totals.cost).toString()
@@ -375,12 +399,17 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun loadPage(): Single<Unit> {
+        val filter = filterData.value
+        Timber.v("loadPage $filter")
         return Single.fromCallable {
             loadProjectsWithTasks(db)
-            loadRecords(db, filter.startTime, filter.finishTime)
+            if (filter != null) {
+                loadRecords(db, filter.startTime, filter.finishTime)
+            } else {
+                loadRecords(db, 0L, 0L)
+            }
         }
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
@@ -390,10 +419,10 @@ class ReportFragment : InternetFragment(),
             val recordsDao = db.timeRecordDao()
             val recordsDb = recordsDao.queryByDate(start, finish)
             val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
-            this.records = records
+            recordsData.postValue(records)
         } else {
             val records = reportRecordsDb.map { it.toTimeRecord(projects, tasks) }
-            this.records = records
+            recordsData.postValue(records)
         }
     }
 
@@ -418,33 +447,13 @@ class ReportFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.v("run")
-        showProgress(true)
-        handleArguments()
-        loadPage()
-            .subscribe({
-                populateTotals(records, totals)
-                bindList(records)
-                bindTotals(totals)
-                if (firstRun) {
-                    fetchPage(filter)
-                }
-                showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-            })
-            .addTo(disposables)
-    }
 
-    private fun handleArguments() {
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
                 val filter = args.getParcelable<ReportFilter>(EXTRA_FILTER)
                 if (filter != null) {
-                    this.filter = filter
-                    this.listAdapter = ReportAdapter(filter)
-                    list.adapter = listAdapter
+                    filterData.value = filter
                 }
             }
         }
@@ -495,6 +504,8 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
+        val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
 
         ReportExporterCSV(context, records, filter)
             .subscribeOn(Schedulers.io())
@@ -517,6 +528,9 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
+        val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
+        val totals = totalsData.value ?: return
 
         ReportExporterHTML(context, records, filter, totals)
             .subscribeOn(Schedulers.io())
@@ -539,6 +553,8 @@ class ReportFragment : InternetFragment(),
         showProgress(true)
 
         val context = requireContext()
+        val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
 
         ReportExporterXML(context, records, filter)
             .subscribeOn(Schedulers.io())

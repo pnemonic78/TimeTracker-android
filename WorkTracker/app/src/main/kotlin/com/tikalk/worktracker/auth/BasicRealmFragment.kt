@@ -68,6 +68,13 @@ class BasicRealmFragment : InternetFragment() {
             if (caller is OnBasicRealmListener) {
                 this.listener = caller
             }
+        } else {
+            val activity = this.activity
+            if (activity != null) {
+                if (activity is OnBasicRealmListener) {
+                    this.listener = activity
+                }
+            }
         }
     }
 

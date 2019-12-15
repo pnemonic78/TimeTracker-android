@@ -41,6 +41,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
@@ -165,7 +166,7 @@ class TimerFragment : TimeFormFragment() {
         val recordStarted = getStartedRecord()
         Timber.v("stopTimer recordStarted=$recordStarted")
         if (recordStarted != null) {
-            record = recordStarted
+            setRecordValue(recordStarted)
         }
         if (record.finishTime <= 0L) {
             record.finishTime = System.currentTimeMillis()
@@ -222,7 +223,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun projectItemSelected(project: Project) {
         Timber.d("projectItemSelected project=$project")
-        record.project = project
+        setRecordProject(project)
         if (!isVisible) return
         filterTasks(project)
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
@@ -230,7 +231,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.d("taskItemSelected task=$task")
-        record.task = task
+        setRecordTask(task)
         if (!isVisible) return
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
@@ -280,18 +281,19 @@ class TimerFragment : TimeFormFragment() {
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: record.project
+                setRecordProject(projects.firstOrNull { it.id == projectFavorite }
+                    ?: record.project)
             }
             val taskFavorite = preferences.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: record.task
+                setRecordTask(tasks.firstOrNull { it.id == taskFavorite } ?: record.task)
             }
         } else if (!recordStarted.isEmpty()) {
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            record.project = projects.firstOrNull { it.id == recordStartedProjectId }
-                ?: record.project
-            record.task = tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task
+            setRecordProject(projects.firstOrNull { it.id == recordStartedProjectId }
+                ?: record.project)
+            setRecordTask(tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task)
             record.start = recordStarted.start
         }
     }
@@ -302,16 +304,15 @@ class TimerFragment : TimeFormFragment() {
         if (parent != null) {
             parent.editRecord(record, true)
         } else {
-            val intent = Intent(context, TimeEditActivity::class.java)
-            if (record.id == TikalEntity.ID_NONE) {
-                intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-                intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-                intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-                intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-            } else {
-                intent.putExtra(TimeEditFragment.EXTRA_RECORD, record.id)
-            }
-            startActivityForResult(intent, REQUEST_EDIT)
+            val args = Bundle()
+            args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+            requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, caller
+                ?: this)
+            findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
 
@@ -368,9 +369,7 @@ class TimerFragment : TimeFormFragment() {
         val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
 
         if (recordParcel != null) {
-            record.project = recordParcel.project
-            record.task = recordParcel.task
-            record.start = recordParcel.start
+            setRecordValue(recordParcel)
             populateForm(record)
             bindForm(record)
         }

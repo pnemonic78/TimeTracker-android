@@ -41,11 +41,12 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -84,10 +85,10 @@ class TimeListFragment : TimeFormFragment(),
     private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
-    private var totals = TimeTotals()
+    private val totalsData = MutableLiveData<TimeTotals>()
 
     private var date: Calendar = Calendar.getInstance()
-    private var records: List<TimeRecord> = ArrayList()
+    private val recordsData = MutableLiveData<List<TimeRecord>>()
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
@@ -95,6 +96,12 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        recordsData.observe(this, Observer<List<TimeRecord>> { records ->
+            bindList(date, records)
+        })
+        totalsData.observe(this, Observer<TimeTotals> { totals ->
+            bindTotals(totals)
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -159,18 +166,15 @@ class TimeListFragment : TimeFormFragment(),
         if (progress) showProgressMain(true)
 
         // Fetch from local database first.
-        loadPage()
+        loadPage(date)
             .subscribe({
+                this.date = date
                 bindForm()
-                bindList(date, records)
 
                 // Fetch from remote server.
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
                     .subscribe({ response ->
-                        if (this.date != date) {
-                            this.date.timeInMillis = date.timeInMillis
-                        }
                         if (isValidResponse(response)) {
                             val html = response.body()!!
                             processPage(html, date, progress)
@@ -197,12 +201,7 @@ class TimeListFragment : TimeFormFragment(),
         populateForm(date, html)
         populateList(html)
         savePage()
-        runOnUiThread {
-            if (!isVisible) return@runOnUiThread
-            bindList(date, records)
-            bindTotals(totals)
-            if (progress) showProgress(false)
-        }
+        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -223,17 +222,17 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
 
-        this.records = records
+        recordsData.postValue(records)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
-        populateTotals(doc, form, totals)
+        populateTotals(doc, form)
     }
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
         dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
-        if (records === this.records) {
+        if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
         }
     }
@@ -290,18 +289,13 @@ class TimeListFragment : TimeFormFragment(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putParcelable(STATE_TOTALS, totals)
+        outState.putParcelable(STATE_TOTALS, totalsData.value)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
-
-        if (totals != null) {
-            this.totals = totals
-            bindTotals(totals)
-        }
+        totalsData.value = savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
     }
 
     private fun pickDate() {
@@ -431,7 +425,7 @@ class TimeListFragment : TimeFormFragment(),
             args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-            args.putLong(TimeEditFragment.EXTRA_RECORD, record.id)
+            args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
             requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
             formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
         }
@@ -513,11 +507,11 @@ class TimeListFragment : TimeFormFragment(),
         return Locale.getDefault().language == "iw"
     }
 
-    private fun populateTotals(doc: Document, parent: Element?, totals: TimeTotals) {
-        totals.clear(true)
+    private fun populateTotals(doc: Document, parent: Element?) {
         if (parent == null) {
             return
         }
+        val totals = totalsData.value ?: TimeTotals()
 
         val table = findTotalsTable(doc, parent) ?: return
         val cells = table.getElementsByTag("td")
@@ -543,6 +537,8 @@ class TimeListFragment : TimeFormFragment(),
                 }
             }
         }
+
+        totalsData.postValue(totals)
     }
 
     private fun findTotalsTable(doc: Document, parent: Element?): Element? {
@@ -574,7 +570,7 @@ class TimeListFragment : TimeFormFragment(),
         return null
     }
 
-    private fun loadPage(): Single<Unit> {
+    private fun loadPage(date: Calendar): Single<Unit> {
         return Single.fromCallable {
             loadFormFromDb(db)
             loadRecords(db, date)
@@ -584,12 +580,12 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun saveFormToDb() {
-        findTopFormFragment().savePage()
+        super.saveFormToDb()
         saveRecords(db, date)
     }
 
     private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val records = this.records
+        val records = recordsData.value ?: return
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
@@ -625,7 +621,8 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
-        this.records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+        val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+        recordsData.postValue(records)
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -633,12 +630,11 @@ class TimeListFragment : TimeFormFragment(),
         return if (day == null) {
             recordsDao.queryAll()
         } else {
-            val cal = day.copy()
-            cal.setToStartOfDay()
-            val start = cal.timeInMillis
-            cal.setToEndOfDay()
-            val finish = cal.timeInMillis
-            recordsDao.queryByDate(start, finish)
+            val start = day.copy()
+            start.setToStartOfDay()
+            val finish = day.copy()
+            finish.setToEndOfDay()
+            recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
         }
     }
 
@@ -646,10 +642,9 @@ class TimeListFragment : TimeFormFragment(),
     fun run() {
         Timber.v("run")
         showProgress(true)
-        loadPage()
+        loadPage(date)
             .subscribe({
                 bindForm()
-                bindList(date, records)
 
                 if (projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
@@ -685,7 +680,6 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         super.onLoginSuccess(fragment, login)
-        this.user = preferences.user
         fetchPage(date)
     }
 
@@ -752,10 +746,6 @@ class TimeListFragment : TimeFormFragment(),
         return super.onBackPressed()
     }
 
-    private fun cancelEditRecord() {
-        showTimer()
-    }
-
     private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
         formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
         if (popInclusive) {
@@ -790,7 +780,6 @@ class TimeListFragment : TimeFormFragment(),
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == LoginFragment.REQUEST_LOGIN) {
             if (resultCode == Activity.RESULT_OK) {
-                user = preferences.user
                 // Fetch the list for the user.
                 fetchPage(date)
             } else {

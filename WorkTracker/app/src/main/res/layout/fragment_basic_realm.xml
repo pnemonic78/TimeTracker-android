@@ -73,6 +73,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
         app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -94,7 +95,7 @@
         android:id="@+id/actionAuthenticate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/form_marginTop"
         android:text="@string/action_authenticate"
         app:drawableEndCompat="@drawable/ic_lock_open">
 

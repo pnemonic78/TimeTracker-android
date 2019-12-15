@@ -38,6 +38,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -92,7 +93,7 @@ abstract class TimeFormFragment : InternetFragment(),
     fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
         for (option in projectInput.children()) {
             if (option.hasAttr("selected")) {
-                val value = option.attr("value")
+                val value = option.value()
                 if (value.isNotEmpty()) {
                     val id = value.toLong()
                     return projects.find { id == it.id }!!
@@ -106,7 +107,7 @@ abstract class TimeFormFragment : InternetFragment(),
     fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
         for (option in taskInput.children()) {
             if (option.hasAttr("selected")) {
-                val value = option.attr("value")
+                val value = option.value()
                 if (value.isNotEmpty()) {
                     val id = value.toLong()
                     return tasks.find { id == it.id }!!
@@ -126,7 +127,7 @@ abstract class TimeFormFragment : InternetFragment(),
         var name: String
         for (option in options) {
             name = option.ownText()
-            value = option.attr("value")
+            value = option.value()
             val item = Project(name)
             if (value.isEmpty()) {
                 projectEmpty = item
@@ -149,7 +150,7 @@ abstract class TimeFormFragment : InternetFragment(),
         var name: String
         for (option in options) {
             name = option.ownText()
-            value = option.attr("value")
+            value = option.value()
             val item = ProjectTask(name)
             if (value.isEmpty()) {
                 taskEmpty = item
@@ -215,8 +216,8 @@ abstract class TimeFormFragment : InternetFragment(),
         populateTasks(inputTasks, tasks)
         populateTaskIds(doc, projects)
 
-        record.project = findSelectedProject(inputProjects, projects)
-        record.task = findSelectedTask(inputTasks, tasks)
+        setRecordProject(findSelectedProject(inputProjects, projects))
+        setRecordTask(findSelectedTask(inputTasks, tasks))
     }
 
     protected open fun findForm(doc: Document): FormElement? {
@@ -349,7 +350,7 @@ abstract class TimeFormFragment : InternetFragment(),
 
         val recordStarted = preferences.getStartedRecord()
         if (recordStarted != null) {
-            record = recordStarted
+            setRecordValue(recordStarted)
         }
     }
 
@@ -416,12 +417,24 @@ abstract class TimeFormFragment : InternetFragment(),
         Timber.e("login failure: $reason")
     }
 
+    protected open fun setRecordValue(record: TimeRecord) {
+        this.record = record
+    }
+
+    protected open fun setRecordProject(project: Project) {
+        record.project = project
+    }
+
+    protected open fun setRecordTask(task: ProjectTask) {
+        record.task = task
+    }
+
     companion object {
         const val STATE_RECORD_ID = "record_id"
         const val STATE_RECORD = "record"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".form.DATE"
-        const val EXTRA_RECORD = BuildConfig.APPLICATION_ID + ".form.RECORD_ID"
+        const val EXTRA_RECORD_ID = BuildConfig.APPLICATION_ID + ".form.RECORD_ID"
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".form.PROJECT_ID"
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"

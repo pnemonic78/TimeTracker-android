@@ -13,10 +13,14 @@
 
     <!-- Dialogs -->
     <dimen name="dialog_form_minWidth">305dp</dimen>
-    <dimen name="dialog_form_paddingBottom">8dp</dimen>
-    <dimen name="dialog_form_paddingEnd">8dp</dimen>
-    <dimen name="dialog_form_paddingStart">8dp</dimen>
-    <dimen name="dialog_form_paddingTop">8dp</dimen>
+    <dimen name="dialog_form_paddingBottom">16dp</dimen>
+    <dimen name="dialog_form_paddingEnd">16dp</dimen>
+    <dimen name="dialog_form_paddingStart">16dp</dimen>
+    <dimen name="dialog_form_paddingTop">16dp</dimen>
+    <dimen name="fragment_form_paddingBottom">8dp</dimen>
+    <dimen name="fragment_form_paddingEnd">8dp</dimen>
+    <dimen name="fragment_form_paddingStart">8dp</dimen>
+    <dimen name="fragment_form_paddingTop">8dp</dimen>
 
     <dimen name="time_list_marginTop">8dp</dimen>
     <dimen name="form_marginTop">8dp</dimen>

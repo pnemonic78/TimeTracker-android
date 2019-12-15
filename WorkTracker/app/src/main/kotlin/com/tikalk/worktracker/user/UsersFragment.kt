@@ -37,6 +37,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
@@ -55,12 +57,19 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
-import java.util.concurrent.CopyOnWriteArrayList
 
-class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
+class UsersFragment : InternetFragment(),
+    LoginFragment.OnLoginListener {
 
-    private val users: MutableList<User> = CopyOnWriteArrayList()
+    private val usersData = MutableLiveData<List<User>>()
     private val listAdapter = UsersAdapter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        usersData.observe(this, Observer<List<User>> { users ->
+            bindList(users)
+        })
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_users, container, false)
@@ -82,7 +91,6 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
         showProgress(true)
         loadPage()
             .subscribe({
-                bindList(users)
                 fetchPage()
                 showProgress(false)
             }, { err ->
@@ -99,15 +107,14 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
     }
 
     private fun loadUsers(db: TrackerDatabase) {
-        //TODO implement me!
+        //TODO implement user table!
         //val usersDao = db.userDao()
         //val usersDb = usersDao.queryAll()
-        //setUsers(usersDb.filter { it.id != TikalEntity.ID_NONE })
-    }
-
-    private fun setUsers(users: Collection<User>) {
-        this.users.clear()
-        this.users.addAll(users.sortedBy { it.displayName })
+        //val users = usersDb
+        //    .filter { it.id != TikalEntity.ID_NONE }
+        //    .sortedBy { it.displayName }
+        val users = emptyList<User>()
+        usersData.postValue(users)
     }
 
     private fun fetchPage() {
@@ -147,7 +154,6 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun processPage(html: String) {
         populateList(html)
-        bindList(users)
     }
 
     private fun populateList(html: String) {
@@ -168,7 +174,7 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
             }
         }
 
-        setUsers(users)
+        usersData.value = users
     }
 
     /**
@@ -227,7 +233,7 @@ class UsersFragment : InternetFragment(), LoginFragment.OnLoginListener {
 
     private fun bindList(users: List<User>) {
         listAdapter.submitList(users)
-        if (users === this.users) {
+        if (users === this.usersData.value) {
             listAdapter.notifyDataSetChanged()
         }
     }
