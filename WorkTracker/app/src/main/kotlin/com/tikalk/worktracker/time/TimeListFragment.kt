@@ -41,6 +41,8 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
@@ -78,7 +80,8 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    TimeEditFragment.OnEditRecordListener {
+    TimeEditFragment.OnEditRecordListener,
+    Observer<List<TimeRecord>> {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -87,7 +90,7 @@ class TimeListFragment : TimeFormFragment(),
     private var totals = TimeTotals()
 
     private var date: Calendar = Calendar.getInstance()
-    private var records: List<TimeRecord> = ArrayList()
+    private val recordsData = MutableLiveData<List<TimeRecord>>()
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
@@ -95,6 +98,7 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        recordsData.observe(this, this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -159,18 +163,15 @@ class TimeListFragment : TimeFormFragment(),
         if (progress) showProgressMain(true)
 
         // Fetch from local database first.
-        loadPage()
+        loadPage(date)
             .subscribe({
+                this.date = date
                 bindForm()
-                bindList(date, records)
 
                 // Fetch from remote server.
                 service.fetchTimes(dateFormatted)
                     .subscribeOn(Schedulers.io())
                     .subscribe({ response ->
-                        if (this.date != date) {
-                            this.date.timeInMillis = date.timeInMillis
-                        }
                         if (isValidResponse(response)) {
                             val html = response.body()!!
                             processPage(html, date, progress)
@@ -199,7 +200,6 @@ class TimeListFragment : TimeFormFragment(),
         savePage()
         runOnUiThread {
             if (!isVisible) return@runOnUiThread
-            bindList(date, records)
             bindTotals(totals)
             if (progress) showProgress(false)
         }
@@ -223,7 +223,7 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
 
-        this.records = records
+        recordsData.postValue(records)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
         populateTotals(doc, form, totals)
@@ -233,7 +233,7 @@ class TimeListFragment : TimeFormFragment(),
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
         dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
-        if (records === this.records) {
+        if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
         }
     }
@@ -574,7 +574,7 @@ class TimeListFragment : TimeFormFragment(),
         return null
     }
 
-    private fun loadPage(): Single<Unit> {
+    private fun loadPage(date: Calendar): Single<Unit> {
         return Single.fromCallable {
             loadFormFromDb(db)
             loadRecords(db, date)
@@ -584,12 +584,12 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun saveFormToDb() {
-        findTopFormFragment().savePage()
+        super.saveFormToDb()
         saveRecords(db, date)
     }
 
     private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val records = this.records
+        val records = recordsData.value ?: return
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
@@ -625,7 +625,8 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
-        this.records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+        val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+        recordsData.postValue(records)
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -633,12 +634,11 @@ class TimeListFragment : TimeFormFragment(),
         return if (day == null) {
             recordsDao.queryAll()
         } else {
-            val cal = day.copy()
-            cal.setToStartOfDay()
-            val start = cal.timeInMillis
-            cal.setToEndOfDay()
-            val finish = cal.timeInMillis
-            recordsDao.queryByDate(start, finish)
+            val start = day.copy()
+            start.setToStartOfDay()
+            val finish = day.copy()
+            finish.setToEndOfDay()
+            recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
         }
     }
 
@@ -646,10 +646,9 @@ class TimeListFragment : TimeFormFragment(),
     fun run() {
         Timber.v("run")
         showProgress(true)
-        loadPage()
+        loadPage(date)
             .subscribe({
                 bindForm()
-                bindList(date, records)
 
                 if (projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
@@ -797,6 +796,10 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun findTopFormFragment(): TimeFormFragment {
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
+    }
+
+    override fun onChanged(records: List<TimeRecord>) {
+        bindList(date, records)
     }
 
     companion object {
