@@ -47,7 +47,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -86,7 +85,7 @@ class TimeListFragment : TimeFormFragment(),
     private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
-    private var totals = TimeTotals()
+    private val totalsData = MutableLiveData<TimeTotals>()
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
@@ -99,6 +98,9 @@ class TimeListFragment : TimeFormFragment(),
         setHasOptionsMenu(true)
         recordsData.observe(this, Observer<List<TimeRecord>> { records ->
             bindList(date, records)
+        })
+        totalsData.observe(this, Observer<TimeTotals> { totals ->
+            bindTotals(totals)
         })
     }
 
@@ -199,11 +201,7 @@ class TimeListFragment : TimeFormFragment(),
         populateForm(date, html)
         populateList(html)
         savePage()
-        runOnUiThread {
-            if (!isVisible) return@runOnUiThread
-            bindTotals(totals)
-            if (progress) showProgress(false)
-        }
+        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -227,7 +225,7 @@ class TimeListFragment : TimeFormFragment(),
         recordsData.postValue(records)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
-        populateTotals(doc, form, totals)
+        populateTotals(doc, form)
     }
 
     @MainThread
@@ -291,18 +289,13 @@ class TimeListFragment : TimeFormFragment(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putParcelable(STATE_TOTALS, totals)
+        outState.putParcelable(STATE_TOTALS, totalsData.value)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val totals = savedInstanceState.getParcelable<TimeTotals>(STATE_TOTALS)
-
-        if (totals != null) {
-            this.totals = totals
-            bindTotals(totals)
-        }
+        totalsData.value = savedInstanceState.getParcelable(STATE_TOTALS)
     }
 
     private fun pickDate() {
@@ -514,11 +507,11 @@ class TimeListFragment : TimeFormFragment(),
         return Locale.getDefault().language == "iw"
     }
 
-    private fun populateTotals(doc: Document, parent: Element?, totals: TimeTotals) {
-        totals.clear(true)
+    private fun populateTotals(doc: Document, parent: Element?) {
         if (parent == null) {
             return
         }
+        val totals = totalsData.value ?: TimeTotals()
 
         val table = findTotalsTable(doc, parent) ?: return
         val cells = table.getElementsByTag("td")
@@ -544,6 +537,8 @@ class TimeListFragment : TimeFormFragment(),
                 }
             }
         }
+
+        totalsData.postValue(totals)
     }
 
     private fun findTotalsTable(doc: Document, parent: Element?): Element? {
