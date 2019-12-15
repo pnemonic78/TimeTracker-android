@@ -79,7 +79,7 @@ class ReportViewHolder(itemView: View, val filter: ReportFilter) : TimeListViewH
         itemView.timeRange.visibility = if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
         itemView.timeRangeIcon.visibility = itemView.timeRange.visibility
         itemView.timeDuration.visibility = if (filter.showDurationField) View.VISIBLE else View.GONE
-        itemView.note.visibility = if (filter.showNotesField) View.VISIBLE else View.GONE
+        itemView.note.visibility = if (filter.showNoteField) View.VISIBLE else View.GONE
         itemView.noteIcon.visibility = itemView.note.visibility
         itemView.cost.visibility = if (filter.showCostField) View.VISIBLE else View.GONE
         itemView.costIcon.visibility = itemView.cost.visibility

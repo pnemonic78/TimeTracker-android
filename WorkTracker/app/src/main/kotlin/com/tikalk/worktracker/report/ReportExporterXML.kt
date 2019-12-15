@@ -63,7 +63,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
             val showStartField = filter.showStartField
             val showFinishField = filter.showFinishField
             val showDurationField = filter.showDurationField
-            val showNotesField = filter.showNotesField
+            val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
 
             val file = File(folder, filenamePrefix + EXTENSION)
@@ -109,7 +109,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
                     xmlWriter.text(String.format(Locale.US, "%.2f", durationHs))
                     xmlWriter.endTag(ns, "duration")
                 }
-                if (showNotesField) {
+                if (showNoteField) {
                     xmlWriter.startTag(ns, "note")
                     xmlWriter.text(record.note)
                     xmlWriter.endTag(ns, "note")

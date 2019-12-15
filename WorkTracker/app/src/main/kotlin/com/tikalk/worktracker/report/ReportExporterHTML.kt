@@ -68,7 +68,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val showStartField = filter.showStartField
             val showFinishField = filter.showFinishField
             val showDurationField = filter.showDurationField
-            val showNotesField = filter.showNotesField
+            val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
 
             val file = File(folder, filenamePrefix + EXTENSION)
@@ -142,7 +142,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                     +context.getString(R.string.duration_header)
                                 }
                             }
-                            if (showNotesField) {
+                            if (showNoteField) {
                                 td("tableHeader") {
                                     +context.getString(R.string.note_header)
                                 }
@@ -189,7 +189,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                         +timeFormatter.toString()
                                     }
                                 }
-                                if (showNotesField) {
+                                if (showNoteField) {
                                     td("cellLeftAligned") {
                                         +record.note
                                     }
@@ -230,7 +230,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                     +formatElapsedTime(context, timeFormatter, totals.duration).toString()
                                 }
                             }
-                            if (showNotesField) {
+                            if (showNoteField) {
                                 td {}
                             }
                             if (showCostField) {

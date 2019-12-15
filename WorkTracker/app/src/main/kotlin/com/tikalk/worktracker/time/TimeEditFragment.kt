@@ -48,6 +48,7 @@ import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -150,16 +151,17 @@ class TimeEditFragment : TimeFormFragment() {
         super.populateForm(date, doc, form, inputProjects, inputTasks)
 
         val inputStart = form.selectByName("start") ?: return
-        val startValue = inputStart.attr("value")
+        val startValue = inputStart.value()
 
         val inputFinish = form.selectByName("finish") ?: return
-        val finishValue = inputFinish.attr("value")
+        val finishValue = inputFinish.value()
 
-        val inputNote = form.selectFirst("textarea[name='note']")
+        val inputNote = form.selectByName("note")
+        val noteValue = inputNote?.value()
 
         record.start = parseSystemTime(date, startValue)
         record.finish = parseSystemTime(date, finishValue)
-        record.note = inputNote?.text() ?: ""
+        record.note = noteValue ?: ""
     }
 
     override fun populateForm(record: TimeRecord) {

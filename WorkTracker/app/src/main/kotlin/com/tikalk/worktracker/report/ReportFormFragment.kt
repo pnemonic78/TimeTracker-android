@@ -45,7 +45,9 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.html.isChecked
 import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -271,17 +273,33 @@ class ReportFormFragment : TimeFormFragment() {
         val periodSelected = findSelectedPeriod(inputPeriod, periods)
 
         val inputStart = form.selectByName("start_date") ?: return
-        val startValue = inputStart.attr("value")
+        val startValue = inputStart.value()
 
         val inputFinish = form.selectByName("end_date") ?: return
-        val finishValue = inputFinish.attr("value")
+        val finishValue = inputFinish.value()
 
         val filter = filterData.value ?: ReportFilter()
         filter.period = periodSelected
         filter.start = parseSystemDate(startValue)
         filter.finish = parseSystemDate(finishValue)
 
-        //TODO populate checkboxes
+        val inputShowProject = form.selectByName("chproject")
+        filter.showProjectField = inputShowProject?.isChecked() ?: filter.showProjectField
+
+        val inputShowTask = form.selectByName("chtask")
+        filter.showTaskField = inputShowTask?.isChecked() ?: filter.showTaskField
+
+        val inputShowStart = form.selectByName("chstart")
+        filter.showStartField = inputShowStart?.isChecked() ?: filter.showStartField
+
+        val inputShowFinish = form.selectByName("chfinish")
+        filter.showFinishField = inputShowFinish?.isChecked() ?: filter.showFinishField
+
+        val inputShowDuration = form.selectByName("chduration")
+        filter.showDurationField = inputShowDuration?.isChecked() ?: filter.showDurationField
+
+        val inputShowNote = form.selectByName("chnote")
+        filter.showNoteField = inputShowNote?.isChecked() ?: filter.showNoteField
 
         filterData.value = filter
     }
@@ -320,7 +338,7 @@ class ReportFormFragment : TimeFormFragment() {
     fun findSelectedPeriod(periodInput: Element, periods: Array<ReportTimePeriod>): ReportTimePeriod {
         for (option in periodInput.children()) {
             if (option.hasAttr("selected")) {
-                val value = option.attr("value")
+                val value = option.value()
                 if (value.isNotEmpty()) {
                     return periods.find { value == it.value }!!
                 }
@@ -375,7 +393,7 @@ class ReportFormFragment : TimeFormFragment() {
         showStartField.isChecked = filter.showStartField
         showFinishField.isChecked = filter.showFinishField
         showDurationField.isChecked = filter.showDurationField
-        showNotesField.isChecked = filter.showNotesField
+        showNoteField.isChecked = filter.showNoteField
 
         setErrorLabel(errorMessage)
     }
@@ -449,7 +467,7 @@ class ReportFormFragment : TimeFormFragment() {
         filter.showStartField = showStartField.isChecked
         filter.showFinishField = showFinishField.isChecked
         filter.showDurationField = showDurationField.isChecked
-        filter.showNotesField = showNotesField.isChecked
+        filter.showNoteField = showNoteField.isChecked
         filter.updateDates(date)
         return filter
     }

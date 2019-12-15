@@ -38,6 +38,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -92,7 +93,7 @@ abstract class TimeFormFragment : InternetFragment(),
     fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
         for (option in projectInput.children()) {
             if (option.hasAttr("selected")) {
-                val value = option.attr("value")
+                val value = option.value()
                 if (value.isNotEmpty()) {
                     val id = value.toLong()
                     return projects.find { id == it.id }!!
@@ -106,7 +107,7 @@ abstract class TimeFormFragment : InternetFragment(),
     fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
         for (option in taskInput.children()) {
             if (option.hasAttr("selected")) {
-                val value = option.attr("value")
+                val value = option.value()
                 if (value.isNotEmpty()) {
                     val id = value.toLong()
                     return tasks.find { id == it.id }!!
@@ -126,7 +127,7 @@ abstract class TimeFormFragment : InternetFragment(),
         var name: String
         for (option in options) {
             name = option.ownText()
-            value = option.attr("value")
+            value = option.value()
             val item = Project(name)
             if (value.isEmpty()) {
                 projectEmpty = item
@@ -149,7 +150,7 @@ abstract class TimeFormFragment : InternetFragment(),
         var name: String
         for (option in options) {
             name = option.ownText()
-            value = option.attr("value")
+            value = option.value()
             val item = ProjectTask(name)
             if (value.isEmpty()) {
                 taskEmpty = item
