@@ -69,29 +69,17 @@ class ReportFormFragment : TimeFormFragment() {
 
     private val date: Calendar = Calendar.getInstance()
     private var filter = ReportFilter()
-    override var record: TimeRecord
-        get() = filter
-        set(value) {
-            filter.project = value.project
-            filter.task = value.task
-            filter.start = value.start
-            filter.finish = value.finish
-            filter.cost = value.cost
-        }
+    override var record: TimeRecord = filter
     private var startPickerDialog: DatePickerDialog? = null
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
     private val periods = ReportTimePeriod.values()
     private var firstRun = true
 
-    init {
-        date.timeZone = TimeZone.getTimeZone("UTC")
-        date.hourOfDay = 12
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        firstRun = (savedInstanceState == null)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -171,6 +159,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun periodItemSelected(period: ReportTimePeriod) {
         Timber.d("periodItemSelected period=$period")
+        val filter = this.filter
         filter.period = period
         filter.updateDates(date)
 
@@ -446,21 +435,24 @@ class ReportFormFragment : TimeFormFragment() {
         return cal
     }
 
-    private fun populateFilter() {
+    private fun populateFilter(): ReportFilter {
         Timber.v("populateFilter filter=$filter")
+        val filter = this.filter
         filter.showProjectField = showProjectField.isChecked
         filter.showTaskField = showTaskField.isChecked
         filter.showStartField = showStartField.isChecked
         filter.showFinishField = showFinishField.isChecked
         filter.showDurationField = showDurationField.isChecked
         filter.showNotesField = showNotesField.isChecked
+        filter.updateDates(date)
+        return filter
     }
 
     private fun generateReport() {
         Timber.v("generateReport filter=$filter")
-        populateFilter()
 
         if (!isNavDestination(R.id.reportFragment)) {
+            val filter = populateFilter()
             val args = Bundle()
             requireFragmentManager().putFragment(args, ReportFragment.EXTRA_CALLER, this)
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
@@ -495,6 +487,7 @@ class ReportFormFragment : TimeFormFragment() {
 
         if (filter != null) {
             this.filter = filter
+            this.record = filter
             this.firstRun = false
             bindFilter(filter)
         }
