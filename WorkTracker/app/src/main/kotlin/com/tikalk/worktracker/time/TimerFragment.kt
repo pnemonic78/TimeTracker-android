@@ -41,6 +41,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
@@ -302,16 +303,15 @@ class TimerFragment : TimeFormFragment() {
         if (parent != null) {
             parent.editRecord(record, true)
         } else {
-            val intent = Intent(context, TimeEditActivity::class.java)
-            if (record.id == TikalEntity.ID_NONE) {
-                intent.putExtra(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-                intent.putExtra(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-                intent.putExtra(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-                intent.putExtra(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-            } else {
-                intent.putExtra(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            }
-            startActivityForResult(intent, REQUEST_EDIT)
+            val args = Bundle()
+            args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+            requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, caller
+                ?: this)
+            findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
 
