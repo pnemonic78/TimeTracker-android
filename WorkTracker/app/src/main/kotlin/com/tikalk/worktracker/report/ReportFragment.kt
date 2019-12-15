@@ -45,7 +45,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.isShowing
-import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -83,7 +82,7 @@ class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
     private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private var totals = ReportTotals()
+    private val totalsData = MutableLiveData<ReportTotals>()
     private var filter = ReportFilter()
     private var listAdapter = ReportAdapter(filter)
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
@@ -96,6 +95,9 @@ class ReportFragment : InternetFragment(),
         firstRun = (savedInstanceState == null)
         recordsData.observe(this, Observer<List<TimeRecord>> { records ->
             bindList(records)
+        })
+        totalsData.observe(this, Observer<ReportTotals> { totals ->
+            bindTotals(totals)
         })
     }
 
@@ -117,8 +119,7 @@ class ReportFragment : InternetFragment(),
         // Fetch from local database first.
         loadPage()
             .subscribe({
-                populateTotals(recordsData.value, totals)
-                bindTotals(totals)
+                populateTotals(recordsData.value)
 
                 // Fetch from remote server.
                 service.generateReport(filter.toFields())
@@ -147,13 +148,9 @@ class ReportFragment : InternetFragment(),
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
         populateList(doc, records)
-        populateTotals(records, totals)
+        populateTotals(records)
         savePage(records)
-        runOnUiThread {
-            bindList(records)
-            bindTotals(totals)
-            if (progress) showProgress(false)
-        }
+        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -216,7 +213,8 @@ class ReportFragment : InternetFragment(),
         recordsData.postValue(records)
     }
 
-    private fun populateTotals(records: List<TimeRecord>?, totals: ReportTotals) {
+    private fun populateTotals(records: List<TimeRecord>?) {
+        val totals = totalsData.value ?: ReportTotals()
         totals.clear()
 
         var duration: Long
@@ -230,7 +228,7 @@ class ReportFragment : InternetFragment(),
             }
         }
 
-        bindTotals(totals)
+        totalsData.postValue(totals)
     }
 
     @MainThread
@@ -431,7 +429,7 @@ class ReportFragment : InternetFragment(),
         handleArguments()
         loadPage()
             .subscribe({
-                populateTotals(recordsData.value, totals)
+                populateTotals(recordsData.value)
                 if (firstRun) {
                     fetchPage(filter)
                 }
@@ -526,6 +524,7 @@ class ReportFragment : InternetFragment(),
 
         val context = requireContext()
         val records = recordsData.value ?: return
+        val totals = totalsData.value ?: return
 
         ReportExporterHTML(context, records, filter, totals)
             .subscribeOn(Schedulers.io())
