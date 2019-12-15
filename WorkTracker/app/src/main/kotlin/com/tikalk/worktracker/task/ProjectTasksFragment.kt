@@ -61,15 +61,16 @@ import org.jsoup.nodes.Element
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment(),
-    LoginFragment.OnLoginListener,
-    Observer<List<ProjectTask>> {
+    LoginFragment.OnLoginListener {
 
     private val tasksData = MutableLiveData<List<ProjectTask>>()
     private val listAdapter = ProjectTasksAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        tasksData.observe(this, this)
+        tasksData.observe(this, Observer<List<ProjectTask>> { tasks ->
+            bindList(tasks)
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -231,9 +232,5 @@ class ProjectTasksFragment : InternetFragment(),
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         Timber.e("login failure: $reason")
-    }
-
-    override fun onChanged(tasks: List<ProjectTask>) {
-        bindList(tasks)
     }
 }
