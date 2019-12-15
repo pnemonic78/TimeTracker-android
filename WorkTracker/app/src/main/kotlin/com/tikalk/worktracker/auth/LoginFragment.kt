@@ -164,8 +164,6 @@ class LoginFragment : InternetFragment,
             return
         }
 
-        val context: Context = requireContext()
-
         // Reset errors.
         loginInput.error = null
         passwordInput.error = null
