@@ -43,6 +43,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
@@ -499,10 +500,10 @@ class TimeEditFragment : TimeFormFragment() {
         val record = this.record
         Timber.v("submit $record")
 
+        bindRecord(record)
         if (!validateForm(record)) {
             return
         }
-        bindRecord(record)
 
         if (record.id == TikalEntity.ID_NONE) {
             val splits = record.split()
@@ -556,13 +557,7 @@ class TimeEditFragment : TimeFormFragment() {
 
                 if (isValidResponse(response)) {
                     val body = response.body()!!
-                    val errorMessage = getResponseError(body)
-                    if (errorMessage.isNullOrEmpty()) {
-                        listener?.onRecordEditSubmitted(this, record, last)
-                    } else {
-                        setErrorLabel(errorMessage)
-                        listener?.onRecordEditFailure(this, record, errorMessage)
-                    }
+                    processPage(body, last)
                 } else {
                     authenticateMain(true)
                 }
@@ -572,6 +567,16 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgressMain(false)
             })
             .addTo(disposables)
+    }
+
+    private fun processPage(html: String, last: Boolean) {
+        val errorMessage = getResponseError(html)
+        if (errorMessage.isNullOrEmpty()) {
+            listener?.onRecordEditSubmitted(this, record, last)
+        } else {
+            setErrorLabelMain(errorMessage)
+            listener?.onRecordEditFailure(this, record, errorMessage)
+        }
     }
 
     private fun deleteRecord() {
@@ -697,9 +702,14 @@ class TimeEditFragment : TimeFormFragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    @MainThread
     private fun setErrorLabel(text: CharSequence) {
         errorLabel.text = text
         errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+    }
+
+    private fun setErrorLabelMain(text: CharSequence) {
+        runOnUiThread { setErrorLabel(text) }
     }
 
     /**
