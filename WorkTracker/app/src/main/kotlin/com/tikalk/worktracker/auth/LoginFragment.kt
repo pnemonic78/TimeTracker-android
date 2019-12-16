@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.auth
 
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -47,7 +46,6 @@ import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.isShowing
 import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -279,9 +277,7 @@ class LoginFragment : InternetFragment,
 
     override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
         Timber.i("basic realm success for \"$realm\"")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        fragment.dismissAllowingStateLoss()
         attemptLogin()
     }
 

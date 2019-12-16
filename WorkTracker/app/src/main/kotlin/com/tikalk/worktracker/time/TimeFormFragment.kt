@@ -34,8 +34,6 @@ package com.tikalk.worktracker.time
 
 import android.widget.Toast
 import androidx.annotation.MainThread
-import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isShowing
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
@@ -408,9 +406,7 @@ abstract class TimeFormFragment : InternetFragment(),
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        fragment.dismissAllowingStateLoss()
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {

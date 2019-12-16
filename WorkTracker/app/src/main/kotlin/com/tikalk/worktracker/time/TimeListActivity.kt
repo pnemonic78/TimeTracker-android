@@ -40,7 +40,6 @@ import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.tikalk.app.findFragmentByClass
-import com.tikalk.app.isShowing
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.User
@@ -164,9 +163,7 @@ class TimeListActivity : InternetActivity(),
 
     override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
         Timber.i("profile success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        fragment.dismissAllowingStateLoss()
     }
 
     override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {

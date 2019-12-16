@@ -44,7 +44,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.isShowing
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
 import com.tikalk.worktracker.R
@@ -386,9 +385,7 @@ class ProfileFragment : InternetFragment(),
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         Timber.i("login success")
-        if (fragment.isShowing()) {
-            findNavController().popBackStack()
-        }
+        fragment.dismissAllowingStateLoss()
         run()
     }
 
