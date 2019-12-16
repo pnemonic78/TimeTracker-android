@@ -128,12 +128,12 @@ class TimerFragment : TimeFormFragment() {
         if (startTime <= 0L) {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
-            actionSwitcher.displayedChild = 0
+            actionSwitcher.displayedChild = CHILD_START
             activity?.invalidateOptionsMenu()
         } else {
             projectInput.isEnabled = false
             taskInput.isEnabled = false
-            actionSwitcher.displayedChild = 1
+            actionSwitcher.displayedChild = CHILD_STOP
             activity?.invalidateOptionsMenu()
 
             maybeStartTimer()
@@ -424,5 +424,8 @@ class TimerFragment : TimeFormFragment() {
         const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         private const val REQUEST_EDIT = 0xED17
+
+        private const val CHILD_START = 0
+        private const val CHILD_STOP = 1
     }
 }
