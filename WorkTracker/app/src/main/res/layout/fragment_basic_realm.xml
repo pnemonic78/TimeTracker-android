@@ -41,8 +41,7 @@
     android:paddingStart="@dimen/dialog_form_paddingStart"
     android:paddingTop="@dimen/dialog_form_paddingTop"
     android:paddingEnd="@dimen/dialog_form_paddingEnd"
-    android:paddingBottom="@dimen/dialog_form_paddingBottom"
-    tools:context="com.tikalk.worktracker.auth.BasicRealmActivity">
+    android:paddingBottom="@dimen/dialog_form_paddingBottom">
 
     <TextView
         android:id="@+id/realmTitle"

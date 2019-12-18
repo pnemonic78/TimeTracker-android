@@ -28,9 +28,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.tikalk.worktracker.auth.LoginActivity"
-            android:label="@string/activity_login" />
-        <activity
             android:name="com.tikalk.worktracker.time.TimeListActivity"
             android:label="@string/activity_time" />
         <activity

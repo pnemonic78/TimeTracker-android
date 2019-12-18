@@ -32,10 +32,8 @@
 
 package com.tikalk.worktracker.time
 
-import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
@@ -689,18 +687,6 @@ class TimeEditFragment : TimeFormFragment() {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == LoginFragment.REQUEST_LOGIN) {
-            if (resultCode == Activity.RESULT_OK) {
-                maybeFetchPage(date, record.id)
-            } else {
-                activity?.finish()
-            }
-            return
-        }
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     @MainThread

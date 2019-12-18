@@ -34,7 +34,6 @@ package com.tikalk.worktracker.auth
 
 import android.app.Dialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -43,10 +42,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.topLevel
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.model.BasicCredentials
@@ -329,37 +326,5 @@ class LoginFragment : InternetFragment,
         const val EXTRA_LOGIN = "login"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
-
-        const val REQUEST_LOGIN = 0x109E
-
-        @Synchronized
-        fun show(fragment: Fragment, submit: Boolean = false, listener: OnLoginListener, tag: String = "login_login") {
-            val topLevel = fragment.topLevel()
-            val fragmentManager = topLevel.requireFragmentManager()
-            if (!fragmentManager.isDestroyed) {
-                val fragmentExisting = fragmentManager.findFragmentByTag(tag) as LoginFragment?
-                if (fragmentExisting == null) {
-                    val fragmentArguments = fragment.arguments
-                    if (fragmentManager.isStateSaved) {
-                        val intent = Intent(fragment.requireContext(), LoginActivity::class.java)
-                        if (fragmentArguments != null) {
-                            intent.putExtras(fragmentArguments)
-                        }
-                        intent.putExtra(EXTRA_SUBMIT, submit)
-                        fragment.startActivityForResult(intent, REQUEST_LOGIN)
-                    } else {
-                        val args = Bundle().apply {
-                            if (fragmentArguments != null) {
-                                putAll(fragmentArguments)
-                            }
-                            putBoolean(EXTRA_SUBMIT, submit)
-                        }
-                        val fragmentLogin: LoginFragment = fragmentExisting ?: LoginFragment(args)
-                        fragmentLogin.addListener(listener)
-                        fragmentLogin.show(fragmentManager, tag)
-                    }
-                }
-            }
-        }
     }
 }
