@@ -43,6 +43,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
@@ -138,8 +139,7 @@ class TimeEditFragment : TimeFormFragment() {
         record.id = id
         record.status = if (id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
 
-        populateForm(record)
-        runOnUiThread { bindForm(record) }
+        populateAndBind()
     }
 
     override fun populateForm(date: Calendar, doc: Document) {
@@ -152,29 +152,29 @@ class TimeEditFragment : TimeFormFragment() {
 
         val inputStart = form.selectByName("start") ?: return
         val startValue = inputStart.value()
+        record.start = parseSystemTime(date, startValue)
 
         val inputFinish = form.selectByName("finish") ?: return
         val finishValue = inputFinish.value()
+        record.finish = parseSystemTime(date, finishValue)
 
         val inputNote = form.selectByName("note")
-        val noteValue = inputNote?.value()
-
-        record.start = parseSystemTime(date, startValue)
-        record.finish = parseSystemTime(date, finishValue)
-        record.note = noteValue ?: ""
+        val noteValue = inputNote?.value() ?: ""
+        record.note = noteValue
     }
 
     override fun populateForm(record: TimeRecord) {
+        Timber.v("populateForm record=$record")
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    record.project = projects.firstOrNull { it.id == projectId } ?: record.project
+                    setRecordProject(projects.firstOrNull { it.id == projectId } ?: record.project)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
-                    record.task = tasks.firstOrNull { it.id == taskId } ?: record.task
+                    setRecordTask(tasks.firstOrNull { it.id == taskId } ?: record.task)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -209,6 +209,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun bindForm(record: TimeRecord) {
         Timber.v("bindForm record=$record")
+        if (!isVisible) return
         val context: Context = requireContext()
 
         // Populate the tasks spinner before projects so that it can be filtered.
@@ -364,13 +365,13 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun projectItemSelected(project: Project) {
-        Timber.d("projectItemSelected $project")
+        Timber.v("projectItemSelected $project")
         record.project = project
         filterTasks(project)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
-        Timber.d("taskItemSelected $task")
+        Timber.v("taskItemSelected $task")
         record.task = task
     }
 
@@ -392,8 +393,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         loadPage(recordId)
             .subscribe({
-                populateForm(record)
-                bindForm(record)
+                populateAndBind()
                 maybeFetchPage(date, recordId)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -409,7 +409,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         super.onLoginSuccess(fragment, login)
-        maybeFetchPage(date, record.id)
+        run()
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
@@ -419,7 +419,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun fetchPage(date: Calendar, id: Long) {
         val dateFormatted = formatSystemDate(date)
-        Timber.d("fetchPage $dateFormatted $id")
+        Timber.v("fetchPage $dateFormatted id=$id")
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
@@ -435,8 +435,7 @@ class TimeEditFragment : TimeFormFragment() {
                 this.date = date
                 if (isValidResponse(response)) {
                     val body = response.body()!!
-                    populateForm(date, body, id)
-                    savePage()
+                    processPage(date, id, body)
                     showProgressMain(false)
                 } else {
                     authenticateMain()
@@ -455,10 +454,14 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
+    private fun processPage(date: Calendar, id: Long, html: String) {
+        populateForm(date, html, id)
+        savePage()
+    }
+
     private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
         return Single.fromCallable { loadFormFromDb(recordId) }
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun loadFormFromDb(recordId: Long = TikalEntity.ID_NONE) {
@@ -499,10 +502,10 @@ class TimeEditFragment : TimeFormFragment() {
         val record = this.record
         Timber.v("submit $record")
 
+        bindRecord(record)
         if (!validateForm(record)) {
             return
         }
-        bindRecord(record)
 
         if (record.id == TikalEntity.ID_NONE) {
             val splits = record.split()
@@ -556,13 +559,7 @@ class TimeEditFragment : TimeFormFragment() {
 
                 if (isValidResponse(response)) {
                     val body = response.body()!!
-                    val errorMessage = getResponseError(body)
-                    if (errorMessage.isNullOrEmpty()) {
-                        listener?.onRecordEditSubmitted(this, record, last)
-                    } else {
-                        setErrorLabel(errorMessage)
-                        listener?.onRecordEditFailure(this, record, errorMessage)
-                    }
+                    processSubmittedPage(body, last)
                 } else {
                     authenticateMain(true)
                 }
@@ -572,6 +569,17 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgressMain(false)
             })
             .addTo(disposables)
+    }
+
+    private fun processSubmittedPage(html: String, last: Boolean) {
+        Timber.v("processSubmittedPage last=$last")
+        val errorMessage = getResponseError(html)
+        if (errorMessage.isNullOrEmpty()) {
+            listener?.onRecordEditSubmitted(this, record, last)
+        } else {
+            setErrorLabelMain(errorMessage)
+            listener?.onRecordEditFailure(this, record, errorMessage)
+        }
     }
 
     private fun deleteRecord() {
@@ -625,10 +633,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             setRecordValue(recordParcel)
-            // Is there a view?
-            if (isVisible) {
-                bindForm(record)
-            }
+            bindForm(record)
         } else {
             record.id = savedInstanceState.getLong(STATE_RECORD_ID)
         }
@@ -640,6 +645,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
+        Timber.v("editRecord record=$record")
         setRecordValue(record.copy())
         this.date = date
         var args = arguments
@@ -697,9 +703,14 @@ class TimeEditFragment : TimeFormFragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    @MainThread
     private fun setErrorLabel(text: CharSequence) {
         errorLabel.text = text
         errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+    }
+
+    private fun setErrorLabelMain(text: CharSequence) {
+        runOnUiThread { setErrorLabel(text) }
     }
 
     /**

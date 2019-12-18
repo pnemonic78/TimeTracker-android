@@ -128,12 +128,12 @@ class TimerFragment : TimeFormFragment() {
         if (startTime <= 0L) {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
-            actionSwitcher.displayedChild = 0
+            actionSwitcher.displayedChild = CHILD_START
             activity?.invalidateOptionsMenu()
         } else {
             projectInput.isEnabled = false
             taskInput.isEnabled = false
-            actionSwitcher.displayedChild = 1
+            actionSwitcher.displayedChild = CHILD_STOP
             activity?.invalidateOptionsMenu()
 
             maybeStartTimer()
@@ -266,16 +266,15 @@ class TimerFragment : TimeFormFragment() {
         return null
     }
 
-    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
-        super.populateForm(date, doc, form, inputProjects, inputTasks)
-
-        val recordStarted = getStartedRecord()
-        populateForm(recordStarted ?: TimeRecord.EMPTY)
+    override fun populateForm(date: Calendar, doc: Document) {
+        super.populateForm(date, doc)
         runOnUiThread { bindForm(record) }
     }
 
-    override fun populateForm(recordStarted: TimeRecord) {
-        Timber.v("populateForm $recordStarted")
+    override fun populateForm(record: TimeRecord) {
+        Timber.v("populateForm record=$record")
+        val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
+        Timber.v("populateForm recordStarted=$recordStarted")
         val projects = this.projects
         val tasks = this.tasks
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
@@ -326,9 +325,7 @@ class TimerFragment : TimeFormFragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                val recordStarted = getStartedRecord()
-                populateForm(recordStarted ?: TimeRecord.EMPTY)
-                bindForm(record)
+                populateAndBind()
                 handleArguments()
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -424,5 +421,8 @@ class TimerFragment : TimeFormFragment() {
         const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         private const val REQUEST_EDIT = 0xED17
+
+        private const val CHILD_START = 0
+        private const val CHILD_STOP = 1
     }
 }

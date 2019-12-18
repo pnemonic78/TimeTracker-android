@@ -87,8 +87,11 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val consumer = DelayedConsumer(HTMLStreamBuilder(writer, prettyPrint = true, xhtmlCompatible = true)).html {
                 head {
                     title(titleText)
-                    style {
-                        +css
+                    style(MIME_TYPE_CSS) {
+                        unsafe {
+                            +"\n"
+                            +css
+                        }
                     }
                 }
                 body {
@@ -106,6 +109,8 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                             }
                         }
                     }
+
+                    br
 
                     table {
                         attributes["border"] = "0"
@@ -253,6 +258,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
 
     companion object {
         const val MIME_TYPE = "text/html"
+        const val MIME_TYPE_CSS = "text/css"
         const val EXTENSION = ".html"
     }
 }
