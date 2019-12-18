@@ -666,8 +666,8 @@ class TimeListFragment : TimeFormFragment(),
             if (args.containsKey(EXTRA_ACTION)) {
                 val action = args.getString(EXTRA_ACTION)
                 if (action == ACTION_STOP) {
-                    args.remove(EXTRA_ACTION)
                     stopTimer()
+                    args.remove(EXTRA_ACTION)
                 }
             }
         }

@@ -201,6 +201,7 @@ abstract class TimeFormFragment : InternetFragment(),
     open fun populateForm(date: Calendar, doc: Document) {
         val form = findForm(doc) ?: return
         populateForm(date, doc, form)
+        populateForm(record)
     }
 
     open fun populateForm(date: Calendar, doc: Document, form: FormElement) {
@@ -344,6 +345,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     fun loadForm() {
+        Timber.v("loadForm")
         loadFormFromDb()
 
         val recordStarted = preferences.getStartedRecord()
@@ -400,6 +402,7 @@ abstract class TimeFormFragment : InternetFragment(),
 
     fun populateAndBind() {
         val record = this.record
+        Timber.v("populateAndBind record=$record")
         populateForm(record)
         runOnUiThread { bindForm(record) }
     }
@@ -414,14 +417,17 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     protected open fun setRecordValue(record: TimeRecord) {
+        Timber.d("setRecordValue record=$record")
         this.record = record
     }
 
     protected open fun setRecordProject(project: Project) {
+        Timber.d("setRecordProject project=$project")
         record.project = project
     }
 
     protected open fun setRecordTask(task: ProjectTask) {
+        Timber.d("setRecordTask task=$task")
         record.task = task
     }
 

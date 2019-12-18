@@ -73,6 +73,7 @@ abstract class TrackerFragment : TikalFragment {
                     return caller
                 }
             } catch (e: IllegalStateException) {
+                // ignore
             }
             fragment = fragment.parentFragment ?: return null
         }
