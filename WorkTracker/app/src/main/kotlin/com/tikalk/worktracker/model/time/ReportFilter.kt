@@ -126,7 +126,13 @@ class ReportFilter : TimeRecord {
             put("chtask", "1")
             put("chstart", "1")
             put("chfinish", "1")
-            put("chnote", "1")
+
+            if (showNoteField) {
+                put("chnote", "1")
+            }
+            if (showDurationField) {
+                put("chduration", "1")
+            }
             //put("chcost", "1")
             //put("chtotalsonly", "1")
 

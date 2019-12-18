@@ -49,7 +49,7 @@ import com.tikalk.worktracker.model.ProjectTask
         ReportRecord::class,
         TimeRecordEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class TrackerDatabase : RoomDatabase() {

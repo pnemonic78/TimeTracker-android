@@ -65,7 +65,7 @@ data class ProjectTask(
     }
 }
 
-inline fun ProjectTask?.isNullOrEmpty(): Boolean {
+fun ProjectTask?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }
 
