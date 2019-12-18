@@ -656,10 +656,10 @@ class TimeListFragment : TimeFormFragment(),
 
                 handleArguments()
 
-                showProgress(false)
+                showProgressMain(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
+                showProgressMain(false)
             })
             .addTo(disposables)
     }
