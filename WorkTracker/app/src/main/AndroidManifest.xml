@@ -28,22 +28,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.tikalk.worktracker.auth.LoginActivity"
-            android:label="@string/activity_login" />
-        <activity
-            android:name="com.tikalk.worktracker.auth.BasicRealmActivity"
-            android:label="@string/activity_basic_realm" />
-        <activity
             android:name="com.tikalk.worktracker.time.TimeListActivity"
             android:label="@string/activity_time" />
-        <activity
-            android:name="com.tikalk.worktracker.time.TimeEditActivity"
-            android:label="@string/activity_time"
-            android:parentActivityName=".time.TimeListActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".time.TimeListActivity" />
-        </activity>
 
         <receiver android:name=".time.TimeReceiver">
             <intent-filter>

@@ -38,8 +38,7 @@
     android:paddingStart="@dimen/fragment_form_paddingStart"
     android:paddingTop="@dimen/fragment_form_paddingTop"
     android:paddingEnd="@dimen/fragment_form_paddingEnd"
-    android:paddingBottom="@dimen/fragment_form_paddingBottom"
-    tools:context=".time.TimeEditActivity">
+    android:paddingBottom="@dimen/fragment_form_paddingBottom">
 
     <ImageView
         android:id="@+id/projectIcon"
