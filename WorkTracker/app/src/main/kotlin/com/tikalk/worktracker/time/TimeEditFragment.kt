@@ -462,7 +462,6 @@ class TimeEditFragment : TimeFormFragment() {
     private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
         return Single.fromCallable { loadFormFromDb(recordId) }
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     private fun loadFormFromDb(recordId: Long = TikalEntity.ID_NONE) {
