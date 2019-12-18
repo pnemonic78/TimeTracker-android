@@ -92,10 +92,12 @@ class TimeListFragment : TimeFormFragment(),
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
+    private var firstRun = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        firstRun = (savedInstanceState == null)
         recordsData.observe(this, Observer<List<TimeRecord>> { records ->
             bindList(date, records)
         })
@@ -141,10 +143,6 @@ class TimeListFragment : TimeFormFragment(),
             }
         })
         list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
-
-        if (savedInstanceState == null) {
-            fetchPage(date, false)
-        }
     }
 
     override fun onRecordClick(record: TimeRecord) {
@@ -157,6 +155,9 @@ class TimeListFragment : TimeFormFragment(),
 
     private var fetchingPage = false
 
+    /**
+     * Fetch from remote server.
+     */
     private fun fetchPage(date: Calendar, progress: Boolean = true) {
         val dateFormatted = formatSystemDate(date)
         Timber.d("fetchPage $dateFormatted fetching=$fetchingPage")
@@ -646,7 +647,7 @@ class TimeListFragment : TimeFormFragment(),
             .subscribe({
                 bindForm()
 
-                if (projects.isEmpty() or tasks.isEmpty()) {
+                if (firstRun or projects.isEmpty() or tasks.isEmpty()) {
                     fetchPage(date)
                 }
 

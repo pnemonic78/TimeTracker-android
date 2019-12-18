@@ -393,8 +393,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         loadPage(recordId)
             .subscribe({
-                populateForm(record)
-                bindForm(record)
+                populateAndBind()
                 maybeFetchPage(date, recordId)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")

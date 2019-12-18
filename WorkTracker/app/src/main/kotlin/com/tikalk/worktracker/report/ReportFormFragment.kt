@@ -143,7 +143,6 @@ class ReportFormFragment : TimeFormFragment() {
     private fun projectItemSelected(project: Project) {
         Timber.d("projectItemSelected project=$project")
         setRecordProject(project)
-        if (!isVisible) return
         filterTasks(project)
     }
 
@@ -154,6 +153,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun filterTasks(project: Project) {
         Timber.d("filterTasks project=$project")
+        if (!isVisible) return
         val context: Context = requireContext()
         val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
