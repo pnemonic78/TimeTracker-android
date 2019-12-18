@@ -62,7 +62,6 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_time_list.*
@@ -153,6 +152,25 @@ class TimeListFragment : TimeFormFragment(),
         deleteRecord(record)
     }
 
+    /**
+     * Load and then fetch.
+     */
+    private fun loadAndFetchPage(date: Calendar) {
+        val dateFormatted = formatSystemDate(date)
+        Timber.v("loadAndFetchPage $dateFormatted")
+
+        // Fetch from local database first.
+        loadPage(date)
+            .subscribe({
+                this.date = date
+                bindForm()
+                fetchPage(date)
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+            })
+            .addTo(disposables)
+    }
+
     private var fetchingPage = false
 
     /**
@@ -166,33 +184,21 @@ class TimeListFragment : TimeFormFragment(),
         // Show a progress spinner, and kick off a background task to fetch the page.
         if (progress) showProgressMain(true)
 
-        // Fetch from local database first.
-        loadPage(date)
-            .subscribe({
-                this.date = date
-                bindForm()
-
-                // Fetch from remote server.
-                service.fetchTimes(dateFormatted)
-                    .subscribeOn(Schedulers.io())
-                    .subscribe({ response ->
-                        if (isValidResponse(response)) {
-                            val html = response.body()!!
-                            processPage(html, date, progress)
-                        } else {
-                            authenticateMain(loginAutomatic)
-                        }
-                        fetchingPage = false
-                    }, { err ->
-                        Timber.e(err, "Error fetching page: ${err.message}")
-                        handleErrorMain(err)
-                        if (progress) showProgressMain(false)
-                        fetchingPage = false
-                    })
-                    .addTo(disposables)
+        service.fetchTimes(dateFormatted)
+            .subscribeOn(Schedulers.io())
+            .subscribe({ response ->
+                if (isValidResponse(response)) {
+                    this.date = date
+                    val html = response.body()!!
+                    processPage(html, date, progress)
+                } else {
+                    authenticateMain(loginAutomatic)
+                }
+                fetchingPage = false
             }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                if (progress) showProgress(false)
+                Timber.e(err, "Error fetching page: ${err.message}")
+                handleErrorMain(err)
+                if (progress) showProgressMain(false)
                 fetchingPage = false
             })
             .addTo(disposables)
@@ -310,7 +316,7 @@ class TimeListFragment : TimeFormFragment(),
                 cal.year = pickedYear
                 cal.month = pickedMonth
                 cal.dayOfMonth = pickedDayOfMonth
-                fetchPage(cal)
+                loadAndFetchPage(cal)
                 hideEditor()
             }
             picker = DatePickerDialog(requireContext(), listener, year, month, dayOfMonth)
@@ -492,7 +498,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.v("navigateTomorrow")
         val cal = date
         cal.add(Calendar.DATE, 1)
-        fetchPage(cal)
+        loadAndFetchPage(cal)
         hideEditor()
     }
 
@@ -500,7 +506,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.v("navigateYesterday")
         val cal = date
         cal.add(Calendar.DATE, -1)
-        fetchPage(cal)
+        loadAndFetchPage(cal)
         hideEditor()
     }
 
@@ -577,7 +583,6 @@ class TimeListFragment : TimeFormFragment(),
             loadRecords(db, date)
         }
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
     }
 
     override fun saveFormToDb() {
@@ -681,7 +686,7 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {
         super.onLoginSuccess(fragment, login)
-        fetchPage(date)
+        loadAndFetchPage(date)
     }
 
     override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
@@ -782,7 +787,7 @@ class TimeListFragment : TimeFormFragment(),
         if (requestCode == LoginFragment.REQUEST_LOGIN) {
             if (resultCode == Activity.RESULT_OK) {
                 // Fetch the list for the user.
-                fetchPage(date)
+                loadAndFetchPage(date)
             } else {
                 activity?.finish()
             }
