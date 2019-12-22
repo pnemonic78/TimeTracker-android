@@ -777,7 +777,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
+    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String) {
         Timber.i("record deleted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
@@ -805,7 +805,16 @@ class TimeListFragment : TimeFormFragment(),
                     bindList(date, recordsNew)
                 }
             }
-            fetchPage(date, false)
+            if (responseHtml.isEmpty()) {
+                fetchPage(date, false)
+            } else {
+                Single.just(responseHtml)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe { html ->
+                        processPage(html, date, false)
+                    }
+                    .addTo(disposables)
+            }
         }
     }
 

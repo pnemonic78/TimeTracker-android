@@ -601,7 +601,8 @@ class TimeEditFragment : TimeFormFragment() {
             .subscribe({ response ->
                 showProgress(false)
                 if (isValidResponse(response)) {
-                    listener?.onRecordEditDeleted(this, record)
+                    val body = response.body()
+                    listener?.onRecordEditDeleted(this, record, body ?: "")
                 } else {
                     authenticate()
                 }
@@ -715,8 +716,9 @@ class TimeEditFragment : TimeFormFragment() {
          * The record was deleted.
          * @param fragment the editor fragment.
          * @param record the record.
+         * @param responseHtml the response HTML.
          */
-        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord)
+        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String = "")
 
         /**
          * The record was marked as favorite.
