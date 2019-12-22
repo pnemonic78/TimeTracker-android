@@ -573,7 +573,7 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
-            listener?.onRecordEditSubmitted(this, record, last)
+            listener?.onRecordEditSubmitted(this, record, last, html)
         } else {
             setErrorLabelMain(errorMessage)
             listener?.onRecordEditFailure(this, record, errorMessage)
@@ -709,8 +709,9 @@ class TimeEditFragment : TimeFormFragment() {
          * @param fragment the editor fragment.
          * @param record the record.
          * @param last is this the last record in a series that was submitted?
+         * @param responseHtml the response HTML.
          */
-        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true)
+        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true, responseHtml: String = "")
 
         /**
          * The record was deleted.

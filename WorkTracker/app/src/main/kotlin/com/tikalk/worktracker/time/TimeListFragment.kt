@@ -727,7 +727,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
+    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean, responseHtml: String) {
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
@@ -749,7 +749,7 @@ class TimeListFragment : TimeFormFragment(),
                 requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
                 // Refresh the list with the inserted item.
-                fetchPage(date, false)
+                maybeFetchPage(date, responseHtml)
                 return
             }
         }
@@ -773,7 +773,7 @@ class TimeListFragment : TimeFormFragment(),
                     }
                 }
             }
-            fetchPage(date, false)
+            maybeFetchPage(date, responseHtml)
         }
     }
 
@@ -805,16 +805,7 @@ class TimeListFragment : TimeFormFragment(),
                     bindList(date, recordsNew)
                 }
             }
-            if (responseHtml.isEmpty()) {
-                fetchPage(date, false)
-            } else {
-                Single.just(responseHtml)
-                    .subscribeOn(Schedulers.io())
-                    .subscribe { html ->
-                        processPage(html, date, false)
-                    }
-                    .addTo(disposables)
-            }
+            maybeFetchPage(date, responseHtml)
         }
     }
 
@@ -879,6 +870,19 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
         return quota * DateUtils.HOUR_IN_MILLIS
+    }
+
+    private fun maybeFetchPage(date: Calendar, responseHtml: String) {
+        if (responseHtml.isEmpty()) {
+            fetchPage(date, false)
+        } else {
+            Single.just(responseHtml)
+                .subscribeOn(Schedulers.io())
+                .subscribe { html ->
+                    processPage(html, date, false)
+                }
+                .addTo(disposables)
+        }
     }
 
     companion object {
