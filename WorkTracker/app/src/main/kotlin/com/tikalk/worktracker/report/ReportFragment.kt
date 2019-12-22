@@ -128,7 +128,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun fetchPage(filter: ReportFilter, progress: Boolean = true) {
-        Timber.d("fetchPage filter=$filter")
+        Timber.i("fetchPage filter=$filter")
         // Show a progress spinner, and kick off a background task to fetch the page.
         if (progress) showProgress(true)
 
@@ -286,7 +286,7 @@ class ReportFragment : InternetFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -399,7 +399,7 @@ class ReportFragment : InternetFragment(),
 
     private fun loadPage(): Single<Unit> {
         val filter = filterData.value
-        Timber.v("loadPage $filter")
+        Timber.i("loadPage $filter")
         return Single.fromCallable {
             loadProjectsWithTasks(db)
             if (filter != null) {
@@ -445,7 +445,7 @@ class ReportFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
 
         val args = arguments
         if (args != null) {
@@ -508,7 +508,7 @@ class ReportFragment : InternetFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ uri ->
-                Timber.v("Exported CSV to $uri")
+                Timber.i("Exported CSV to $uri")
                 shareFile(context, uri, ReportExporterCSV.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
@@ -533,7 +533,7 @@ class ReportFragment : InternetFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
-                Timber.v("Exported HTML to $file")
+                Timber.i("Exported HTML to $file")
                 shareFile(context, file, ReportExporterHTML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
@@ -557,7 +557,7 @@ class ReportFragment : InternetFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
-                Timber.v("Exported XML to $file")
+                Timber.i("Exported XML to $file")
                 shareFile(context, file, ReportExporterXML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
@@ -587,7 +587,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun savePage(records: List<TimeRecord>) {
-        Timber.v("savePage")
+        Timber.i("savePage")
         saveRecords(db, records)
     }
 

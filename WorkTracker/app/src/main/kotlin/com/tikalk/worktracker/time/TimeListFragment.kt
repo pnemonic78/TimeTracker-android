@@ -155,7 +155,7 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun loadAndFetchPage(date: Calendar) {
         val dateFormatted = formatSystemDate(date)
-        Timber.v("loadAndFetchPage $dateFormatted")
+        Timber.i("loadAndFetchPage $dateFormatted")
 
         // Fetch from local database first.
         loadPage(date)
@@ -176,7 +176,7 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun fetchPage(date: Calendar, progress: Boolean = true) {
         val dateFormatted = formatSystemDate(date)
-        Timber.d("fetchPage $dateFormatted fetching=$fetchingPage")
+        Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
         // Show a progress spinner, and kick off a background task to fetch the page.
@@ -282,7 +282,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -416,7 +416,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
-        Timber.d("editRecord record=$record timer=$timer")
+        Timber.i("editRecord record=$record timer=$timer")
         recordForTimer = timer
 
         val form = findTopFormFragment()
@@ -437,7 +437,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun deleteRecord(record: TimeRecord) {
-        Timber.d("deleteRecord record=$record")
+        Timber.i("deleteRecord record=$record")
         // Show a progress spinner, and kick off a background task to delete the record.
         showProgress(true)
 
@@ -478,7 +478,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     fun stopTimer() {
-        Timber.v("stopTimer")
+        Timber.i("stopTimer")
         val form = findTopFormFragment()
         if (form is TimerFragment) {
             form.stopTimer()
@@ -493,7 +493,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun navigateTomorrow() {
-        Timber.v("navigateTomorrow")
+        Timber.i("navigateTomorrow")
         val cal = date
         cal.add(Calendar.DATE, 1)
         loadAndFetchPage(cal)
@@ -501,7 +501,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun navigateYesterday() {
-        Timber.v("navigateYesterday")
+        Timber.i("navigateYesterday")
         val cal = date
         cal.add(Calendar.DATE, -1)
         loadAndFetchPage(cal)
@@ -644,7 +644,7 @@ class TimeListFragment : TimeFormFragment(),
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         showProgress(true)
         loadPage(date)
             .subscribe({

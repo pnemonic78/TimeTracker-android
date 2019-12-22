@@ -117,7 +117,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     fun populateProjects(select: Element, target: MutableList<Project>) {
-        Timber.v("populateProjects")
+        Timber.i("populateProjects")
         val projects = ArrayList<Project>()
 
         val options = select.select("option")
@@ -140,7 +140,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
-        Timber.v("populateTasks")
+        Timber.i("populateTasks")
         val tasks = ArrayList<ProjectTask>()
 
         val options = select.select("option")
@@ -169,7 +169,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     open fun populateTaskIds(doc: Document, projects: List<Project>) {
-        Timber.v("populateTaskIds")
+        Timber.i("populateTaskIds")
         val scriptText = findTaskIds(doc) ?: return
 
         if (scriptText.isNotEmpty()) {
@@ -228,7 +228,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     open fun saveFormToDb() {
-        Timber.v("saveFormToDb")
+        Timber.i("saveFormToDb")
         saveProjects(db)
         saveTasks(db)
         saveProjectTaskKeys(db)
@@ -345,7 +345,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     fun loadForm() {
-        Timber.v("loadForm")
+        Timber.i("loadForm")
         loadFormFromDb()
 
         val recordStarted = preferences.getStartedRecord()
@@ -355,13 +355,13 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     protected fun loadFormFromDb() {
-        Timber.v("loadFormFromDb")
+        Timber.i("loadFormFromDb")
         loadFormFromDb(db)
     }
 
     @Synchronized
     protected open fun loadFormFromDb(db: TrackerDatabase) {
-        Timber.v("loadFormFromDb")
+        Timber.i("loadFormFromDb")
         loadProjectsWithTasks(db)
     }
 
@@ -395,14 +395,14 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     protected open fun markFavorite(record: TimeRecord) {
-        Timber.v("markFavorite $record")
+        Timber.i("markFavorite $record")
         preferences.setFavorite(record)
         Toast.makeText(requireContext(), getString(R.string.favorite_marked, record.project.name, record.task.name), Toast.LENGTH_LONG).show()
     }
 
     fun populateAndBind() {
         val record = this.record
-        Timber.v("populateAndBind record=$record")
+        Timber.i("populateAndBind record=$record")
         populateForm(record)
         runOnUiThread { bindForm(record) }
     }

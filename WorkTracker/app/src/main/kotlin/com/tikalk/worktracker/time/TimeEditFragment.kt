@@ -162,7 +162,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun populateForm(record: TimeRecord) {
-        Timber.v("populateForm record=$record")
+        Timber.i("populateForm record=$record")
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
@@ -206,7 +206,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm record=$record")
+        Timber.i("bindForm record=$record")
         if (!isVisible) return
         val context: Context = requireContext()
 
@@ -363,18 +363,18 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun projectItemSelected(project: Project) {
-        Timber.v("projectItemSelected $project")
+        Timber.i("projectItemSelected $project")
         record.project = project
         filterTasks(project)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
-        Timber.v("taskItemSelected $task")
+        Timber.i("taskItemSelected $task")
         record.task = task
     }
 
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {
@@ -417,7 +417,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun fetchPage(date: Calendar, id: Long) {
         val dateFormatted = formatSystemDate(date)
-        Timber.v("fetchPage $dateFormatted id=$id")
+        Timber.i("fetchPage $dateFormatted id=$id")
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
@@ -487,7 +487,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -498,7 +498,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun submit() {
         val record = this.record
-        Timber.v("submit $record")
+        Timber.i("submit $record")
 
         bindRecord(record)
         if (!validateForm(record)) {
@@ -521,7 +521,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
-        Timber.v("submit $record first=$first last=$last")
+        Timber.i("submit $record first=$first last=$last")
         // Show a progress spinner, and kick off a background task to submit the form.
         if (first) {
             showProgress(true)
@@ -570,7 +570,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processSubmittedPage(html: String, last: Boolean) {
-        Timber.v("processSubmittedPage last=$last")
+        Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
             listener?.onRecordEditSubmitted(this, record, last)
@@ -585,7 +585,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun deleteRecord(record: TimeRecord) {
-        Timber.v("deleteRecord $record")
+        Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
             listener?.onRecordEditDeleted(this, record)
             return
@@ -643,7 +643,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
-        Timber.v("editRecord record=$record")
+        Timber.i("editRecord record=$record")
         setRecordValue(record.copy())
         this.date = date
         var args = arguments

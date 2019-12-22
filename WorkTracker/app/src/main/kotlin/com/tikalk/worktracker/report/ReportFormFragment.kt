@@ -136,7 +136,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm record=$record")
+        Timber.i("bindForm record=$record")
         bindFilter(record as ReportFilter)
     }
 
@@ -197,7 +197,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
 
         loadPage()
             .subscribeOn(Schedulers.io())
@@ -224,7 +224,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -238,7 +238,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun fetchPage() {
-        Timber.d("fetchPage")
+        Timber.i("fetchPage")
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
@@ -311,7 +311,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun populateTaskIds(doc: Document, projects: List<Project>) {
-        Timber.v("populateTaskIds")
+        Timber.i("populateTaskIds")
         val scriptText = findTaskIds(doc) ?: return
 
         if (scriptText.isNotEmpty()) {
@@ -349,7 +349,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun bindFilter(filter: ReportFilter) {
-        Timber.v("bindFilter filter=$filter")
+        Timber.i("bindFilter filter=$filter")
         val context: Context = requireContext()
 
         // Populate the tasks spinner before projects so that it can be filtered.
@@ -460,7 +460,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun populateFilter(): ReportFilter {
-        Timber.v("populateFilter")
+        Timber.i("populateFilter")
         val filter = filterData.value ?: ReportFilter()
         filter.showProjectField = showProjectField.isChecked
         filter.showTaskField = showTaskField.isChecked
@@ -473,7 +473,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun generateReport() {
-        Timber.v("generateReport")
+        Timber.i("generateReport")
 
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()
@@ -499,13 +499,13 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        Timber.v("onSaveInstanceState")
+        Timber.i("onSaveInstanceState")
         super.onSaveInstanceState(outState)
         outState.putParcelable(STATE_FILTER, filterData.value)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        Timber.v("onRestoreInstanceState")
+        Timber.i("onRestoreInstanceState")
         super.onRestoreInstanceState(savedInstanceState)
         this.firstRun = false
         filterData.value = savedInstanceState.getParcelable(STATE_FILTER) ?: ReportFilter()

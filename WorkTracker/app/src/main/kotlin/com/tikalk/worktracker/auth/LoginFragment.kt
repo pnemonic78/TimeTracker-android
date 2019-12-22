@@ -128,7 +128,7 @@ class LoginFragment : InternetFragment,
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_LOGIN)) {

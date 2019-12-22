@@ -90,7 +90,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
 
     override fun onActivityStarted(activity: Activity) {
         active++
-        Timber.v("onActivityStarted $activity $active")
+        Timber.i("onActivityStarted $activity $active")
         TimerWorker.hideNotification(this)
     }
 
@@ -102,7 +102,7 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
 
     override fun onActivityStopped(activity: Activity) {
         active = max(0, active - 1)
-        Timber.v("onActivityStopped $activity $active isFinishing=${activity.isFinishing}")
+        Timber.i("onActivityStopped $activity $active isFinishing=${activity.isFinishing}")
         if (active == 0) {
             TimerWorker.maybeShowNotification(this)
         }
