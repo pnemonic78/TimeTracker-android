@@ -33,6 +33,7 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.Maybe
 import io.reactivex.Single
 
@@ -85,6 +86,16 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      */
     @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
     fun queryByDateSingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
+
+    /**
+     * Select the totals.
+     *
+     * @return totals between the dates.
+     */
+    @Query("""SELECT SUM(finish - start) AS daily, 0 AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (start >= :startDay) AND (finish <= :finishDay)
+        UNION ALL SELECT 0 AS daily, SUM(finish - start) AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (start >= :startWeek) AND (finish <= :finishWeek)
+        UNION ALL SELECT 0 AS daily, 0 AS weekly, SUM(finish - start) AS monthly, 0 AS remaining FROM record WHERE (start >= :startMonth) AND (finish <= :finishMonth)""")
+    fun queryTotals(startDay: Long, finishDay: Long, startWeek: Long, finishWeek: Long, startMonth: Long, finishMonth: Long): List<TimeTotals>
 
     /**
      * Delete all records.

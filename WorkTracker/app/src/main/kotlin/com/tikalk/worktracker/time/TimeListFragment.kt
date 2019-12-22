@@ -517,7 +517,7 @@ class TimeListFragment : TimeFormFragment(),
         if (parent == null) {
             return
         }
-        val totals = totalsData.value ?: TimeTotals()
+        val totals = TimeTotals()
 
         val table = findTotalsTable(doc, parent) ?: return
         val cells = table.getElementsByTag("td")
@@ -580,6 +580,7 @@ class TimeListFragment : TimeFormFragment(),
         return Single.fromCallable {
             loadFormFromDb(db)
             loadRecords(db, date)
+            loadTotals(db, date)
         }
             .subscribeOn(Schedulers.io())
     }
@@ -642,6 +643,35 @@ class TimeListFragment : TimeFormFragment(),
             finish.setToEndOfDay()
             recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
         }
+    }
+
+    private fun loadTotals(db: TrackerDatabase, date: Calendar) {
+        val totals = TimeTotals()
+
+        val cal = date.copy()
+        val startDay = cal.setToStartOfDay().timeInMillis
+        val finishDay = cal.setToEndOfDay().timeInMillis
+
+        cal.dayOfWeek = Calendar.SUNDAY
+        val startWeek = cal.setToStartOfDay().timeInMillis
+        cal.dayOfWeek = Calendar.SATURDAY
+        val finishWeek = cal.setToEndOfDay().timeInMillis
+
+        cal.dayOfMonth = 1
+        val startMonth = cal.setToStartOfDay().timeInMillis
+        cal.dayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val finishMonth = cal.setToEndOfDay().timeInMillis
+
+        val recordsDao = db.timeRecordDao()
+        val totalsAll = recordsDao.queryTotals(startDay, finishDay, startWeek, finishWeek, startMonth, finishMonth)
+        if (totalsAll.size >= 3) {
+            totals.daily = totalsAll[0].daily
+            totals.weekly = totalsAll[1].weekly
+            totals.monthly = totalsAll[2].monthly
+        }
+        val quota = calculateQuota(date)
+        totals.remaining = quota - totals.monthly
+        totalsData.postValue(totals)
     }
 
     @MainThread
@@ -829,6 +859,19 @@ class TimeListFragment : TimeFormFragment(),
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
     }
 
+    private fun calculateQuota(date: Calendar): Long {
+        var quota = 0L
+        val day = date.copy()
+        val lastDayOfMonth = day.getActualMaximum(Calendar.DAY_OF_MONTH)
+        for (dayOfMonth in 1..lastDayOfMonth) {
+            day.dayOfMonth = dayOfMonth
+            if (day.dayOfWeek in WORK_DAYS) {
+                quota += WORK_HOURS
+            }
+        }
+        return quota * DateUtils.HOUR_IN_MILLIS
+    }
+
     companion object {
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
@@ -836,5 +879,8 @@ class TimeListFragment : TimeFormFragment(),
         const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+
+        private val WORK_DAYS = intArrayOf(Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY)
+        private const val WORK_HOURS = 9L
     }
 }
