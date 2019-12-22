@@ -119,7 +119,7 @@ class ProjectTasksFragment : InternetFragment(),
     private fun fetchPage() {
         Timber.i("fetchPage")
         // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(true)
+        showProgress(tasksData.value?.isEmpty() ?: true)
 
         // Fetch from remote server.
         service.fetchProjectTasks()
