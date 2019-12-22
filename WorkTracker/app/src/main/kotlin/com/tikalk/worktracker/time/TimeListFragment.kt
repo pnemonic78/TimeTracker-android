@@ -45,6 +45,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -626,6 +627,7 @@ class TimeListFragment : TimeFormFragment(),
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
         val recordsDb = queryRecords(db, day)
         val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
+            .sortedBy { it.startTime }
         recordsData.postValue(records)
     }
 
@@ -698,6 +700,18 @@ class TimeListFragment : TimeFormFragment(),
     override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
+            val records = recordsData.value
+            if (records != null) {
+                val recordsNew: MutableList<TimeRecord> = if (records is MutableList<TimeRecord>) {
+                    records
+                } else {
+                    ArrayList(records)
+                }
+                recordsNew.add(record)
+                recordsNew.sortBy { it.startTime }
+                runOnUiThread { bindList(date, recordsNew) }
+            }
+
             if (recordForTimer) {
                 val args = Bundle()
                 args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
@@ -705,14 +719,31 @@ class TimeListFragment : TimeFormFragment(),
                 requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
                 // Refresh the list with the inserted item.
-                fetchPage(date)
+                fetchPage(date, false)
                 return
             }
         }
+
         if (last) {
             showTimer()
             // Refresh the list with the edited item.
-            fetchPage(date)
+            if (record.id != TikalEntity.ID_NONE) {
+                val records = recordsData.value
+                if (records != null) {
+                    val recordsNew: MutableList<TimeRecord> = if (records is MutableList<TimeRecord>) {
+                        records
+                    } else {
+                        ArrayList(records)
+                    }
+                    val index = recordsNew.indexOfFirst { it.id == record.id }
+                    if (index >= 0) {
+                        recordsNew[index] = record
+                        recordsNew.sortBy { it.startTime }
+                        runOnUiThread { bindList(date, recordsNew) }
+                    }
+                }
+            }
+            fetchPage(date, false)
         }
     }
 
@@ -730,8 +761,21 @@ class TimeListFragment : TimeFormFragment(),
             }
         } else {
             showTimer()
-            // Refresh the list with the edited item.
-            fetchPage(date)
+            // Refresh the list with the deleted item.
+            val records = recordsData.value
+            if (records != null) {
+                val index = records.indexOf(record)
+                if (index >= 0) {
+                    val recordsNew: MutableList<TimeRecord> = if (records is MutableList<TimeRecord>) {
+                        records
+                    } else {
+                        ArrayList(records)
+                    }
+                    recordsNew.removeAt(index)
+                    bindList(date, recordsNew)
+                }
+            }
+            fetchPage(date, false)
         }
     }
 

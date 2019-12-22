@@ -113,8 +113,7 @@ abstract class InternetFragment : TrackerFragment {
      * @param show visible?
      */
     protected fun showProgressMain(show: Boolean) {
-        if (!isVisible) return
-        (activity as InternetActivity?)?.showProgressMain(show)
+        runOnUiThread { showProgress(show) }
     }
 
     /**
