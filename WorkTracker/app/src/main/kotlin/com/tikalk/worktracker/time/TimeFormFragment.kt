@@ -137,6 +137,8 @@ abstract class TimeFormFragment : InternetFragment(),
 
         target.clear()
         target.addAll(projects.sortedBy { it.name })
+
+        saveProjects(db, projects)
     }
 
     fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
@@ -160,6 +162,8 @@ abstract class TimeFormFragment : InternetFragment(),
 
         target.clear()
         target.addAll(tasks.sortedBy { it.name })
+
+        saveTasks(db, tasks)
     }
 
     protected open fun findTaskIds(doc: Document): String? {
@@ -191,6 +195,8 @@ abstract class TimeFormFragment : InternetFragment(),
                 project?.addTasks(tasks)
             }
         }
+
+        saveProjectTaskKeys(db, projects)
     }
 
     fun populateForm(date: Calendar, html: String): Document {
@@ -224,19 +230,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return doc.selectFirst("form[name='timeRecordForm']") as FormElement?
     }
 
-    fun savePage() {
-        saveFormToDb()
-    }
-
-    open fun saveFormToDb() {
-        Timber.i("saveFormToDb")
-        saveProjects(db)
-        saveTasks(db)
-        saveProjectTaskKeys(db)
-    }
-
-    protected open fun saveProjects(db: TrackerDatabase) {
-        val projects = this.projects
+    protected open fun saveProjects(db: TrackerDatabase, projects: List<Project>) {
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
         val projectsDbById: MutableMap<Long, Project> = HashMap()
@@ -271,8 +265,7 @@ abstract class TimeFormFragment : InternetFragment(),
         projectsDao.update(projectsToUpdate)
     }
 
-    protected open fun saveTasks(db: TrackerDatabase) {
-        val tasks = this.tasks
+    protected open fun saveTasks(db: TrackerDatabase, tasks: List<ProjectTask>) {
         val tasksDao = db.taskDao()
         val tasksDb = tasksDao.queryAll()
         val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
@@ -306,7 +299,7 @@ abstract class TimeFormFragment : InternetFragment(),
         tasksDao.update(tasksToUpdate)
     }
 
-    protected open fun saveProjectTaskKeys(db: TrackerDatabase) {
+    protected open fun saveProjectTaskKeys(db: TrackerDatabase, projects: List<Project>) {
         val keys: List<ProjectTaskKey> = projects.flatMap { project ->
             project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
         }

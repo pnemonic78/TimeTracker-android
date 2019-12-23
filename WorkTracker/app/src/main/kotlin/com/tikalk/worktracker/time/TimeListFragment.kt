@@ -209,7 +209,6 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val doc = populateForm(date, html)
         populateList(doc)
-        savePage()
         if (progress) showProgressMain(false)
     }
 

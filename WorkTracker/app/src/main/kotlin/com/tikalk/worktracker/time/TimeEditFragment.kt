@@ -454,7 +454,6 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun processPage(date: Calendar, id: Long, html: String) {
         populateForm(date, html, id)
-        savePage()
     }
 
     private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
