@@ -41,7 +41,7 @@ import timber.log.Timber
  */
 class TimeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Timber.v("onReceive $intent")
+        Timber.i("onReceive $intent")
 
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED,

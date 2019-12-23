@@ -87,7 +87,7 @@ class ProjectsFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         showProgress(true)
         loadPage()
             .subscribe({
@@ -116,9 +116,9 @@ class ProjectsFragment : InternetFragment(),
     }
 
     private fun fetchPage() {
-        Timber.d("fetchPage")
+        Timber.i("fetchPage")
         // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(true)
+        showProgress(projectsData.value?.isEmpty() ?: true)
 
         // Fetch from remote server.
         service.fetchProjects()
@@ -141,7 +141,7 @@ class ProjectsFragment : InternetFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)

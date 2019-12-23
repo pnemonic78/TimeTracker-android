@@ -108,7 +108,7 @@ class TimerFragment : TimeFormFragment() {
 
     @MainThread
     override fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm record=$record")
+        Timber.i("bindForm record=$record")
         val context: Context = requireContext()
         if (!isVisible) return
 
@@ -141,7 +141,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun startTimer() {
-        Timber.v("startTimer")
+        Timber.i("startTimer")
         val context: Context = requireContext()
         val now = System.currentTimeMillis()
         record.startTime = now
@@ -152,7 +152,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     fun stopTimer() {
-        Timber.v("stopTimer")
+        Timber.i("stopTimer")
         if (!isVisible or !isResumed) {
             // Save for "run" later.
             val args = arguments ?: Bundle()
@@ -164,7 +164,7 @@ class TimerFragment : TimeFormFragment() {
         }
 
         val recordStarted = getStartedRecord()
-        Timber.v("stopTimer recordStarted=$recordStarted")
+        Timber.i("stopTimer recordStarted=$recordStarted")
         if (recordStarted != null) {
             setRecordValue(recordStarted)
         }
@@ -176,7 +176,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     fun stopTimerCommit() {
-        Timber.v("stopTimerCommit")
+        Timber.i("stopTimerCommit")
         timer?.dispose()
 
         record.start = null
@@ -272,9 +272,9 @@ class TimerFragment : TimeFormFragment() {
     }
 
     override fun populateForm(record: TimeRecord) {
-        Timber.v("populateForm record=$record")
+        Timber.i("populateForm record=$record")
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
-        Timber.v("populateForm recordStarted=$recordStarted")
+        Timber.i("populateForm recordStarted=$recordStarted")
         val projects = this.projects
         val tasks = this.tasks
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
@@ -298,7 +298,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun editRecord(record: TimeRecord) {
-        Timber.d("editRecord record=$record")
+        Timber.i("editRecord record=$record")
         val parent = findParentFragment(TimeListFragment::class.java)
         if (parent != null) {
             parent.editRecord(record, true)
@@ -320,7 +320,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         loadPage()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

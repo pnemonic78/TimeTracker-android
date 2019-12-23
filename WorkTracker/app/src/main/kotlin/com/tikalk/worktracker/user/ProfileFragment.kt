@@ -122,7 +122,7 @@ class ProfileFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         fetchPage()
     }
 
@@ -288,7 +288,7 @@ class ProfileFragment : InternetFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -298,7 +298,7 @@ class ProfileFragment : InternetFragment(),
     }
 
     private fun fetchPage(progress: Boolean = true) {
-        Timber.d("fetchPage")
+        Timber.i("fetchPage")
         // Show a progress spinner, and kick off a background task to fetch the profile.
         if (progress) showProgress(true)
 

@@ -162,7 +162,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun populateForm(record: TimeRecord) {
-        Timber.v("populateForm record=$record")
+        Timber.i("populateForm record=$record")
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
@@ -206,7 +206,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun bindForm(record: TimeRecord) {
-        Timber.v("bindForm record=$record")
+        Timber.i("bindForm record=$record")
         if (!isVisible) return
         val context: Context = requireContext()
 
@@ -363,18 +363,18 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun projectItemSelected(project: Project) {
-        Timber.v("projectItemSelected $project")
+        Timber.i("projectItemSelected $project")
         record.project = project
         filterTasks(project)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
-        Timber.v("taskItemSelected $task")
+        Timber.i("taskItemSelected $task")
         record.task = task
     }
 
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {
@@ -417,7 +417,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun fetchPage(date: Calendar, id: Long) {
         val dateFormatted = formatSystemDate(date)
-        Timber.v("fetchPage $dateFormatted id=$id")
+        Timber.i("fetchPage $dateFormatted id=$id")
         // Show a progress spinner, and kick off a background task to fetch the page.
         showProgress(true)
 
@@ -432,8 +432,8 @@ class TimeEditFragment : TimeFormFragment() {
             .subscribe({ response ->
                 this.date = date
                 if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    processPage(date, id, body)
+                    val html = response.body()!!
+                    processPage(date, id, html)
                     showProgressMain(false)
                 } else {
                     authenticateMain()
@@ -454,7 +454,6 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun processPage(date: Calendar, id: Long, html: String) {
         populateForm(date, html, id)
-        savePage()
     }
 
     private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
@@ -487,7 +486,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -498,7 +497,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun submit() {
         val record = this.record
-        Timber.v("submit $record")
+        Timber.i("submit $record")
 
         bindRecord(record)
         if (!validateForm(record)) {
@@ -521,7 +520,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
-        Timber.v("submit $record first=$first last=$last")
+        Timber.i("submit $record first=$first last=$last")
         // Show a progress spinner, and kick off a background task to submit the form.
         if (first) {
             showProgress(true)
@@ -556,8 +555,8 @@ class TimeEditFragment : TimeFormFragment() {
                 }
 
                 if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    processSubmittedPage(body, last)
+                    val html = response.body()!!
+                    processSubmittedPage(html, last)
                 } else {
                     authenticateMain(true)
                 }
@@ -570,10 +569,10 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processSubmittedPage(html: String, last: Boolean) {
-        Timber.v("processSubmittedPage last=$last")
+        Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
-            listener?.onRecordEditSubmitted(this, record, last)
+            listener?.onRecordEditSubmitted(this, record, last, html)
         } else {
             setErrorLabelMain(errorMessage)
             listener?.onRecordEditFailure(this, record, errorMessage)
@@ -585,7 +584,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun deleteRecord(record: TimeRecord) {
-        Timber.v("deleteRecord $record")
+        Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
             listener?.onRecordEditDeleted(this, record)
             return
@@ -601,7 +600,8 @@ class TimeEditFragment : TimeFormFragment() {
             .subscribe({ response ->
                 showProgress(false)
                 if (isValidResponse(response)) {
-                    listener?.onRecordEditDeleted(this, record)
+                    val html = response.body()!!
+                    listener?.onRecordEditDeleted(this, record, html)
                 } else {
                     authenticate()
                 }
@@ -643,7 +643,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
-        Timber.v("editRecord record=$record")
+        Timber.i("editRecord record=$record")
         setRecordValue(record.copy())
         this.date = date
         var args = arguments
@@ -708,15 +708,17 @@ class TimeEditFragment : TimeFormFragment() {
          * @param fragment the editor fragment.
          * @param record the record.
          * @param last is this the last record in a series that was submitted?
+         * @param responseHtml the response HTML.
          */
-        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true)
+        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true, responseHtml: String = "")
 
         /**
          * The record was deleted.
          * @param fragment the editor fragment.
          * @param record the record.
+         * @param responseHtml the response HTML.
          */
-        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord)
+        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String = "")
 
         /**
          * The record was marked as favorite.

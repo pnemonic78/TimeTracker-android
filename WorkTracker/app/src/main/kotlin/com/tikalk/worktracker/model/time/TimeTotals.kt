@@ -33,6 +33,7 @@ package com.tikalk.worktracker.model.time
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.ColumnInfo
 import kotlinx.android.parcel.Parcelize
 
 /**
@@ -42,9 +43,13 @@ import kotlinx.android.parcel.Parcelize
  */
 @Parcelize
 data class TimeTotals(
+    @ColumnInfo(name = "daily")
     var daily: Long = UNKNOWN,
+    @ColumnInfo(name = "weekly")
     var weekly: Long = UNKNOWN,
+    @ColumnInfo(name = "monthly")
     var monthly: Long = UNKNOWN,
+    @ColumnInfo(name = "remaining")
     var remaining: Long = UNKNOWN
 ) : Parcelable {
 

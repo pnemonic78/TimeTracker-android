@@ -228,20 +228,22 @@ fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): 
     return formatter.format(format, hours, minutes)
 }
 
-fun formatCurrency(context: Context, formatter: Formatter, amount: Double): Any {
+fun formatCurrency(context: Context, formatter: Formatter, amount: Double): Formatter {
     return formatter.format("%.2f", amount)
 }
 
-fun Calendar.setToStartOfDay() {
+fun Calendar.setToStartOfDay(): Calendar {
     this.hourOfDay = 0
     this.minute = 0
     this.second = 0
     this.millis = 0
+    return this
 }
 
-fun Calendar.setToEndOfDay() {
+fun Calendar.setToEndOfDay(): Calendar {
     this.hourOfDay = getActualMaximum(Calendar.HOUR_OF_DAY)
     this.minute = getActualMaximum(Calendar.MINUTE)
     this.second = getActualMaximum(Calendar.SECOND)
     this.millis = getActualMaximum(Calendar.MILLISECOND)
+    return this
 }

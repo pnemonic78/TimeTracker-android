@@ -40,14 +40,17 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.db.ReportRecord
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toReportRecord
 import com.tikalk.worktracker.db.toTimeRecord
@@ -87,6 +90,7 @@ class ReportFragment : InternetFragment(),
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     private var firstRun = true
+    private var recordEntities: LiveData<List<ReportRecord>> = MutableLiveData<List<ReportRecord>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,7 +132,7 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun fetchPage(filter: ReportFilter, progress: Boolean = true) {
-        Timber.d("fetchPage filter=$filter")
+        Timber.i("fetchPage filter=$filter")
         // Show a progress spinner, and kick off a background task to fetch the page.
         if (progress) showProgress(true)
 
@@ -165,7 +169,6 @@ class ReportFragment : InternetFragment(),
         val doc: Document = Jsoup.parse(html)
         populateList(doc, records)
         populateTotals(records)
-        savePage(records)
         if (progress) showProgressMain(false)
     }
 
@@ -227,6 +230,7 @@ class ReportFragment : InternetFragment(),
         }
 
         recordsData.postValue(records)
+        saveRecords(db, records)
     }
 
     private fun populateTotals(records: List<TimeRecord>?) {
@@ -286,7 +290,7 @@ class ReportFragment : InternetFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -399,7 +403,7 @@ class ReportFragment : InternetFragment(),
 
     private fun loadPage(): Single<Unit> {
         val filter = filterData.value
-        Timber.v("loadPage $filter")
+        Timber.i("loadPage $filter")
         return Single.fromCallable {
             loadProjectsWithTasks(db)
             if (filter != null) {
@@ -412,16 +416,27 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
-        val reportRecordsDao = db.reportRecordDao()
-        val reportRecordsDb = reportRecordsDao.queryByDate(start, finish)
-        if (reportRecordsDb.isEmpty()) {
-            val recordsDao = db.timeRecordDao()
-            val recordsDb = recordsDao.queryByDate(start, finish)
-            val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
-            recordsData.postValue(records)
-        } else {
-            val records = reportRecordsDb.map { it.toTimeRecord(projects, tasks) }
-            recordsData.postValue(records)
+        if (recordEntities.value == null) {
+            val reportRecordsDao = db.reportRecordDao()
+            val reportRecordsDb = reportRecordsDao.queryByDateLive(start, finish)
+
+            runOnUiThread {
+                reportRecordsDb.observe(this, Observer<List<ReportRecord>> { entities ->
+                    val records = entities.map { it.toTimeRecord(projects, tasks) }
+                    recordsData.postValue(records)
+                })
+                recordEntities.removeObservers(this)
+                recordEntities = reportRecordsDb
+            }
+
+            // Use the existing records we have in the records table.
+            if (reportRecordsDb.value.isNullOrEmpty()) {
+                val recordsDao = db.timeRecordDao()
+                val recordsDb = recordsDao.queryByDate(start, finish)
+                val reports = recordsDb.map { it.toTimeRecord(projects, tasks) }
+                    .map { it.toReportRecord() }
+                reportRecordsDao.insert(reports)
+            }
         }
     }
 
@@ -445,7 +460,7 @@ class ReportFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
 
         val args = arguments
         if (args != null) {
@@ -508,7 +523,7 @@ class ReportFragment : InternetFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ uri ->
-                Timber.v("Exported CSV to $uri")
+                Timber.i("Exported CSV to $uri")
                 shareFile(context, uri, ReportExporterCSV.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
@@ -533,7 +548,7 @@ class ReportFragment : InternetFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
-                Timber.v("Exported HTML to $file")
+                Timber.i("Exported HTML to $file")
                 shareFile(context, file, ReportExporterHTML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
@@ -557,7 +572,7 @@ class ReportFragment : InternetFragment(),
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
-                Timber.v("Exported XML to $file")
+                Timber.i("Exported XML to $file")
                 shareFile(context, file, ReportExporterXML.MIME_TYPE)
                 showProgress(false)
                 item?.isEnabled = true
@@ -584,11 +599,6 @@ class ReportFragment : InternetFragment(),
         } else {
             Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun savePage(records: List<TimeRecord>) {
-        Timber.v("savePage")
-        saveRecords(db, records)
     }
 
     private fun saveRecords(db: TrackerDatabase, records: List<TimeRecord>) {

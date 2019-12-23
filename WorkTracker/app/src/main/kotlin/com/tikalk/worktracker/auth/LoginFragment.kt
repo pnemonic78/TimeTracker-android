@@ -128,7 +128,7 @@ class LoginFragment : InternetFragment,
 
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_LOGIN)) {
@@ -213,8 +213,8 @@ class LoginFragment : InternetFragment,
                     actionSignIn.isEnabled = true
 
                     if (isValidResponse(response)) {
-                        val body = response.body()!!
-                        val errorMessage = getResponseError(body)
+                        val html = response.body()!!
+                        val errorMessage = getResponseError(html)
                         if (errorMessage.isNullOrEmpty()) {
                             notifyLoginSuccess(loginValue)
                         } else {

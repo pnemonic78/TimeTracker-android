@@ -39,12 +39,14 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -64,7 +66,6 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_time_list.*
 import kotlinx.android.synthetic.main.time_totals.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
@@ -86,6 +87,8 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
+    private var recordEntities: LiveData<List<TimeRecordEntity>> = MutableLiveData<List<TimeRecordEntity>>()
+    private var recordEntitiesDate = date
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
@@ -155,7 +158,7 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun loadAndFetchPage(date: Calendar) {
         val dateFormatted = formatSystemDate(date)
-        Timber.v("loadAndFetchPage $dateFormatted")
+        Timber.i("loadAndFetchPage $dateFormatted")
 
         // Fetch from local database first.
         loadPage(date)
@@ -176,7 +179,7 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun fetchPage(date: Calendar, progress: Boolean = true) {
         val dateFormatted = formatSystemDate(date)
-        Timber.d("fetchPage $dateFormatted fetching=$fetchingPage")
+        Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
         // Show a progress spinner, and kick off a background task to fetch the page.
@@ -203,16 +206,15 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
-        populateForm(date, html)
-        populateList(html)
-        savePage()
+        Timber.i("processPage ${formatSystemDate(date)}")
+        val doc = populateForm(date, html)
+        populateList(doc)
         if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
-    private fun populateList(html: String) {
+    private fun populateList(doc: Document) {
         val records = ArrayList<TimeRecord>()
-        val doc: Document = Jsoup.parse(html)
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
@@ -228,6 +230,7 @@ class TimeListFragment : TimeFormFragment(),
         }
 
         recordsData.postValue(records)
+        saveRecords(db, date, records)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
         populateTotals(doc, form)
@@ -282,7 +285,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.v("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -416,7 +419,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
-        Timber.d("editRecord record=$record timer=$timer")
+        Timber.i("editRecord record=$record timer=$timer")
         recordForTimer = timer
 
         val form = findTopFormFragment()
@@ -437,7 +440,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun deleteRecord(record: TimeRecord) {
-        Timber.d("deleteRecord record=$record")
+        Timber.i("deleteRecord record=$record")
         // Show a progress spinner, and kick off a background task to delete the record.
         showProgress(true)
 
@@ -461,11 +464,6 @@ class TimeListFragment : TimeFormFragment(),
             .addTo(disposables)
     }
 
-    override fun populateForm(date: Calendar, doc: Document) {
-        super.populateForm(date, doc)
-        findTopFormFragment().populateForm(date, doc)
-    }
-
     override fun populateForm(record: TimeRecord) {
     }
 
@@ -478,7 +476,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     fun stopTimer() {
-        Timber.v("stopTimer")
+        Timber.i("stopTimer")
         val form = findTopFormFragment()
         if (form is TimerFragment) {
             form.stopTimer()
@@ -493,7 +491,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun navigateTomorrow() {
-        Timber.v("navigateTomorrow")
+        Timber.i("navigateTomorrow")
         val cal = date
         cal.add(Calendar.DATE, 1)
         loadAndFetchPage(cal)
@@ -501,7 +499,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun navigateYesterday() {
-        Timber.v("navigateYesterday")
+        Timber.i("navigateYesterday")
         val cal = date
         cal.add(Calendar.DATE, -1)
         loadAndFetchPage(cal)
@@ -516,7 +514,7 @@ class TimeListFragment : TimeFormFragment(),
         if (parent == null) {
             return
         }
-        val totals = totalsData.value ?: TimeTotals()
+        val totals = TimeTotals()
 
         val table = findTotalsTable(doc, parent) ?: return
         val cells = table.getElementsByTag("td")
@@ -576,20 +574,17 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun loadPage(date: Calendar): Single<Unit> {
+        Timber.i("loadPage ${formatSystemDate(date)}")
         return Single.fromCallable {
             loadFormFromDb(db)
             loadRecords(db, date)
+            loadTotals(db, date)
         }
             .subscribeOn(Schedulers.io())
     }
 
-    override fun saveFormToDb() {
-        super.saveFormToDb()
-        saveRecords(db, date)
-    }
-
-    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val records = recordsData.value ?: return
+    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
+        Timber.i("saveRecords ${formatSystemDate(day)}")
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
@@ -623,10 +618,21 @@ class TimeListFragment : TimeFormFragment(),
         recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
     }
 
-    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val recordsDb = queryRecords(db, day)
-        val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
-        recordsData.postValue(records)
+    private fun loadRecords(db: TrackerDatabase, day: Calendar) {
+        Timber.i("loadRecords ${formatSystemDate(day)}")
+        if ((recordEntities.value == null) || (recordEntitiesDate != day)) {
+            val recordsDb = queryRecordsLive(db, day)
+            runOnUiThread {
+                recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
+                    val records = entities.map { it.toTimeRecord(projects, tasks) }
+                        .sortedBy { it.startTime }
+                    recordsData.postValue(records)
+                })
+                recordEntities.removeObservers(this)
+                recordEntities = recordsDb
+                recordEntitiesDate = day.copy()
+            }
+        }
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -642,9 +648,51 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
+    private fun queryRecordsLive(db: TrackerDatabase, day: Calendar? = null): LiveData<List<TimeRecordEntity>> {
+        val recordsDao = db.timeRecordDao()
+        return if (day == null) {
+            recordsDao.queryAllLive()
+        } else {
+            val start = day.copy()
+            start.setToStartOfDay()
+            val finish = day.copy()
+            finish.setToEndOfDay()
+            recordsDao.queryByDateLive(start.timeInMillis, finish.timeInMillis)
+        }
+    }
+
+    private fun loadTotals(db: TrackerDatabase, date: Calendar) {
+        val totals = TimeTotals()
+
+        val cal = date.copy()
+        val startDay = cal.setToStartOfDay().timeInMillis
+        val finishDay = cal.setToEndOfDay().timeInMillis
+
+        cal.dayOfWeek = Calendar.SUNDAY
+        val startWeek = cal.setToStartOfDay().timeInMillis
+        cal.dayOfWeek = Calendar.SATURDAY
+        val finishWeek = cal.setToEndOfDay().timeInMillis
+
+        cal.dayOfMonth = 1
+        val startMonth = cal.setToStartOfDay().timeInMillis
+        cal.dayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val finishMonth = cal.setToEndOfDay().timeInMillis
+
+        val recordsDao = db.timeRecordDao()
+        val totalsAll = recordsDao.queryTotals(startDay, finishDay, startWeek, finishWeek, startMonth, finishMonth)
+        if (totalsAll.size >= 3) {
+            totals.daily = totalsAll[0].daily
+            totals.weekly = totalsAll[1].weekly
+            totals.monthly = totalsAll[2].monthly
+        }
+        val quota = calculateQuota(date)
+        totals.remaining = quota - totals.monthly
+        totalsData.postValue(totals)
+    }
+
     @MainThread
     fun run() {
-        Timber.v("run")
+        Timber.i("run")
         showProgress(true)
         loadPage(date)
             .subscribe({
@@ -695,9 +743,17 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean) {
+    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean, responseHtml: String) {
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
+            val records = recordsData.value
+            if (records != null) {
+                val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+                recordsNew.add(record)
+                recordsNew.sortBy { it.startTime }
+                runOnUiThread { bindList(date, recordsNew) }
+            }
+
             if (recordForTimer) {
                 val args = Bundle()
                 args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
@@ -705,18 +761,31 @@ class TimeListFragment : TimeFormFragment(),
                 requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
                 // Refresh the list with the inserted item.
-                fetchPage(date)
+                maybeFetchPage(date, responseHtml)
                 return
             }
         }
+
         if (last) {
             showTimer()
             // Refresh the list with the edited item.
-            fetchPage(date)
+            if (record.id != TikalEntity.ID_NONE) {
+                val records = recordsData.value
+                if (records != null) {
+                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+                    val index = recordsNew.indexOfFirst { it.id == record.id }
+                    if (index >= 0) {
+                        recordsNew[index] = record
+                        recordsNew.sortBy { it.startTime }
+                        runOnUiThread { bindList(date, recordsNew) }
+                    }
+                }
+            }
+            maybeFetchPage(date, responseHtml)
         }
     }
 
-    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord) {
+    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String) {
         Timber.i("record deleted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
@@ -730,8 +799,17 @@ class TimeListFragment : TimeFormFragment(),
             }
         } else {
             showTimer()
-            // Refresh the list with the edited item.
-            fetchPage(date)
+            // Refresh the list with the deleted item.
+            val records = recordsData.value
+            if (records != null) {
+                val index = records.indexOf(record)
+                if (index >= 0) {
+                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+                    recordsNew.removeAt(index)
+                    bindList(date, recordsNew)
+                }
+            }
+            maybeFetchPage(date, responseHtml)
         }
     }
 
@@ -785,6 +863,32 @@ class TimeListFragment : TimeFormFragment(),
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
     }
 
+    private fun calculateQuota(date: Calendar): Long {
+        var quota = 0L
+        val day = date.copy()
+        val lastDayOfMonth = day.getActualMaximum(Calendar.DAY_OF_MONTH)
+        for (dayOfMonth in 1..lastDayOfMonth) {
+            day.dayOfMonth = dayOfMonth
+            if (day.dayOfWeek in WORK_DAYS) {
+                quota += WORK_HOURS
+            }
+        }
+        return quota * DateUtils.HOUR_IN_MILLIS
+    }
+
+    private fun maybeFetchPage(date: Calendar, responseHtml: String) {
+        if (responseHtml.isEmpty()) {
+            fetchPage(date, false)
+        } else {
+            Single.just(responseHtml)
+                .subscribeOn(Schedulers.io())
+                .subscribe { html ->
+                    processPage(html, date, false)
+                }
+                .addTo(disposables)
+        }
+    }
+
     companion object {
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
@@ -792,5 +896,8 @@ class TimeListFragment : TimeFormFragment(),
         const val ACTION_STOP = TrackerFragment.ACTION_STOP
 
         const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+
+        private val WORK_DAYS = intArrayOf(Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY)
+        private const val WORK_HOURS = 9L
     }
 }
