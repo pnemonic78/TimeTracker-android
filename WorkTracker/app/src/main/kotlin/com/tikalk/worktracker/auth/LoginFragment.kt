@@ -213,8 +213,8 @@ class LoginFragment : InternetFragment,
                     actionSignIn.isEnabled = true
 
                     if (isValidResponse(response)) {
-                        val body = response.body()!!
-                        val errorMessage = getResponseError(body)
+                        val html = response.body()!!
+                        val errorMessage = getResponseError(html)
                         if (errorMessage.isNullOrEmpty()) {
                             notifyLoginSuccess(loginValue)
                         } else {

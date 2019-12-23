@@ -57,8 +57,8 @@ abstract class InternetFragment : TrackerFragment {
     protected val service by inject<TimeTrackerService>()
 
     protected fun isValidResponse(response: Response<String>): Boolean {
-        val body = response.body()
-        if (response.isSuccessful && (body != null)) {
+        val html = response.body()
+        if (response.isSuccessful && (html != null)) {
             val networkResponse = response.raw().networkResponse()
             val priorResponse = response.raw().priorResponse()
             if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {

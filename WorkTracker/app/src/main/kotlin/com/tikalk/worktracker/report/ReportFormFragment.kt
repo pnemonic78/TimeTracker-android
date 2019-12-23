@@ -248,8 +248,8 @@ class ReportFormFragment : TimeFormFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    populateForm(date, body)
+                    val html = response.body()!!
+                    populateForm(date, html)
                     showProgress(false)
                 } else {
                     authenticate()

@@ -432,8 +432,8 @@ class TimeEditFragment : TimeFormFragment() {
             .subscribe({ response ->
                 this.date = date
                 if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    processPage(date, id, body)
+                    val html = response.body()!!
+                    processPage(date, id, html)
                     showProgressMain(false)
                 } else {
                     authenticateMain()
@@ -556,8 +556,8 @@ class TimeEditFragment : TimeFormFragment() {
                 }
 
                 if (isValidResponse(response)) {
-                    val body = response.body()!!
-                    processSubmittedPage(body, last)
+                    val html = response.body()!!
+                    processSubmittedPage(html, last)
                 } else {
                     authenticateMain(true)
                 }
@@ -601,8 +601,8 @@ class TimeEditFragment : TimeFormFragment() {
             .subscribe({ response ->
                 showProgress(false)
                 if (isValidResponse(response)) {
-                    val body = response.body()
-                    listener?.onRecordEditDeleted(this, record, body ?: "")
+                    val html = response.body()!!
+                    listener?.onRecordEditDeleted(this, record, html)
                 } else {
                     authenticate()
                 }

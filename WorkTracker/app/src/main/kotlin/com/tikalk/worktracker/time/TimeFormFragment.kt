@@ -193,9 +193,10 @@ abstract class TimeFormFragment : InternetFragment(),
         }
     }
 
-    fun populateForm(date: Calendar, html: String) {
+    fun populateForm(date: Calendar, html: String): Document {
         val doc: Document = Jsoup.parse(html)
         populateForm(date, doc)
+        return doc
     }
 
     open fun populateForm(date: Calendar, doc: Document) {
