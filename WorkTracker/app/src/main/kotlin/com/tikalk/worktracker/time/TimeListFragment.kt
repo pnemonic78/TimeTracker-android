@@ -585,7 +585,6 @@ class TimeListFragment : TimeFormFragment(),
     private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
         Timber.i("saveRecords ${formatSystemDate(day)}")
         val recordsDao = db.timeRecordDao()
-        //FIXME query each record by id
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
         for (record in recordsDb) {
