@@ -229,6 +229,7 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
 
+        recordsData.postValue(records)
         saveRecords(db, date, records)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?

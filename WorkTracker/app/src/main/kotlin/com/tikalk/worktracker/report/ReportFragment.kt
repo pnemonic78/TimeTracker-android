@@ -40,14 +40,17 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.app.runOnUiThread
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.db.ReportRecord
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toReportRecord
 import com.tikalk.worktracker.db.toTimeRecord
@@ -87,6 +90,7 @@ class ReportFragment : InternetFragment(),
     private val projects: MutableList<Project> = CopyOnWriteArrayList()
     private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     private var firstRun = true
+    private var recordEntities: LiveData<List<ReportRecord>> = MutableLiveData<List<ReportRecord>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -165,7 +169,6 @@ class ReportFragment : InternetFragment(),
         val doc: Document = Jsoup.parse(html)
         populateList(doc, records)
         populateTotals(records)
-        savePage(records)
         if (progress) showProgressMain(false)
     }
 
@@ -227,6 +230,7 @@ class ReportFragment : InternetFragment(),
         }
 
         recordsData.postValue(records)
+        saveRecords(db, records)
     }
 
     private fun populateTotals(records: List<TimeRecord>?) {
@@ -412,16 +416,27 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
-        val reportRecordsDao = db.reportRecordDao()
-        val reportRecordsDb = reportRecordsDao.queryByDate(start, finish)
-        if (reportRecordsDb.isEmpty()) {
-            val recordsDao = db.timeRecordDao()
-            val recordsDb = recordsDao.queryByDate(start, finish)
-            val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
-            recordsData.postValue(records)
-        } else {
-            val records = reportRecordsDb.map { it.toTimeRecord(projects, tasks) }
-            recordsData.postValue(records)
+        if (recordEntities.value == null) {
+            val reportRecordsDao = db.reportRecordDao()
+            val reportRecordsDb = reportRecordsDao.queryByDateLive(start, finish)
+
+            runOnUiThread {
+                reportRecordsDb.observe(this, Observer<List<ReportRecord>> { entities ->
+                    val records = entities.map { it.toTimeRecord(projects, tasks) }
+                    recordsData.postValue(records)
+                })
+                recordEntities.removeObservers(this)
+                recordEntities = reportRecordsDb
+            }
+
+            // Use the existing records we have in the records table.
+            if (reportRecordsDb.value.isNullOrEmpty()) {
+                val recordsDao = db.timeRecordDao()
+                val recordsDb = recordsDao.queryByDate(start, finish)
+                val reports = recordsDb.map { it.toTimeRecord(projects, tasks) }
+                    .map { it.toReportRecord() }
+                reportRecordsDao.insert(reports)
+            }
         }
     }
 
@@ -584,11 +599,6 @@ class ReportFragment : InternetFragment(),
         } else {
             Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun savePage(records: List<TimeRecord>) {
-        Timber.i("savePage")
-        saveRecords(db, records)
     }
 
     private fun saveRecords(db: TrackerDatabase, records: List<TimeRecord>) {

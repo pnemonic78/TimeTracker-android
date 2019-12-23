@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import io.reactivex.Maybe
@@ -77,6 +78,14 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      */
     @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
     fun queryByDate(start: Long, finish: Long): List<ReportRecord>
+
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDateLive(start: Long, finish: Long): LiveData<List<ReportRecord>>
 
     /**
      * Select all records from the table by date.

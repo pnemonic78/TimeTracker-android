@@ -245,19 +245,18 @@ class ReportFormFragment : TimeFormFragment() {
         // Fetch from remote server.
         service.fetchReports()
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     populateForm(date, html)
-                    showProgress(false)
+                    showProgressMain(false)
                 } else {
-                    authenticate()
+                    authenticateMain()
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                showProgress(false)
+                showProgressMain(false)
             })
             .addTo(disposables)
     }
@@ -301,7 +300,7 @@ class ReportFormFragment : TimeFormFragment() {
         val inputShowNote = form.selectByName("chnote")
         filter.showNoteField = inputShowNote?.isChecked() ?: filter.showNoteField
 
-        filterData.value = filter
+        filterData.postValue(filter)
     }
 
     override fun findTaskIds(doc: Document): String? {
