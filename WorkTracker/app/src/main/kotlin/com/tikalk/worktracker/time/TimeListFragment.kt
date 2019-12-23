@@ -87,7 +87,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private var recordEntities: LiveData<List<TimeRecordEntity>>? = null
+    private var recordEntities: LiveData<List<TimeRecordEntity>> = MutableLiveData<List<TimeRecordEntity>>()
     private var recordEntitiesDate = date
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -619,7 +619,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar) {
         Timber.i("loadRecords ${formatSystemDate(day)}")
-        if ((recordEntities == null) || (recordEntitiesDate != day)) {
+        if ((recordEntities.value == null) || (recordEntitiesDate != day)) {
             val recordsDb = queryRecordsLive(db, day)
             runOnUiThread {
                 recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
@@ -627,7 +627,7 @@ class TimeListFragment : TimeFormFragment(),
                         .sortedBy { it.startTime }
                     recordsData.postValue(records)
                 })
-                recordEntities?.removeObservers(this)
+                recordEntities.removeObservers(this)
                 recordEntities = recordsDb
                 recordEntitiesDate = day.copy()
             }
