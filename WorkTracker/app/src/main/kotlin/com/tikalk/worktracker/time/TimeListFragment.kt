@@ -39,6 +39,7 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
@@ -65,7 +66,6 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_time_list.*
 import kotlinx.android.synthetic.main.time_totals.*
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
@@ -87,6 +87,8 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
+    private var recordEntities: LiveData<List<TimeRecordEntity>>? = null
+    private var recordEntitiesDate = date
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
@@ -204,16 +206,16 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
-        populateForm(date, html)
-        populateList(html)
+        Timber.i("processPage ${formatSystemDate(date)}")
+        val doc = populateForm(date, html)
+        populateList(doc)
         savePage()
         if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
-    private fun populateList(html: String) {
+    private fun populateList(doc: Document) {
         val records = ArrayList<TimeRecord>()
-        val doc: Document = Jsoup.parse(html)
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
@@ -228,7 +230,7 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
 
-        recordsData.postValue(records)
+        saveRecords(db, date, records)
 
         val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
         populateTotals(doc, form)
@@ -462,11 +464,6 @@ class TimeListFragment : TimeFormFragment(),
             .addTo(disposables)
     }
 
-    override fun populateForm(date: Calendar, doc: Document) {
-        super.populateForm(date, doc)
-        findTopFormFragment().populateForm(date, doc)
-    }
-
     override fun populateForm(record: TimeRecord) {
     }
 
@@ -577,6 +574,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun loadPage(date: Calendar): Single<Unit> {
+        Timber.i("loadPage ${formatSystemDate(date)}")
         return Single.fromCallable {
             loadFormFromDb(db)
             loadRecords(db, date)
@@ -585,14 +583,10 @@ class TimeListFragment : TimeFormFragment(),
             .subscribeOn(Schedulers.io())
     }
 
-    override fun saveFormToDb() {
-        super.saveFormToDb()
-        saveRecords(db, date)
-    }
-
-    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val records = recordsData.value ?: return
+    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
+        Timber.i("saveRecords ${formatSystemDate(day)}")
         val recordsDao = db.timeRecordDao()
+        //FIXME query each record by id
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
         for (record in recordsDb) {
@@ -625,11 +619,21 @@ class TimeListFragment : TimeFormFragment(),
         recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
     }
 
-    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null) {
-        val recordsDb = queryRecords(db, day)
-        val records = recordsDb.map { it.toTimeRecord(projects, tasks) }
-            .sortedBy { it.startTime }
-        recordsData.postValue(records)
+    private fun loadRecords(db: TrackerDatabase, day: Calendar) {
+        Timber.i("loadRecords ${formatSystemDate(day)}")
+        if ((recordEntities == null) || (recordEntitiesDate != day)) {
+            val recordsDb = queryRecordsLive(db, day)
+            runOnUiThread {
+                recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
+                    val records = entities.map { it.toTimeRecord(projects, tasks) }
+                        .sortedBy { it.startTime }
+                    recordsData.postValue(records)
+                })
+                recordEntities?.removeObservers(this)
+                recordEntities = recordsDb
+                recordEntitiesDate = day.copy()
+            }
+        }
     }
 
     private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
@@ -642,6 +646,19 @@ class TimeListFragment : TimeFormFragment(),
             val finish = day.copy()
             finish.setToEndOfDay()
             recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
+        }
+    }
+
+    private fun queryRecordsLive(db: TrackerDatabase, day: Calendar? = null): LiveData<List<TimeRecordEntity>> {
+        val recordsDao = db.timeRecordDao()
+        return if (day == null) {
+            recordsDao.queryAllLive()
+        } else {
+            val start = day.copy()
+            start.setToStartOfDay()
+            val finish = day.copy()
+            finish.setToEndOfDay()
+            recordsDao.queryByDateLive(start.timeInMillis, finish.timeInMillis)
         }
     }
 
@@ -732,11 +749,7 @@ class TimeListFragment : TimeFormFragment(),
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
             if (records != null) {
-                val recordsNew: MutableList<TimeRecord> = if (records is MutableList<TimeRecord>) {
-                    records
-                } else {
-                    ArrayList(records)
-                }
+                val recordsNew: MutableList<TimeRecord> = ArrayList(records)
                 recordsNew.add(record)
                 recordsNew.sortBy { it.startTime }
                 runOnUiThread { bindList(date, recordsNew) }
@@ -760,11 +773,7 @@ class TimeListFragment : TimeFormFragment(),
             if (record.id != TikalEntity.ID_NONE) {
                 val records = recordsData.value
                 if (records != null) {
-                    val recordsNew: MutableList<TimeRecord> = if (records is MutableList<TimeRecord>) {
-                        records
-                    } else {
-                        ArrayList(records)
-                    }
+                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
                     val index = recordsNew.indexOfFirst { it.id == record.id }
                     if (index >= 0) {
                         recordsNew[index] = record
@@ -796,11 +805,7 @@ class TimeListFragment : TimeFormFragment(),
             if (records != null) {
                 val index = records.indexOf(record)
                 if (index >= 0) {
-                    val recordsNew: MutableList<TimeRecord> = if (records is MutableList<TimeRecord>) {
-                        records
-                    } else {
-                        ArrayList(records)
-                    }
+                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
                     recordsNew.removeAt(index)
                     bindList(date, recordsNew)
                 }

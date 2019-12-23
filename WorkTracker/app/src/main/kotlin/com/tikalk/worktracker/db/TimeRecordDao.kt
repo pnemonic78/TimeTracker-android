@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.time.TimeTotals
@@ -57,6 +58,14 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return all records.
      */
     @Query("SELECT * FROM record")
+    fun queryAllLive(): LiveData<List<TimeRecordEntity>>
+
+    /**
+     * Select all records from the table.
+     *
+     * @return all records.
+     */
+    @Query("SELECT * FROM record")
     fun queryAllSingle(): Single<List<TimeRecordEntity>>
 
     /**
@@ -72,12 +81,26 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
     fun queryByIdMaybe(recordId: Long): Maybe<TimeRecordEntity>
 
     /**
+     * Select records by their ids.
+     */
+    @Query("SELECT * FROM record WHERE id IN (:recordIds)")
+    fun queryByIds(recordIds: LongArray): List<TimeRecordEntity>
+
+    /**
      * Select all records from the table by date.
      *
      * @return all records between the dates.
      */
     @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
     fun queryByDate(start: Long, finish: Long): List<TimeRecordEntity>
+
+    /**
+     * Select all records from the table by date.
+     *
+     * @return all records between the dates.
+     */
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    fun queryByDateLive(start: Long, finish: Long): LiveData<List<TimeRecordEntity>>
 
     /**
      * Select all records from the table by date.
