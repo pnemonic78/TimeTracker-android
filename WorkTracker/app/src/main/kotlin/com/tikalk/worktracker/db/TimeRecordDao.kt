@@ -49,7 +49,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records.
      */
-    @Query("SELECT * FROM record")
+    @Query("SELECT * FROM record ORDER BY start ASC")
     fun queryAll(): List<TimeRecordEntity>
 
     /**
@@ -57,7 +57,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records.
      */
-    @Query("SELECT * FROM record")
+    @Query("SELECT * FROM record ORDER BY start ASC")
     fun queryAllLive(): LiveData<List<TimeRecordEntity>>
 
     /**
@@ -65,7 +65,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records.
      */
-    @Query("SELECT * FROM record")
+    @Query("SELECT * FROM record ORDER BY start ASC")
     fun queryAllSingle(): Single<List<TimeRecordEntity>>
 
     /**
@@ -91,7 +91,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
     fun queryByDate(start: Long, finish: Long): List<TimeRecordEntity>
 
     /**
@@ -99,7 +99,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
     fun queryByDateLive(start: Long, finish: Long): LiveData<List<TimeRecordEntity>>
 
     /**
@@ -107,7 +107,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
     fun queryByDateSingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
 
     /**

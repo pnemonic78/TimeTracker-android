@@ -625,7 +625,6 @@ class TimeListFragment : TimeFormFragment(),
             runOnUiThread {
                 recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
                     val records = entities.map { it.toTimeRecord(projects, tasks) }
-                        .sortedBy { it.startTime }
                     recordsData.postValue(records)
                 })
                 recordEntities.removeObservers(this)
