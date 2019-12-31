@@ -138,7 +138,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     override fun showProgress(show: Boolean) {
-        progress.showAnimated(show)
+        progress?.showAnimated(show)
     }
 
     private fun handleIntent(intent: Intent) {

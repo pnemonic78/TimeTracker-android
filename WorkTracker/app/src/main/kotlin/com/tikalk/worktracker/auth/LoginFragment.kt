@@ -197,9 +197,6 @@ class LoginFragment : InternetFragment,
             // form field with an error.
             focusView?.requestFocus()
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true)
             actionSignIn.isEnabled = false
 
             preferences.userCredentials = UserCredentials(loginValue, passwordValue)
@@ -208,8 +205,9 @@ class LoginFragment : InternetFragment,
             service.login(loginValue, passwordValue, today)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { showProgress(true) }
+                .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
-                    showProgress(false)
                     actionSignIn.isEnabled = true
 
                     if (isValidResponse(response)) {
@@ -228,7 +226,6 @@ class LoginFragment : InternetFragment,
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
                     handleError(err)
-                    showProgress(false)
                     actionSignIn.isEnabled = true
                 })
                 .addTo(disposables)

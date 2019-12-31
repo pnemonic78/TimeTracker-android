@@ -162,6 +162,7 @@ class TimeListFragment : TimeFormFragment(),
 
         // Fetch from local database first.
         loadPage(date)
+            .subscribeOn(Schedulers.io())
             .subscribe({
                 this.date = date
                 bindForm()
@@ -182,16 +183,16 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        if (progress) showProgressMain(true)
 
         service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { if (progress) showProgressMain(recordsData.value?.isEmpty() ?: true) }
+            .doAfterTerminate { if (progress) showProgressMain(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     this.date = date
                     val html = response.body()!!
-                    processPage(html, date, progress)
+                    processPage(html, date)
                 } else {
                     authenticateMain(loginAutomatic)
                 }
@@ -199,17 +200,15 @@ class TimeListFragment : TimeFormFragment(),
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleErrorMain(err)
-                if (progress) showProgressMain(false)
                 fetchingPage = false
             })
             .addTo(disposables)
     }
 
-    private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
+    private fun processPage(html: String, date: Calendar) {
         Timber.i("processPage ${formatSystemDate(date)}")
         val doc = populateForm(date, html)
         populateList(doc)
-        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -441,11 +440,11 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord record=$record")
-        // Show a progress spinner, and kick off a background task to delete the record.
-        showProgress(true)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
             .subscribe(
                 { response ->
                     if (isValidResponse(response)) {
@@ -458,7 +457,6 @@ class TimeListFragment : TimeFormFragment(),
                 { err ->
                     Timber.e(err, "Error deleting record: ${err.message}")
                     handleErrorMain(err)
-                    showProgressMain(false)
                 }
             )
             .addTo(disposables)
@@ -580,7 +578,6 @@ class TimeListFragment : TimeFormFragment(),
             loadRecords(db, date)
             loadTotals(db, date)
         }
-            .subscribeOn(Schedulers.io())
     }
 
     private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
@@ -692,8 +689,10 @@ class TimeListFragment : TimeFormFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        showProgress(true)
         loadPage(date)
+            .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
             .subscribe({
                 bindForm()
 
@@ -702,11 +701,8 @@ class TimeListFragment : TimeFormFragment(),
                 }
 
                 handleArguments()
-
-                showProgressMain(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
-                showProgressMain(false)
             })
             .addTo(disposables)
     }
@@ -882,7 +878,7 @@ class TimeListFragment : TimeFormFragment(),
             Single.just(responseHtml)
                 .subscribeOn(Schedulers.io())
                 .subscribe { html ->
-                    processPage(html, date, false)
+                    processPage(html, date)
                 }
                 .addTo(disposables)
         }

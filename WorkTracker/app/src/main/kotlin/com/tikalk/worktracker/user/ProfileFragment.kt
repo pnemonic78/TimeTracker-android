@@ -235,15 +235,14 @@ class ProfileFragment : InternetFragment(),
             // form field with an error.
             focusView?.requestFocus()
         } else {
-            // Show a progress spinner, and kick off a background task to perform the user update attempt.
-            showProgress(true)
             actionSave.isEnabled = false
 
             service.editProfile(nameValue, loginValue, passwordValue, confirmPasswordValue, emailValue)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { showProgress(true) }
+                .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
-                    showProgress(false)
                     actionSave.isEnabled = true
 
                     if (isValidResponse(response)) {
@@ -268,7 +267,6 @@ class ProfileFragment : InternetFragment(),
                 }, { err ->
                     Timber.e(err, "Error updating profile: ${err.message}")
                     handleError(err)
-                    showProgress(false)
                     actionSave.isEnabled = true
                 })
                 .addTo(disposables)
