@@ -88,22 +88,15 @@ class ProjectsFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        showProgress(true)
-        loadPage()
-            .subscribe({
-                fetchPage()
-                showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-            })
-            .addTo(disposables)
-    }
-
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadProjects(db) }
+        Single.fromCallable { loadProjects(db) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                fetchPage()
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+            })
+            .addTo(disposables)
     }
 
     private fun loadProjects(db: TrackerDatabase) {
@@ -117,25 +110,23 @@ class ProjectsFragment : InternetFragment(),
 
     private fun fetchPage() {
         Timber.i("fetchPage")
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(projectsData.value?.isEmpty() ?: true)
 
         // Fetch from remote server.
         service.fetchProjects()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { showProgress(projectsData.value?.isEmpty() ?: true) }
+            .doAfterTerminate { showProgress(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processPage(html)
-                    showProgress(false)
                 } else {
                     authenticate(true)
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                showProgress(false)
             })
             .addTo(disposables)
     }

@@ -248,7 +248,7 @@ class ProfileFragment : InternetFragment(),
 
                     if (isValidResponse(response)) {
                         val html = response.body()!!
-                        processPage(html, true)
+                        processPage(html)
                         val user = userData.value ?: return@subscribe
                         val userCredentials = userCredentialsData.value ?: return@subscribe
 
@@ -297,33 +297,31 @@ class ProfileFragment : InternetFragment(),
         }
     }
 
-    private fun fetchPage(progress: Boolean = true) {
+    private fun fetchPage() {
         Timber.i("fetchPage")
-        // Show a progress spinner, and kick off a background task to fetch the profile.
-        if (progress) showProgress(true)
 
         // Fetch from remote server.
         service.fetchProfile()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { showProgress(true) }
+            .doAfterTerminate { showProgress(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    processPage(html, progress)
+                    processPage(html)
                 } else {
                     authenticate(true)
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                if (progress) showProgress(false)
             })
             .addTo(disposables)
     }
 
-    private fun processPage(html: String, progress: Boolean = true) {
+    private fun processPage(html: String) {
         populateForm(html)
-        if (progress) showProgress(false)
     }
 
     private fun populateForm(html: String) {
