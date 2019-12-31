@@ -199,7 +199,7 @@ class ReportFormFragment : TimeFormFragment() {
     fun run() {
         Timber.i("run")
 
-        loadPage()
+        Single.fromCallable { loadForm() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -233,30 +233,24 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadForm() }
-    }
-
     private fun fetchPage() {
         Timber.i("fetchPage")
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(true)
 
         // Fetch from remote server.
         service.fetchReports()
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     populateForm(date, html)
-                    showProgressMain(false)
                 } else {
                     authenticateMain()
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                showProgressMain(false)
             })
             .addTo(disposables)
     }
