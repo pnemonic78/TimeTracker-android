@@ -41,6 +41,7 @@ import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
 
@@ -52,6 +53,7 @@ abstract class TrackerFragment : TikalFragment {
 
     protected val preferences by inject<TimeTrackerPrefs>()
     protected val db by inject<TrackerDatabase>()
+    protected val service by inject<TimeTrackerService>()
 
     protected var caller: Fragment? = null
         private set

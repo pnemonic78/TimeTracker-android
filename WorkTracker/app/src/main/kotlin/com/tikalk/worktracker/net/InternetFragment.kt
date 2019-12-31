@@ -41,7 +41,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.koin.android.ext.android.inject
 import retrofit2.Response
 import java.net.UnknownHostException
 
@@ -53,8 +52,6 @@ abstract class InternetFragment : TrackerFragment {
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
-
-    protected val service by inject<TimeTrackerService>()
 
     protected fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
