@@ -38,6 +38,7 @@ import android.os.Bundle
 import androidx.multidex.MultiDex
 import com.crashlytics.android.Crashlytics
 import com.tikalk.app.TikalApplication
+import com.tikalk.util.CrashlyticsTree
 import com.tikalk.util.LogTree
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -67,9 +68,11 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
 
         // Logging
         val enableDebugLogging = BuildConfig.DEBUG
-        Timber.plant(LogTree(enableDebugLogging))
-        if (!enableDebugLogging) {
+        if (enableDebugLogging) {
+            Timber.plant(LogTree(true))
+        } else {
             Fabric.with(this, Crashlytics())
+            Timber.plant(CrashlyticsTree(false))
         }
 
         registerActivityLifecycleCallbacks(this)

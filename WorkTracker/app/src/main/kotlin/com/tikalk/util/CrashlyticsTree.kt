@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,23 +31,22 @@
  */
 package com.tikalk.util
 
-import android.util.Log
-
-import timber.log.Timber
+import com.crashlytics.android.Crashlytics
 
 /**
- * Logger tree for Timber.
+ * Crashlytics logger tree for Timber.
  *
  * @author Moshe Waisberg
  */
-open class LogTree(debug: Boolean) : Timber.DebugTree() {
-
-    protected val release: Boolean = !debug
-
+class CrashlyticsTree(debug: Boolean) : LogTree(debug) {
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (release && (priority == Log.DEBUG || priority == Log.VERBOSE)) {
-            return
-        }
         super.log(priority, tag, message, t)
+
+        if (release) {
+            Crashlytics.log(priority, tag, message)
+            if (t != null) {
+                Crashlytics.logException(t)
+            }
+        }
     }
 }
