@@ -182,6 +182,7 @@ class TimeListActivity : InternetActivity(),
     private fun showMainFragment() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showMainFragment currentDestination=${destination.label}")
         if (destination.id != R.id.timeListFragment) {
             navController.popBackStack(R.id.timeListFragment, false)
         }
@@ -190,6 +191,7 @@ class TimeListActivity : InternetActivity(),
     private fun showSettings() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showSettings currentDestination=${destination.label}")
         if (destination.id != R.id.timeSettingsFragment) {
             navController.navigate(R.id.action_show_settings)
         }
@@ -198,6 +200,7 @@ class TimeListActivity : InternetActivity(),
     private fun showProfile() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showProfile currentDestination=${destination.label}")
         if (destination.id != R.id.profileFragment) {
             val args = Bundle()
             navController.navigate(R.id.action_show_profile, args)
@@ -207,6 +210,7 @@ class TimeListActivity : InternetActivity(),
     private fun showProjects() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showProjects currentDestination=${destination.label}")
         if (destination.id != R.id.projectsFragment) {
             navController.navigate(R.id.action_show_projects)
         }
@@ -215,6 +219,7 @@ class TimeListActivity : InternetActivity(),
     private fun showReports() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showReports currentDestination=${destination.label}")
         if ((destination.id != R.id.reportFormFragment) and (destination.id != R.id.reportFragment)) {
             navController.navigate(R.id.action_show_reportForm)
         }
@@ -223,6 +228,7 @@ class TimeListActivity : InternetActivity(),
     private fun showTasks() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showTasks currentDestination=${destination.label}")
         if (destination.id != R.id.tasksFragment) {
             navController.navigate(R.id.action_show_tasks)
         }
@@ -231,6 +237,7 @@ class TimeListActivity : InternetActivity(),
     private fun showUsers() {
         val navController = findNavController()
         val destination = navController.currentDestination ?: return
+        Timber.i("showUsers currentDestination=${destination.label}")
         if (destination.id != R.id.usersFragment) {
             navController.navigate(R.id.action_show_users)
         }

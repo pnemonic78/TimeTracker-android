@@ -284,7 +284,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -426,6 +426,7 @@ class TimeListFragment : TimeFormFragment(),
             form.listener = this
             form.editRecord(record, date)
         } else {
+            Timber.i("editRecord editor.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
             val args = Bundle()
             args.putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
             args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
@@ -824,6 +825,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
+        Timber.i("showTimer timer.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
         formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
         if (popInclusive) {
             formNavHostFragment.navController.navigate(R.id.timerFragment, args)

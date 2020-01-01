@@ -224,7 +224,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -466,7 +466,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun generateReport() {
-        Timber.i("generateReport")
+        Timber.i("generateReport currentDestination=${findNavController().currentDestination?.label}")
 
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()

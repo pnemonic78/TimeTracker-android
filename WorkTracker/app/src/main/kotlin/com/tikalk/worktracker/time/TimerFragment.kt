@@ -298,7 +298,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun editRecord(record: TimeRecord) {
-        Timber.i("editRecord record=$record")
+        Timber.i("editRecord record=$record currentDestination=${findNavController().currentDestination?.label}")
         val parent = findParentFragment(TimeListFragment::class.java)
         if (parent != null) {
             parent.editRecord(record, true)

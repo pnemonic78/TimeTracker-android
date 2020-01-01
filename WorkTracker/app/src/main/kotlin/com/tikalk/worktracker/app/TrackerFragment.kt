@@ -44,6 +44,7 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
+import timber.log.Timber
 
 abstract class TrackerFragment : TikalFragment {
 
@@ -87,6 +88,7 @@ abstract class TrackerFragment : TikalFragment {
     protected abstract fun authenticate(submit: Boolean = false)
 
     protected fun authenticateMain(submit: Boolean = false) {
+        Timber.i("authenticateMain submit=$submit")
         runOnUiThread {
             authenticate(submit)
         }
