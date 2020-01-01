@@ -44,11 +44,8 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.net.InternetFragment
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
@@ -88,24 +85,15 @@ class ProjectsFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        Single.fromCallable { loadProjects(db) }
+        dataSource.projects()
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+            .subscribe({ projects ->
+                projectsData.postValue(projects)
                 fetchPage()
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
             })
             .addTo(disposables)
-    }
-
-    private fun loadProjects(db: TrackerDatabase) {
-        val projectsDao = db.projectDao()
-        val projectsDb = projectsDao.queryAll()
-        val projects = projectsDb
-            .filter { it.id != TikalEntity.ID_NONE }
-            .sortedBy { it.name }
-        projectsData.postValue(projects)
     }
 
     private fun fetchPage() {

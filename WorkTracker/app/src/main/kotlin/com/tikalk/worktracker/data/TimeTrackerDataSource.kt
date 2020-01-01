@@ -32,5 +32,9 @@
 
 package com.tikalk.worktracker.data
 
+import com.tikalk.worktracker.model.Project
+import io.reactivex.Observable
+
 interface TimeTrackerDataSource {
+    fun projects(): Observable<List<Project>>
 }

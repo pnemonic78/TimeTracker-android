@@ -34,7 +34,13 @@ package com.tikalk.worktracker.data
 
 import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
 import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
+import com.tikalk.worktracker.model.Project
+import io.reactivex.Observable
 
 class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
                             private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
+
+    override fun projects(): Observable<List<Project>> {
+        return Observable.concat(localRepository.projects(), remoteRepository.projects())
+    }
 }

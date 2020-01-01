@@ -34,6 +34,25 @@ package com.tikalk.worktracker.data.local
 
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.TikalEntity
+import io.reactivex.Observable
 
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
+
+    override fun projects(): Observable<List<Project>> {
+        return loadProjects(db)
+    }
+
+    private fun loadProjects(db: TrackerDatabase): Observable<List<Project>> {
+        val projectsDao = db.projectDao()
+        val projectsDb = projectsDao.queryAllSingle()
+        return projectsDb
+            .map { projects ->
+                projects
+                    .filter { it.id != TikalEntity.ID_NONE }
+                    .sortedBy { it.name }
+            }
+            .toObservable()
+    }
 }

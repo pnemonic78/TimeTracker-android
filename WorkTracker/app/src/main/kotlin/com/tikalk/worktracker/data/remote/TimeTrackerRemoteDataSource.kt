@@ -33,7 +33,13 @@
 package com.tikalk.worktracker.data.remote
 
 import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.net.TimeTrackerService
+import io.reactivex.Observable
 
 class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : TimeTrackerDataSource {
+
+    override fun projects(): Observable<List<Project>> {
+        return Observable.empty()
+    }
 }
