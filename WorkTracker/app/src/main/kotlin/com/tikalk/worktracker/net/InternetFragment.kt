@@ -39,6 +39,7 @@ import com.tikalk.app.runOnUiThread
 import com.tikalk.html.textBr
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.auth.AuthenticationException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import retrofit2.Response
@@ -119,6 +120,7 @@ abstract class InternetFragment : TrackerFragment {
      */
     protected fun handleError(error: Throwable) {
         when (error) {
+            is AuthenticationException -> authenticate()
             is UnknownHostException -> showUnknownHostError()
         }
     }

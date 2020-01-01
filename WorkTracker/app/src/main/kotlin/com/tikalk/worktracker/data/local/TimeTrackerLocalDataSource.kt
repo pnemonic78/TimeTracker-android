@@ -40,7 +40,7 @@ import io.reactivex.Observable
 
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
 
-    override fun projects(): Observable<List<Project>> {
+    override fun projectsPage(): Observable<List<Project>> {
         return loadProjects(db)
     }
 

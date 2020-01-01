@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.data
+package com.tikalk.worktracker.auth
 
-import com.tikalk.worktracker.model.Project
-import io.reactivex.Observable
+import android.accounts.AuthenticatorException
 
-interface TimeTrackerDataSource {
-    fun projectsPage(): Observable<List<Project>>
+class AuthenticationException : AuthenticatorException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
 }

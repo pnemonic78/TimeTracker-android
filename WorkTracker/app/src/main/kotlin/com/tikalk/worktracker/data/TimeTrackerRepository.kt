@@ -40,7 +40,7 @@ import io.reactivex.Observable
 class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
                             private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
 
-    override fun projects(): Observable<List<Project>> {
-        return Observable.concat(localRepository.projects(), remoteRepository.projects())
+    override fun projectsPage(): Observable<List<Project>> {
+        return Observable.concat(localRepository.projectsPage(), remoteRepository.projectsPage())
     }
 }

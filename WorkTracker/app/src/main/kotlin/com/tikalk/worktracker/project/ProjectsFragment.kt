@@ -41,7 +41,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Project
@@ -50,9 +49,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_projects.*
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import timber.log.Timber
 
 class ProjectsFragment : InternetFragment(),
@@ -85,38 +81,23 @@ class ProjectsFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        dataSource.projects()
+        dataSource.projectsPage()
             .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ projects ->
-                projectsData.postValue(projects)
-                fetchPage()
+                projectsData.value = projects
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
+                handleError(err)
             })
             .addTo(disposables)
     }
 
-    private fun fetchPage() {
-        Timber.i("fetchPage")
-
-        // Fetch from remote server.
-        service.fetchProjects()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { showProgress(projectsData.value?.isEmpty() ?: true) }
-            .doAfterTerminate { showProgress(false) }
-            .subscribe({ response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
+    private fun bindList(projects: List<Project>) {
+        listAdapter.submitList(projects)
+        if (projects === this.projectsData.value) {
+            listAdapter.notifyDataSetChanged()
+        }
     }
 
     override fun authenticate(submit: Boolean) {
@@ -126,76 +107,6 @@ class ProjectsFragment : InternetFragment(),
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_projects_to_login, args)
-        }
-    }
-
-    private fun processPage(html: String) {
-        populateList(html)
-    }
-
-    private fun populateList(html: String) {
-        val doc: Document = Jsoup.parse(html)
-        val projects = ArrayList<Project>()
-
-        // The first row of the table is the header
-        val table = findProjectsTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            // First row is the header, so drop it.
-            val rows = table.getElementsByTag("tr").drop(1)
-            for (tr in rows) {
-                val project = parseProject(tr)
-                if (project != null) {
-                    projects.add(project)
-                }
-            }
-        }
-
-        projectsData.value = projects
-    }
-
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
-     */
-    private fun findProjectsTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Name") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Description") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseProject(row: Element): Project? {
-        val cols = row.getElementsByTag("td")
-
-        val tdName = cols[0]
-        val name = tdName.ownText()
-
-        val tdDescription = cols[1]
-        val description = tdDescription.ownText()
-
-        return Project(name, description)
-    }
-
-    private fun bindList(projects: List<Project>) {
-        listAdapter.submitList(projects)
-        if (projects === this.projectsData.value) {
-            listAdapter.notifyDataSetChanged()
         }
     }
 
