@@ -323,7 +323,6 @@ class TimerFragment : TimeFormFragment() {
         Timber.i("run")
         loadPage()
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 populateAndBind()
                 handleArguments()
