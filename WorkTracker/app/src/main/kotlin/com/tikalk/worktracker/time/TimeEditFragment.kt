@@ -168,6 +168,7 @@ class TimeEditFragment : TimeFormFragment() {
             if (args != null) {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
+                    val projects = projectsData.value!!
                     setRecordProject(projects.firstOrNull { it.id == projectId } ?: record.project)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
@@ -196,6 +197,7 @@ class TimeEditFragment : TimeFormFragment() {
         if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
+                val projects = projectsData.value!!
                 record.project = projects.firstOrNull { it.id == projectFavorite } ?: projectEmpty
             }
             val taskFavorite = preferences.getFavoriteTask()
@@ -214,13 +216,8 @@ class TimeEditFragment : TimeFormFragment() {
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projectItems = projects.toTypedArray()
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
-            projectItemSelected(record.project)
-        }
-        projectInput.requestFocus()
+        val projects = projectsData.value!!
+        bindProjects(context, record, projects)
 
         val startTime = record.startTime
         startInput.text = if (startTime > 0L)
@@ -245,6 +242,17 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindRecord(record: TimeRecord) {
         record.note = noteInput.text.toString()
+    }
+
+    private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>) {
+        Timber.i("bindProjects record=$record projects=$projects")
+        val projectItems = projects.toTypedArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            projectItemSelected(record.project)
+        }
+        projectInput.requestFocus()
     }
 
     private fun pickStartTime() {
@@ -390,6 +398,7 @@ class TimeEditFragment : TimeFormFragment() {
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
         loadPage(recordId)
+            .subscribeOn(Schedulers.io())
             .subscribe({
                 populateAndBind()
                 maybeFetchPage(date, recordId)
@@ -419,7 +428,7 @@ class TimeEditFragment : TimeFormFragment() {
         val dateFormatted = formatSystemDate(date)
         Timber.i("fetchPage $dateFormatted id=$id")
         // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(true)
+        showProgressMain(true)
 
         // Fetch from remote server.
         val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
@@ -447,7 +456,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun maybeFetchPage(date: Calendar, id: Long) {
-        if (projects.isEmpty() or tasks.isEmpty() or (id != record.id)) {
+        if (projectsData.value!!.isEmpty() or tasks.isEmpty() or (id != record.id)) {
             fetchPage(date, id)
         }
     }
@@ -458,7 +467,6 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
         return Single.fromCallable { loadFormFromDb(recordId) }
-            .subscribeOn(Schedulers.io())
     }
 
     private fun loadFormFromDb(recordId: Long = TikalEntity.ID_NONE) {
@@ -471,7 +479,7 @@ class TimeEditFragment : TimeFormFragment() {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
-                setRecordValue(recordEntity.toTimeRecord(projects, tasks))
+                setRecordValue(recordEntity.toTimeRecord(projectsData.value, tasks))
             }
         }
     }
@@ -697,6 +705,10 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun setErrorLabelMain(text: CharSequence) {
         runOnUiThread { setErrorLabel(text) }
+    }
+
+    override fun onUpdateProjects(projects: List<Project>) {
+        bindProjects(requireContext(), record, projects)
     }
 
     /**

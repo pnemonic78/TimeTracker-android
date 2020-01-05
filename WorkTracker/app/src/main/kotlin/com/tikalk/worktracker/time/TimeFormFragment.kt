@@ -32,8 +32,11 @@
 
 package com.tikalk.worktracker.time
 
+import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
@@ -55,16 +58,25 @@ import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
 abstract class TimeFormFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
-    val projects: MutableList<Project> = CopyOnWriteArrayList()
+    val projectsData = MutableLiveData<List<Project>>()
     val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        projectsData.value = emptyList()
+        projectsData.observe(this, Observer { projects ->
+            onUpdateProjects(projects)
+        })
+    }
 
     protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
@@ -88,7 +100,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return ""
     }
 
-    fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
+    private fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
         for (option in projectInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.value()
@@ -102,7 +114,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return projectEmpty
     }
 
-    fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
+    private fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
         for (option in taskInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.value()
@@ -116,7 +128,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return taskEmpty
     }
 
-    fun populateProjects(select: Element, target: MutableList<Project>) {
+    private fun populateProjects(select: Element, target: MutableLiveData<List<Project>>): List<Project> {
         Timber.i("populateProjects")
         val projects = ArrayList<Project>()
 
@@ -135,13 +147,12 @@ abstract class TimeFormFragment : InternetFragment(),
             projects.add(item)
         }
 
-        target.clear()
-        target.addAll(projects.sortedBy { it.name })
-
+        target.postValue(projects.sortedBy { it.name })
         saveProjects(db, projects)
+        return projects
     }
 
-    fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
+    private fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
         Timber.i("populateTasks")
         val tasks = ArrayList<ProjectTask>()
 
@@ -218,7 +229,7 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     open fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
-        populateProjects(inputProjects, projects)
+        val projects = populateProjects(inputProjects, projectsData)
         populateTasks(inputTasks, tasks)
         populateTaskIds(doc, projects)
 
@@ -370,8 +381,8 @@ abstract class TimeFormFragment : InternetFragment(),
             projectsDb.add(project)
             tasksDb.addAll(projectWithTasks.tasks)
         }
-        projects.clear()
-        projects.addAll(projectsDb.sortedBy { it.name })
+        val projects = projectsDb.sortedBy { it.name }
+        projectsData.postValue(projects)
         this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
 
         tasks.clear()
@@ -424,6 +435,8 @@ abstract class TimeFormFragment : InternetFragment(),
         Timber.d("setRecordTask task=$task")
         record.task = task
     }
+
+    protected abstract fun onUpdateProjects(projects: List<Project>)
 
     companion object {
         const val STATE_RECORD_ID = "record_id"

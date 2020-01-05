@@ -57,8 +57,6 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_timer.*
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -116,13 +114,8 @@ class TimerFragment : TimeFormFragment() {
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projectItems = projects.toTypedArray()
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
-            projectItemSelected(record.project)
-        }
-        projectInput.requestFocus()
+        val projects = projectsData.value!!
+        bindProjects(context, record, projects)
 
         val startTime = record.startTime
         if (startTime <= 0L) {
@@ -138,6 +131,17 @@ class TimerFragment : TimeFormFragment() {
 
             maybeStartTimer()
         }
+    }
+
+    private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>) {
+        Timber.i("bindProjects record=$record projects=$projects")
+        val projectItems = projects.toTypedArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            projectItemSelected(record.project)
+        }
+        projectInput.requestFocus()
     }
 
     private fun startTimer() {
@@ -175,7 +179,7 @@ class TimerFragment : TimeFormFragment() {
         editRecord(record)
     }
 
-    fun stopTimerCommit() {
+    private fun stopTimerCommit() {
         Timber.i("stopTimerCommit")
         timer?.dispose()
 
@@ -249,6 +253,7 @@ class TimerFragment : TimeFormFragment() {
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
 
+                val projects = projectsData.value!!
                 val project = projects.firstOrNull { it.id == projectId } ?: projectEmpty
                 val task = tasks.firstOrNull { it.id == taskId } ?: taskEmpty
 
@@ -275,7 +280,7 @@ class TimerFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
         Timber.i("populateForm recordStarted=$recordStarted")
-        val projects = this.projects
+        val projects = projectsData.value!!
         val tasks = this.tasks
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
@@ -325,7 +330,7 @@ class TimerFragment : TimeFormFragment() {
             .subscribeOn(Schedulers.io())
             .subscribe({
                 populateAndBind()
-                handleArguments()
+                runOnUiThread { handleArguments() }
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
             })
@@ -406,6 +411,10 @@ class TimerFragment : TimeFormFragment() {
 
     override fun authenticate(submit: Boolean) {
         // Parent fragment responsible for authentication.
+    }
+
+    override fun onUpdateProjects(projects: List<Project>) {
+        bindProjects(requireContext(), record, projects)
     }
 
     companion object {

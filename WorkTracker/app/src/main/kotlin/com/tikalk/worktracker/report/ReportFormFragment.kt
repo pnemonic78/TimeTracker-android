@@ -349,13 +349,8 @@ class ReportFormFragment : TimeFormFragment() {
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projectItems = projects.toTypedArray()
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
-            projectItemSelected(filter.project)
-        }
-        projectInput.requestFocus()
+        val projects = projectsData.value!!
+        bindProjects(context, filter, projects)
 
         val periodList = ArrayList<String>(periods.size)
         for (period in periods) {
@@ -389,6 +384,17 @@ class ReportFormFragment : TimeFormFragment() {
         showNoteField.isChecked = filter.showNoteField
 
         setErrorLabel(errorMessage)
+    }
+
+    private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>) {
+        Timber.i("bindProjects filter=$filter projects=$projects")
+        val projectItems = projects.toTypedArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
+            projectItemSelected(filter.project)
+        }
+        projectInput.requestFocus()
     }
 
     private fun pickStartDate() {
@@ -536,6 +542,11 @@ class ReportFormFragment : TimeFormFragment() {
     override fun setRecordTask(task: ProjectTask) {
         super.setRecordTask(task)
         filterData.value?.task = task
+    }
+
+    override fun onUpdateProjects(projects: List<Project>) {
+        val filter = filterData.value ?: return
+        bindProjects(requireContext(), filter, projects)
     }
 
     companion object {
