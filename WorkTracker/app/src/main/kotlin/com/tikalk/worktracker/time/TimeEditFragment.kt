@@ -707,7 +707,8 @@ class TimeEditFragment : TimeFormFragment() {
         runOnUiThread { setErrorLabel(text) }
     }
 
-    override fun onUpdateProjects(projects: List<Project>) {
+    override fun onProjectsUpdated(projects: List<Project>) {
+        super.onProjectsUpdated(projects)
         bindProjects(requireContext(), record, projects)
     }
 

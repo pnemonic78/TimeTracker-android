@@ -544,7 +544,8 @@ class ReportFormFragment : TimeFormFragment() {
         filterData.value?.task = task
     }
 
-    override fun onUpdateProjects(projects: List<Project>) {
+    override fun onProjectsUpdated(projects: List<Project>) {
+        super.onProjectsUpdated(projects)
         val filter = filterData.value ?: return
         bindProjects(requireContext(), filter, projects)
     }

@@ -889,9 +889,6 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onUpdateProjects(projects: List<Project>) {
-    }
-
     companion object {
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"

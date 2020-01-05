@@ -35,6 +35,7 @@ package com.tikalk.worktracker.time
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.tikalk.app.runOnUiThread
@@ -43,8 +44,7 @@ import com.tikalk.html.value
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.ProjectTaskKey
-import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -69,12 +69,14 @@ abstract class TimeFormFragment : InternetFragment(),
     val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
+    private var projectEntities: LiveData<List<ProjectWithTasks>> = MutableLiveData<List<ProjectWithTasks>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         projectsData.value = emptyList()
         projectsData.observe(this, Observer { projects ->
-            onUpdateProjects(projects)
+            this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+            onProjectsUpdated(projects)
         })
     }
 
@@ -352,11 +354,6 @@ abstract class TimeFormFragment : InternetFragment(),
     fun loadForm() {
         Timber.i("loadForm")
         loadFormFromDb()
-
-        val recordStarted = preferences.getStartedRecord()
-        if (recordStarted != null) {
-            setRecordValue(recordStarted)
-        }
     }
 
     protected fun loadFormFromDb() {
@@ -371,23 +368,31 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     private fun loadProjectsWithTasks(db: TrackerDatabase) {
-        val projectsDao = db.projectDao()
-        val projectsWithTasks = projectsDao.queryAllWithTasks()
-        val projectsDb = ArrayList<Project>()
-        val tasksDb = HashSet<ProjectTask>()
-        for (projectWithTasks in projectsWithTasks) {
-            val project = projectWithTasks.project
-            project.tasks = projectWithTasks.tasks
-            projectsDb.add(project)
-            tasksDb.addAll(projectWithTasks.tasks)
-        }
-        val projects = projectsDb.sortedBy { it.name }
-        projectsData.postValue(projects)
-        this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+        if (projectEntities.value == null) {
+            val projectsDao = db.projectDao()
+            val projectsWithTasks = projectsDao.queryAllWithTasksLive()
 
-        tasks.clear()
-        tasks.addAll(tasksDb.sortedBy { it.name })
-        this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+            runOnUiThread {
+                projectsWithTasks.observe(this, Observer<List<ProjectWithTasks>> { entities ->
+                    val projectsDb = ArrayList<Project>()
+                    val tasksDb = HashSet<ProjectTask>()
+                    for (projectWithTasks in entities) {
+                        val project = projectWithTasks.project
+                        project.tasks = projectWithTasks.tasks
+                        projectsDb.add(project)
+                        tasksDb.addAll(projectWithTasks.tasks)
+                    }
+                    val projects = projectsDb.sortedBy { it.name }
+                    projectsData.postValue(projects)
+
+                    tasks.clear()
+                    tasks.addAll(tasksDb.sortedBy { it.name })
+                    this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+                })
+                projectEntities.removeObservers(this)
+                projectEntities = projectsWithTasks
+            }
+        }
     }
 
     abstract fun populateForm(record: TimeRecord)
@@ -436,7 +441,13 @@ abstract class TimeFormFragment : InternetFragment(),
         record.task = task
     }
 
-    protected abstract fun onUpdateProjects(projects: List<Project>)
+    protected open fun onProjectsUpdated(projects: List<Project>) {
+        val recordStarted = preferences.getStartedRecord()
+        if (recordStarted != null) {
+            setRecordValue(recordStarted)
+        }
+        populateForm(record)
+    }
 
     companion object {
         const val STATE_RECORD_ID = "record_id"

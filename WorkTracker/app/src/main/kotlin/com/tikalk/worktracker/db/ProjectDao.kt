@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
@@ -68,6 +69,15 @@ interface ProjectDao : BaseDao<Project> {
     @Transaction
     @Query("SELECT * FROM project")
     fun queryAllWithTasks(): List<ProjectWithTasks>
+
+    /**
+     * Select all projects from the table.
+     *
+     * @return all projects with their tasks.
+     */
+    @Transaction
+    @Query("SELECT * FROM project")
+    fun queryAllWithTasksLive(): LiveData<List<ProjectWithTasks>>
 
     /**
      * Select all projects from the table.

@@ -320,13 +320,9 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadForm() }
-    }
-
     fun run() {
         Timber.i("run")
-        loadPage()
+        Single.fromCallable { loadForm() }
             .subscribeOn(Schedulers.io())
             .subscribe({
                 populateAndBind()
@@ -413,7 +409,8 @@ class TimerFragment : TimeFormFragment() {
         // Parent fragment responsible for authentication.
     }
 
-    override fun onUpdateProjects(projects: List<Project>) {
+    override fun onProjectsUpdated(projects: List<Project>) {
+        super.onProjectsUpdated(projects)
         bindProjects(requireContext(), record, projects)
     }
 
