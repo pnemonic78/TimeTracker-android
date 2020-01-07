@@ -281,24 +281,16 @@ class TimerFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
         Timber.i("populateForm recordStarted=$recordStarted")
-        val projects = projectsData.value
-        val tasks = tasksData.value
+        val projects = projectsData.value ?: return
+        val tasks = tasksData.value ?: return
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
-            val projectFavorite = preferences.getFavoriteProject()
-            if (projectFavorite != TikalEntity.ID_NONE) {
-                setRecordProject(projects?.firstOrNull { it.id == projectFavorite }
-                    ?: record.project)
-            }
-            val taskFavorite = preferences.getFavoriteTask()
-            if (taskFavorite != TikalEntity.ID_NONE) {
-                setRecordTask(tasks?.firstOrNull { it.id == taskFavorite } ?: record.task)
-            }
+            applyFavorite()
         } else if (!recordStarted.isEmpty()) {
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            setRecordProject(projects?.firstOrNull { it.id == recordStartedProjectId }
+            setRecordProject(projects.firstOrNull { it.id == recordStartedProjectId }
                 ?: record.project)
-            setRecordTask(tasks?.firstOrNull { it.id == recordStartedTaskId } ?: record.task)
+            setRecordTask(tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task)
             record.start = recordStarted.start
         }
     }

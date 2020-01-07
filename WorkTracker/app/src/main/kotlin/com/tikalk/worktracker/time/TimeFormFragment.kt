@@ -49,6 +49,7 @@ import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import org.jsoup.Jsoup
@@ -469,6 +470,20 @@ abstract class TimeFormFragment : InternetFragment(),
         }
         populateForm(record)
         bindForm(record)
+    }
+
+    protected fun applyFavorite() {
+        val projects = projectsData.value ?: return
+        val tasks = tasksData.value ?: return
+
+        val projectFavorite = preferences.getFavoriteProject()
+        if (projectFavorite != TikalEntity.ID_NONE) {
+            setRecordProject(projects.firstOrNull { it.id == projectFavorite } ?: record.project)
+        }
+        val taskFavorite = preferences.getFavoriteTask()
+        if (taskFavorite != TikalEntity.ID_NONE) {
+            setRecordTask(tasks.firstOrNull { it.id == taskFavorite } ?: record.task)
+        }
     }
 
     companion object {
