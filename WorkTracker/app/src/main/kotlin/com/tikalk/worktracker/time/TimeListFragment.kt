@@ -396,8 +396,8 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun parseRecordProject(name: String): Project? {
-        val projects = projectsData.value!!
-        return projects.find { name == it.name }
+        val projects = projectsData.value
+        return projects?.find { name == it.name }
     }
 
     private fun parseRecordTask(project: Project, name: String): ProjectTask? {
@@ -624,6 +624,7 @@ class TimeListFragment : TimeFormFragment(),
             runOnUiThread {
                 recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
                     val projects = projectsData.value
+                    val tasks = tasksData.value
                     val records = entities.map { it.toTimeRecord(projects, tasks) }
                     recordsData.postValue(records)
                 })
@@ -699,8 +700,9 @@ class TimeListFragment : TimeFormFragment(),
             .subscribe({
                 bindForm()
 
-                val projects = projectsData.value!!
-                if (firstRun or projects.isEmpty() or tasks.isEmpty()) {
+                val projects = projectsData.value
+                val tasks = tasksData.value
+                if (firstRun or projects.isNullOrEmpty() or tasks.isNullOrEmpty()) {
                     fetchPage(date)
                 }
 

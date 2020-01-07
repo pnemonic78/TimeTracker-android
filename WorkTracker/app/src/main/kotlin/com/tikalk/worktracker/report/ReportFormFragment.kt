@@ -303,7 +303,7 @@ class ReportFormFragment : TimeFormFragment() {
         return findScript(doc, tokenStart, tokenEnd)
     }
 
-    override fun populateTaskIds(doc: Document, projects: List<Project>) {
+    override fun populateTaskIds(doc: Document, projects: List<Project>, tasks: List<ProjectTask>) {
         Timber.i("populateTaskIds")
         val scriptText = findTaskIds(doc) ?: return
 
@@ -321,9 +321,9 @@ class ReportFormFragment : TimeFormFragment() {
                 val taskIds: List<Long> = matcher.group(2)!!
                     .split(",")
                     .map { it.toLong() }
-                val tasks = this.tasks.filter { it.id in taskIds }
+                val tasksPerProject = tasks.filter { it.id in taskIds }
 
-                project?.addTasks(tasks)
+                project?.addTasks(tasksPerProject)
             }
         }
     }
@@ -349,7 +349,7 @@ class ReportFormFragment : TimeFormFragment() {
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = projectsData.value!!
+        val projects = projectsData.value
         bindProjects(context, filter, projects)
 
         val periodList = ArrayList<String>(periods.size)
@@ -386,9 +386,9 @@ class ReportFormFragment : TimeFormFragment() {
         setErrorLabel(errorMessage)
     }
 
-    private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>) {
+    private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
         Timber.i("bindProjects filter=$filter projects=$projects")
-        val projectItems = projects.toTypedArray()
+        val projectItems = projects?.toTypedArray() ?: emptyArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, filter.project)))

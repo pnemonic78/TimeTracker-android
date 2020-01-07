@@ -163,17 +163,19 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun populateForm(record: TimeRecord) {
         Timber.i("populateForm record=$record")
+        val projects = projectsData.value
+        val tasks = tasksData.value
+
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    val projects = projectsData.value!!
-                    setRecordProject(projects.firstOrNull { it.id == projectId } ?: record.project)
+                    setRecordProject(projects?.firstOrNull { it.id == projectId } ?: record.project)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
-                    setRecordTask(tasks.firstOrNull { it.id == taskId } ?: record.task)
+                    setRecordTask(tasks?.firstOrNull { it.id == taskId } ?: record.task)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -197,12 +199,11 @@ class TimeEditFragment : TimeFormFragment() {
         if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
             val projectFavorite = preferences.getFavoriteProject()
             if (projectFavorite != TikalEntity.ID_NONE) {
-                val projects = projectsData.value!!
-                record.project = projects.firstOrNull { it.id == projectFavorite } ?: projectEmpty
+                record.project = projects?.firstOrNull { it.id == projectFavorite } ?: projectEmpty
             }
             val taskFavorite = preferences.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
-                record.task = tasks.firstOrNull { it.id == taskFavorite } ?: taskEmpty
+                record.task = tasks?.firstOrNull { it.id == taskFavorite } ?: taskEmpty
             }
         }
     }
@@ -216,7 +217,7 @@ class TimeEditFragment : TimeFormFragment() {
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = projectsData.value!!
+        val projects = projectsData.value
         bindProjects(context, record, projects)
 
         val startTime = record.startTime
@@ -244,9 +245,9 @@ class TimeEditFragment : TimeFormFragment() {
         record.note = noteInput.text.toString()
     }
 
-    private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>) {
+    private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
-        val projectItems = projects.toTypedArray()
+        val projectItems = projects?.toTypedArray() ?: emptyArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
@@ -456,7 +457,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun maybeFetchPage(date: Calendar, id: Long) {
-        if (projectsData.value!!.isEmpty() or tasks.isEmpty() or (id != record.id)) {
+        if (projectsData.value.isNullOrEmpty() or tasksData.value.isNullOrEmpty() or (id != record.id)) {
             fetchPage(date, id)
         }
     }
@@ -479,7 +480,7 @@ class TimeEditFragment : TimeFormFragment() {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
-                setRecordValue(recordEntity.toTimeRecord(projectsData.value, tasks))
+                setRecordValue(recordEntity.toTimeRecord(projectsData.value, tasksData.value))
             }
         }
     }
