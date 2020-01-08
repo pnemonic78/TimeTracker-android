@@ -198,8 +198,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     fun run() {
         Timber.i("run")
-
-        Single.fromCallable { loadForm() }
+        loadForm()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

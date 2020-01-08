@@ -51,6 +51,7 @@ import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
@@ -391,7 +392,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
-        loadPage(recordId)
+        loadForm(recordId)
             .subscribeOn(Schedulers.io())
             .subscribe({
                 populateAndBind()
@@ -459,20 +460,20 @@ class TimeEditFragment : TimeFormFragment() {
         populateForm(date, html, id)
     }
 
-    private fun loadPage(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
-        return Single.fromCallable { loadFormFromDb(recordId) }
+    private fun loadForm(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
+        Timber.i("loadForm recordId=$recordId")
+        return Single.fromCallable {
+            loadFormFromDb(db)
+            loadRecord(db, recordId)
+        }
     }
 
-    private fun loadFormFromDb(recordId: Long = TikalEntity.ID_NONE) {
-        loadFormFromDb(db)
-        loadRecord(recordId)
-    }
-
-    private fun loadRecord(recordId: Long) {
+    private fun loadRecord(db: TrackerDatabase, recordId: Long) {
         if (recordId != TikalEntity.ID_NONE) {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
+                //FIXME LiveData for projects and tasks might not be ready yet.
                 setRecordValue(recordEntity.toTimeRecord(projectsData.value, tasksData.value))
             }
         }

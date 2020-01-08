@@ -315,7 +315,7 @@ class TimerFragment : TimeFormFragment() {
 
     fun run() {
         Timber.i("run")
-        Single.fromCallable { loadForm() }
+        loadForm()
             .subscribeOn(Schedulers.io())
             .subscribe({
                 populateAndBind()

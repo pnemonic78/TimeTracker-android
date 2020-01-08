@@ -52,6 +52,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import io.reactivex.Single
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -356,14 +357,9 @@ abstract class TimeFormFragment : InternetFragment(),
         projectTasksDao.update(keysToUpdate)
     }
 
-    fun loadForm() {
+    protected fun loadForm(): Single<Unit> {
         Timber.i("loadForm")
-        loadFormFromDb()
-    }
-
-    private fun loadFormFromDb() {
-        Timber.i("loadFormFromDb")
-        loadFormFromDb(db)
+        return Single.fromCallable { loadFormFromDb(db) }
     }
 
     @Synchronized
