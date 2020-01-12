@@ -34,6 +34,7 @@ package com.tikalk.worktracker.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -79,6 +80,13 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      */
     @Query("SELECT * FROM record WHERE id = :recordId")
     fun queryByIdMaybe(recordId: Long): Maybe<TimeRecordEntity>
+
+    /**
+     * Select a record by its id.
+     */
+    @Transaction
+    @Query("SELECT * FROM record WHERE id = :recordId")
+    fun queryWholeById(recordId: Long): WholeTimeRecordEntity?
 
     /**
      * Select records by their ids.

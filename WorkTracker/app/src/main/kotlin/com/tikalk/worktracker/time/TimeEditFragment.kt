@@ -471,10 +471,9 @@ class TimeEditFragment : TimeFormFragment() {
     private fun loadRecord(db: TrackerDatabase, recordId: Long) {
         if (recordId != TikalEntity.ID_NONE) {
             val recordsDao = db.timeRecordDao()
-            val recordEntity = recordsDao.queryById(recordId)
+            val recordEntity = recordsDao.queryWholeById(recordId)
             if (recordEntity != null) {
-                //FIXME LiveData for projects and tasks might not be ready yet.
-                setRecordValue(recordEntity.toTimeRecord(projectsData.value, tasksData.value))
+                setRecordValue(recordEntity.toTimeRecord())
             }
         }
     }

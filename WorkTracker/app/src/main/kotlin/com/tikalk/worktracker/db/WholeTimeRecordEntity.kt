@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,27 +32,44 @@
 package com.tikalk.worktracker.db
 
 import androidx.room.Embedded
-import androidx.room.Junction
 import androidx.room.Relation
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.time.TimeRecord
 
 /**
- * Project with Tasks relational ID entity.
+ * Time record with project and Task relational ID entity.
  *
  * @author Moshe Waisberg.
  */
-data class ProjectWithTasks(
+data class WholeTimeRecordEntity(
     @Embedded
+    val record: TimeRecordEntity,
+    @Relation(
+        parentColumn = "project_id",// in Record
+        entity = Project::class,
+        entityColumn = "id"// in Project
+    )
     val project: Project,
     @Relation(
-        parentColumn = "id",// Project
+        parentColumn = "task_id",// in Record
         entity = ProjectTask::class,
-        entityColumn = "id",// ProjectTask
-        associateBy = Junction(ProjectTaskKey::class,
-            parentColumn = "project_id",
-            entityColumn = "task_id"
-        )
+        entityColumn = "id"// in ProjectTask
     )
-    val tasks: List<ProjectTask>
+    val task: ProjectTask
 )
+
+fun WholeTimeRecordEntity.toTimeRecord(): TimeRecord {
+    val value: TimeRecordEntity = this.record
+
+    return TimeRecord(
+        value.id,
+        project,
+        task,
+        value.start,
+        value.finish,
+        value.note,
+        value.cost,
+        value.status
+    )
+}
