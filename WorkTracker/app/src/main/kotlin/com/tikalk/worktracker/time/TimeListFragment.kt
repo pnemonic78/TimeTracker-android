@@ -51,10 +51,7 @@ import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -87,7 +84,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private var recordEntities: LiveData<List<TimeRecordEntity>> = MutableLiveData<List<TimeRecordEntity>>()
+    private var recordEntities: LiveData<List<WholeTimeRecordEntity>> = MutableLiveData<List<WholeTimeRecordEntity>>()
     private var recordEntitiesDate = date
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -587,8 +584,8 @@ class TimeListFragment : TimeFormFragment(),
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
-        for (record in recordsDb) {
-            recordsDbById[record.id] = record
+        for (entity in recordsDb) {
+            recordsDbById[entity.record.id] = entity.record
         }
 
         val recordsToInsert = ArrayList<TimeRecord>()
@@ -622,10 +619,8 @@ class TimeListFragment : TimeFormFragment(),
         if ((recordEntities.value == null) || (recordEntitiesDate != day)) {
             val recordsDb = queryRecordsLive(db, day)
             runOnUiThread {
-                recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
-                    val projects = projectsData.value
-                    val tasks = tasksData.value
-                    val records = entities.map { it.toTimeRecord(projects, tasks) }
+                recordsDb.observe(this, Observer<List<WholeTimeRecordEntity>> { entities ->
+                    val records = entities.map { it.toTimeRecord() }
                     recordsData.postValue(records)
                 })
                 recordEntities.removeObservers(this)
@@ -635,7 +630,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
+    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
         val recordsDao = db.timeRecordDao()
         return if (day == null) {
             recordsDao.queryAll()
@@ -648,7 +643,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun queryRecordsLive(db: TrackerDatabase, day: Calendar? = null): LiveData<List<TimeRecordEntity>> {
+    private fun queryRecordsLive(db: TrackerDatabase, day: Calendar? = null): LiveData<List<WholeTimeRecordEntity>> {
         val recordsDao = db.timeRecordDao()
         return if (day == null) {
             recordsDao.queryAllLive()

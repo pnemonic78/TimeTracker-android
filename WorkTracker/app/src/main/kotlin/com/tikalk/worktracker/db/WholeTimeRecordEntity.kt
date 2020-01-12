@@ -38,7 +38,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
 
 /**
- * Time record with project and Task relational ID entity.
+ * Time record entity with its project and task.
  *
  * @author Moshe Waisberg.
  */

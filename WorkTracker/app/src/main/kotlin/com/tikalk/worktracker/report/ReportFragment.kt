@@ -418,7 +418,7 @@ class ReportFragment : InternetFragment(),
             if (reportRecordsDb.value.isNullOrEmpty()) {
                 val recordsDao = db.timeRecordDao()
                 val recordsDb = recordsDao.queryByDate(start, finish)
-                val reports = recordsDb.map { it.toTimeRecord(projects, tasks) }
+                val reports = recordsDb.map { it.toTimeRecord() }
                     .map { it.toReportRecord() }
                 reportRecordsDao.insert(reports)
             }

@@ -471,7 +471,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun loadRecord(db: TrackerDatabase, recordId: Long) {
         if (recordId != TikalEntity.ID_NONE) {
             val recordsDao = db.timeRecordDao()
-            val recordEntity = recordsDao.queryWholeById(recordId)
+            val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
                 setRecordValue(recordEntity.toTimeRecord())
             }
