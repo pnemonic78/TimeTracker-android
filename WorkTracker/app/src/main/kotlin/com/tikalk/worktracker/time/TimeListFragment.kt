@@ -51,10 +51,7 @@ import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -87,7 +84,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private var recordEntities: LiveData<List<TimeRecordEntity>> = MutableLiveData<List<TimeRecordEntity>>()
+    private var recordEntities: LiveData<List<WholeTimeRecordEntity>> = MutableLiveData<List<WholeTimeRecordEntity>>()
     private var recordEntitiesDate = date
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -162,6 +159,7 @@ class TimeListFragment : TimeFormFragment(),
 
         // Fetch from local database first.
         loadPage(date)
+            .subscribeOn(Schedulers.io())
             .subscribe({
                 this.date = date
                 bindForm()
@@ -182,16 +180,16 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        if (progress) showProgressMain(true)
 
         service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { if (progress) showProgressMain(recordsData.value?.isEmpty() ?: true) }
+            .doAfterTerminate { if (progress) showProgressMain(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     this.date = date
                     val html = response.body()!!
-                    processPage(html, date, progress)
+                    processPage(html, date)
                 } else {
                     authenticateMain(loginAutomatic)
                 }
@@ -199,17 +197,15 @@ class TimeListFragment : TimeFormFragment(),
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleErrorMain(err)
-                if (progress) showProgressMain(false)
                 fetchingPage = false
             })
             .addTo(disposables)
     }
 
-    private fun processPage(html: String, date: Calendar, progress: Boolean = true) {
+    private fun processPage(html: String, date: Calendar) {
         Timber.i("processPage ${formatSystemDate(date)}")
         val doc = populateForm(date, html)
         populateList(doc)
-        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -285,7 +281,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -397,7 +393,8 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun parseRecordProject(name: String): Project? {
-        return projects.find { name == it.name }
+        val projects = projectsData.value
+        return projects?.find { name == it.name }
     }
 
     private fun parseRecordTask(project: Project, name: String): ProjectTask? {
@@ -427,6 +424,7 @@ class TimeListFragment : TimeFormFragment(),
             form.listener = this
             form.editRecord(record, date)
         } else {
+            Timber.i("editRecord editor.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
             val args = Bundle()
             args.putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
             args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
@@ -441,11 +439,11 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord record=$record")
-        // Show a progress spinner, and kick off a background task to delete the record.
-        showProgress(true)
 
         service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
             .subscribe(
                 { response ->
                     if (isValidResponse(response)) {
@@ -458,7 +456,6 @@ class TimeListFragment : TimeFormFragment(),
                 { err ->
                     Timber.e(err, "Error deleting record: ${err.message}")
                     handleErrorMain(err)
-                    showProgressMain(false)
                 }
             )
             .addTo(disposables)
@@ -580,7 +577,6 @@ class TimeListFragment : TimeFormFragment(),
             loadRecords(db, date)
             loadTotals(db, date)
         }
-            .subscribeOn(Schedulers.io())
     }
 
     private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
@@ -588,8 +584,8 @@ class TimeListFragment : TimeFormFragment(),
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
         val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
-        for (record in recordsDb) {
-            recordsDbById[record.id] = record
+        for (entity in recordsDb) {
+            recordsDbById[entity.record.id] = entity.record
         }
 
         val recordsToInsert = ArrayList<TimeRecord>()
@@ -623,9 +619,8 @@ class TimeListFragment : TimeFormFragment(),
         if ((recordEntities.value == null) || (recordEntitiesDate != day)) {
             val recordsDb = queryRecordsLive(db, day)
             runOnUiThread {
-                recordsDb.observe(this, Observer<List<TimeRecordEntity>> { entities ->
-                    val records = entities.map { it.toTimeRecord(projects, tasks) }
-                        .sortedBy { it.startTime }
+                recordsDb.observe(this, Observer<List<WholeTimeRecordEntity>> { entities ->
+                    val records = entities.map { it.toTimeRecord() }
                     recordsData.postValue(records)
                 })
                 recordEntities.removeObservers(this)
@@ -635,7 +630,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<TimeRecordEntity> {
+    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
         val recordsDao = db.timeRecordDao()
         return if (day == null) {
             recordsDao.queryAll()
@@ -648,7 +643,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun queryRecordsLive(db: TrackerDatabase, day: Calendar? = null): LiveData<List<TimeRecordEntity>> {
+    private fun queryRecordsLive(db: TrackerDatabase, day: Calendar? = null): LiveData<List<WholeTimeRecordEntity>> {
         val recordsDao = db.timeRecordDao()
         return if (day == null) {
             recordsDao.queryAllLive()
@@ -693,21 +688,22 @@ class TimeListFragment : TimeFormFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        showProgress(true)
         loadPage(date)
+            .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
             .subscribe({
                 bindForm()
 
-                if (firstRun or projects.isEmpty() or tasks.isEmpty()) {
+                val projects = projectsData.value
+                val tasks = tasksData.value
+                if (firstRun or projects.isNullOrEmpty() or tasks.isNullOrEmpty()) {
                     fetchPage(date)
                 }
 
                 handleArguments()
-
-                showProgressMain(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
-                showProgressMain(false)
             })
             .addTo(disposables)
     }
@@ -829,6 +825,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
+        Timber.i("showTimer timer.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
         formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
         if (popInclusive) {
             formNavHostFragment.navController.navigate(R.id.timerFragment, args)
@@ -883,7 +880,7 @@ class TimeListFragment : TimeFormFragment(),
             Single.just(responseHtml)
                 .subscribeOn(Schedulers.io())
                 .subscribe { html ->
-                    processPage(html, date, false)
+                    processPage(html, date)
                 }
                 .addTo(disposables)
         }

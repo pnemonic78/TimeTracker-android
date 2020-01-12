@@ -89,22 +89,15 @@ class ProjectTasksFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        showProgress(true)
-        loadPage()
-            .subscribe({
-                fetchPage()
-                showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-            })
-            .addTo(disposables)
-    }
-
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadTasks(db) }
+        Single.fromCallable { loadTasks(db) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                fetchPage()
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+            })
+            .addTo(disposables)
     }
 
     private fun loadTasks(db: TrackerDatabase) {
@@ -118,31 +111,29 @@ class ProjectTasksFragment : InternetFragment(),
 
     private fun fetchPage() {
         Timber.i("fetchPage")
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(tasksData.value?.isEmpty() ?: true)
 
         // Fetch from remote server.
         service.fetchProjectTasks()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { showProgress(tasksData.value?.isEmpty() ?: true) }
+            .doAfterTerminate { showProgress(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processPage(html)
-                    showProgress(false)
                 } else {
                     authenticate(true)
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                showProgress(false)
             })
             .addTo(disposables)
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)

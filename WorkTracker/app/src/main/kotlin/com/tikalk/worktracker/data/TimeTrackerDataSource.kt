@@ -29,54 +29,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import com.tikalk.worktracker.model.ProjectTask
-import io.reactivex.Maybe
-import io.reactivex.Single
+package com.tikalk.worktracker.data
 
-/**
- * Project Task entity DAO.
- */
-@Dao
-interface ProjectTaskDao : BaseDao<ProjectTask> {
+import com.tikalk.worktracker.model.Project
+import io.reactivex.Observable
 
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAll(): List<ProjectTask>
-
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAllSingle(): Single<List<ProjectTask>>
-
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAllLive(): LiveData<List<ProjectTask>>
-
-    /**
-     * Select a task by its id.
-     */
-    @Query("SELECT * FROM project_task WHERE id = :taskId")
-    fun queryById(taskId: Long): Maybe<ProjectTask>
-
-    /**
-     * Delete all tasks.
-     */
-    @Query("DELETE FROM project_task")
-    fun deleteAll(): Int
+interface TimeTrackerDataSource {
+    fun projectsPage(): Observable<List<Project>>
 }

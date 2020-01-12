@@ -235,20 +235,19 @@ class ProfileFragment : InternetFragment(),
             // form field with an error.
             focusView?.requestFocus()
         } else {
-            // Show a progress spinner, and kick off a background task to perform the user update attempt.
-            showProgress(true)
             actionSave.isEnabled = false
 
             service.editProfile(nameValue, loginValue, passwordValue, confirmPasswordValue, emailValue)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { showProgress(true) }
+                .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
-                    showProgress(false)
                     actionSave.isEnabled = true
 
                     if (isValidResponse(response)) {
                         val html = response.body()!!
-                        processPage(html, true)
+                        processPage(html)
                         val user = userData.value ?: return@subscribe
                         val userCredentials = userCredentialsData.value ?: return@subscribe
 
@@ -268,7 +267,6 @@ class ProfileFragment : InternetFragment(),
                 }, { err ->
                     Timber.e(err, "Error updating profile: ${err.message}")
                     handleError(err)
-                    showProgress(false)
                     actionSave.isEnabled = true
                 })
                 .addTo(disposables)
@@ -288,7 +286,7 @@ class ProfileFragment : InternetFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -297,33 +295,31 @@ class ProfileFragment : InternetFragment(),
         }
     }
 
-    private fun fetchPage(progress: Boolean = true) {
+    private fun fetchPage() {
         Timber.i("fetchPage")
-        // Show a progress spinner, and kick off a background task to fetch the profile.
-        if (progress) showProgress(true)
 
         // Fetch from remote server.
         service.fetchProfile()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { showProgress(true) }
+            .doAfterTerminate { showProgress(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    processPage(html, progress)
+                    processPage(html)
                 } else {
                     authenticate(true)
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                if (progress) showProgress(false)
             })
             .addTo(disposables)
     }
 
-    private fun processPage(html: String, progress: Boolean = true) {
+    private fun processPage(html: String) {
         populateForm(html)
-        if (progress) showProgress(false)
     }
 
     private fun populateForm(html: String) {

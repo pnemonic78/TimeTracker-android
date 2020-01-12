@@ -32,8 +32,12 @@
 
 package com.tikalk.worktracker.time
 
+import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.tikalk.app.runOnUiThread
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
@@ -41,30 +45,47 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.ProjectTaskKey
+import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import io.reactivex.Single
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
 abstract class TimeFormFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
-    val projects: MutableList<Project> = CopyOnWriteArrayList()
-    val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
+    val projectsData = MutableLiveData<List<Project>>()
+    val tasksData = MutableLiveData<List<ProjectTask>>()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
+    private var projectEntities: LiveData<List<ProjectWithTasks>> = MutableLiveData<List<ProjectWithTasks>>()
+    private var taskEntities: LiveData<List<ProjectTask>> = MutableLiveData<List<ProjectTask>>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        projectsData.observe(this, Observer { projects ->
+            this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+            onProjectsUpdated(projects)
+        })
+        tasksData.observe(this, Observer { tasks ->
+            this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+            onTasksUpdated(tasks)
+        })
+    }
 
     protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
         val scripts = doc.select("script")
@@ -88,7 +109,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return ""
     }
 
-    fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
+    private fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
         for (option in projectInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.value()
@@ -102,7 +123,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return projectEmpty
     }
 
-    fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
+    private fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
         for (option in taskInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.value()
@@ -116,7 +137,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return taskEmpty
     }
 
-    fun populateProjects(select: Element, target: MutableList<Project>) {
+    private fun populateProjects(select: Element, target: MutableLiveData<List<Project>>): List<Project> {
         Timber.i("populateProjects")
         val projects = ArrayList<Project>()
 
@@ -135,13 +156,12 @@ abstract class TimeFormFragment : InternetFragment(),
             projects.add(item)
         }
 
-        target.clear()
-        target.addAll(projects.sortedBy { it.name })
-
+        target.postValue(projects.sortedBy { it.name })
         saveProjects(db, projects)
+        return projects
     }
 
-    fun populateTasks(select: Element, target: MutableList<ProjectTask>) {
+    private fun populateTasks(select: Element, target: MutableLiveData<List<ProjectTask>>): List<ProjectTask> {
         Timber.i("populateTasks")
         val tasks = ArrayList<ProjectTask>()
 
@@ -160,10 +180,9 @@ abstract class TimeFormFragment : InternetFragment(),
             tasks.add(item)
         }
 
-        target.clear()
-        target.addAll(tasks.sortedBy { it.name })
-
+        target.postValue(tasks.sortedBy { it.name })
         saveTasks(db, tasks)
+        return tasks
     }
 
     protected open fun findTaskIds(doc: Document): String? {
@@ -172,7 +191,7 @@ abstract class TimeFormFragment : InternetFragment(),
         return findScript(doc, tokenStart, tokenEnd)
     }
 
-    open fun populateTaskIds(doc: Document, projects: List<Project>) {
+    open fun populateTaskIds(doc: Document, projects: List<Project>, tasks: List<ProjectTask>) {
         Timber.i("populateTaskIds")
         val scriptText = findTaskIds(doc) ?: return
 
@@ -190,9 +209,9 @@ abstract class TimeFormFragment : InternetFragment(),
                 val taskIds: List<Long> = matcher.group(2)!!
                     .split(",")
                     .map { it.toLong() }
-                val tasks = this.tasks.filter { it.id in taskIds }
+                val tasksPerProject = tasks.filter { it.id in taskIds }
 
-                project?.addTasks(tasks)
+                project?.addTasks(tasksPerProject)
             }
         }
 
@@ -218,9 +237,9 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     open fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
-        populateProjects(inputProjects, projects)
-        populateTasks(inputTasks, tasks)
-        populateTaskIds(doc, projects)
+        val projects = populateProjects(inputProjects, projectsData)
+        val tasks = populateTasks(inputTasks, tasksData)
+        populateTaskIds(doc, projects, tasks)
 
         setRecordProject(findSelectedProject(inputProjects, projects))
         setRecordTask(findSelectedTask(inputTasks, tasks))
@@ -338,19 +357,9 @@ abstract class TimeFormFragment : InternetFragment(),
         projectTasksDao.update(keysToUpdate)
     }
 
-    fun loadForm() {
+    protected fun loadForm(): Single<Unit> {
         Timber.i("loadForm")
-        loadFormFromDb()
-
-        val recordStarted = preferences.getStartedRecord()
-        if (recordStarted != null) {
-            setRecordValue(recordStarted)
-        }
-    }
-
-    protected fun loadFormFromDb() {
-        Timber.i("loadFormFromDb")
-        loadFormFromDb(db)
+        return Single.fromCallable { loadFormFromDb(db) }
     }
 
     @Synchronized
@@ -360,23 +369,39 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     private fun loadProjectsWithTasks(db: TrackerDatabase) {
-        val projectsDao = db.projectDao()
-        val projectsWithTasks = projectsDao.queryAllWithTasks()
-        val projectsDb = ArrayList<Project>()
-        val tasksDb = HashSet<ProjectTask>()
-        for (projectWithTasks in projectsWithTasks) {
-            val project = projectWithTasks.project
-            project.tasks = projectWithTasks.tasks
-            projectsDb.add(project)
-            tasksDb.addAll(projectWithTasks.tasks)
-        }
-        projects.clear()
-        projects.addAll(projectsDb.sortedBy { it.name })
-        this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+        if (projectEntities.value == null) {
+            val projectsDao = db.projectDao()
+            val projectsWithTasks = projectsDao.queryAllWithTasksLive()
+            val tasksDao = db.taskDao()
+            val tasksAll = tasksDao.queryAllLive()
 
-        tasks.clear()
-        tasks.addAll(tasksDb.sortedBy { it.name })
-        this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
+            runOnUiThread {
+                projectsWithTasks.observe(this, Observer<List<ProjectWithTasks>> { entities ->
+                    val projectsDb = ArrayList<Project>()
+                    val tasksDb = HashSet<ProjectTask>()
+                    for (projectWithTasks in entities) {
+                        val project = projectWithTasks.project
+                        project.tasks = projectWithTasks.tasks
+                        projectsDb.add(project)
+                        tasksDb.addAll(projectWithTasks.tasks)
+                    }
+                    val projects = projectsDb.sortedBy { it.name }
+                    projectsData.postValue(projects)
+
+                    val tasks = tasksDb.sortedBy { it.name }
+                    tasksData.postValue(tasks)
+                })
+                projectEntities.removeObservers(this)
+                projectEntities = projectsWithTasks
+
+                tasksAll.observe(this, Observer<List<ProjectTask>> { entities ->
+                    val tasks = entities.sortedBy { it.name }
+                    tasksData.postValue(tasks)
+                })
+                taskEntities.removeObservers(this)
+                taskEntities = tasksAll
+            }
+        }
     }
 
     abstract fun populateForm(record: TimeRecord)
@@ -423,6 +448,38 @@ abstract class TimeFormFragment : InternetFragment(),
     protected open fun setRecordTask(task: ProjectTask) {
         Timber.d("setRecordTask task=$task")
         record.task = task
+    }
+
+    protected open fun onProjectsUpdated(projects: List<Project>) {
+        val recordStarted = preferences.getStartedRecord()
+        if (recordStarted != null) {
+            setRecordValue(recordStarted)
+        }
+        populateForm(record)
+        bindForm(record)
+    }
+
+    protected open fun onTasksUpdated(tasks: List<ProjectTask>) {
+        val recordStarted = preferences.getStartedRecord()
+        if (recordStarted != null) {
+            setRecordValue(recordStarted)
+        }
+        populateForm(record)
+        bindForm(record)
+    }
+
+    protected fun applyFavorite() {
+        val projects = projectsData.value ?: return
+        val tasks = tasksData.value ?: return
+
+        val projectFavorite = preferences.getFavoriteProject()
+        if (projectFavorite != TikalEntity.ID_NONE) {
+            setRecordProject(projects.firstOrNull { it.id == projectFavorite } ?: record.project)
+        }
+        val taskFavorite = preferences.getFavoriteTask()
+        if (taskFavorite != TikalEntity.ID_NONE) {
+            setRecordTask(tasks.firstOrNull { it.id == taskFavorite } ?: record.task)
+        }
     }
 
     companion object {

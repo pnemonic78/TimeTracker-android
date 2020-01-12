@@ -29,54 +29,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import com.tikalk.worktracker.model.ProjectTask
-import io.reactivex.Maybe
-import io.reactivex.Single
+package com.tikalk.worktracker.data.local
 
-/**
- * Project Task entity DAO.
- */
-@Dao
-interface ProjectTaskDao : BaseDao<ProjectTask> {
+import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.TikalEntity
+import io.reactivex.Observable
 
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAll(): List<ProjectTask>
+class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
 
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAllSingle(): Single<List<ProjectTask>>
+    override fun projectsPage(): Observable<List<Project>> {
+        return loadProjects(db)
+    }
 
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAllLive(): LiveData<List<ProjectTask>>
-
-    /**
-     * Select a task by its id.
-     */
-    @Query("SELECT * FROM project_task WHERE id = :taskId")
-    fun queryById(taskId: Long): Maybe<ProjectTask>
-
-    /**
-     * Delete all tasks.
-     */
-    @Query("DELETE FROM project_task")
-    fun deleteAll(): Int
+    private fun loadProjects(db: TrackerDatabase): Observable<List<Project>> {
+        val projectsDao = db.projectDao()
+        val projectsDb = projectsDao.queryAllSingle()
+        return projectsDb
+            .map { projects ->
+                projects
+                    .filter { it.id != TikalEntity.ID_NONE }
+                    .sortedBy { it.name }
+            }
+            .toObservable()
+    }
 }

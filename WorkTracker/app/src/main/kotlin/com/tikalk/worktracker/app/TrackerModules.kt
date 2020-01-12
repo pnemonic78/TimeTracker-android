@@ -33,6 +33,9 @@
 package com.tikalk.worktracker.app
 
 import android.content.Context
+import com.tikalk.worktracker.data.TimeTrackerRepository
+import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
+import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createCookieHandler
@@ -85,4 +88,22 @@ val retrofitModule = module {
     single { provideCookieHandler(get()) }
     single { provideHttpClient(get(), get()) }
     single { provideRetrofit(get()) }
+}
+
+val dataModule = module {
+    fun provideLocalDataSource(db: TrackerDatabase): TimeTrackerLocalDataSource {
+        return TimeTrackerLocalDataSource(db)
+    }
+
+    fun provideRemoteDataSource(service: TimeTrackerService): TimeTrackerRemoteDataSource {
+        return TimeTrackerRemoteDataSource(service)
+    }
+
+    fun provideRepository(local: TimeTrackerLocalDataSource, remote: TimeTrackerRemoteDataSource): TimeTrackerRepository {
+        return TimeTrackerRepository(local, remote)
+    }
+
+    single { provideLocalDataSource(get()) }
+    single { provideRemoteDataSource(get()) }
+    single { provideRepository(get(), get()) }
 }

@@ -40,9 +40,12 @@ import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
+import timber.log.Timber
 
 abstract class TrackerFragment : TikalFragment {
 
@@ -52,6 +55,8 @@ abstract class TrackerFragment : TikalFragment {
 
     protected val preferences by inject<TimeTrackerPrefs>()
     protected val db by inject<TrackerDatabase>()
+    protected val service by inject<TimeTrackerService>()
+    protected val dataSource by inject<TimeTrackerRepository>()
 
     protected var caller: Fragment? = null
         private set
@@ -85,6 +90,7 @@ abstract class TrackerFragment : TikalFragment {
     protected abstract fun authenticate(submit: Boolean = false)
 
     protected fun authenticateMain(submit: Boolean = false) {
+        Timber.i("authenticateMain submit=$submit")
         runOnUiThread {
             authenticate(submit)
         }

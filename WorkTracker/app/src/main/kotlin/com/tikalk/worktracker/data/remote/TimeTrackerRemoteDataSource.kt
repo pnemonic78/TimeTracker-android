@@ -30,31 +30,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.net
+package com.tikalk.worktracker.data.remote
 
-import android.app.AlertDialog
-import android.os.Bundle
-import androidx.annotation.StringRes
-import com.tikalk.app.runOnUiThread
-import com.tikalk.html.textBr
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.auth.AuthenticationException
+import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.net.TimeTrackerService
+import io.reactivex.Observable
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import retrofit2.Response
-import java.net.UnknownHostException
 
-/**
- * Fragment that is Internet-aware.
- */
-abstract class InternetFragment : TrackerFragment {
+class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : TimeTrackerDataSource {
 
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    protected fun isValidResponse(response: Response<String>): Boolean {
+    private fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
         if (response.isSuccessful && (html != null)) {
             val networkResponse = response.raw().networkResponse()
@@ -77,74 +68,74 @@ abstract class InternetFragment : TrackerFragment {
         return false
     }
 
-    protected fun getResponseError(html: String?): String? {
-        if (html == null) return null
+    override fun projectsPage(): Observable<List<Project>> {
+        return service.fetchProjects()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    return@map parseProjectsPage(html)
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseProjectsPage(html: String): List<Project> {
         val doc: Document = Jsoup.parse(html)
-        return findError(doc)
+        val projects = ArrayList<Project>()
+
+        // The first row of the table is the header
+        val table = findProjectsTable(doc)
+        if (table != null) {
+            // loop through all the rows and parse each record
+            // First row is the header, so drop it.
+            val rows = table.getElementsByTag("tr").drop(1)
+            for (tr in rows) {
+                val project = parseProject(tr)
+                if (project != null) {
+                    projects.add(project)
+                }
+            }
+        }
+
+        return projects
     }
 
     /**
-     * Find the first error table element.
+     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
      */
-    protected fun findError(doc: Document): String? {
+    private fun findProjectsTable(doc: Document): Element? {
         val body = doc.body()
+        val candidates = body.select("td[class='tableHeader']")
+        var td: Element
+        var label: String
 
-        val errorNode = body.selectFirst("td[class='error']")
-        if (errorNode != null) {
-            return errorNode.textBr()
+        for (candidate in candidates) {
+            td = candidate
+            label = td.ownText()
+            if (label != "Name") {
+                continue
+            }
+            td = td.nextElementSibling() ?: continue
+            label = td.ownText()
+            if (label != "Description") {
+                continue
+            }
+            return findParentElement(td, "table")
         }
 
         return null
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     * @param show visible?
-     */
-    protected fun showProgress(show: Boolean) {
-        if (!isVisible) return
-        (activity as InternetActivity?)?.showProgress(show)
-    }
+    private fun parseProject(row: Element): Project? {
+        val cols = row.getElementsByTag("td")
 
-    /**
-     * Shows the progress UI and hides the login form, on the main thread.
-     * @param show visible?
-     */
-    protected fun showProgressMain(show: Boolean) {
-        runOnUiThread { showProgress(show) }
-    }
+        val tdName = cols[0]
+        val name = tdName.ownText()
 
-    /**
-     * Handle an error.
-     * @param error the error.
-     */
-    protected fun handleError(error: Throwable) {
-        when (error) {
-            is AuthenticationException -> authenticate()
-            is UnknownHostException -> showUnknownHostError()
-        }
-    }
+        val tdDescription = cols[1]
+        val description = tdDescription.ownText()
 
-    /**
-     * Handle an error, on the main threadd.
-     * @param error the error.
-     */
-    protected fun handleErrorMain(error: Throwable) {
-        runOnUiThread {
-            handleError(error)
-        }
-    }
-
-    private fun showError(@StringRes messageId: Int) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.error_title)
-            .setMessage(messageId)
-            .setIcon(R.drawable.ic_report_problem)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    protected fun showUnknownHostError() {
-        showError(R.string.error_unknownHost)
+        return Project(name, description)
     }
 }

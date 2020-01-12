@@ -29,74 +29,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Transaction
+package com.tikalk.worktracker.data
+
+import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
+import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.Project
-import io.reactivex.Maybe
-import io.reactivex.Single
+import io.reactivex.Observable
 
-/**
- * Project entity DAO.
- */
-@Dao
-interface ProjectDao : BaseDao<Project> {
+class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
+                            private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
 
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects.
-     */
-    @Query("SELECT * FROM project")
-    fun queryAll(): List<Project>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects.
-     */
-    @Query("SELECT * FROM project")
-    fun queryAllSingle(): Single<List<Project>>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasks(): List<ProjectWithTasks>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasksLive(): LiveData<List<ProjectWithTasks>>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasksSingle(): Single<List<ProjectWithTasks>>
-
-    /**
-     * Select a project by its id.
-     */
-    @Query("SELECT * FROM project WHERE id = :projectId")
-    fun queryById(projectId: Long): Maybe<Project>
-
-    /**
-     * Delete all projects.
-     */
-    @Query("DELETE FROM project")
-    fun deleteAll(): Int
+    override fun projectsPage(): Observable<List<Project>> {
+        return Observable.concat(localRepository.projectsPage(), remoteRepository.projectsPage())
+    }
 }

@@ -34,6 +34,7 @@ package com.tikalk.worktracker.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -49,66 +50,75 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      *
      * @return all records.
      */
-    @Query("SELECT * FROM record")
-    fun queryAll(): List<TimeRecordEntity>
+    @Transaction
+    @Query("SELECT * FROM record ORDER BY start ASC")
+    fun queryAll(): List<WholeTimeRecordEntity>
 
     /**
      * Select all records from the table.
      *
      * @return all records.
      */
-    @Query("SELECT * FROM record")
-    fun queryAllLive(): LiveData<List<TimeRecordEntity>>
+    @Transaction
+    @Query("SELECT * FROM record ORDER BY start ASC")
+    fun queryAllLive(): LiveData<List<WholeTimeRecordEntity>>
 
     /**
      * Select all records from the table.
      *
      * @return all records.
      */
-    @Query("SELECT * FROM record")
-    fun queryAllSingle(): Single<List<TimeRecordEntity>>
+    @Transaction
+    @Query("SELECT * FROM record ORDER BY start ASC")
+    fun queryAllSingle(): Single<List<WholeTimeRecordEntity>>
 
     /**
      * Select a record by its id.
      */
+    @Transaction
     @Query("SELECT * FROM record WHERE id = :recordId")
-    fun queryById(recordId: Long): TimeRecordEntity?
+    fun queryById(recordId: Long): WholeTimeRecordEntity?
 
     /**
      * Select a record by its id.
      */
+    @Transaction
     @Query("SELECT * FROM record WHERE id = :recordId")
-    fun queryByIdMaybe(recordId: Long): Maybe<TimeRecordEntity>
+    fun queryByIdMaybe(recordId: Long): Maybe<WholeTimeRecordEntity>
 
     /**
      * Select records by their ids.
      */
+    @Transaction
     @Query("SELECT * FROM record WHERE id IN (:recordIds)")
-    fun queryByIds(recordIds: LongArray): List<TimeRecordEntity>
+    fun queryByIds(recordIds: LongArray): List<WholeTimeRecordEntity>
 
     /**
      * Select all records from the table by date.
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
-    fun queryByDate(start: Long, finish: Long): List<TimeRecordEntity>
+    @Transaction
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
+    fun queryByDate(start: Long, finish: Long): List<WholeTimeRecordEntity>
 
     /**
      * Select all records from the table by date.
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
-    fun queryByDateLive(start: Long, finish: Long): LiveData<List<TimeRecordEntity>>
+    @Transaction
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
+    fun queryByDateLive(start: Long, finish: Long): LiveData<List<WholeTimeRecordEntity>>
 
     /**
      * Select all records from the table by date.
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish)")
-    fun queryByDateSingle(start: Long, finish: Long): Single<List<TimeRecordEntity>>
+    @Transaction
+    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
+    fun queryByDateSingle(start: Long, finish: Long): Single<List<WholeTimeRecordEntity>>
 
     /**
      * Select the totals.

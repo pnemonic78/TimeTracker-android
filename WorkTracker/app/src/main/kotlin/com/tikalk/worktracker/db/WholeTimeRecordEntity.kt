@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,72 +31,45 @@
  */
 package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.Embedded
+import androidx.room.Relation
 import com.tikalk.worktracker.model.Project
-import io.reactivex.Maybe
-import io.reactivex.Single
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.time.TimeRecord
 
 /**
- * Project entity DAO.
+ * Time record entity with its project and task.
+ *
+ * @author Moshe Waisberg.
  */
-@Dao
-interface ProjectDao : BaseDao<Project> {
+data class WholeTimeRecordEntity(
+    @Embedded
+    val record: TimeRecordEntity,
+    @Relation(
+        parentColumn = "project_id",// in Record
+        entity = Project::class,
+        entityColumn = "id"// in Project
+    )
+    val project: Project,
+    @Relation(
+        parentColumn = "task_id",// in Record
+        entity = ProjectTask::class,
+        entityColumn = "id"// in ProjectTask
+    )
+    val task: ProjectTask
+)
 
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects.
-     */
-    @Query("SELECT * FROM project")
-    fun queryAll(): List<Project>
+fun WholeTimeRecordEntity.toTimeRecord(): TimeRecord {
+    val value: TimeRecordEntity = this.record
 
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects.
-     */
-    @Query("SELECT * FROM project")
-    fun queryAllSingle(): Single<List<Project>>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasks(): List<ProjectWithTasks>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasksLive(): LiveData<List<ProjectWithTasks>>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasksSingle(): Single<List<ProjectWithTasks>>
-
-    /**
-     * Select a project by its id.
-     */
-    @Query("SELECT * FROM project WHERE id = :projectId")
-    fun queryById(projectId: Long): Maybe<Project>
-
-    /**
-     * Delete all projects.
-     */
-    @Query("DELETE FROM project")
-    fun deleteAll(): Int
+    return TimeRecord(
+        value.id,
+        project,
+        task,
+        value.start,
+        value.finish,
+        value.note,
+        value.cost,
+        value.status
+    )
 }

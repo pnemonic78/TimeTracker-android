@@ -105,19 +105,17 @@ class ReportFragment : InternetFragment(),
         filterData.observe(this, Observer<ReportFilter> { filter ->
             this.listAdapter = ReportAdapter(filter)
             list.adapter = listAdapter
-            if (firstRun) {
-                fetchPage(filter)
-            } else {
-                showProgress(true)
-                loadPage()
-                    .subscribe({
-                        populateTotals(recordsData.value)
-                    }, { err ->
-                        Timber.e(err, "Error loading page: ${err.message}")
-                        showProgressMain(false)
-                    })
-                    .addTo(disposables)
-            }
+            loadPage()
+                .subscribeOn(Schedulers.io())
+                .subscribe({
+                    populateTotals(recordsData.value)
+                    if (firstRun) {
+                        fetchPage(filter)
+                    }
+                }, { err ->
+                    Timber.e(err, "Error loading page: ${err.message}")
+                })
+                .addTo(disposables)
         })
     }
 
@@ -131,45 +129,33 @@ class ReportFragment : InternetFragment(),
         list.adapter = listAdapter
     }
 
-    private fun fetchPage(filter: ReportFilter, progress: Boolean = true) {
+    private fun fetchPage(filter: ReportFilter) {
         Timber.i("fetchPage filter=$filter")
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        if (progress) showProgress(true)
 
-        // Fetch from local database first.
-        loadPage()
-            .subscribe({
-                populateTotals(recordsData.value)
-
-                // Fetch from remote server.
-                service.generateReport(filter.toFields())
-                    .subscribeOn(Schedulers.io())
-                    .subscribe({ response ->
-                        if (isValidResponse(response)) {
-                            val html = response.body()!!
-                            processPage(html, progress)
-                        } else {
-                            authenticateMain()
-                        }
-                    }, { err ->
-                        Timber.e(err, "Error fetching page: ${err.message}")
-                        handleErrorMain(err)
-                        if (progress) showProgressMain(false)
-                    })
-                    .addTo(disposables)
+        // Fetch from remote server.
+        service.generateReport(filter.toFields())
+            .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
+            .subscribe({ response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    processPage(html)
+                } else {
+                    authenticateMain()
+                }
             }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                if (progress) showProgressMain(false)
+                Timber.e(err, "Error fetching page: ${err.message}")
+                handleErrorMain(err)
             })
             .addTo(disposables)
     }
 
-    private fun processPage(html: String, progress: Boolean = true) {
+    private fun processPage(html: String) {
         val records = ArrayList<TimeRecord>()
         val doc: Document = Jsoup.parse(html)
         populateList(doc, records)
         populateTotals(records)
-        if (progress) showProgressMain(false)
     }
 
     /** Populate the list. */
@@ -290,7 +276,7 @@ class ReportFragment : InternetFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -412,7 +398,6 @@ class ReportFragment : InternetFragment(),
                 loadRecords(db, 0L, 0L)
             }
         }
-            .subscribeOn(Schedulers.io())
     }
 
     private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
@@ -433,7 +418,7 @@ class ReportFragment : InternetFragment(),
             if (reportRecordsDb.value.isNullOrEmpty()) {
                 val recordsDao = db.timeRecordDao()
                 val recordsDb = recordsDao.queryByDate(start, finish)
-                val reports = recordsDb.map { it.toTimeRecord(projects, tasks) }
+                val reports = recordsDb.map { it.toTimeRecord() }
                     .map { it.toReportRecord() }
                 reportRecordsDao.insert(reports)
             }

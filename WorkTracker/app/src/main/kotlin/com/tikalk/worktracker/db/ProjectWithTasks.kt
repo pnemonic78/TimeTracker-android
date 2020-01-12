@@ -43,7 +43,8 @@ import com.tikalk.worktracker.model.ProjectTask
  * @author Moshe Waisberg.
  */
 data class ProjectWithTasks(
-    @Embedded val project: Project,
+    @Embedded
+    val project: Project,
     @Relation(
         parentColumn = "id",// Project
         entity = ProjectTask::class,

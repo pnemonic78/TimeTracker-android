@@ -198,8 +198,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     fun run() {
         Timber.i("run")
-
-        loadPage()
+        loadForm()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -224,7 +223,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit")
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
@@ -233,30 +232,24 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
-    private fun loadPage(): Single<Unit> {
-        return Single.fromCallable { loadForm() }
-    }
-
     private fun fetchPage() {
         Timber.i("fetchPage")
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(true)
 
         // Fetch from remote server.
         service.fetchReports()
             .subscribeOn(Schedulers.io())
+            .doOnSubscribe { showProgressMain(true) }
+            .doAfterTerminate { showProgressMain(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     populateForm(date, html)
-                    showProgressMain(false)
                 } else {
                     authenticateMain()
                 }
             }, { err ->
                 Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
-                showProgressMain(false)
             })
             .addTo(disposables)
     }
@@ -309,7 +302,7 @@ class ReportFormFragment : TimeFormFragment() {
         return findScript(doc, tokenStart, tokenEnd)
     }
 
-    override fun populateTaskIds(doc: Document, projects: List<Project>) {
+    override fun populateTaskIds(doc: Document, projects: List<Project>, tasks: List<ProjectTask>) {
         Timber.i("populateTaskIds")
         val scriptText = findTaskIds(doc) ?: return
 
@@ -327,9 +320,9 @@ class ReportFormFragment : TimeFormFragment() {
                 val taskIds: List<Long> = matcher.group(2)!!
                     .split(",")
                     .map { it.toLong() }
-                val tasks = this.tasks.filter { it.id in taskIds }
+                val tasksPerProject = tasks.filter { it.id in taskIds }
 
-                project?.addTasks(tasks)
+                project?.addTasks(tasksPerProject)
             }
         }
     }
@@ -355,13 +348,8 @@ class ReportFormFragment : TimeFormFragment() {
         val taskItems = arrayOf(taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projectItems = projects.toTypedArray()
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
-            projectItemSelected(filter.project)
-        }
-        projectInput.requestFocus()
+        val projects = projectsData.value
+        bindProjects(context, filter, projects)
 
         val periodList = ArrayList<String>(periods.size)
         for (period in periods) {
@@ -395,6 +383,17 @@ class ReportFormFragment : TimeFormFragment() {
         showNoteField.isChecked = filter.showNoteField
 
         setErrorLabel(errorMessage)
+    }
+
+    private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
+        Timber.i("bindProjects filter=$filter projects=$projects")
+        val projectItems = projects?.toTypedArray() ?: emptyArray()
+        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        if (projectItems.isNotEmpty()) {
+            projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
+            projectItemSelected(filter.project)
+        }
+        projectInput.requestFocus()
     }
 
     private fun pickStartDate() {
@@ -472,7 +471,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun generateReport() {
-        Timber.i("generateReport")
+        Timber.i("generateReport currentDestination=${findNavController().currentDestination?.label}")
 
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()
@@ -542,6 +541,12 @@ class ReportFormFragment : TimeFormFragment() {
     override fun setRecordTask(task: ProjectTask) {
         super.setRecordTask(task)
         filterData.value?.task = task
+    }
+
+    override fun onProjectsUpdated(projects: List<Project>) {
+        super.onProjectsUpdated(projects)
+        val filter = filterData.value ?: return
+        bindProjects(requireContext(), filter, projects)
     }
 
     companion object {
