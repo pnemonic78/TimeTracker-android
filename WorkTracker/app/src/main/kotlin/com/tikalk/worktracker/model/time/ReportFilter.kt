@@ -35,6 +35,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tikalk.os.readBool
 import com.tikalk.os.writeBool
+import com.tikalk.worktracker.db.TimeRecordEntity
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
@@ -47,7 +49,7 @@ import java.util.*
  * @author Moshe Waisberg.
  */
 //TODO @Parcelize
-class ReportFilter : TimeRecord {
+class ReportFilter : TimeRecord, Parcelable {
 
     var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
     var favorite: String? = null
@@ -87,7 +89,16 @@ class ReportFilter : TimeRecord {
         this.showCostField = showCostField
     }
 
-    constructor(parcel: Parcel) : super(parcel) {
+    constructor(parcel: Parcel) : super(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
+        val entity = TimeRecordEntity.CREATOR.createFromParcel(parcel)
+        id = entity.id
+        project.id = entity.projectId
+        task.id = entity.taskId
+        start = entity.start
+        finish = entity.finish
+        note = entity.note
+        cost = entity.cost
+        status = entity.status
         period = ReportTimePeriod.values()[parcel.readInt()]
         favorite = parcel.readString()
         showProjectField = parcel.readBool()
@@ -100,7 +111,8 @@ class ReportFilter : TimeRecord {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        super.writeToParcel(parcel, flags)
+        val entity = toTimeRecordEntity()
+        entity.writeToParcel(parcel, flags)
         parcel.writeInt(period.ordinal)
         parcel.writeString(favorite)
         parcel.writeBool(showProjectField)
@@ -110,6 +122,10 @@ class ReportFilter : TimeRecord {
         parcel.writeBool(showDurationField)
         parcel.writeBool(showNoteField)
         parcel.writeBool(showCostField)
+    }
+
+    override fun describeContents(): Int {
+        return 0
     }
 
     fun toFields(): Map<String, String> {

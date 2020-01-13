@@ -31,8 +31,6 @@
  */
 package com.tikalk.worktracker.model.time
 
-import android.os.Parcel
-import android.os.Parcelable
 import android.text.format.DateUtils
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -45,92 +43,49 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-//TODO @Parcelize
-open class TimeRecord : TikalEntity, Parcelable {
-
-    var project: Project
-    var task: ProjectTask
-    var start: Calendar? = null
-        set(value) {
-            // Server granularity is seconds.
-            value?.millis = 0
-            field = value
-        }
-    var finish: Calendar? = null
-        set(value) {
-            // Server granularity is seconds.
-            value?.millis = 0
-            field = value
-        }
-    var note: String = ""
-    var cost: Double = 0.0
+open class TimeRecord(
+    id: Long = ID_NONE,
+    var project: Project,
+    var task: ProjectTask,
+    start: Calendar? = null,
+    finish: Calendar? = null,
+    var note: String = "",
+    var cost: Double = 0.0,
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
+) : TikalEntity(id) {
+
+    var start: Calendar? = start
+        set(value) {
+            // Server granularity is seconds.
+            value?.millis = 0
+            field = value
+        }
+    var finish: Calendar? = finish
+        set(value) {
+            // Server granularity is seconds.
+            value?.millis = 0
+            field = value
+        }
 
     var startTime: Long
-        get() = start?.timeInMillis ?: 0L
+        get() = start?.timeInMillis ?: NEVER
         set(value) {
             val cal = start ?: Calendar.getInstance()
             cal.timeInMillis = value
             start = cal
         }
     var finishTime: Long
-        get() = finish?.timeInMillis ?: 0L
+        get() = finish?.timeInMillis ?: NEVER
         set(value) {
             val cal = finish ?: Calendar.getInstance()
             cal.timeInMillis = value
             finish = cal
         }
 
-    constructor(
-        id: Long = ID_NONE,
-        project: Project,
-        task: ProjectTask,
-        start: Calendar? = null,
-        finish: Calendar? = null,
-        note: String = "",
-        cost: Double = 0.0,
-        status: TaskRecordStatus = TaskRecordStatus.DRAFT
-    ) {
-        this.id = id
-        this.project = project
-        this.task = task
-        this.start = start
-        this.finish = finish
-        this.note = note
-        this.cost = cost
-        this.status = status
-    }
-
-    constructor(parcel: Parcel) : this(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
-        id = parcel.readLong()
-        version = parcel.readInt()
-        project.id = parcel.readLong()
-        task.id = parcel.readLong()
-        startTime = parcel.readLong()
-        finishTime = parcel.readLong()
-        note = parcel.readString() ?: ""
-        status = TaskRecordStatus.values()[parcel.readInt()]
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id)
-        parcel.writeInt(version)
-        parcel.writeLong(project.id)
-        parcel.writeLong(task.id)
-        parcel.writeLong(startTime)
-        parcel.writeLong(finishTime)
-        parcel.writeString(note)
-        parcel.writeInt(status.ordinal)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
     fun isEmpty(): Boolean {
         return project.isEmpty()
             || task.isEmpty()
-            || (startTime <= 0L)
+            || (startTime <= NEVER)
     }
 
     open fun copy(): TimeRecord {
@@ -174,19 +129,17 @@ open class TimeRecord : TikalEntity, Parcelable {
         return "{id: $id, project: $project, task: $task, start: $startTime, finish: $finishTime, status: $status}"
     }
 
+    override fun hashCode(): Int {
+        var result = project.hashCode()
+        result = 31 * result + task.hashCode()
+        result = 31 * result + startTime.hashCode()
+        return result
+    }
+
     companion object {
         val EMPTY: TimeRecord = TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<TimeRecord> {
-            override fun createFromParcel(parcel: Parcel): TimeRecord {
-                return TimeRecord(parcel)
-            }
-
-            override fun newArray(size: Int): Array<TimeRecord?> {
-                return arrayOfNulls(size)
-            }
-        }
+        const val NEVER = 0L
     }
 }
 

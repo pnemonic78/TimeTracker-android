@@ -51,6 +51,7 @@ import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
@@ -622,20 +623,20 @@ class TimeEditFragment : TimeFormFragment() {
             bindRecord(record)
         }
         outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putLong(STATE_RECORD_ID, record.id)
-        outState.putParcelable(STATE_RECORD, record)
+        outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity>(STATE_RECORD)
 
         if (recordParcel != null) {
-            setRecordValue(recordParcel)
+            val projects = projectsData.value
+            val tasks = tasksData.value
+            val record = recordParcel.toTimeRecord(projects, tasks)
+            setRecordValue(record)
             bindForm(record)
-        } else {
-            record.id = savedInstanceState.getLong(STATE_RECORD_ID)
         }
     }
 
