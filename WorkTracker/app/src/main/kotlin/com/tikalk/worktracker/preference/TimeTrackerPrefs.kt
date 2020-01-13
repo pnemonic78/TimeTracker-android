@@ -130,8 +130,8 @@ class TimeTrackerPrefs(context: Context) {
 
         val taskName = prefs.getString(TASK_NAME, null) ?: return null
 
-        val startTime = prefs.getLong(START_TIME, 0L)
-        if (startTime <= 0L) return null
+        val startTime = prefs.getLong(START_TIME, TimeRecord.NEVER)
+        if (startTime <= TimeRecord.NEVER) return null
 
         val project = Project(projectName, "")
         project.id = projectId

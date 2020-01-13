@@ -188,7 +188,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
             if (projectId <= 0L) return Result.failure(IllegalArgumentException("invalid project id"))
             if (taskId <= 0L) return Result.failure(IllegalArgumentException("invalid task id"))
-            if (startTime <= 0L) return Result.failure(IllegalArgumentException("invalid start time"))
+            if (startTime <= TimeRecord.NEVER) return Result.failure(IllegalArgumentException("invalid start time"))
 
             editStartedRecord(record)
         }
@@ -297,15 +297,15 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val projectName = extras.getString(EXTRA_PROJECT_NAME)
         val taskId = extras.getLong(EXTRA_TASK_ID, 0L)
         val taskName = extras.getString(EXTRA_TASK_NAME)
-        val startTime = extras.getLong(EXTRA_START_TIME, 0L)
-        val finishTime = extras.getLong(EXTRA_FINISH_TIME, 0L)
+        val startTime = extras.getLong(EXTRA_START_TIME, TimeRecord.NEVER)
+        val finishTime = extras.getLong(EXTRA_FINISH_TIME, TimeRecord.NEVER)
         Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime")
 
         if (projectId <= 0L) return null
         if (projectName.isNullOrEmpty()) return null
         if (taskId <= 0L) return null
         if (taskName.isNullOrEmpty()) return null
-        if (startTime <= 0L) return null
+        if (startTime <= TimeRecord.NEVER) return null
 
         val project = Project(projectName)
         project.id = projectId

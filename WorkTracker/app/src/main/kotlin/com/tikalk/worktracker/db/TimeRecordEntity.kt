@@ -152,10 +152,10 @@ fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: 
     val task = tasks?.firstOrNull { it.id == value.taskId }
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
-    if ((project.id != ID_NONE) and project.name.isEmpty()) {
+    if ((projects == null) and (project.id != ID_NONE) and project.name.isEmpty()) {
         project.name = "project"
     }
-    if ((task.id != ID_NONE) and task.name.isEmpty()) {
+    if ((tasks == null) and (task.id != ID_NONE) and task.name.isEmpty()) {
         task.name = "task"
     }
 

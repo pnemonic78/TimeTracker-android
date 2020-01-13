@@ -182,14 +182,14 @@ class ReportFormFragment : TimeFormFragment() {
         finishInput.visibility = visibility
 
         val startTime = filter.startTime
-        startInput.text = if (startTime > 0L)
+        startInput.text = if (startTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
         else
             ""
         startInput.error = null
 
         val finishTime = filter.finishTime
-        finishInput.text = if (finishTime > 0L)
+        finishInput.text = if (finishTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
         else
             ""
@@ -360,7 +360,7 @@ class ReportFormFragment : TimeFormFragment() {
         periodInput.setSelection(filter.period.ordinal)
 
         val startTime = filter.startTime
-        startInput.text = if (startTime > 0L)
+        startInput.text = if (startTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
         else
             ""
@@ -368,7 +368,7 @@ class ReportFormFragment : TimeFormFragment() {
         startPickerDialog = null
 
         val finishTime = filter.finishTime
-        finishInput.text = if (finishTime > 0L)
+        finishInput.text = if (finishTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
         else
             ""

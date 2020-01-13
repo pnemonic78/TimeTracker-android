@@ -120,7 +120,7 @@ class TimerFragment : TimeFormFragment() {
         bindProjects(context, record, projects)
 
         val startTime = record.startTime
-        if (startTime <= 0L) {
+        if (startTime <= TimeRecord.NEVER) {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
             actionSwitcher.displayedChild = CHILD_START
@@ -174,7 +174,7 @@ class TimerFragment : TimeFormFragment() {
         if (recordStarted != null) {
             setRecordValue(recordStarted)
         }
-        if (record.finishTime <= 0L) {
+        if (record.finishTime <= TimeRecord.NEVER) {
             record.finishTime = System.currentTimeMillis()
         }
 
@@ -261,10 +261,10 @@ class TimerFragment : TimeFormFragment() {
                 val task = tasks?.firstOrNull { it.id == taskId } ?: taskEmpty
 
                 val record = TimeRecord(TikalEntity.ID_NONE, project, task)
-                if (startTime > 0L) {
+                if (startTime != TimeRecord.NEVER) {
                     record.startTime = startTime
                 }
-                if (finishTime > 0L) {
+                if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
                 return record

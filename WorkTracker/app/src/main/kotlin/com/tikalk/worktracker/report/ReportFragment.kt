@@ -395,7 +395,7 @@ class ReportFragment : InternetFragment(),
             if (filter != null) {
                 loadRecords(db, filter.startTime, filter.finishTime)
             } else {
-                loadRecords(db, 0L, 0L)
+                loadRecords(db, TimeRecord.NEVER, TimeRecord.NEVER)
             }
         }
     }

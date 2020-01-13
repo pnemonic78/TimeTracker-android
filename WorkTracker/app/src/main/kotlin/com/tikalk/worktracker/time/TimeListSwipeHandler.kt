@@ -37,6 +37,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
 
 /**
  * Swipe handler for a row item.
@@ -55,7 +56,7 @@ internal class TimeListSwipeHandler(private val itemListener: TimeListAdapter.On
             val item = viewHolder.record!!
             val id = item.id
 
-            if (id < 0L) {
+            if (id < ID_NONE) {
                 return 0
             }
         }

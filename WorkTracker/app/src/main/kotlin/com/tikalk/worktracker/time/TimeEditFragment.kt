@@ -181,7 +181,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
-                    if (startTime > 0L) {
+                    if (startTime != TimeRecord.NEVER) {
                         record.startTime = startTime
                     } else {
                         record.start = null
@@ -189,7 +189,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_FINISH_TIME)) {
                     val finishTime = args.getLong(EXTRA_FINISH_TIME)
-                    if (finishTime > 0L) {
+                    if (finishTime != TimeRecord.NEVER) {
                         record.finishTime = finishTime
                     } else {
                         record.finish = null
@@ -216,7 +216,7 @@ class TimeEditFragment : TimeFormFragment() {
         bindProjects(context, record, projects)
 
         val startTime = record.startTime
-        startInput.text = if (startTime > 0L)
+        startInput.text = if (startTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, startTime, FORMAT_TIME_BUTTON)
         else
             ""
@@ -224,7 +224,7 @@ class TimeEditFragment : TimeFormFragment() {
         startPickerDialog = null
 
         val finishTime = record.finishTime
-        finishInput.text = if (finishTime > 0L)
+        finishInput.text = if (finishTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, finishTime, FORMAT_TIME_BUTTON)
         else
             ""
