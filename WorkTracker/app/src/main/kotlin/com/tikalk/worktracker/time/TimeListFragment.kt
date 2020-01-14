@@ -243,7 +243,7 @@ class TimeListFragment : TimeFormFragment(),
 
     @MainThread
     private fun bindTotals(totals: TimeTotals) {
-        val context: Context = requireContext()
+        val context = this.context ?: return
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 

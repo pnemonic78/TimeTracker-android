@@ -109,7 +109,7 @@ class TimerFragment : TimeFormFragment() {
     @MainThread
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
-        val context: Context = requireContext()
+        val context = this.context ?: return
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
@@ -148,7 +148,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun startTimer() {
         Timber.i("startTimer")
-        val context: Context = requireContext()
+        val context = this.context ?: return
         val now = System.currentTimeMillis()
         record.startTime = now
 
@@ -201,7 +201,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun filterTasks(project: Project) {
         Timber.d("filterTasks project=$project")
-        val context: Context = requireContext()
+        val context = this.context ?: return
         val filtered = project.tasks
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)

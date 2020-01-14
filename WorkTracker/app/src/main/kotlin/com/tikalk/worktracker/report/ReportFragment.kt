@@ -252,7 +252,7 @@ class ReportFragment : InternetFragment(),
 
     @MainThread
     private fun bindTotals(totals: ReportTotals) {
-        val context: Context = requireContext()
+        val context = this.context ?: return
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
         val filter = filterData.value
@@ -497,12 +497,12 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun exportCSV(item: MenuItem? = null) {
-        item?.isEnabled = false
-        showProgress(true)
-
-        val context = requireContext()
+        val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
+
+        item?.isEnabled = false
+        showProgress(true)
 
         ReportExporterCSV(context, records, filter)
             .subscribeOn(Schedulers.io())
@@ -521,13 +521,13 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun exportHTML(item: MenuItem? = null) {
-        item?.isEnabled = false
-        showProgress(true)
-
-        val context = requireContext()
+        val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
+
+        item?.isEnabled = false
+        showProgress(true)
 
         ReportExporterHTML(context, records, filter, totals)
             .subscribeOn(Schedulers.io())
@@ -546,12 +546,12 @@ class ReportFragment : InternetFragment(),
     }
 
     private fun exportXML(item: MenuItem? = null) {
-        item?.isEnabled = false
-        showProgress(true)
-
-        val context = requireContext()
+        val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
+
+        item?.isEnabled = false
+        showProgress(true)
 
         ReportExporterXML(context, records, filter)
             .subscribeOn(Schedulers.io())
