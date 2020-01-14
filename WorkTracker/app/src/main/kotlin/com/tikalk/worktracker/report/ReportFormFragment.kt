@@ -55,7 +55,6 @@ import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.*
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
@@ -79,12 +78,17 @@ class ReportFormFragment : TimeFormFragment() {
     private val periods = ReportTimePeriod.values()
     private var firstRun = true
 
+    init {
+        record = ReportFilter()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         firstRun = (savedInstanceState == null)
         filterData.value = ReportFilter()
         filterData.observe(this, Observer<ReportFilter> { filter ->
+            setRecordValue(filter)
             bindFilter(filter)
         })
     }
@@ -531,6 +535,9 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun setRecordValue(record: TimeRecord) {
         // `record` must always point to `filter`.
+        if (record is ReportFilter) {
+            super.setRecordValue(record)
+        }
     }
 
     override fun setRecordProject(project: Project) {
