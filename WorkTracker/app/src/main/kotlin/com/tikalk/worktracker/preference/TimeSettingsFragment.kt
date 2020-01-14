@@ -94,7 +94,7 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
      * Clear the application data.
      */
     private fun deleteAppData() {
-        val context = requireContext()
+        val context = this.context ?: return
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         am.clearApplicationUserData()
     }
