@@ -47,10 +47,12 @@ import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.db.TimeRecordEntity
+import com.tikalk.worktracker.db.toTimeRecord
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
@@ -118,7 +120,7 @@ class TimerFragment : TimeFormFragment() {
         bindProjects(context, record, projects)
 
         val startTime = record.startTime
-        if (startTime <= 0L) {
+        if (startTime <= TimeRecord.NEVER) {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
             actionSwitcher.displayedChild = CHILD_START
@@ -172,7 +174,7 @@ class TimerFragment : TimeFormFragment() {
         if (recordStarted != null) {
             setRecordValue(recordStarted)
         }
-        if (record.finishTime <= 0L) {
+        if (record.finishTime <= TimeRecord.NEVER) {
             record.finishTime = System.currentTimeMillis()
         }
 
@@ -259,10 +261,10 @@ class TimerFragment : TimeFormFragment() {
                 val task = tasks?.firstOrNull { it.id == taskId } ?: taskEmpty
 
                 val record = TimeRecord(TikalEntity.ID_NONE, project, task)
-                if (startTime > 0L) {
+                if (startTime != TimeRecord.NEVER) {
                     record.startTime = startTime
                 }
-                if (finishTime > 0L) {
+                if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
                 return record
@@ -351,15 +353,18 @@ class TimerFragment : TimeFormFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelable(STATE_RECORD, record)
+        outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecord>(STATE_RECORD)
+        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity>(STATE_RECORD)
 
         if (recordParcel != null) {
-            setRecordValue(recordParcel)
+            val projects = projectsData.value
+            val tasks = tasksData.value
+            val record = recordParcel.toTimeRecord(projects, tasks)
+            setRecordValue(record)
             populateForm(record)
             bindForm(record)
         }

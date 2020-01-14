@@ -31,13 +31,17 @@
  */
 package com.tikalk.worktracker.db
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.*
 import com.tikalk.worktracker.model.Converters
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.toCalendar
 import java.util.*
 
 /**
@@ -57,6 +61,7 @@ import java.util.*
     indices = [Index("project_id"), Index("task_id")]
 )
 @TypeConverters(TimeRecordConverters::class)
+//TODO @Parcelize
 open class TimeRecordEntity(
     id: Long,
     @ColumnInfo(name = "project_id")
@@ -73,7 +78,52 @@ open class TimeRecordEntity(
     var cost: Double = 0.0,
     @ColumnInfo(name = "status")
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT
-) : TikalEntity(id)
+) : TikalEntity(id), Parcelable {
+
+    constructor(parcel: Parcel) : this(ID_NONE, ID_NONE, ID_NONE) {
+        id = parcel.readLong()
+        version = parcel.readInt()
+        projectId = parcel.readLong()
+        taskId = parcel.readLong()
+        val startTime = parcel.readLong()
+        start = if (startTime == NEVER) null else startTime.toCalendar()
+        val finishTime = parcel.readLong()
+        finish = if (finishTime == NEVER) null else finishTime.toCalendar()
+        note = parcel.readString() ?: ""
+        status = TaskRecordStatus.values()[parcel.readInt()]
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeLong(id)
+        parcel.writeInt(version)
+        parcel.writeLong(projectId)
+        parcel.writeLong(taskId)
+        parcel.writeLong(start?.timeInMillis ?: NEVER)
+        parcel.writeLong(finish?.timeInMillis ?: NEVER)
+        parcel.writeString(note)
+        parcel.writeInt(status.ordinal)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object {
+
+        private const val NEVER = TimeRecord.NEVER
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<TimeRecordEntity> {
+            override fun createFromParcel(parcel: Parcel): TimeRecordEntity {
+                return TimeRecordEntity(parcel)
+            }
+
+            override fun newArray(size: Int): Array<TimeRecordEntity?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+}
 
 open class TimeRecordConverters : Converters() {
     @TypeConverter
@@ -101,6 +151,13 @@ fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: 
         ?: Project.EMPTY.copy().apply { id = value.projectId }
     val task = tasks?.firstOrNull { it.id == value.taskId }
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
+
+    if ((projects == null) and (project.id != ID_NONE) and project.name.isEmpty()) {
+        project.name = "project"
+    }
+    if ((tasks == null) and (task.id != ID_NONE) and task.name.isEmpty()) {
+        task.name = "task"
+    }
 
     return TimeRecord(
         value.id,

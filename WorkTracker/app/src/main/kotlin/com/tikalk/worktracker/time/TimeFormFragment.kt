@@ -483,7 +483,6 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     companion object {
-        const val STATE_RECORD_ID = "record_id"
         const val STATE_RECORD = "record"
 
         const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".form.DATE"
