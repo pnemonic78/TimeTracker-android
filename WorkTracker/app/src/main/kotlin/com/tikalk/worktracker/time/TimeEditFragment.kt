@@ -368,13 +368,13 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun projectItemSelected(project: Project) {
         Timber.i("projectItemSelected $project")
-        record.project = project
+        setRecordProject(project)
         filterTasks(project)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.i("taskItemSelected $task")
-        record.task = task
+        setRecordTask(task)
     }
 
     fun run() {
