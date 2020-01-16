@@ -451,19 +451,11 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
-        val recordStarted = preferences.getStartedRecord()
-        if (recordStarted != null) {
-            setRecordValue(recordStarted)
-        }
         populateForm(record)
         bindForm(record)
     }
 
     protected open fun onTasksUpdated(tasks: List<ProjectTask>) {
-        val recordStarted = preferences.getStartedRecord()
-        if (recordStarted != null) {
-            setRecordValue(recordStarted)
-        }
         populateForm(record)
         bindForm(record)
     }
