@@ -408,8 +408,9 @@ class TimerFragment : TimeFormFragment() {
     }
 
     override fun onProjectsUpdated(projects: List<Project>) {
+        val context = this.context ?: return
         super.onProjectsUpdated(projects)
-        bindProjects(requireContext(), record, projects)
+        bindProjects(context, record, projects)
     }
 
     companion object {
