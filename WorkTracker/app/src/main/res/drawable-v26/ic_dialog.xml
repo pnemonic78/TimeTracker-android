@@ -1,7 +1,7 @@
 <!--
   ~ BSD 3-Clause License
   ~
-  ~ Copyright (c) 2019, Tikal Knowledge, Ltd.
+  ~ Copyright (c) 2020, Tikal Knowledge, Ltd.
   ~ All rights reserved.
   ~
   ~ Redistribution and use in source and binary forms, with or without
@@ -31,5 +31,5 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@mipmap/ic_launcher" />
+    <item android:drawable="@drawable/ic_launcher_foreground" />
 </selector>
