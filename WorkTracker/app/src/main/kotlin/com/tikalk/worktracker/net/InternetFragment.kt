@@ -102,7 +102,6 @@ abstract class InternetFragment : TrackerFragment {
      * @param show visible?
      */
     protected fun showProgress(show: Boolean) {
-        if (!isVisible) return
         (activity as InternetActivity?)?.showProgress(show)
     }
 
