@@ -41,22 +41,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.project.ProjectTasksAdapter
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_tasks.*
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment(),
@@ -89,47 +82,23 @@ class ProjectTasksFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        Single.fromCallable { loadTasks(db) }
+        dataSource.tasksPage()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                fetchPage()
+            .subscribe({ tasks ->
+                tasksData.value = tasks
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
-            })
-            .addTo(disposables)
-    }
-
-    private fun loadTasks(db: TrackerDatabase) {
-        val taskDao = db.taskDao()
-        val tasksDb = taskDao.queryAll()
-        val tasks = tasksDb
-            .filter { it.id != TikalEntity.ID_NONE }
-            .sortedBy { it.name }
-        tasksData.postValue(tasks)
-    }
-
-    private fun fetchPage() {
-        Timber.i("fetchPage")
-
-        // Fetch from remote server.
-        service.fetchProjectTasks()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { showProgress(tasksData.value?.isEmpty() ?: true) }
-            .doAfterTerminate { showProgress(false) }
-            .subscribe({ response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
             })
             .addTo(disposables)
+    }
+
+    private fun bindList(tasks: List<ProjectTask>) {
+        listAdapter.submitList(tasks)
+        if (tasks === this.tasksData.value) {
+            listAdapter.notifyDataSetChanged()
+        }
     }
 
     override fun authenticate(submit: Boolean) {
@@ -139,76 +108,6 @@ class ProjectTasksFragment : InternetFragment(),
             requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_projectTasks_to_login, args)
-        }
-    }
-
-    private fun processPage(html: String) {
-        populateList(html)
-    }
-
-    private fun populateList(html: String) {
-        val doc: Document = Jsoup.parse(html)
-        val tasks = ArrayList<ProjectTask>()
-
-        // The first row of the table is the header
-        val table = findProjectsTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            // First row is the header, so drop it.
-            val rows = table.getElementsByTag("tr").drop(1)
-            for (tr in rows) {
-                val task = parseTask(tr)
-                if (task != null) {
-                    tasks.add(task)
-                }
-            }
-        }
-
-        tasksData.value = tasks
-    }
-
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
-     */
-    private fun findProjectsTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Name") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Description") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseTask(row: Element): ProjectTask? {
-        val cols = row.getElementsByTag("td")
-
-        val tdName = cols[0]
-        val name = tdName.ownText()
-
-        val tdDescription = cols[1]
-        val description = tdDescription.ownText()
-
-        return ProjectTask(name, description)
-    }
-
-    private fun bindList(tasks: List<ProjectTask>) {
-        listAdapter.submitList(tasks)
-        if (tasks === this.tasksData.value) {
-            listAdapter.notifyDataSetChanged()
         }
     }
 

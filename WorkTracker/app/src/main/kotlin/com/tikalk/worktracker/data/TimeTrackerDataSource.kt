@@ -33,8 +33,10 @@
 package com.tikalk.worktracker.data
 
 import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
 import io.reactivex.Observable
 
 interface TimeTrackerDataSource {
     fun projectsPage(): Observable<List<Project>>
+    fun tasksPage(): Observable<List<ProjectTask>>
 }
