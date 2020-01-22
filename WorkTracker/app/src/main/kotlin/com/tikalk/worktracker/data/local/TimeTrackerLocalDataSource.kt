@@ -37,6 +37,7 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
 import io.reactivex.Observable
 
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
@@ -71,5 +72,9 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
                     .sortedBy { it.name }
             }
             .toObservable()
+    }
+
+    override fun usersPage(): Observable<List<User>> {
+        return Observable.empty()
     }
 }
