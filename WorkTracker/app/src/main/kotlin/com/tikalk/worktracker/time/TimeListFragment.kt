@@ -175,7 +175,7 @@ class TimeListFragment : TimeFormFragment(),
     /**
      * Fetch from remote server.
      */
-    private fun fetchPage(date: Calendar, progress: Boolean = true) {
+    private fun fetchPage(date: Calendar) {
         val dateFormatted = formatSystemDate(date)
         Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
@@ -183,8 +183,6 @@ class TimeListFragment : TimeFormFragment(),
 
         service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
-            .doOnSubscribe { if (progress) showProgressMain(recordsData.value?.isEmpty() ?: true) }
-            .doAfterTerminate { if (progress) showProgressMain(false) }
             .subscribe({ response ->
                 if (isValidResponse(response)) {
                     this.date = date
@@ -875,7 +873,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun maybeFetchPage(date: Calendar, responseHtml: String) {
         if (responseHtml.isEmpty()) {
-            fetchPage(date, false)
+            fetchPage(date)
         } else {
             Single.just(responseHtml)
                 .subscribeOn(Schedulers.io())
