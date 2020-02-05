@@ -242,6 +242,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
+        if (projectInput == null) return
         val projectItems = projects?.toTypedArray() ?: emptyArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
@@ -362,6 +363,7 @@ class TimeEditFragment : TimeFormFragment() {
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)
+        if (taskInput == null) return
         taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         taskInput.setSelection(findTask(options, record.task))
     }
