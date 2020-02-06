@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.data.remote
 
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.model.Project
@@ -40,9 +39,6 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerService
 import io.reactivex.Observable
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import retrofit2.Response
 
 class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : TimeTrackerDataSource {
@@ -115,77 +111,6 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
     }
 
     private fun parseUsersPage(html: String): List<User> {
-        val doc: Document = Jsoup.parse(html)
-        val users = ArrayList<User>()
-
-        // The first row of the table is the header
-        val table = findUsersTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            // First row is the header, so drop it.
-            val rows = table.getElementsByTag("tr").drop(1)
-            for (tr in rows) {
-                val user = parseUser(tr)
-                if (user != null) {
-                    users.add(user)
-                }
-            }
-        }
-
-        return users
-    }
-
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
-     */
-    private fun findUsersTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Name") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Login") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseUser(row: Element): User? {
-        val cols = row.getElementsByTag("td")
-
-        val tdName = cols[0]
-        val name = tdName.ownText()
-        val spans = tdName.select("span")
-        var isUncompletedEntry = false
-        for (span in spans) {
-            val classAttribute = span.attr("class")
-            isUncompletedEntry = isUncompletedEntry or (classAttribute == "uncompleted-entry active")
-        }
-
-        val tdLogin = cols[1]
-        val username = tdLogin.ownText()
-
-        val roles = if (cols.size > 2) {
-            val tdRole = cols[2]
-            tdRole.ownText()
-        } else ""
-
-        val user = User(username, username, name)
-        if (roles.isNotEmpty()) {
-            user.roles = roles.split(",")
-        }
-        user.isUncompletedEntry = isUncompletedEntry
-        return user
+        return UsersPageParser().parse(html)
     }
 }
