@@ -99,62 +99,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
     }
 
     private fun parseProjectTasksPage(html: String): List<ProjectTask> {
-        val doc: Document = Jsoup.parse(html)
-        val tasks = ArrayList<ProjectTask>()
-
-        // The first row of the table is the header
-        val table = findProjectTasksTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            // First row is the header, so drop it.
-            val rows = table.getElementsByTag("tr").drop(1)
-            for (tr in rows) {
-                val task = parseTask(tr)
-                if (task != null) {
-                    tasks.add(task)
-                }
-            }
-        }
-
-        return tasks
-    }
-
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
-     */
-    private fun findProjectTasksTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Name") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Description") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseTask(row: Element): ProjectTask? {
-        val cols = row.getElementsByTag("td")
-
-        val tdName = cols[0]
-        val name = tdName.ownText()
-
-        val tdDescription = cols[1]
-        val description = tdDescription.ownText()
-
-        return ProjectTask(name, description)
+        return ProjectTasksPageParser().parse(html)
     }
 
     override fun usersPage(): Observable<List<User>> {
