@@ -34,6 +34,7 @@ package com.tikalk.worktracker.data.remote
 
 import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
@@ -47,7 +48,7 @@ import io.reactivex.Observable
 import retrofit2.Response
 import java.util.*
 
-class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : TimeTrackerDataSource {
+class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, private val db: TrackerDatabase) : TimeTrackerDataSource {
 
     private fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
@@ -166,6 +167,6 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
     }
 
     private fun savePage(page: TimeListPage) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TimeListPageSaver(db).save(page)
     }
 }

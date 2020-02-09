@@ -95,8 +95,8 @@ val dataModule = module {
         return TimeTrackerLocalDataSource(db)
     }
 
-    fun provideRemoteDataSource(service: TimeTrackerService): TimeTrackerRemoteDataSource {
-        return TimeTrackerRemoteDataSource(service)
+    fun provideRemoteDataSource(service: TimeTrackerService, db: TrackerDatabase): TimeTrackerRemoteDataSource {
+        return TimeTrackerRemoteDataSource(service, db)
     }
 
     fun provideRepository(local: TimeTrackerLocalDataSource, remote: TimeTrackerRemoteDataSource): TimeTrackerRepository {
@@ -104,6 +104,6 @@ val dataModule = module {
     }
 
     single { provideLocalDataSource(get()) }
-    single { provideRemoteDataSource(get()) }
+    single { provideRemoteDataSource(get(), get()) }
     single { provideRepository(get(), get()) }
 }
