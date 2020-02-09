@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,17 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.data
+package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.ReportFormPage
-import io.reactivex.Observable
 
-interface TimeTrackerDataSource {
-    fun projectsPage(): Observable<List<Project>>
-    fun tasksPage(): Observable<List<ProjectTask>>
-    fun usersPage(): Observable<List<User>>
-    fun reportFormPage(): Observable<ReportFormPage>
-}
+class ReportFormPage(filter: ReportFilter, projects: List<Project>, tasks: List<ProjectTask>, errorMessage: String?) :
+    FormPage<ReportFilter>(filter, projects, tasks, errorMessage)
+
+class MutableReportFormPage(filter: ReportFilter) : MutableFormPage<ReportFilter>(filter)

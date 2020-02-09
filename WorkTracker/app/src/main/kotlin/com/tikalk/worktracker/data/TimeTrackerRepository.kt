@@ -37,6 +37,7 @@ import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.ReportFormPage
 import io.reactivex.Observable
 
 class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
@@ -52,5 +53,9 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
 
     override fun usersPage(): Observable<List<User>> {
         return Observable.concat(localRepository.usersPage(), remoteRepository.usersPage())
+    }
+
+    override fun reportFormPage(): Observable<ReportFormPage> {
+        return Observable.concat(localRepository.reportFormPage(), remoteRepository.reportFormPage())
     }
 }

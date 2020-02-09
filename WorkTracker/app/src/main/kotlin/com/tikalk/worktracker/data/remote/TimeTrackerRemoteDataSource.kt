@@ -37,6 +37,7 @@ import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.net.TimeTrackerService
 import io.reactivex.Observable
 import retrofit2.Response
@@ -112,5 +113,21 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
 
     private fun parseUsersPage(html: String): List<User> {
         return UsersPageParser().parse(html)
+    }
+
+    override fun reportFormPage(): Observable<ReportFormPage> {
+        return service.fetchReports()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    return@map parseReportFormPage(html)
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseReportFormPage(html: String): ReportFormPage {
+        return ReportFormPageParser().parse(html)
     }
 }

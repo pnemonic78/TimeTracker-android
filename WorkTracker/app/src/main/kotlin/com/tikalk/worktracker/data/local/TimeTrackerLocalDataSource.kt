@@ -33,12 +33,16 @@
 package com.tikalk.worktracker.data.local
 
 import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportFormPage
 import io.reactivex.Observable
+import io.reactivex.Single
 
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
 
@@ -76,5 +80,35 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
 
     override fun usersPage(): Observable<List<User>> {
         return Observable.empty()
+    }
+
+    override fun reportFormPage(): Observable<ReportFormPage> {
+        val projects = ArrayList<Project>()
+        val tasks = ArrayList<ProjectTask>()
+        val filter = ReportFilter()
+        val errorMessage: String? = null
+
+        return loadProjectsWithTasks(db)
+            .map { projectsWithTasks ->
+                for (projectWithTasks in projectsWithTasks) {
+                    val project = projectWithTasks.project
+                    project.tasks = projectWithTasks.tasks
+                    projects.add(project)
+                    tasks.addAll(projectWithTasks.tasks)
+                }
+
+                return@map ReportFormPage(
+                    filter,
+                    projects,
+                    tasks,
+                    errorMessage
+                )
+            }
+            .toObservable()
+    }
+
+    private fun loadProjectsWithTasks(db: TrackerDatabase): Single<List<ProjectWithTasks>> {
+        val projectsDao = db.projectDao()
+        return projectsDao.queryAllWithTasksSingle()
     }
 }
