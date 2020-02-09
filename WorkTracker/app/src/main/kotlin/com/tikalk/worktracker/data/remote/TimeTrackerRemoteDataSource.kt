@@ -140,7 +140,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, priva
     }
 
     private fun savePage(page: ReportFormPage) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        ReportFormPageSaver(db).save(page)
     }
 
     override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {

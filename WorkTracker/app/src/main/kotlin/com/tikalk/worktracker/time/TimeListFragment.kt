@@ -162,11 +162,11 @@ class TimeListFragment : TimeFormFragment(),
             .doOnSubscribe { showProgressMain(true) }
             .doAfterTerminate { showProgressMain(false) }
             .subscribe({ page ->
-                record = page.record
                 projectsData.value = page.projects
                 tasksData.value = page.tasks
                 recordsData.value = page.records
                 totalsData.value = page.totals
+                setRecordValue(page.record)
 
                 handleArguments()
             }, { err ->

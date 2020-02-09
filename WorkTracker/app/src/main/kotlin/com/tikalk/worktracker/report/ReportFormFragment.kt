@@ -198,10 +198,11 @@ class ReportFormFragment : TimeFormFragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
-                this.projectsData.value = page.projects
-                this.tasksData.value = page.tasks
-                this.filterData.value = page.record
-                this.errorMessage = page.errorMessage ?: ""
+                projectsData.value = page.projects
+                tasksData.value = page.tasks
+                filterData.value = page.record
+                errorMessage = page.errorMessage ?: ""
+                setRecordValue(page.record)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 handleError(err)
