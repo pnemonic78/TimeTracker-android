@@ -139,7 +139,7 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
             if (option.hasAttr("selected")) {
                 val value = option.value()
                 if (value.isNotEmpty()) {
-                    return periods.find { value == it.value }!!
+                    return periods.find { value == it.value } ?: ReportTimePeriod.CUSTOM
                 }
                 break
             }
