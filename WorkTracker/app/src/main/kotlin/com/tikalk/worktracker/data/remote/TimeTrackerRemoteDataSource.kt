@@ -37,11 +37,9 @@ import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.ReportFilter
-import com.tikalk.worktracker.model.time.ReportFormPage
-import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Observable
@@ -71,6 +69,31 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, priva
             return true
         }
         return false
+    }
+
+    override fun editPage(recordId: Long): Observable<TimeEditPage> {
+        if (recordId == TikalEntity.ID_NONE) {
+            return Observable.empty()
+        }
+        return service.fetchTime(recordId)
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseEditPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseEditPage(html: String): TimeEditPage {
+        return TimeEditPageParser().parse(html)
+    }
+
+    private fun savePage(page: TimeEditPage) {
+        return TimeEditPageSaver(db).save(page)
     }
 
     override fun projectsPage(): Observable<List<Project>> {

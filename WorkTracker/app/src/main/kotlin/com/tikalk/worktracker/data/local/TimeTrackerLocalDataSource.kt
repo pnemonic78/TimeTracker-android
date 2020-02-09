@@ -51,6 +51,44 @@ import kotlin.collections.ArrayList
 
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
 
+    override fun editPage(recordId: Long): Observable<TimeEditPage> {
+        val projects = ArrayList<Project>()
+        val tasks = ArrayList<ProjectTask>()
+        val errorMessage: String? = null
+
+        return loadProjectsWithTasks(db)
+            .map { projectsWithTasks ->
+                for (projectWithTasks in projectsWithTasks) {
+                    val project = projectWithTasks.project
+                    project.tasks = projectWithTasks.tasks
+                    projects.add(project)
+                    tasks.addAll(projectWithTasks.tasks)
+                }
+
+                val record = loadRecord(db, recordId) ?: TimeRecord.EMPTY.copy()
+
+                return@map TimeEditPage(
+                    record,
+                    projects,
+                    tasks,
+                    errorMessage,
+                    record.start ?: Calendar.getInstance()
+                )
+            }
+            .toObservable()
+    }
+
+    private fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {
+        if (recordId != TikalEntity.ID_NONE) {
+            val recordsDao = db.timeRecordDao()
+            val recordEntity = recordsDao.queryById(recordId)
+            if (recordEntity != null) {
+                return recordEntity.toTimeRecord()
+            }
+        }
+        return null
+    }
+
     override fun projectsPage(): Observable<List<Project>> {
         return loadProjects(db)
     }

@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.data
+package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.*
-import io.reactivex.Observable
 import java.util.*
 
-interface TimeTrackerDataSource {
-    fun editPage(recordId: Long): Observable<TimeEditPage>
-    fun projectsPage(): Observable<List<Project>>
-    fun reportFormPage(): Observable<ReportFormPage>
-    fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>>
-    fun tasksPage(): Observable<List<ProjectTask>>
-    fun timeListPage(date: Calendar): Observable<TimeListPage>
-    fun usersPage(): Observable<List<User>>
+class TimeEditPage(record: TimeRecord,
+                   projects: List<Project>,
+                   tasks: List<ProjectTask>,
+                   errorMessage: String?,
+                   val date: Calendar) :
+    FormPage<TimeRecord>(record, projects, tasks, errorMessage)
+
+class MutableTimeEditPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {
+    var date: Calendar = Calendar.getInstance()
 }

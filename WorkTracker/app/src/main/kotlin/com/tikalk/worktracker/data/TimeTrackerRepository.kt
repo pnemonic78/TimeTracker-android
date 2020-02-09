@@ -37,15 +37,16 @@ import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.ReportFilter
-import com.tikalk.worktracker.model.time.ReportFormPage
-import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.*
 import io.reactivex.Observable
 import java.util.*
 
 class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
                             private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
+
+    override fun editPage(recordId: Long): Observable<TimeEditPage> {
+        return Observable.concat(localRepository.editPage(recordId), remoteRepository.editPage(recordId))
+    }
 
     override fun projectsPage(): Observable<List<Project>> {
         return Observable.concat(localRepository.projectsPage(), remoteRepository.projectsPage())

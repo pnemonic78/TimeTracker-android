@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.data
+package com.tikalk.worktracker.data.remote
 
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.*
-import io.reactivex.Observable
-import java.util.*
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.TimeEditPage
+import com.tikalk.worktracker.model.time.TimeRecord
 
-interface TimeTrackerDataSource {
-    fun editPage(recordId: Long): Observable<TimeEditPage>
-    fun projectsPage(): Observable<List<Project>>
-    fun reportFormPage(): Observable<ReportFormPage>
-    fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>>
-    fun tasksPage(): Observable<List<ProjectTask>>
-    fun timeListPage(date: Calendar): Observable<TimeListPage>
-    fun usersPage(): Observable<List<User>>
+class TimeEditPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeEditPage>(db) {
+
+    override fun savePage(db: TrackerDatabase, page: TimeEditPage) {
+        super.savePage(db, page)
+        saveRecord(db, page.record)
+    }
+
+    private fun saveRecord(db: TrackerDatabase, record: TimeRecord) {
+        val recordDao = db.timeRecordDao()
+        if (record.id == TikalEntity.ID_NONE) {
+            recordDao.insert(record.toTimeRecordEntity())
+        } else {
+            recordDao.update(record.toTimeRecordEntity())
+        }
+    }
 }
