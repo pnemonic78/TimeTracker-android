@@ -105,7 +105,7 @@ class ProjectTasksFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_projectTasks_to_login, args)
         }

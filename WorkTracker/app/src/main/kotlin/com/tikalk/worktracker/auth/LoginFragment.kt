@@ -265,7 +265,7 @@ class LoginFragment : InternetFragment,
                 putString(BasicRealmFragment.EXTRA_REALM, realm)
                 putString(BasicRealmFragment.EXTRA_USER, userClean)
             }
-            requireFragmentManager().putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
+            parentFragmentManager.putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
             findNavController().navigate(R.id.action_basicRealmLogin, args)
         }
     }

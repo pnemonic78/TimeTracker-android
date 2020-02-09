@@ -67,7 +67,6 @@ import kotlinx.android.synthetic.main.fragment_time_list.*
 import kotlinx.android.synthetic.main.time_totals.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.jsoup.nodes.FormElement
 import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
@@ -233,7 +232,7 @@ class TimeListFragment : TimeFormFragment(),
         recordsData.postValue(records)
         saveRecords(db, date, records)
 
-        val form = doc.selectFirst("form[name='timeRecordForm']") as FormElement?
+        val form = findForm(doc)
         populateTotals(doc, form)
     }
 
@@ -289,7 +288,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_timeList_to_login, args)
         }
@@ -437,7 +436,7 @@ class TimeListFragment : TimeFormFragment(),
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
+            parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
             formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
@@ -675,7 +674,7 @@ class TimeListFragment : TimeFormFragment(),
                 val args = Bundle()
                 args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
                 args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
-                requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
+                parentFragmentManager.putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
                 // Refresh the list with the inserted item.
                 maybeFetchPage(date, responseHtml)
@@ -709,7 +708,7 @@ class TimeListFragment : TimeFormFragment(),
                 val args = Bundle()
                 args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
                 args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
-                requireFragmentManager().putFragment(args, TimerFragment.EXTRA_CALLER, this)
+                parentFragmentManager.putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
             } else {
                 showTimer()
