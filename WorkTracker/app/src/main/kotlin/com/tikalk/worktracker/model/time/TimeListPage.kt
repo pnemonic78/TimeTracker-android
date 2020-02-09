@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,23 +30,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.data
+package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.ReportFilter
-import com.tikalk.worktracker.model.time.ReportFormPage
-import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimeRecord
-import io.reactivex.Observable
 import java.util.*
 
-interface TimeTrackerDataSource {
-    fun projectsPage(): Observable<List<Project>>
-    fun reportFormPage(): Observable<ReportFormPage>
-    fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>>
-    fun tasksPage(): Observable<List<ProjectTask>>
-    fun timeListPage(date: Calendar): Observable<TimeListPage>
-    fun usersPage(): Observable<List<User>>
+class TimeListPage(record: TimeRecord,
+                   projects: List<Project>,
+                   tasks: List<ProjectTask>,
+                   errorMessage: String?,
+                   val date: Calendar,
+                   val records: List<TimeRecord>,
+                   val totals: TimeTotals) :
+    FormPage<TimeRecord>(record, projects, tasks, errorMessage)
+
+class MutableTimeListPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {
+    var date: Calendar = Calendar.getInstance()
+    var records: List<TimeRecord> = emptyList()
+    var totals: TimeTotals = TimeTotals()
 }

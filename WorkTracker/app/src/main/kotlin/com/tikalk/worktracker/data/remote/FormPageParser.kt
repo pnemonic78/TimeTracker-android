@@ -220,20 +220,15 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         val record: R = createRecord()
         val page: MP = createMutablePage(record)
         populatePage(doc, page)
-        return createPage(
-            page.record,
-            page.projects,
-            page.tasks,
-            page.errorMessage
-        )
+        return createPage(page)
     }
 
     protected open fun createRecord(): R {
         return TimeRecord.EMPTY.copy() as R
     }
 
-    protected open fun createPage(record: R, projects: List<Project>, tasks: List<ProjectTask>, errorMessage: String?): P {
-        return FormPage(record, projects, tasks, errorMessage) as P
+    protected open fun createPage(page: MP): P {
+        return FormPage(page.record, page.projects, page.tasks, page.errorMessage) as P
     }
 
     protected open fun createMutablePage(record: R): MP {

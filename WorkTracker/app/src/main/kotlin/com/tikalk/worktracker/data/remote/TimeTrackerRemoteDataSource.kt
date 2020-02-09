@@ -37,10 +37,15 @@ import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Observable
 import retrofit2.Response
+import java.util.*
 
 class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : TimeTrackerDataSource {
 
@@ -120,7 +125,9 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
             .map { response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    return@map parseReportFormPage(html)
+                    val page = parseReportFormPage(html)
+                    savePage(page)
+                    return@map page
                 }
                 throw AuthenticationException("authentication required")
             }
@@ -129,5 +136,36 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
 
     private fun parseReportFormPage(html: String): ReportFormPage {
         return ReportFormPageParser().parse(html)
+    }
+
+    private fun savePage(page: ReportFormPage) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun timeListPage(date: Calendar): Observable<TimeListPage> {
+        val dateFormatted = formatSystemDate(date)
+        return service.fetchTimes(dateFormatted)
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseTimeListPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseTimeListPage(html: String): TimeListPage {
+        return TimeListPageParser().parse(html)
+    }
+
+    private fun savePage(page: TimeListPage) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

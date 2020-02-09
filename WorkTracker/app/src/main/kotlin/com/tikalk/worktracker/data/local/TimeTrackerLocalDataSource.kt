@@ -32,17 +32,22 @@
 
 package com.tikalk.worktracker.data.local
 
+import android.text.format.DateUtils
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.db.WholeTimeRecordEntity
+import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.time.ReportFilter
-import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.time.*
 import io.reactivex.Observable
 import io.reactivex.Single
+import java.util.*
+import kotlin.collections.ArrayList
 
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
 
@@ -110,5 +115,105 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
     private fun loadProjectsWithTasks(db: TrackerDatabase): Single<List<ProjectWithTasks>> {
         val projectsDao = db.projectDao()
         return projectsDao.queryAllWithTasksSingle()
+    }
+
+    override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun timeListPage(date: Calendar): Observable<TimeListPage> {
+        val projects = ArrayList<Project>()
+        val tasks = ArrayList<ProjectTask>()
+        val record = TimeRecord.EMPTY.copy()
+        val errorMessage: String? = null
+
+        return loadProjectsWithTasks(db)
+            .map { projectsWithTasks ->
+                for (projectWithTasks in projectsWithTasks) {
+                    val project = projectWithTasks.project
+                    project.tasks = projectWithTasks.tasks
+                    projects.add(project)
+                    tasks.addAll(projectWithTasks.tasks)
+                }
+
+                val records = loadRecords(db, date)
+                    .map { entity ->
+                        entity.toTimeRecord()
+                    }
+
+                val totals = loadTotals(db, date)
+
+                return@map TimeListPage(
+                    record,
+                    projects,
+                    tasks,
+                    errorMessage,
+                    date,
+                    records,
+                    totals
+                )
+            }
+            .toObservable()
+    }
+
+    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
+        val recordsDao = db.timeRecordDao()
+        return if (day == null) {
+            recordsDao.queryAll()
+        } else {
+            val start = day.copy()
+            start.setToStartOfDay()
+            val finish = day.copy()
+            finish.setToEndOfDay()
+            recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
+        }
+    }
+
+    private fun loadTotals(db: TrackerDatabase, date: Calendar): TimeTotals {
+        val totals = TimeTotals()
+
+        val cal = date.copy()
+        val startDay = cal.setToStartOfDay().timeInMillis
+        val finishDay = cal.setToEndOfDay().timeInMillis
+
+        cal.dayOfWeek = Calendar.SUNDAY
+        val startWeek = cal.setToStartOfDay().timeInMillis
+        cal.dayOfWeek = Calendar.SATURDAY
+        val finishWeek = cal.setToEndOfDay().timeInMillis
+
+        cal.dayOfMonth = 1
+        val startMonth = cal.setToStartOfDay().timeInMillis
+        cal.dayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val finishMonth = cal.setToEndOfDay().timeInMillis
+
+        val recordsDao = db.timeRecordDao()
+        val totalsAll = recordsDao.queryTotals(startDay, finishDay, startWeek, finishWeek, startMonth, finishMonth)
+        if (totalsAll.size >= 3) {
+            totals.daily = totalsAll[0].daily
+            totals.weekly = totalsAll[1].weekly
+            totals.monthly = totalsAll[2].monthly
+        }
+        val quota = calculateQuota(date)
+        totals.remaining = quota - totals.monthly
+
+        return totals
+    }
+
+    private fun calculateQuota(date: Calendar): Long {
+        var quota = 0L
+        val day = date.copy()
+        val lastDayOfMonth = day.getActualMaximum(Calendar.DAY_OF_MONTH)
+        for (dayOfMonth in 1..lastDayOfMonth) {
+            day.dayOfMonth = dayOfMonth
+            if (day.dayOfWeek in WORK_DAYS) {
+                quota += WORK_HOURS
+            }
+        }
+        return quota * DateUtils.HOUR_IN_MILLIS
+    }
+
+    companion object {
+        private val WORK_DAYS = intArrayOf(Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY)
+        private const val WORK_HOURS = 9L
     }
 }

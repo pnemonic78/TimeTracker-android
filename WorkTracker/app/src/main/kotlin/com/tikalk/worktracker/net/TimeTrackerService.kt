@@ -78,7 +78,7 @@ interface TimeTrackerService {
                 @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 
     @GET(PHP_EDIT)
-    fun fetchTimes(@Query("id") id: Long): Single<Response<String>>
+    fun fetchTime(@Query("id") id: Long): Single<Response<String>>
 
     @FormUrlEncoded
     @POST(PHP_EDIT)

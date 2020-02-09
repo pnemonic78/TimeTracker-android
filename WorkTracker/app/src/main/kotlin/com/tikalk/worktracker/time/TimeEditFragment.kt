@@ -432,7 +432,7 @@ class TimeEditFragment : TimeFormFragment() {
         val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
             service.fetchTimes(dateFormatted)
         } else {
-            service.fetchTimes(id)
+            service.fetchTime(id)
         }
         fetcher
             .subscribeOn(Schedulers.io())

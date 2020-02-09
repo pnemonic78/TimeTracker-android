@@ -37,14 +37,27 @@ import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimeRecord
 import io.reactivex.Observable
+import java.util.*
 
 class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
                             private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
 
     override fun projectsPage(): Observable<List<Project>> {
         return Observable.concat(localRepository.projectsPage(), remoteRepository.projectsPage())
+    }
+
+    override fun reportFormPage(): Observable<ReportFormPage> {
+        return Observable.concat(localRepository.reportFormPage(), remoteRepository.reportFormPage())
+    }
+
+    override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {
+        //TODO return Observable.concat(localRepository.reportPage(filter), remoteRepository.reportPage(filter))
+        return localRepository.reportPage(filter)
     }
 
     override fun tasksPage(): Observable<List<ProjectTask>> {
@@ -55,7 +68,7 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
         return Observable.concat(localRepository.usersPage(), remoteRepository.usersPage())
     }
 
-    override fun reportFormPage(): Observable<ReportFormPage> {
-        return Observable.concat(localRepository.reportFormPage(), remoteRepository.reportFormPage())
+    override fun timeListPage(date: Calendar): Observable<TimeListPage> {
+        return Observable.concat(localRepository.timeListPage(date), remoteRepository.timeListPage(date))
     }
 }
