@@ -47,10 +47,11 @@ class TimeEditPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeEdi
 
     private fun saveRecord(db: TrackerDatabase, record: TimeRecord) {
         val recordDao = db.timeRecordDao()
+        val entity = record.toTimeRecordEntity()
         if (record.id == TikalEntity.ID_NONE) {
-            recordDao.insert(record.toTimeRecordEntity())
+            recordDao.insert(entity)
         } else {
-            recordDao.update(record.toTimeRecordEntity())
+            recordDao.update(entity)
         }
     }
 }
