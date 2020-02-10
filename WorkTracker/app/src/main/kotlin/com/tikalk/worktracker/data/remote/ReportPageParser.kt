@@ -33,6 +33,8 @@
 package com.tikalk.worktracker.data.remote
 
 import com.tikalk.html.findParentElement
+import com.tikalk.worktracker.db.ProjectWithTasks
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.*
@@ -46,9 +48,16 @@ import kotlin.collections.ArrayList
 
 class ReportPageParser {
 
-    fun parse(html: String): ReportPage {
+    fun parse(html: String, db: TrackerDatabase?): ReportPage {
         val filter = createFilter()
         val page = createMutablePage(filter)
+
+        if (db != null) {
+            val projectsWithTasks = loadProjectsWithTasks(db)
+            val projects = page.projects
+            val tasks = ArrayList<ProjectTask>()
+            populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+        }
 
         val doc: Document = Jsoup.parse(html)
         populatePage(doc, page)
@@ -68,6 +77,23 @@ class ReportPageParser {
         return MutableReportPage(filter)
     }
 
+    private fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
+        val projectsDao = db.projectDao()
+        return projectsDao.queryAllWithTasks()
+    }
+
+    private fun populateProjectsWithTasks(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>, tasks: MutableCollection<ProjectTask>) {
+        projects.clear()
+        tasks.clear()
+
+        for (projectWithTasks in projectsWithTasks) {
+            val project = projectWithTasks.project
+            project.tasks = projectWithTasks.tasks
+            projects.add(project)
+            tasks.addAll(projectWithTasks.tasks)
+        }
+    }
+
     private fun populatePage(doc: Document, page: MutableReportPage) {
         populateList(doc, page)
         populateTotals(page.records, page)
@@ -76,7 +102,7 @@ class ReportPageParser {
     /** Populate the list. */
     private fun populateList(doc: Document, page: MutableReportPage) {
         val records = ArrayList<TimeRecord>()
-        val projects = ArrayList<Project>()
+        val projects = page.projects
 
         var columnIndexDate = -1
         var columnIndexProject = -1
@@ -160,7 +186,7 @@ class ReportPageParser {
                             columnIndexFinish: Int,
                             columnIndexNote: Int,
                             columnIndexCost: Int,
-                            projects: MutableList<Project>): TimeRecord? {
+                            projects: MutableCollection<Project>): TimeRecord? {
         val cols = row.getElementsByTag("td")
         val record = TimeRecord.EMPTY.copy()
         record.id = index + 1L
@@ -218,7 +244,7 @@ class ReportPageParser {
         return record
     }
 
-    private fun parseRecordProject(name: String, projects: MutableList<Project>): Project {
+    private fun parseRecordProject(name: String, projects: MutableCollection<Project>): Project {
         var project = projects.find { it.name == name }
         if (project == null) {
             project = Project(name)

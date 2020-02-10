@@ -181,7 +181,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, priva
     }
 
     private fun parseReportPage(html: String): ReportPage {
-        return ReportPageParser().parse(html)
+        return ReportPageParser().parse(html, db)
     }
 
     private fun savePage(page: ReportPage) {

@@ -150,7 +150,7 @@ class ReportFragment : InternetFragment(),
     fun run() {
         Timber.i("run")
 
-        var filter = ReportFilter()
+        var filter: ReportFilter? = null
 
         val args = arguments
         if (args != null) {
@@ -160,6 +160,9 @@ class ReportFragment : InternetFragment(),
                     filter = filterExtra
                 }
             }
+        }
+        if (filter == null) {
+            return
         }
 
         dataSource.reportPage(filter)

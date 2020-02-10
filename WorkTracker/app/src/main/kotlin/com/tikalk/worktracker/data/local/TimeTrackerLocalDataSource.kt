@@ -58,12 +58,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                for (projectWithTasks in projectsWithTasks) {
-                    val project = projectWithTasks.project
-                    project.tasks = projectWithTasks.tasks
-                    projects.add(project)
-                    tasks.addAll(projectWithTasks.tasks)
-                }
+                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
 
                 val record = loadRecord(db, recordId) ?: TimeRecord.EMPTY.copy()
 
@@ -133,12 +128,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                for (projectWithTasks in projectsWithTasks) {
-                    val project = projectWithTasks.project
-                    project.tasks = projectWithTasks.tasks
-                    projects.add(project)
-                    tasks.addAll(projectWithTasks.tasks)
-                }
+                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
 
                 return@map ReportFormPage(
                     filter,
@@ -155,18 +145,25 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
         return projectsDao.queryAllWithTasksSingle()
     }
 
+    private fun populateProjectsWithTasks(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>, tasks: MutableCollection<ProjectTask>) {
+        projects.clear()
+        tasks.clear()
+
+        for (projectWithTasks in projectsWithTasks) {
+            val project = projectWithTasks.project
+            project.tasks = projectWithTasks.tasks
+            projects.add(project)
+            tasks.addAll(projectWithTasks.tasks)
+        }
+    }
+
     override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                for (projectWithTasks in projectsWithTasks) {
-                    val project = projectWithTasks.project
-                    project.tasks = projectWithTasks.tasks
-                    projects.add(project)
-                    tasks.addAll(projectWithTasks.tasks)
-                }
+                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
 
                 val records = loadReportRecords(db, filter, projects, tasks)
 
@@ -220,12 +217,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                for (projectWithTasks in projectsWithTasks) {
-                    val project = projectWithTasks.project
-                    project.tasks = projectWithTasks.tasks
-                    projects.add(project)
-                    tasks.addAll(projectWithTasks.tasks)
-                }
+                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
 
                 val records = loadRecords(db, date)
                     .map { entity ->
