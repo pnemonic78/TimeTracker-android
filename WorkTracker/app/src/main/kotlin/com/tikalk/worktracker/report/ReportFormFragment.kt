@@ -50,6 +50,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.*
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -198,16 +199,19 @@ class ReportFormFragment : TimeFormFragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
-                projectsData.value = page.projects
-                tasksData.value = page.tasks
-                filterData.value = page.record
-                errorMessage = page.errorMessage ?: ""
-                setRecordValue(page.record)
+                processPage(page)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 handleError(err)
             })
             .addTo(disposables)
+    }
+
+    private fun processPage(page: ReportFormPage) {
+        projectsData.value = page.projects
+        tasksData.value = page.tasks
+        errorMessage = page.errorMessage ?: ""
+        setRecordValue(page.record)
     }
 
     override fun onStart() {
@@ -424,6 +428,7 @@ class ReportFormFragment : TimeFormFragment() {
         // `record` must always point to `filter`.
         if (record is ReportFilter) {
             super.setRecordValue(record)
+            filterData.value = record
         }
     }
 

@@ -53,6 +53,7 @@ import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
@@ -363,17 +364,20 @@ class TimeEditFragment : TimeFormFragment() {
             .doOnSubscribe { showProgressMain(true) }
             .doAfterTerminate { showProgressMain(false) }
             .subscribe({ page ->
-                projectsData.value = page.projects
-                tasksData.value = page.tasks
-                errorMessage = page.errorMessage ?: ""
-                setRecordValue(page.record)
-
+                processPage(page)
                 populateAndBind()
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 handleError(err)
             })
             .addTo(disposables)
+    }
+
+    private fun processPage(page: TimeEditPage) {
+        projectsData.value = page.projects
+        tasksData.value = page.tasks
+        errorMessage = page.errorMessage ?: ""
+        setRecordValue(page.record)
     }
 
     override fun onStart() {

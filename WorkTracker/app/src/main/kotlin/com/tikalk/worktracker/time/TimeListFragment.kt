@@ -49,6 +49,7 @@ import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.data.remote.TimeListPageParser
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
@@ -57,6 +58,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
+import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.Single
@@ -67,7 +69,6 @@ import kotlinx.android.synthetic.main.fragment_time_list.*
 import kotlinx.android.synthetic.main.time_totals.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
@@ -162,12 +163,7 @@ class TimeListFragment : TimeFormFragment(),
             .doOnSubscribe { showProgressMain(true) }
             .doAfterTerminate { showProgressMain(false) }
             .subscribe({ page ->
-                projectsData.value = page.projects
-                tasksData.value = page.tasks
-                recordsData.value = page.records
-                totalsData.value = page.totals
-                setRecordValue(page.record)
-
+                processPage(page)
                 handleArguments()
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
@@ -208,32 +204,16 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun processPage(html: String, date: Calendar) {
         Timber.i("processPage ${formatSystemDate(date)}")
-        val doc = populateForm(date, html)
-        populateList(doc)
+        val page = TimeListPageParser().parse(html)
+        processPage(page)
     }
 
-    /** Populate the list. */
-    private fun populateList(doc: Document) {
-        val records = ArrayList<TimeRecord>()
-
-        // The first row of the table is the header
-        val table = findRecordsTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            val rows = table.getElementsByTag("tr")
-            for (tr in rows) {
-                val record = parseRecord(tr)
-                if (record != null) {
-                    records.add(record)
-                }
-            }
-        }
-
-        recordsData.postValue(records)
-        saveRecords(db, date, records)
-
-        val form = findForm(doc)
-        populateTotals(doc, form)
+    private fun processPage(page: TimeListPage) {
+        projectsData.value = page.projects
+        tasksData.value = page.tasks
+        recordsData.value = page.records
+        totalsData.value = page.totals
+        setRecordValue(page.record)
     }
 
     @MainThread
@@ -509,69 +489,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun isLocaleRTL(): Boolean {
         return Locale.getDefault().language == "iw"
-    }
-
-    private fun populateTotals(doc: Document, parent: Element?) {
-        if (parent == null) {
-            return
-        }
-        val totals = TimeTotals()
-
-        val table = findTotalsTable(doc, parent) ?: return
-        val cells = table.getElementsByTag("td")
-        for (td in cells) {
-            val text = td.text()
-            val value: String
-            when {
-                text.startsWith("Day total:") -> {
-                    value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.daily = parseHours(value) ?: TimeTotals.UNKNOWN
-                }
-                text.startsWith("Week total:") -> {
-                    value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.weekly = parseHours(value) ?: TimeTotals.UNKNOWN
-                }
-                text.startsWith("Month total:") -> {
-                    value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.monthly = parseHours(value) ?: TimeTotals.UNKNOWN
-                }
-                text.startsWith("Remaining quota:") -> {
-                    value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.remaining = parseHours(value) ?: TimeTotals.UNKNOWN
-                }
-            }
-        }
-
-        totalsData.postValue(totals)
-    }
-
-    private fun findTotalsTable(doc: Document, parent: Element?): Element? {
-        val body = doc.body()
-        val tables = body.select("table")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
-        var td: Element
-        var label: String
-
-        for (table in tables) {
-            if ((parent != null) && (table.parent() != parent)) {
-                continue
-            }
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.children().size < 1) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols.first()
-            label = td.ownText()
-            if (label.startsWith("Week total:")) {
-                return table
-            }
-        }
-
-        return null
     }
 
     private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
