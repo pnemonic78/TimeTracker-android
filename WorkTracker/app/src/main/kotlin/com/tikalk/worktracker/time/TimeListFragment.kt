@@ -452,10 +452,6 @@ class TimeListFragment : TimeFormFragment(),
     override fun bindForm(record: TimeRecord) {
     }
 
-    private fun bindForm() {
-        findTopFormFragment().populateAndBind()
-    }
-
     fun stopTimer() {
         Timber.i("stopTimer")
         val form = findTopFormFragment()

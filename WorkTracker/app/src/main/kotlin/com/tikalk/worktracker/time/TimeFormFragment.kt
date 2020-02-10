@@ -84,11 +84,12 @@ abstract class TimeFormFragment : InternetFragment(),
         Toast.makeText(requireContext(), getString(R.string.favorite_marked, record.project.name, record.task.name), Toast.LENGTH_LONG).show()
     }
 
-    fun populateAndBind() {
+    @MainThread
+    protected fun populateAndBind() {
         val record = this.record
         Timber.i("populateAndBind record=$record")
         populateForm(record)
-        runOnUiThread { bindForm(record) }
+        bindForm(record)
     }
 
     override fun onLoginSuccess(fragment: LoginFragment, login: String) {

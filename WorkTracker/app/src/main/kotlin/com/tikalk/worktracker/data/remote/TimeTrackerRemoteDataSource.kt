@@ -232,4 +232,8 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     private fun savePage(page: ProfilePage) {
         ProfilePageSaver(preferences).save(page)
     }
+
+    override fun timerPage(): Observable<TimerPage> {
+        return Observable.empty()
+    }
 }

@@ -76,4 +76,8 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
     override fun timeListPage(date: Calendar): Observable<TimeListPage> {
         return Observable.concat(localRepository.timeListPage(date), remoteRepository.timeListPage(date))
     }
+
+    override fun timerPage(): Observable<TimerPage> {
+        return localRepository.timerPage()
+    }
 }

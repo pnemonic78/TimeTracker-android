@@ -307,6 +307,24 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         return Observable.just(page)
     }
 
+    override fun timerPage(): Observable<TimerPage> {
+        val projects = ArrayList<Project>()
+        val tasks = ArrayList<ProjectTask>()
+        val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
+
+        return loadProjectsWithTasks(db)
+            .map { projectsWithTasks ->
+                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+
+                return@map TimerPage(
+                    record,
+                    projects,
+                    tasks
+                )
+            }
+            .toObservable()
+    }
+
     companion object {
         private val WORK_DAYS = intArrayOf(Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY)
         private const val WORK_HOURS = 9L
