@@ -260,8 +260,8 @@ class ProfileFragment : InternetFragment(),
 
             service.editProfile(nameValue, loginValue, passwordValue, confirmPasswordValue, emailValue)
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { showProgressMain(true) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { showProgress(true) }
                 .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
                     actionSave.isEnabled = true

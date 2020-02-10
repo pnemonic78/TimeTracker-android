@@ -37,6 +37,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.tikalk.worktracker.model.Project
 import io.reactivex.Maybe
+import io.reactivex.Observable
 import io.reactivex.Single
 
 /**
@@ -87,6 +88,15 @@ interface ProjectDao : BaseDao<Project> {
     @Transaction
     @Query("SELECT * FROM project")
     fun queryAllWithTasksSingle(): Single<List<ProjectWithTasks>>
+
+    /**
+     * Select all projects from the table.
+     *
+     * @return all projects with their tasks.
+     */
+    @Transaction
+    @Query("SELECT * FROM project")
+    fun queryAllWithTasksObservable(): Observable<List<ProjectWithTasks>>
 
     /**
      * Select a project by its id.

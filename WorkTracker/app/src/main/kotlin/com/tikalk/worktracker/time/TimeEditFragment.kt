@@ -360,14 +360,15 @@ class TimeEditFragment : TimeFormFragment() {
 
         dataSource.editPage(recordId)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { showProgressMain(true) }
-            .doAfterTerminate { showProgressMain(false) }
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
                 processPage(page)
                 populateAndBind()
+                showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
                 handleError(err)
             })
             .addTo(disposables)

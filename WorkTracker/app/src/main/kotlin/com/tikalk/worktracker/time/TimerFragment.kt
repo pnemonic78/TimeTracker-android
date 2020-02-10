@@ -313,8 +313,6 @@ class TimerFragment : TimeFormFragment() {
         dataSource.timerPage()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { showProgressMain(true) }
-            .doAfterTerminate { showProgressMain(false) }
             .subscribe({ page ->
                 processPage(page)
                 populateAndBind()

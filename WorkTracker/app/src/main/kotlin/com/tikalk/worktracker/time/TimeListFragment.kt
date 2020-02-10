@@ -159,14 +159,15 @@ class TimeListFragment : TimeFormFragment(),
 
         dataSource.timeListPage(date)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { showProgressMain(true) }
-            .doAfterTerminate { showProgressMain(false) }
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
-                processPage(page)
+                processPageMain(page)
                 handleArguments()
+                showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
+                showProgress(false)
                 handleError(err)
             })
             .addTo(disposables)
@@ -208,11 +209,19 @@ class TimeListFragment : TimeFormFragment(),
         processPage(page)
     }
 
-    private fun processPage(page: TimeListPage) {
+    private fun processPageMain(page: TimeListPage) {
         projectsData.value = page.projects
         tasksData.value = page.tasks
         recordsData.value = page.records
         totalsData.value = page.totals
+        setRecordValue(page.record)
+    }
+
+    private fun processPage(page: TimeListPage) {
+        projectsData.postValue(page.projects)
+        tasksData.postValue(page.tasks)
+        recordsData.postValue(page.records)
+        totalsData.postValue(page.totals)
         setRecordValue(page.record)
     }
 

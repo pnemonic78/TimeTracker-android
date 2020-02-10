@@ -43,7 +43,6 @@ import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.*
 import io.reactivex.Observable
-import io.reactivex.Single
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -69,7 +68,6 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                     record.start ?: Calendar.getInstance()
                 )
             }
-            .toObservable()
     }
 
     private fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {
@@ -136,12 +134,11 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                     errorMessage
                 )
             }
-            .toObservable()
     }
 
-    private fun loadProjectsWithTasks(db: TrackerDatabase): Single<List<ProjectWithTasks>> {
+    private fun loadProjectsWithTasks(db: TrackerDatabase): Observable<List<ProjectWithTasks>> {
         val projectsDao = db.projectDao()
-        return projectsDao.queryAllWithTasksSingle()
+        return projectsDao.queryAllWithTasksObservable()
     }
 
     private fun populateProjectsWithTasks(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>, tasks: MutableCollection<ProjectTask>) {
@@ -174,7 +171,6 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                     totals
                 )
             }
-            .toObservable()
     }
 
     private fun loadReportRecords(db: TrackerDatabase, filter: ReportFilter, projects: Collection<Project>?, tasks: Collection<ProjectTask>?): List<TimeRecord> {
@@ -211,7 +207,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
     override fun timeListPage(date: Calendar): Observable<TimeListPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
-        val record = TimeRecord.EMPTY.copy()
+        val record = TimeRecord.EMPTY
         val errorMessage: String? = null
 
         return loadProjectsWithTasks(db)
@@ -235,7 +231,6 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                     totals
                 )
             }
-            .toObservable()
     }
 
     private fun loadRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
@@ -322,7 +317,6 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                     tasks
                 )
             }
-            .toObservable()
     }
 
     companion object {

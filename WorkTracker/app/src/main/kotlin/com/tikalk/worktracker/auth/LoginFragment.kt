@@ -154,7 +154,7 @@ class LoginFragment : InternetFragment,
      * If there are form errors (invalid login, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    fun attemptLogin() {
+    private fun attemptLogin() {
         if (!actionSignIn.isEnabled) {
             return
         }
@@ -204,8 +204,8 @@ class LoginFragment : InternetFragment,
             val today = formatSystemDate()
             service.login(loginValue, passwordValue, today)
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { showProgressMain(true) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { showProgress(true) }
                 .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
                     actionSignIn.isEnabled = true

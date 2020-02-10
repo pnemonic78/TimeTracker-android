@@ -46,35 +46,35 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
                             private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
 
     override fun editPage(recordId: Long): Observable<TimeEditPage> {
-        return Observable.concat(localRepository.editPage(recordId), remoteRepository.editPage(recordId))
+        return Observable.merge(localRepository.editPage(recordId), remoteRepository.editPage(recordId))
     }
 
     override fun profilePage(): Observable<ProfilePage> {
-        return Observable.concat(localRepository.profilePage(), remoteRepository.profilePage())
+        return Observable.merge(localRepository.profilePage(), remoteRepository.profilePage())
     }
 
     override fun projectsPage(): Observable<List<Project>> {
-        return Observable.concat(localRepository.projectsPage(), remoteRepository.projectsPage())
+        return Observable.merge(localRepository.projectsPage(), remoteRepository.projectsPage())
     }
 
     override fun reportFormPage(): Observable<ReportFormPage> {
-        return Observable.concat(localRepository.reportFormPage(), remoteRepository.reportFormPage())
+        return Observable.merge(localRepository.reportFormPage(), remoteRepository.reportFormPage())
     }
 
     override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
-        return Observable.concat(localRepository.reportPage(filter), remoteRepository.reportPage(filter))
+        return Observable.merge(localRepository.reportPage(filter), remoteRepository.reportPage(filter))
     }
 
     override fun tasksPage(): Observable<List<ProjectTask>> {
-        return Observable.concat(localRepository.tasksPage(), remoteRepository.tasksPage())
+        return Observable.merge(localRepository.tasksPage(), remoteRepository.tasksPage())
     }
 
     override fun usersPage(): Observable<List<User>> {
-        return Observable.concat(localRepository.usersPage(), remoteRepository.usersPage())
+        return Observable.merge(localRepository.usersPage(), remoteRepository.usersPage())
     }
 
     override fun timeListPage(date: Calendar): Observable<TimeListPage> {
-        return Observable.concat(localRepository.timeListPage(date), remoteRepository.timeListPage(date))
+        return Observable.merge(localRepository.timeListPage(date), remoteRepository.timeListPage(date))
     }
 
     override fun timerPage(): Observable<TimerPage> {
