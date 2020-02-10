@@ -155,8 +155,61 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
         return projectsDao.queryAllWithTasksSingle()
     }
 
-    override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
+        val projects = ArrayList<Project>()
+        val tasks = ArrayList<ProjectTask>()
+
+        return loadProjectsWithTasks(db)
+            .map { projectsWithTasks ->
+                for (projectWithTasks in projectsWithTasks) {
+                    val project = projectWithTasks.project
+                    project.tasks = projectWithTasks.tasks
+                    projects.add(project)
+                    tasks.addAll(projectWithTasks.tasks)
+                }
+
+                val records = loadReportRecords(db, filter, projects, tasks)
+
+                val totals = calculateTotals(records)
+
+                return@map ReportPage(
+                    filter,
+                    records,
+                    totals
+                )
+            }
+            .toObservable()
+    }
+
+    private fun loadReportRecords(db: TrackerDatabase, filter: ReportFilter, projects: Collection<Project>?, tasks: Collection<ProjectTask>?): List<TimeRecord> {
+        val start = filter.startTime
+        val finish = filter.finishTime
+        val reportRecordsDao = db.reportRecordDao()
+        val reportRecordsDb = reportRecordsDao.queryByDate(start, finish)
+
+        if (reportRecordsDb.isNullOrEmpty()) {
+            val recordsDao = db.timeRecordDao()
+            val recordsDb = recordsDao.queryByDate(start, finish)
+            return recordsDb.map { it.toTimeRecord() }
+        }
+        return reportRecordsDb.map { it.toTimeRecord(projects, tasks) }
+    }
+
+    private fun calculateTotals(records: List<TimeRecord>?): ReportTotals {
+        val totals = ReportTotals()
+
+        var duration: Long
+        if (records != null) {
+            for (record in records) {
+                duration = record.finishTime - record.startTime
+                if (duration > 0L) {
+                    totals.duration += duration
+                }
+                totals.cost += record.cost
+            }
+        }
+
+        return totals
     }
 
     override fun timeListPage(date: Calendar): Observable<TimeListPage> {

@@ -40,45 +40,27 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.app.ShareCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.runOnUiThread
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.ReportRecord
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.db.toReportRecord
-import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
-import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import com.tikalk.worktracker.time.parseSystemDate
-import com.tikalk.worktracker.time.parseSystemTime
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_report_list.*
 import kotlinx.android.synthetic.main.report_totals.*
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 class ReportFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
@@ -87,10 +69,7 @@ class ReportFragment : InternetFragment(),
     private val totalsData = MutableLiveData<ReportTotals>()
     private val filterData = MutableLiveData<ReportFilter>()
     private var listAdapter = ReportAdapter(ReportFilter())
-    private val projects: MutableList<Project> = CopyOnWriteArrayList()
-    private val tasks: MutableList<ProjectTask> = CopyOnWriteArrayList()
     private var firstRun = true
-    private var recordEntities: LiveData<List<ReportRecord>> = MutableLiveData<List<ReportRecord>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,17 +84,6 @@ class ReportFragment : InternetFragment(),
         filterData.observe(this, Observer<ReportFilter> { filter ->
             this.listAdapter = ReportAdapter(filter)
             list.adapter = listAdapter
-            loadPage()
-                .subscribeOn(Schedulers.io())
-                .subscribe({
-                    populateTotals(recordsData.value)
-                    if (firstRun) {
-                        fetchPage(filter)
-                    }
-                }, { err ->
-                    Timber.e(err, "Error loading page: ${err.message}")
-                })
-                .addTo(disposables)
         })
     }
 
@@ -127,113 +95,6 @@ class ReportFragment : InternetFragment(),
         super.onViewCreated(view, savedInstanceState)
 
         list.adapter = listAdapter
-    }
-
-    private fun fetchPage(filter: ReportFilter) {
-        Timber.i("fetchPage filter=$filter")
-
-        // Fetch from remote server.
-        service.generateReport(filter.toFields())
-            .subscribeOn(Schedulers.io())
-            .doOnSubscribe { showProgressMain(true) }
-            .doAfterTerminate { showProgressMain(false) }
-            .subscribe({ response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html)
-                } else {
-                    authenticateMain()
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                handleErrorMain(err)
-            })
-            .addTo(disposables)
-    }
-
-    private fun processPage(html: String) {
-        val records = ArrayList<TimeRecord>()
-        val doc: Document = Jsoup.parse(html)
-        populateList(doc, records)
-        populateTotals(records)
-    }
-
-    /** Populate the list. */
-    private fun populateList(doc: Document, records: MutableList<TimeRecord>) {
-        records.clear()
-
-        var columnIndexDate = -1
-        var columnIndexProject = -1
-        var columnIndexTask = -1
-        var columnIndexStart = -1
-        var columnIndexFinish = -1
-        var columnIndexNote = -1
-        var columnIndexCost = -1
-
-        // The first row of the table is the header
-        val table = findRecordsTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            val rows = table.getElementsByTag("tr")
-            val size = rows.size
-            val totalsRowIndex = size - 1
-            if (size > 1) {
-                val headerRow = rows.first()
-                if (headerRow != null) {
-                    val children = headerRow.children()
-                    val childrenSize = children.size
-                    for (col in 0 until childrenSize) {
-                        val th = children[col]
-                        when (th.ownText()) {
-                            "Date" -> columnIndexDate = col
-                            "Project" -> columnIndexProject = col
-                            "Task" -> columnIndexTask = col
-                            "Start" -> columnIndexStart = col
-                            "Finish" -> columnIndexFinish = col
-                            "Note" -> columnIndexNote = col
-                            "Cost" -> columnIndexCost = col
-                        }
-                    }
-
-                    val totalsBlankRowIndex = totalsRowIndex - 1
-                    for (i in 1 until totalsBlankRowIndex) {
-                        val tr = rows[i]
-                        val record = parseRecord(tr,
-                            i,
-                            columnIndexDate,
-                            columnIndexProject,
-                            columnIndexTask,
-                            columnIndexStart,
-                            columnIndexFinish,
-                            columnIndexNote,
-                            columnIndexCost)
-                        if (record != null) {
-                            records.add(record)
-                        }
-                    }
-                }
-            }
-        }
-
-        recordsData.postValue(records)
-        saveRecords(db, records)
-    }
-
-    private fun populateTotals(records: List<TimeRecord>?) {
-        val totals = ReportTotals()
-
-        var duration: Long
-        if (records != null) {
-            for (record in records) {
-                duration = record.finishTime - record.startTime
-                if (duration > 0L) {
-                    totals.duration += duration
-                }
-                totals.cost += record.cost
-            }
-        }
-
-        totalsData.postValue(totals)
     }
 
     @MainThread
@@ -285,177 +146,38 @@ class ReportFragment : InternetFragment(),
         }
     }
 
-    /**
-     * Find the first table whose first row has both class="tableHeader" and its label is 'Date'
-     */
-    private fun findRecordsTable(doc: Document): Element? {
-        val body = doc.body()
-        val form = body.selectFirst("form[name='reportViewForm']") ?: return null
-        val td = form.selectFirst("td[class='tableHeader']") ?: return null
-
-        val label = td.ownText()
-        if (label == "Date") {
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseRecord(row: Element,
-                            index: Int,
-                            columnIndexDate: Int,
-                            columnIndexProject: Int,
-                            columnIndexTask: Int,
-                            columnIndexStart: Int,
-                            columnIndexFinish: Int,
-                            columnIndexNote: Int,
-                            columnIndexCost: Int): TimeRecord? {
-        val cols = row.getElementsByTag("td")
-        val record = TimeRecord.EMPTY.copy()
-        record.id = index + 1L
-        record.status = TaskRecordStatus.CURRENT
-
-        val tdDate = cols[columnIndexDate]
-        val date = parseSystemDate(tdDate.ownText()) ?: return null
-
-        var project: Project = record.project
-        if (columnIndexProject > 0) {
-            val tdProject = cols[columnIndexProject]
-            if (tdProject.attr("class") == "tableHeader") {
-                return null
-            }
-            val projectName = tdProject.ownText()
-            project = parseRecordProject(projectName) ?: return null
-            record.project = project
-        }
-
-        if (columnIndexTask > 0) {
-            val tdTask = cols[columnIndexTask]
-            val taskName = tdTask.ownText()
-            val task = parseRecordTask(project, taskName) ?: return null
-            record.task = task
-        }
-
-        if (columnIndexStart > 0) {
-            val tdStart = cols[columnIndexStart]
-            val startText = tdStart.ownText()
-            val start = parseRecordTime(date, startText) ?: return null
-            record.start = start
-        }
-
-        if (columnIndexFinish > 0) {
-            val tdFinish = cols[columnIndexFinish]
-            val finishText = tdFinish.ownText()
-            val finish = parseRecordTime(date, finishText) ?: return null
-            record.finish = finish
-        }
-
-        if (columnIndexNote > 0) {
-            val tdNote = cols[columnIndexNote]
-            val noteText = tdNote.ownText()
-            val note = parseRecordNote(noteText)
-            record.note = note
-        }
-
-        if (columnIndexCost > 0) {
-            val tdCost = cols[columnIndexCost]
-            val costText = tdCost.ownText()
-            val cost = parseCost(costText)
-            record.cost = cost
-        }
-
-        return record
-    }
-
-    private fun parseRecordProject(name: String): Project? {
-        return projects.find { name == it.name } ?: Project(name)
-    }
-
-    private fun parseRecordTask(project: Project, name: String): ProjectTask? {
-        return project.tasks.find { task -> (task.name == name) } ?: ProjectTask(name)
-    }
-
-    private fun parseRecordTime(date: Calendar, text: String): Calendar? {
-        return parseSystemTime(date, text)
-    }
-
-    private fun parseRecordNote(text: String): String {
-        return text.trim()
-    }
-
-    private fun parseCost(cost: String): Double {
-        return if (cost.isBlank()) 0.00 else cost.toDouble()
-    }
-
-    private fun loadPage(): Single<Unit> {
-        val filter = filterData.value
-        Timber.i("loadPage $filter")
-        return Single.fromCallable {
-            loadProjectsWithTasks(db)
-            if (filter != null) {
-                loadRecords(db, filter.startTime, filter.finishTime)
-            } else {
-                loadRecords(db, TimeRecord.NEVER, TimeRecord.NEVER)
-            }
-        }
-    }
-
-    private fun loadRecords(db: TrackerDatabase, start: Long, finish: Long) {
-        if (recordEntities.value == null) {
-            val reportRecordsDao = db.reportRecordDao()
-            val reportRecordsDb = reportRecordsDao.queryByDateLive(start, finish)
-
-            runOnUiThread {
-                reportRecordsDb.observe(this, Observer<List<ReportRecord>> { entities ->
-                    val records = entities.map { it.toTimeRecord(projects, tasks) }
-                    recordsData.postValue(records)
-                })
-                recordEntities.removeObservers(this)
-                recordEntities = reportRecordsDb
-            }
-
-            // Use the existing records we have in the records table.
-            if (reportRecordsDb.value.isNullOrEmpty()) {
-                val recordsDao = db.timeRecordDao()
-                val recordsDb = recordsDao.queryByDate(start, finish)
-                val reports = recordsDb.map { it.toTimeRecord() }
-                    .map { it.toReportRecord() }
-                reportRecordsDao.insert(reports)
-            }
-        }
-    }
-
-    private fun loadProjectsWithTasks(db: TrackerDatabase) {
-        val projectsDao = db.projectDao()
-        val projectsWithTasks = projectsDao.queryAllWithTasks()
-        val projectsDb = ArrayList<Project>()
-        val tasksDb = HashSet<ProjectTask>()
-        for (projectWithTasks in projectsWithTasks) {
-            val project = projectWithTasks.project
-            project.tasks = projectWithTasks.tasks
-            projectsDb.add(project)
-            tasksDb.addAll(projectWithTasks.tasks)
-        }
-        projects.clear()
-        projects.addAll(projectsDb)
-
-        tasks.clear()
-        tasks.addAll(tasksDb)
-    }
-
     @MainThread
     fun run() {
         Timber.i("run")
 
+        var filter = ReportFilter()
+
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
-                val filter = args.getParcelable<ReportFilter>(EXTRA_FILTER)
-                if (filter != null) {
-                    filterData.value = filter
+                val filterExtra = args.getParcelable<ReportFilter>(EXTRA_FILTER)
+                if (filterExtra != null) {
+                    filter = filterExtra
                 }
             }
         }
+
+        dataSource.reportPage(filter)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ page ->
+                processPage(page)
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+                handleError(err)
+            })
+            .addTo(disposables)
+    }
+
+    private fun processPage(page: ReportPage) {
+        filterData.value = page.filter
+        recordsData.value = page.records
+        totalsData.value = page.totals
     }
 
     override fun onStart() {
@@ -584,12 +306,6 @@ class ReportFragment : InternetFragment(),
         } else {
             Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun saveRecords(db: TrackerDatabase, records: List<TimeRecord>) {
-        val recordsDao = db.reportRecordDao()
-        recordsDao.deleteAll()
-        recordsDao.insert(records.map { it.toReportRecord() })
     }
 
     companion object {

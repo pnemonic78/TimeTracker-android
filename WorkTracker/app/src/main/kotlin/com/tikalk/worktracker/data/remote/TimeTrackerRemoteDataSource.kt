@@ -166,8 +166,26 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, priva
         ReportFormPageSaver(db).save(page)
     }
 
-    override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
+        return service.generateReport(filter.toFields())
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseReportPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseReportPage(html: String): ReportPage {
+        return ReportPageParser().parse(html)
+    }
+
+    private fun savePage(page: ReportPage) {
+        ReportPageSaver(db).save(page)
     }
 
     override fun timeListPage(date: Calendar): Observable<TimeListPage> {

@@ -56,9 +56,8 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
         return Observable.concat(localRepository.reportFormPage(), remoteRepository.reportFormPage())
     }
 
-    override fun reportPage(filter: ReportFilter): Observable<List<TimeRecord>> {
-        //TODO return Observable.concat(localRepository.reportPage(filter), remoteRepository.reportPage(filter))
-        return localRepository.reportPage(filter)
+    override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
+        return Observable.concat(localRepository.reportPage(filter), remoteRepository.reportPage(filter))
     }
 
     override fun tasksPage(): Observable<List<ProjectTask>> {
