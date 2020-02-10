@@ -47,6 +47,8 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.runOnUiThread
+import com.tikalk.html.selectByName
+import com.tikalk.html.value
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -61,9 +63,12 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_timer.*
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 import kotlin.math.max
@@ -281,9 +286,270 @@ class TimerFragment : TimeFormFragment() {
         return null
     }
 
-    override fun populateForm(date: Calendar, doc: Document) {
-        super.populateForm(date, doc)
+    fun populateForm(date: Calendar, doc: Document) {
+        val form = findForm(doc) ?: return
+        populateForm(date, doc, form)
+        populateForm(record)
+
         runOnUiThread { bindForm(record) }
+    }
+
+    private fun populateForm(date: Calendar, doc: Document, form: FormElement) {
+        val inputProjects = form.selectByName("project") ?: return
+        val inputTasks = form.selectByName("task") ?: return
+        populateForm(date, doc, form, inputProjects, inputTasks)
+    }
+
+    private fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
+        val projects = populateProjects(inputProjects, projectsData)
+        val tasks = populateTasks(inputTasks, tasksData)
+        populateTaskIds(doc, projects, tasks)
+
+        setRecordProject(findSelectedProject(inputProjects, projects))
+        setRecordTask(findSelectedTask(inputTasks, tasks))
+    }
+
+    private fun populateProjects(select: Element, target: MutableLiveData<List<Project>>): List<Project> {
+        Timber.i("populateProjects")
+        val projects = ArrayList<Project>()
+
+        val options = select.select("option")
+        var value: String
+        var name: String
+        for (option in options) {
+            name = option.ownText()
+            value = option.value()
+            val item = Project(name)
+            if (value.isEmpty()) {
+                projectEmpty = item
+            } else {
+                item.id = value.toLong()
+            }
+            projects.add(item)
+        }
+
+        target.postValue(projects.sortedBy { it.name })
+        saveProjects(db, projects)
+        return projects
+    }
+
+    private fun populateTasks(select: Element, target: MutableLiveData<List<ProjectTask>>): List<ProjectTask> {
+        Timber.i("populateTasks")
+        val tasks = ArrayList<ProjectTask>()
+
+        val options = select.select("option")
+        var value: String
+        var name: String
+        for (option in options) {
+            name = option.ownText()
+            value = option.value()
+            val item = ProjectTask(name)
+            if (value.isEmpty()) {
+                taskEmpty = item
+            } else {
+                item.id = value.toLong()
+            }
+            tasks.add(item)
+        }
+
+        target.postValue(tasks.sortedBy { it.name })
+        saveTasks(db, tasks)
+        return tasks
+    }
+
+    private fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
+        for (option in projectInput.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.value()
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return projects.find { id == it.id }!!
+                }
+                break
+            }
+        }
+        return projectEmpty
+    }
+
+    private fun findSelectedTask(taskInput: Element, tasks: List<ProjectTask>): ProjectTask {
+        for (option in taskInput.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.value()
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return tasks.find { id == it.id }!!
+                }
+                break
+            }
+        }
+        return taskEmpty
+    }
+
+    private fun findTaskIds(doc: Document): String? {
+        val tokenStart = "var task_ids = new Array();"
+        val tokenEnd = "// Prepare an array of task names."
+        return findScript(doc, tokenStart, tokenEnd)
+    }
+
+    private fun findForm(doc: Document): FormElement? {
+        return doc.selectFirst("form[name='timeRecordForm']") as FormElement?
+    }
+
+    protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
+        val scripts = doc.select("script")
+        var scriptText: String
+        var indexStart: Int
+        var indexEnd: Int
+
+        for (script in scripts) {
+            scriptText = script.html()
+            indexStart = scriptText.indexOf(tokenStart)
+            if (indexStart >= 0) {
+                indexStart += tokenStart.length
+                indexEnd = scriptText.indexOf(tokenEnd, indexStart)
+                if (indexEnd < 0) {
+                    indexEnd = scriptText.length
+                }
+                return scriptText.substring(indexStart, indexEnd)
+            }
+        }
+
+        return ""
+    }
+
+    private fun populateTaskIds(doc: Document, projects: List<Project>, tasks: List<ProjectTask>) {
+        Timber.i("populateTaskIds")
+        val scriptText = findTaskIds(doc) ?: return
+
+        if (scriptText.isNotEmpty()) {
+            for (project in projects) {
+                project.clearTasks()
+            }
+
+            val pattern = Pattern.compile("task_ids\\[(\\d+)\\] = \"(.+)\";")
+            val matcher = pattern.matcher(scriptText)
+            while (matcher.find()) {
+                val projectId = matcher.group(1)!!.toLong()
+                val project = projects.find { it.id == projectId }
+
+                val taskIds: List<Long> = matcher.group(2)!!
+                    .split(",")
+                    .map { it.toLong() }
+                val tasksPerProject = tasks.filter { it.id in taskIds }
+
+                project?.addTasks(tasksPerProject)
+            }
+        }
+
+        saveProjectTaskKeys(db, projects)
+    }
+
+    private fun saveProjects(db: TrackerDatabase, projects: List<Project>) {
+        val projectsDao = db.projectDao()
+        val projectsDb = projectsDao.queryAll()
+        val projectsDbById: MutableMap<Long, Project> = HashMap()
+        for (project in projectsDb) {
+            val projectId = project.id
+            projectsDbById[projectId] = project
+        }
+
+        val projectsToInsert = ArrayList<Project>()
+        val projectsToUpdate = ArrayList<Project>()
+        //var projectDb: Project
+        for (project in projects) {
+            val projectId = project.id
+            if (projectsDbById.containsKey(projectId)) {
+                //projectDb = projectsDbById[projectId]!!
+                //project.dbId = projectDb.dbId
+                projectsToUpdate.add(project)
+            } else {
+                projectsToInsert.add(project)
+            }
+            projectsDbById.remove(projectId)
+        }
+
+        val projectsToDelete = projectsDbById.values
+        projectsDao.delete(projectsToDelete)
+
+        val projectIds = projectsDao.insert(projectsToInsert)
+        //for (i in projectIds.indices) {
+        //    projectsToInsert[i].dbId = projectIds[i]
+        //}
+
+        projectsDao.update(projectsToUpdate)
+    }
+
+    private fun saveTasks(db: TrackerDatabase, tasks: List<ProjectTask>) {
+        val tasksDao = db.taskDao()
+        val tasksDb = tasksDao.queryAll()
+        val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
+        for (task in tasksDb) {
+            tasksDbById[task.id] = task
+        }
+
+        val tasksToInsert = ArrayList<ProjectTask>()
+        val tasksToUpdate = ArrayList<ProjectTask>()
+        //var taskDb: ProjectTask
+        for (task in tasks) {
+            val taskId = task.id
+            if (tasksDbById.containsKey(taskId)) {
+                //taskDb = tasksDbById[taskId]!!
+                //task.dbId = taskDb.dbId
+                tasksToUpdate.add(task)
+            } else {
+                tasksToInsert.add(task)
+            }
+            tasksDbById.remove(taskId)
+        }
+
+        val tasksToDelete = tasksDbById.values
+        tasksDao.delete(tasksToDelete)
+
+        val taskIds = tasksDao.insert(tasksToInsert)
+        //for (i in taskIds.indices) {
+        //    tasksToInsert[i].dbId = taskIds[i]
+        //}
+
+        tasksDao.update(tasksToUpdate)
+    }
+
+    private fun saveProjectTaskKeys(db: TrackerDatabase, projects: List<Project>) {
+        val keys: List<ProjectTaskKey> = projects.flatMap { project ->
+            project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
+        }
+
+        val projectTasksDao = db.projectTaskKeyDao()
+        val keysDb = projectTasksDao.queryAll()
+        val keysDbMutable = keysDb.toMutableList()
+        val keysToInsert = ArrayList<ProjectTaskKey>()
+        val keysToUpdate = ArrayList<ProjectTaskKey>()
+        var keyDbFound: ProjectTaskKey?
+        for (key in keys) {
+            keyDbFound = null
+            for (keyDb in keysDbMutable) {
+                if (key == keyDb) {
+                    keyDbFound = keyDb
+                    break
+                }
+            }
+            if (keyDbFound != null) {
+                //key.dbId = keyDbFound.dbId
+                keysToUpdate.add(key)
+                keysDbMutable.remove(keyDbFound)
+            } else {
+                keysToInsert.add(key)
+            }
+        }
+
+        val keysToDelete = keysDbMutable
+        projectTasksDao.delete(keysToDelete)
+
+        val keyIds = projectTasksDao.insert(keysToInsert)
+        //for (i in keyIds.indices) {
+        //    keysToInsert[i].dbId = keyIds[i]
+        //}
+
+        projectTasksDao.update(keysToUpdate)
     }
 
     override fun populateForm(record: TimeRecord) {
