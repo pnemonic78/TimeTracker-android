@@ -41,18 +41,20 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
-import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.db.*
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
@@ -63,11 +65,14 @@ import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 import kotlin.math.max
 
 class TimerFragment : TimeFormFragment() {
 
     private var timer: Disposable? = null
+    private var projectEntities: LiveData<List<ProjectWithTasks>> = MutableLiveData<List<ProjectWithTasks>>()
+    private var taskEntities: LiveData<List<ProjectTask>> = MutableLiveData<List<ProjectTask>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -412,6 +417,53 @@ class TimerFragment : TimeFormFragment() {
         val context = this.context ?: return
         super.onProjectsUpdated(projects)
         bindProjects(context, record, projects)
+    }
+
+    private fun loadForm(): Single<Unit> {
+        Timber.i("loadForm")
+        return Single.fromCallable { loadFormFromDb(db) }
+    }
+
+    @Synchronized
+    private fun loadFormFromDb(db: TrackerDatabase) {
+        Timber.i("loadFormFromDb")
+        loadProjectsWithTasks(db)
+    }
+
+    private fun loadProjectsWithTasks(db: TrackerDatabase) {
+        if (projectEntities.value == null) {
+            val projectsDao = db.projectDao()
+            val projectsWithTasks = projectsDao.queryAllWithTasksLive()
+            val tasksDao = db.taskDao()
+            val tasksAll = tasksDao.queryAllLive()
+
+            runOnUiThread {
+                projectsWithTasks.observe(this, Observer<List<ProjectWithTasks>> { entities ->
+                    val projectsDb = ArrayList<Project>()
+                    val tasksDb = HashSet<ProjectTask>()
+                    for (projectWithTasks in entities) {
+                        val project = projectWithTasks.project
+                        project.tasks = projectWithTasks.tasks
+                        projectsDb.add(project)
+                        tasksDb.addAll(projectWithTasks.tasks)
+                    }
+                    val projects = projectsDb.sortedBy { it.name }
+                    projectsData.postValue(projects)
+
+                    val tasks = tasksDb.sortedBy { it.name }
+                    tasksData.postValue(tasks)
+                })
+                projectEntities.removeObservers(this)
+                projectEntities = projectsWithTasks
+
+                tasksAll.observe(this, Observer<List<ProjectTask>> { entities ->
+                    val tasks = entities.sortedBy { it.name }
+                    tasksData.postValue(tasks)
+                })
+                taskEntities.removeObservers(this)
+                taskEntities = tasksAll
+            }
+        }
     }
 
     companion object {

@@ -72,8 +72,6 @@ abstract class TimeFormFragment : InternetFragment(),
     val tasksData = MutableLiveData<List<ProjectTask>>()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
-    private var projectEntities: LiveData<List<ProjectWithTasks>> = MutableLiveData<List<ProjectWithTasks>>()
-    private var taskEntities: LiveData<List<ProjectTask>> = MutableLiveData<List<ProjectTask>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -355,53 +353,6 @@ abstract class TimeFormFragment : InternetFragment(),
         //}
 
         projectTasksDao.update(keysToUpdate)
-    }
-
-    protected fun loadForm(): Single<Unit> {
-        Timber.i("loadForm")
-        return Single.fromCallable { loadFormFromDb(db) }
-    }
-
-    @Synchronized
-    protected open fun loadFormFromDb(db: TrackerDatabase) {
-        Timber.i("loadFormFromDb")
-        loadProjectsWithTasks(db)
-    }
-
-    private fun loadProjectsWithTasks(db: TrackerDatabase) {
-        if (projectEntities.value == null) {
-            val projectsDao = db.projectDao()
-            val projectsWithTasks = projectsDao.queryAllWithTasksLive()
-            val tasksDao = db.taskDao()
-            val tasksAll = tasksDao.queryAllLive()
-
-            runOnUiThread {
-                projectsWithTasks.observe(this, Observer<List<ProjectWithTasks>> { entities ->
-                    val projectsDb = ArrayList<Project>()
-                    val tasksDb = HashSet<ProjectTask>()
-                    for (projectWithTasks in entities) {
-                        val project = projectWithTasks.project
-                        project.tasks = projectWithTasks.tasks
-                        projectsDb.add(project)
-                        tasksDb.addAll(projectWithTasks.tasks)
-                    }
-                    val projects = projectsDb.sortedBy { it.name }
-                    projectsData.postValue(projects)
-
-                    val tasks = tasksDb.sortedBy { it.name }
-                    tasksData.postValue(tasks)
-                })
-                projectEntities.removeObservers(this)
-                projectEntities = projectsWithTasks
-
-                tasksAll.observe(this, Observer<List<ProjectTask>> { entities ->
-                    val tasks = entities.sortedBy { it.name }
-                    tasksData.postValue(tasks)
-                })
-                taskEntities.removeObservers(this)
-                taskEntities = tasksAll
-            }
-        }
     }
 
     abstract fun populateForm(record: TimeRecord)
