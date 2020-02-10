@@ -211,7 +211,7 @@ class ReportFormFragment : TimeFormFragment() {
         projectsData.value = page.projects
         tasksData.value = page.tasks
         errorMessage = page.errorMessage ?: ""
-        setRecordValue(page.record)
+        filterData.value = page.record
     }
 
     override fun onStart() {
@@ -428,7 +428,6 @@ class ReportFormFragment : TimeFormFragment() {
         // `record` must always point to `filter`.
         if (record is ReportFilter) {
             super.setRecordValue(record)
-            filterData.value = record
         }
     }
 
