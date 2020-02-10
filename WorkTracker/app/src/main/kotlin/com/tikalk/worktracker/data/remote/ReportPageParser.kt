@@ -49,6 +49,11 @@ import kotlin.collections.ArrayList
 class ReportPageParser {
 
     fun parse(html: String, db: TrackerDatabase?): ReportPage {
+        val doc: Document = Jsoup.parse(html)
+        return parse(doc, db)
+    }
+
+    private fun parse(doc: Document, db: TrackerDatabase?): ReportPage {
         val filter = createFilter()
         val page = createMutablePage(filter)
 
@@ -59,7 +64,6 @@ class ReportPageParser {
             populateProjectsWithTasks(projectsWithTasks, projects, tasks)
         }
 
-        val doc: Document = Jsoup.parse(html)
         populatePage(doc, page)
 
         return createPage(page)

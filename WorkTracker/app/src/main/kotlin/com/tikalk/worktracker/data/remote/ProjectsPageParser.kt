@@ -41,6 +41,10 @@ import org.jsoup.nodes.Element
 class ProjectsPageParser {
     fun parse(html: String): List<Project> {
         val doc: Document = Jsoup.parse(html)
+        return parse(doc)
+    }
+
+    private fun parse(doc: Document): List<Project> {
         val projects = ArrayList<Project>()
 
         // The first row of the table is the header

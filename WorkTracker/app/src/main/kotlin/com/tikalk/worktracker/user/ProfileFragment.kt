@@ -44,21 +44,22 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.html.selectByName
-import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.auth.model.set
+import com.tikalk.worktracker.data.remote.ProfilePageParser
+import com.tikalk.worktracker.data.remote.ProfilePageSaver
+import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.set
 import com.tikalk.worktracker.net.InternetFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_profile.*
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.FormElement
+import kotlinx.android.synthetic.main.fragment_profile.passwordInput
 import timber.log.Timber
 
 /**
@@ -123,7 +124,27 @@ class ProfileFragment : InternetFragment(),
     @MainThread
     fun run() {
         Timber.i("run")
-        fetchPage()
+        dataSource.profilePage()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ page ->
+                processPage(page)
+            }, { err ->
+                Timber.e(err, "Error loading page: ${err.message}")
+                handleError(err)
+            })
+            .addTo(disposables)
+    }
+
+    private fun processPage(page: ProfilePage) {
+        preferences.user = page.user
+        userData.value = page.user
+        userCredentialsData.value = page.userCredentials
+        nameInputEditable = page.nameInputEditable
+        emailInputEditable = page.emailInputEditable
+        loginInputEditable = page.loginInputEditable
+        password2 = page.passwordConfirm ?: ""
+        errorMessage = page.errorMessage ?: ""
     }
 
     override fun onStart() {
@@ -247,20 +268,7 @@ class ProfileFragment : InternetFragment(),
 
                     if (isValidResponse(response)) {
                         val html = response.body()!!
-                        processPage(html)
-                        val user = userData.value ?: return@subscribe
-                        val userCredentials = userCredentialsData.value ?: return@subscribe
-
-                        if (errorMessage.isEmpty()) {
-                            userCredentials.password = passwordValue
-                            password2 = confirmPasswordValue
-                            preferences.user = user
-                            preferences.userCredentials = userCredentials
-
-                            notifyProfileSuccess(user)
-                        } else {
-                            notifyProfileFailure(user, errorMessage)
-                        }
+                        processEdit(html, loginValue, emailValue, nameValue, passwordValue, confirmPasswordValue)
                     } else {
                         authenticate(true)
                     }
@@ -295,73 +303,10 @@ class ProfileFragment : InternetFragment(),
         }
     }
 
-    private fun fetchPage() {
-        Timber.i("fetchPage")
-
-        // Fetch from remote server.
-        service.fetchProfile()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { showProgress(true) }
-            .doAfterTerminate { showProgress(false) }
-            .subscribe({ response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
-    }
-
-    private fun processPage(html: String) {
-        populateForm(html)
-    }
-
-    private fun populateForm(html: String) {
-        val doc: Document = Jsoup.parse(html)
-        populateForm(doc)
-    }
-
-    private fun populateForm(doc: Document) {
-        errorMessage = findError(doc)?.trim() ?: ""
-
-        val form = doc.selectFirst("form[name='profileForm']") as FormElement? ?: return
-        populateForm(form)
-    }
-
-    private fun populateForm(form: FormElement) {
-        val nameInputElement = form.selectByName("name") ?: return
-        val emailInputElement = form.selectByName("email") ?: return
-        val loginInputElement = form.selectByName("login") ?: return
-        val passwordInputElement = form.selectByName("password1") ?: return
-        val confirmPasswordInputElement = form.selectByName("password2") ?: return
-
-        nameInputEditable = !nameInputElement.hasAttr("readonly")
-        emailInputEditable = !emailInputElement.hasAttr("readonly")
-        loginInputEditable = !loginInputElement.hasAttr("readonly")
-
-        val password1 = passwordInputElement.value()
-        password2 = confirmPasswordInputElement.text()
-
-        val user = userData.value ?: User.EMPTY.copy()
-        user.displayName = nameInputElement.value()
-        user.email = emailInputElement.value()
-        user.username = loginInputElement.value()
-
-        val userCredentials = userCredentialsData.value ?: UserCredentials.EMPTY.copy()
-        userCredentials.login = user.username
-        if (password1.isNotBlank()) {
-            userCredentials.password = password1
-        }
-
-        preferences.user = user
-        userData.value = user
-        userCredentialsData.value = userCredentials
+    private fun processPage(html: String): ProfilePage {
+        val page = ProfilePageParser().parse(html)
+        processPage(page)
+        return page
     }
 
     private fun notifyProfileSuccess(user: User) {
@@ -372,6 +317,31 @@ class ProfileFragment : InternetFragment(),
     private fun notifyProfileFailure(user: User, reason: String) {
         val fragment: ProfileFragment = this
         listener?.onProfileFailure(fragment, user, reason)
+    }
+
+    private fun processEdit(html: String, loginValue: String, emailValue: String, nameValue: String, passwordValue: String, confirmPasswordValue: String) {
+        val user = userData.value ?: User(loginValue, emailValue, nameValue)
+        val userCredentials = userCredentialsData.value
+            ?: UserCredentials(loginValue, passwordValue)
+        val page = processPage(html)
+        val errorMessage = page.errorMessage ?: ""
+        setErrorLabel(errorMessage)
+
+        if (errorMessage.isEmpty()) {
+            userCredentials.password = passwordValue
+            if (page.user.isEmpty()) {
+                page.user.set(user)
+            }
+            if (page.userCredentials.isEmpty()) {
+                page.userCredentials.set(userCredentials)
+            }
+            ProfilePageSaver(preferences).save(page)
+            password2 = confirmPasswordValue
+
+            notifyProfileSuccess(user)
+        } else {
+            notifyProfileFailure(user, errorMessage)
+        }
     }
 
     override fun onCancel(dialog: DialogInterface) {

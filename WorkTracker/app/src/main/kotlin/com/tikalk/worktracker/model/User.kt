@@ -85,3 +85,12 @@ data class User(
         val EMPTY = User("")
     }
 }
+
+fun User.set(that: User) {
+    this.username = that.username
+    this.email = that.email
+    this.displayName = that.displayName
+    this.telephone = that.telephone
+    this.photo = that.photo
+    this.roles = that.roles
+}

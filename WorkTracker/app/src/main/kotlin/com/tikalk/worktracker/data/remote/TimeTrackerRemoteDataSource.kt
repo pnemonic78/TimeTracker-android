@@ -35,18 +35,18 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Observable
 import retrofit2.Response
 import java.util.*
 
-class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, private val db: TrackerDatabase) : TimeTrackerDataSource {
+class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
+                                  private val db: TrackerDatabase,
+                                  private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
 
     private fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
@@ -209,5 +209,27 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService, priva
 
     private fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
+    }
+
+    override fun profilePage(): Observable<ProfilePage> {
+        return service.fetchProfile()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseProfilePage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseProfilePage(html: String): ProfilePage {
+        return ProfilePageParser().parse(html)
+    }
+
+    private fun savePage(page: ProfilePage) {
+        ProfilePageSaver(preferences).save(page)
     }
 }

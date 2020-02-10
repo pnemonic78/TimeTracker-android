@@ -34,6 +34,7 @@ package com.tikalk.worktracker.data
 
 import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
 import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
+import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.User
@@ -46,6 +47,10 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
 
     override fun editPage(recordId: Long): Observable<TimeEditPage> {
         return Observable.concat(localRepository.editPage(recordId), remoteRepository.editPage(recordId))
+    }
+
+    override fun profilePage(): Observable<ProfilePage> {
+        return Observable.concat(localRepository.profilePage(), remoteRepository.profilePage())
     }
 
     override fun projectsPage(): Observable<List<Project>> {

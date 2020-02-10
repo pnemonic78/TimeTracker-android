@@ -38,18 +38,17 @@ import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.*
 import io.reactivex.Observable
 import io.reactivex.Single
 import java.util.*
 import kotlin.collections.ArrayList
 
-class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerDataSource {
+class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
+                                 private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
 
     override fun editPage(recordId: Long): Observable<TimeEditPage> {
         val projects = ArrayList<Project>()
@@ -293,6 +292,19 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase) : TimeTrackerD
             }
         }
         return quota * DateUtils.HOUR_IN_MILLIS
+    }
+
+    override fun profilePage(): Observable<ProfilePage> {
+        val page = ProfilePage(
+            preferences.user,
+            preferences.userCredentials,
+            nameInputEditable = false,
+            emailInputEditable = false,
+            loginInputEditable = false,
+            passwordConfirm = null,
+            errorMessage = null
+        )
+        return Observable.just(page)
     }
 
     companion object {
