@@ -51,6 +51,7 @@ import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.*
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -211,7 +212,15 @@ class ReportFormFragment : TimeFormFragment() {
         projectsData.value = page.projects
         tasksData.value = page.tasks
         errorMessage = page.errorMessage ?: ""
-        filterData.value = page.record
+
+        val filterValue = filterData.value
+        if (filterValue != null) {
+            if (filterValue.status == TaskRecordStatus.DRAFT) {
+                filterData.value = page.record
+            }
+        } else {
+            filterData.value = page.record
+        }
     }
 
     override fun onStart() {

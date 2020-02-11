@@ -41,6 +41,7 @@ import com.tikalk.worktracker.model.ReportTimePeriod
 import com.tikalk.worktracker.model.time.MutableReportFormPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.time.parseSystemDate
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -132,6 +133,8 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
 
         val inputShowNote = form.selectByName("chnote")
         filter.showNoteField = inputShowNote?.isChecked() ?: filter.showNoteField
+
+        filter.status = TaskRecordStatus.CURRENT
     }
 
     private fun findSelectedPeriod(periodInput: Element, periods: Array<ReportTimePeriod>): ReportTimePeriod {
