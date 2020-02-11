@@ -172,12 +172,6 @@ class ReportFormFragment : TimeFormFragment() {
         filter.updateDates(date)
 
         if (!isVisible) return
-        val custom = (period == ReportTimePeriod.CUSTOM)
-        val visibility = if (custom) View.VISIBLE else View.GONE
-        startIcon.visibility = visibility
-        startInput.visibility = visibility
-        finishIcon.visibility = visibility
-        finishInput.visibility = visibility
 
         val startTime = filter.startTime
         startInput.text = if (startTime != TimeRecord.NEVER)
@@ -192,6 +186,13 @@ class ReportFormFragment : TimeFormFragment() {
         else
             ""
         finishInput.error = null
+
+        val custom = (period == ReportTimePeriod.CUSTOM)
+        val visibility = if (custom) View.VISIBLE else View.GONE
+        startIcon.visibility = visibility
+        startInput.visibility = visibility
+        finishIcon.visibility = visibility
+        finishInput.visibility = visibility
     }
 
     fun run() {
@@ -410,7 +411,10 @@ class ReportFormFragment : TimeFormFragment() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         Timber.i("onRestoreInstanceState")
         super.onRestoreInstanceState(savedInstanceState)
-        filterData.value = savedInstanceState.getParcelable(STATE_FILTER) ?: ReportFilter()
+        val filter = savedInstanceState.getParcelable<ReportFilter>(STATE_FILTER)
+        if (filter != null) {
+            filterData.value = filter
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

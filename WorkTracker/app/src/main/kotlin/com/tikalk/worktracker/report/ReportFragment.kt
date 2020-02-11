@@ -160,7 +160,7 @@ class ReportFragment : InternetFragment(),
             }
         }
         if (filter == null) {
-            return
+            filter = filterData.value ?: ReportFilter()
         }
 
         dataSource.reportPage(filter, firstRun)
