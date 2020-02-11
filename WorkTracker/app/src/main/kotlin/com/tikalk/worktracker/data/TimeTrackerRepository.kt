@@ -88,8 +88,10 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
     }
 
     override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        //TODO cache remote users in db table.
-        return Observable.merge(localRepository.usersPage(refresh), remoteRepository.usersPage(refresh))
+        if (refresh) {
+            return Observable.merge(localRepository.usersPage(refresh), remoteRepository.usersPage(refresh))
+        }
+        return localRepository.usersPage(refresh)
     }
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {

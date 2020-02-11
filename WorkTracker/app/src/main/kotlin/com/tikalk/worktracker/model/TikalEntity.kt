@@ -88,18 +88,18 @@ open class Converters {
     fun toCalendar(value: Long?): Calendar? = value?.toCalendar()
 
     @TypeConverter
-    fun fromUri(value: Uri): String = value.toString()
+    fun fromUri(value: Uri?): String? = value?.toString()
 
     @TypeConverter
-    fun toUri(value: String): Uri = value.toUri()
+    fun toUri(value: String?): Uri? = value?.toUri()
 
     @TypeConverter
-    fun fromStringList(value: List<String>): String {
+    fun fromStringList(value: List<String>?): String? {
         return gson.toJson(value)
     }
 
     @TypeConverter
-    fun toStringList(value: String): List<String> {
-        return gson.fromJson(value, Array<String>::class.java).toList()
+    fun toStringList(value: String?): List<String>? {
+        return gson.fromJson(value, Array<String>::class.java)?.toList()
     }
 }

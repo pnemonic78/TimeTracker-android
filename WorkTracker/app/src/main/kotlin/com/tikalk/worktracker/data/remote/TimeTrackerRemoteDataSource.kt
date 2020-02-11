@@ -147,7 +147,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     }
 
     private fun savePage(page: UsersPage) {
-        //TODO implement me!
+        UserPageSaver(db).save(page)
     }
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {

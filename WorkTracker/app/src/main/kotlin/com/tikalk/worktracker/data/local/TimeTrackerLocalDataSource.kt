@@ -114,7 +114,22 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
     }
 
     override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        return Observable.just(UsersPage(listOf(preferences.user)))
+        return Observable.merge(
+            Observable.just(UsersPage(listOf(preferences.user))),
+            loadUsers(db).map { UsersPage(it) }
+        )
+    }
+
+    private fun loadUsers(db: TrackerDatabase): Observable<List<User>> {
+        val userDao = db.userDao()
+        val usersDb = userDao.queryAllSingle()
+        return usersDb
+            .map { users ->
+                users
+                    .filter { it.id != TikalEntity.ID_NONE }
+                    .sortedBy { it.displayName }
+            }
+            .toObservable()
     }
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {

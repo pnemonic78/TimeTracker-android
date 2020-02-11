@@ -54,9 +54,12 @@ class UsersPageParser {
             // loop through all the rows and parse each record
             // First row is the header, so drop it.
             val rows = table.getElementsByTag("tr").drop(1)
+            var id = 0L
             for (tr in rows) {
                 val user = parseUser(tr)
                 if (user != null) {
+                    id++
+                    user.id = id
                     users.add(user)
                 }
             }
