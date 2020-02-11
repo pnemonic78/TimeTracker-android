@@ -123,8 +123,8 @@ class ProfileFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.i("run")
-        dataSource.profilePage()
+        Timber.i("run first=$firstRun")
+        dataSource.profilePage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

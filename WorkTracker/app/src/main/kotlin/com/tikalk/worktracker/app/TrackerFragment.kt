@@ -57,6 +57,8 @@ abstract class TrackerFragment : TikalFragment {
     protected val db by inject<TrackerDatabase>()
     protected val service by inject<TimeTrackerService>()
     protected val dataSource by inject<TimeTrackerRepository>()
+    protected var firstRun = true
+        private set
 
     protected var caller: Fragment? = null
         private set
@@ -69,6 +71,7 @@ abstract class TrackerFragment : TikalFragment {
                 caller = findCaller(args)
             }
         }
+        firstRun = (savedInstanceState == null)
     }
 
     private fun findCaller(args: Bundle): Fragment? {

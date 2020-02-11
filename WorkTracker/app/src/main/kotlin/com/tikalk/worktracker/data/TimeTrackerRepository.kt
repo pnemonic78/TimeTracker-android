@@ -37,7 +37,7 @@ import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.*
 import io.reactivex.Observable
 import java.util.*
@@ -45,39 +45,61 @@ import java.util.*
 class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSource,
                             private val remoteRepository: TimeTrackerRemoteDataSource) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long): Observable<TimeEditPage> {
-        return Observable.merge(localRepository.editPage(recordId), remoteRepository.editPage(recordId))
+    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
+        if (refresh) {
+            return Observable.merge(localRepository.editPage(recordId, refresh), remoteRepository.editPage(recordId, refresh))
+        }
+        return localRepository.editPage(recordId, refresh)
     }
 
-    override fun profilePage(): Observable<ProfilePage> {
-        return Observable.merge(localRepository.profilePage(), remoteRepository.profilePage())
+    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
+        if (refresh) {
+            return Observable.merge(localRepository.profilePage(refresh), remoteRepository.profilePage(refresh))
+        }
+        return localRepository.profilePage(refresh)
     }
 
-    override fun projectsPage(): Observable<List<Project>> {
-        return Observable.merge(localRepository.projectsPage(), remoteRepository.projectsPage())
+    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
+        if (refresh) {
+            return Observable.merge(localRepository.projectsPage(refresh), remoteRepository.projectsPage(refresh))
+        }
+        return localRepository.projectsPage(refresh)
     }
 
-    override fun reportFormPage(): Observable<ReportFormPage> {
-        return Observable.merge(localRepository.reportFormPage(), remoteRepository.reportFormPage())
+    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
+        if (refresh) {
+            return Observable.merge(localRepository.reportFormPage(refresh), remoteRepository.reportFormPage(refresh))
+        }
+        return localRepository.reportFormPage(refresh)
     }
 
-    override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
-        return Observable.merge(localRepository.reportPage(filter), remoteRepository.reportPage(filter))
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
+        if (refresh) {
+            return Observable.merge(localRepository.reportPage(filter, refresh), remoteRepository.reportPage(filter, refresh))
+        }
+        return localRepository.reportPage(filter, refresh)
     }
 
-    override fun tasksPage(): Observable<List<ProjectTask>> {
-        return Observable.merge(localRepository.tasksPage(), remoteRepository.tasksPage())
+    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
+        if (refresh) {
+            return Observable.merge(localRepository.tasksPage(refresh), remoteRepository.tasksPage(refresh))
+        }
+        return localRepository.tasksPage(refresh)
     }
 
-    override fun usersPage(): Observable<List<User>> {
-        return Observable.merge(localRepository.usersPage(), remoteRepository.usersPage())
+    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
+        //TODO cache remote users in db table.
+        return Observable.merge(localRepository.usersPage(refresh), remoteRepository.usersPage(refresh))
     }
 
-    override fun timeListPage(date: Calendar): Observable<TimeListPage> {
-        return Observable.merge(localRepository.timeListPage(date), remoteRepository.timeListPage(date))
+    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
+        if (refresh) {
+            return Observable.merge(localRepository.timeListPage(date, refresh), remoteRepository.timeListPage(date, refresh))
+        }
+        return localRepository.timeListPage(date, refresh)
     }
 
-    override fun timerPage(): Observable<TimerPage> {
-        return localRepository.timerPage()
+    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
+        return localRepository.timerPage(refresh)
     }
 }

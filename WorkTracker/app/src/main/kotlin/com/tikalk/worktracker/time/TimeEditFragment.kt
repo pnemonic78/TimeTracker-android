@@ -343,7 +343,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun run() {
-        Timber.i("run")
+        Timber.i("run first=$firstRun")
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {
@@ -358,7 +358,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
-        dataSource.editPage(recordId)
+        dataSource.editPage(recordId, firstRun)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .observeOn(AndroidSchedulers.mainThread())

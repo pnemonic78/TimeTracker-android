@@ -69,12 +69,10 @@ class ReportFragment : InternetFragment(),
     private val totalsData = MutableLiveData<ReportTotals>()
     private val filterData = MutableLiveData<ReportFilter>()
     private var listAdapter = ReportAdapter(ReportFilter())
-    private var firstRun = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        firstRun = (savedInstanceState == null)
         recordsData.observe(this, Observer<List<TimeRecord>> { records ->
             bindList(records)
         })
@@ -148,7 +146,7 @@ class ReportFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.i("run")
+        Timber.i("run first=$firstRun")
 
         var filter: ReportFilter? = null
 
@@ -165,7 +163,7 @@ class ReportFragment : InternetFragment(),
             return
         }
 
-        dataSource.reportPage(filter)
+        dataSource.reportPage(filter, firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

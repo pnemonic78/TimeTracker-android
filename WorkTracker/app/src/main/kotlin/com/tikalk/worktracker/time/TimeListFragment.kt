@@ -89,12 +89,10 @@ class TimeListFragment : TimeFormFragment(),
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
-    private var firstRun = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        firstRun = (savedInstanceState == null)
         recordsData.observe(this, Observer<List<TimeRecord>> { records ->
             bindList(date, records)
         })
@@ -155,9 +153,9 @@ class TimeListFragment : TimeFormFragment(),
      */
     private fun loadAndFetchPage(date: Calendar) {
         val dateFormatted = formatSystemDate(date)
-        Timber.i("loadAndFetchPage $dateFormatted")
+        Timber.i("loadAndFetchPage $dateFormatted first=$firstRun")
 
-        dataSource.timeListPage(date)
+        dataSource.timeListPage(date, firstRun)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .observeOn(AndroidSchedulers.mainThread())
@@ -546,7 +544,7 @@ class TimeListFragment : TimeFormFragment(),
 
     @MainThread
     fun run() {
-        Timber.i("run")
+        Timber.i("run first=$firstRun")
         loadAndFetchPage(date)
     }
 

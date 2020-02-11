@@ -71,7 +71,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         return false
     }
 
-    override fun editPage(recordId: Long): Observable<TimeEditPage> {
+    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
         if (recordId == TikalEntity.ID_NONE) {
             return Observable.empty()
         }
@@ -96,7 +96,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         return TimeEditPageSaver(db).save(page)
     }
 
-    override fun projectsPage(): Observable<List<Project>> {
+    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
         return service.fetchProjects()
             .map { response ->
                 if (isValidResponse(response)) {
@@ -112,7 +112,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         return ProjectsPageParser().parse(html)
     }
 
-    override fun tasksPage(): Observable<List<ProjectTask>> {
+    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
         return service.fetchProjectTasks()
             .map { response ->
                 if (isValidResponse(response)) {
@@ -128,23 +128,29 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         return ProjectTasksPageParser().parse(html)
     }
 
-    override fun usersPage(): Observable<List<User>> {
+    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
         return service.fetchUsers()
             .map { response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    return@map parseUsersPage(html)
+                    val page = parseUsersPage(html)
+                    savePage(page)
+                    return@map page
                 }
                 throw AuthenticationException("authentication required")
             }
             .toObservable()
     }
 
-    private fun parseUsersPage(html: String): List<User> {
+    private fun parseUsersPage(html: String): UsersPage {
         return UsersPageParser().parse(html)
     }
 
-    override fun reportFormPage(): Observable<ReportFormPage> {
+    private fun savePage(page: UsersPage) {
+        //TODO implement me!
+    }
+
+    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
         return service.fetchReports()
             .map { response ->
                 if (isValidResponse(response)) {
@@ -166,7 +172,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         ReportFormPageSaver(db).save(page)
     }
 
-    override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
         return service.generateReport(filter.toFields())
             .map { response ->
                 if (isValidResponse(response)) {
@@ -188,7 +194,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         ReportPageSaver(db).save(page)
     }
 
-    override fun timeListPage(date: Calendar): Observable<TimeListPage> {
+    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
         val dateFormatted = formatSystemDate(date)
         return service.fetchTimes(dateFormatted)
             .map { response ->
@@ -211,7 +217,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         TimeListPageSaver(db).save(page)
     }
 
-    override fun profilePage(): Observable<ProfilePage> {
+    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
         return service.fetchProfile()
             .map { response ->
                 if (isValidResponse(response)) {
@@ -233,7 +239,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         ProfilePageSaver(preferences).save(page)
     }
 
-    override fun timerPage(): Observable<TimerPage> {
+    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
         return Observable.empty()
     }
 }

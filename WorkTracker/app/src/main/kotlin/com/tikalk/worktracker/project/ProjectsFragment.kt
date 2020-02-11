@@ -80,8 +80,8 @@ class ProjectsFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.i("run")
-        dataSource.projectsPage()
+        Timber.i("run first=$firstRun")
+        dataSource.projectsPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ projects ->

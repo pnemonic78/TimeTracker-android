@@ -80,12 +80,12 @@ class UsersFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.i("run")
-        dataSource.usersPage()
+        Timber.i("run first=$firstRun")
+        dataSource.usersPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ users ->
-                usersData.value = users
+            .subscribe({ page ->
+                usersData.value = page.users
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 handleError(err)

@@ -34,17 +34,18 @@ package com.tikalk.worktracker.data.remote
 
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.UsersPage
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class UsersPageParser {
-    fun parse(html: String): List<User> {
+    fun parse(html: String): UsersPage {
         val doc: Document = Jsoup.parse(html)
         return parse(doc)
     }
 
-    private fun parse(doc: Document): List<User> {
+    private fun parse(doc: Document): UsersPage {
         val users = ArrayList<User>()
 
         // The first row of the table is the header
@@ -61,7 +62,7 @@ class UsersPageParser {
             }
         }
 
-        return users
+        return UsersPage(users)
     }
 
     /**

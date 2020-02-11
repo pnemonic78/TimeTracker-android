@@ -195,8 +195,8 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     fun run() {
-        Timber.i("run")
-        dataSource.reportFormPage()
+        Timber.i("run first=$firstRun")
+        dataSource.reportFormPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

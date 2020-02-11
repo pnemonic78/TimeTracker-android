@@ -49,7 +49,7 @@ import kotlin.collections.ArrayList
 class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                                  private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long): Observable<TimeEditPage> {
+    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
         val errorMessage: String? = null
@@ -81,7 +81,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         return null
     }
 
-    override fun projectsPage(): Observable<List<Project>> {
+    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
         return loadProjects(db)
     }
 
@@ -97,7 +97,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             .toObservable()
     }
 
-    override fun tasksPage(): Observable<List<ProjectTask>> {
+    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
         return loadTasks(db)
     }
 
@@ -113,11 +113,11 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             .toObservable()
     }
 
-    override fun usersPage(): Observable<List<User>> {
-        return Observable.just(listOf(preferences.user))
+    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
+        return Observable.just(UsersPage(listOf(preferences.user)))
     }
 
-    override fun reportFormPage(): Observable<ReportFormPage> {
+    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
         val filter = ReportFilter()
@@ -153,7 +153,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         }
     }
 
-    override fun reportPage(filter: ReportFilter): Observable<ReportPage> {
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
 
@@ -204,7 +204,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         return totals
     }
 
-    override fun timeListPage(date: Calendar): Observable<TimeListPage> {
+    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
         val record = TimeRecord.EMPTY
@@ -289,7 +289,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         return quota * DateUtils.HOUR_IN_MILLIS
     }
 
-    override fun profilePage(): Observable<ProfilePage> {
+    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
         val page = ProfilePage(
             preferences.user,
             preferences.userCredentials,
@@ -302,7 +302,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         return Observable.just(page)
     }
 
-    override fun timerPage(): Observable<TimerPage> {
+    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
         val projects = ArrayList<Project>()
         val tasks = ArrayList<ProjectTask>()
         val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
