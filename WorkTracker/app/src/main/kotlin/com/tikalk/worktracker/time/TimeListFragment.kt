@@ -151,11 +151,11 @@ class TimeListFragment : TimeFormFragment(),
     /**
      * Load and then fetch.
      */
-    private fun loadAndFetchPage(date: Calendar) {
+    private fun loadAndFetchPage(date: Calendar, refresh: Boolean) {
         val dateFormatted = formatSystemDate(date)
-        Timber.i("loadAndFetchPage $dateFormatted first=$firstRun")
+        Timber.i("loadAndFetchPage $dateFormatted refresh=$refresh")
 
-        dataSource.timeListPage(date, firstRun)
+        dataSource.timeListPage(date, refresh)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .observeOn(AndroidSchedulers.mainThread())
@@ -304,7 +304,7 @@ class TimeListFragment : TimeFormFragment(),
                 cal.year = pickedYear
                 cal.month = pickedMonth
                 cal.dayOfMonth = pickedDayOfMonth
-                loadAndFetchPage(cal)
+                loadAndFetchPage(cal, true)
                 hideEditor()
             }
             picker = DatePickerDialog(requireContext(), listener, year, month, dayOfMonth)
@@ -478,7 +478,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("navigateTomorrow")
         val cal = date
         cal.add(Calendar.DATE, 1)
-        loadAndFetchPage(cal)
+        loadAndFetchPage(cal, true)
         hideEditor()
     }
 
@@ -486,7 +486,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("navigateYesterday")
         val cal = date
         cal.add(Calendar.DATE, -1)
-        loadAndFetchPage(cal)
+        loadAndFetchPage(cal, true)
         hideEditor()
     }
 
@@ -545,7 +545,7 @@ class TimeListFragment : TimeFormFragment(),
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        loadAndFetchPage(date)
+        loadAndFetchPage(date, firstRun)
     }
 
     private fun handleArguments() {
