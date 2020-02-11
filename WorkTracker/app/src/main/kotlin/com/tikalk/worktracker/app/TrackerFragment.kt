@@ -32,14 +32,11 @@
 
 package com.tikalk.worktracker.app
 
-import android.app.Dialog
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
-import com.tikalk.worktracker.R
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
@@ -59,7 +56,6 @@ abstract class TrackerFragment : TikalFragment {
     protected val dataSource by inject<TimeTrackerRepository>()
     protected var firstRun = true
         private set
-
     protected var caller: Fragment? = null
         private set
 
@@ -96,25 +92,6 @@ abstract class TrackerFragment : TikalFragment {
         Timber.i("authenticateMain submit=$submit")
         runOnUiThread {
             authenticate(submit)
-        }
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AlertDialog.Builder(requireContext(), theme)
-            .setTitle(R.string.app_name)
-            .setIcon(R.drawable.ic_dialog)
-            .create()
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        val view = this.view
-        if (view != null) {
-            val dialog = this.dialog
-            if (dialog is AlertDialog) {
-                dialog.setView(view)
-            }
         }
     }
 

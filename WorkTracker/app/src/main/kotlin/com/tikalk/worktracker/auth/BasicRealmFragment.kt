@@ -62,6 +62,7 @@ class BasicRealmFragment : InternetFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        showsDialog = true
 
         val caller = this.caller
         if (caller != null) {

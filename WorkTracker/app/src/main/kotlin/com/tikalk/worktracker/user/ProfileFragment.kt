@@ -59,7 +59,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_profile.*
-import kotlinx.android.synthetic.main.fragment_profile.passwordInput
 import timber.log.Timber
 
 /**
@@ -80,6 +79,8 @@ class ProfileFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        showsDialog = true
+
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
 

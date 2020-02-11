@@ -50,6 +50,11 @@ open class TikalFragment() : AppCompatDialogFragment() {
 
     protected val disposables = CompositeDisposable()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        showsDialog = false
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
