@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,53 +31,45 @@
  */
 package com.tikalk.worktracker.db
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
+import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Query
 import com.tikalk.worktracker.model.User
+import io.reactivex.Single
 
 /**
- * Work Tracker database.
+ * User entity DAO.
  */
-@Database(
-    entities = [
-        Project::class,
-        ProjectTask::class,
-        ProjectTaskKey::class,
-        ReportRecord::class,
-        TimeRecordEntity::class,
-        User::class
-    ],
-    version = 9,
-    exportSchema = false
-)
-abstract class TrackerDatabase : RoomDatabase() {
-    abstract fun projectDao(): ProjectDao
-    abstract fun taskDao(): ProjectTaskDao
-    abstract fun projectTaskKeyDao(): ProjectTaskKeyDao
-    abstract fun reportRecordDao(): ReportRecordDao
-    abstract fun timeRecordDao(): TimeRecordDao
-    abstract fun userDao(): UserDao
+@Dao
+interface UserDao : BaseDao<User> {
 
-    companion object {
-        @Volatile
-        private var instance: TrackerDatabase? = null
+    /**
+     * Select all users from the table.
+     *
+     * @return all users.
+     */
+    @Query("SELECT * FROM user")
+    fun queryAll(): List<User>
 
-        fun getDatabase(context: Context): TrackerDatabase {
-            if (instance == null) {
-                synchronized(TrackerDatabase::class.java) {
-                    if (instance == null) {
-                        // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
-                            .fallbackToDestructiveMigration()
-                            .build()
-                    }
-                }
-            }
-            return instance!!
-        }
-    }
+    /**
+     * Select all users from the table.
+     *
+     * @return all users.
+     */
+    @Query("SELECT * FROM user")
+    fun queryAllLive(): LiveData<List<User>>
+
+    /**
+     * Select all users from the table.
+     *
+     * @return all users.
+     */
+    @Query("SELECT * FROM user")
+    fun queryAllSingle(): Single<List<User>>
+
+    /**
+     * Delete all users.
+     */
+    @Query("DELETE FROM user")
+    fun deleteAll(): Int
 }

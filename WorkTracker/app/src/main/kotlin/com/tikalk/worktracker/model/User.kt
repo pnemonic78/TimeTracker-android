@@ -33,6 +33,9 @@ package com.tikalk.worktracker.model
 
 import android.net.Uri
 import android.os.Parcel
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.TypeConverters
 import com.tikalk.net.createUriFromParcel
 
 /**
@@ -40,33 +43,42 @@ import com.tikalk.net.createUriFromParcel
  *
  * @author Moshe Waisberg.
  */
+@Entity(tableName = "user")
+@TypeConverters(Converters::class)
 data class User(
     /**
      * Unique username.
      */
+    @ColumnInfo(name = "username")
     var username: String,
     /**
      * The e-mail address for communications.
      */
+    @ColumnInfo(name = "email")
     var email: String? = null,
     /**
      * The display name, e.g. full name.
      */
+    @ColumnInfo(name = "displayName")
     var displayName: String? = null,
     /**
      * The telephone number for communications.
      */
+    @ColumnInfo(name = "telephone")
     var telephone: String? = null,
     /**
-     * The photo URI.
+     * The photograph URI.
      */
-    var photo: Uri? = null,
+    @ColumnInfo(name = "photograph")
+    var photograph: Uri? = null,
     /**
      * The roles.
      */
+    @ColumnInfo(name = "roles")
     var roles: List<String>? = null
 ) : TikalEntity() {
 
+    @ColumnInfo(name = "uncompletedEntry")
     var isUncompletedEntry: Boolean = false
 
     constructor(parcel: Parcel) : this(
@@ -91,6 +103,7 @@ fun User.set(that: User) {
     this.email = that.email
     this.displayName = that.displayName
     this.telephone = that.telephone
-    this.photo = that.photo
+    this.photograph = that.photograph
     this.roles = that.roles
+    this.isUncompletedEntry = that.isUncompletedEntry
 }
