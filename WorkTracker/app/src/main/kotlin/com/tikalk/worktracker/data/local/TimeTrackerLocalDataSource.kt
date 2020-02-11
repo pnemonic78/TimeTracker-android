@@ -114,7 +114,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
     }
 
     override fun usersPage(): Observable<List<User>> {
-        return Observable.empty()
+        return Observable.just(listOf(preferences.user))
     }
 
     override fun reportFormPage(): Observable<ReportFormPage> {
