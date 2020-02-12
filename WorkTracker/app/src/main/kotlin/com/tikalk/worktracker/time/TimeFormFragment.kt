@@ -37,7 +37,6 @@ import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -53,18 +52,16 @@ abstract class TimeFormFragment : InternetFragment(),
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projectsData = MutableLiveData<List<Project>>()
-    val tasksData = MutableLiveData<List<ProjectTask>>()
     var projectEmpty: Project = Project.EMPTY
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         projectsData.observe(this, Observer { projects ->
-            this.projectEmpty = projects.firstOrNull { it.isEmpty() } ?: projectEmpty
+            this.projectEmpty = projects.find { it.isEmpty() } ?: projectEmpty
+            val tasks = projectEmpty.tasks
+            this.taskEmpty = tasks.find { it.isEmpty() } ?: taskEmpty
             onProjectsUpdated(projects)
-        })
-        tasksData.observe(this, Observer { tasks ->
-            this.taskEmpty = tasks.firstOrNull { it.isEmpty() } ?: taskEmpty
             onTasksUpdated(tasks)
         })
     }
@@ -127,16 +124,18 @@ abstract class TimeFormFragment : InternetFragment(),
     }
 
     protected fun applyFavorite() {
-        val projects = projectsData.value ?: return
-        val tasks = tasksData.value ?: return
-
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
-            setRecordProject(projects.firstOrNull { it.id == projectFavorite } ?: record.project)
-        }
-        val taskFavorite = preferences.getFavoriteTask()
-        if (taskFavorite != TikalEntity.ID_NONE) {
-            setRecordTask(tasks.firstOrNull { it.id == taskFavorite } ?: record.task)
+            val projects = projectsData.value
+            val project = projects?.find { it.id == projectFavorite } ?: record.project
+            setRecordProject(project)
+
+            val tasks = project.tasks
+            val taskFavorite = preferences.getFavoriteTask()
+            if (taskFavorite != TikalEntity.ID_NONE) {
+                val task = tasks.find { it.id == taskFavorite } ?: record.task
+                setRecordTask(task)
+            }
         }
     }
 

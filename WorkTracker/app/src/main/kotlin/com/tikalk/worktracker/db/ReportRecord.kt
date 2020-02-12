@@ -85,11 +85,11 @@ fun TimeRecord.toReportRecord(): ReportRecord =
 
 fun ReportRecord.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
     val value: ReportRecord = this
-    val project = projects?.firstOrNull { it.id == value.projectId }
-        ?: projects?.firstOrNull { it.name == value.projectName }
+    val project = projects?.find { it.id == value.projectId }
+        ?: projects?.find { it.name == value.projectName }
         ?: Project.EMPTY.copy().apply { id = value.projectId }
-    val task = tasks?.firstOrNull { it.id == value.taskId }
-        ?: tasks?.firstOrNull { it.name == value.taskName }
+    val task = tasks?.find { it.id == value.taskId }
+        ?: tasks?.find { it.name == value.taskName }
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
     return TimeRecord(

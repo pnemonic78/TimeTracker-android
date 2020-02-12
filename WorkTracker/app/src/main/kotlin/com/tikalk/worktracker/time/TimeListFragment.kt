@@ -209,7 +209,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun processPageMain(page: TimeListPage) {
         projectsData.value = page.projects
-        tasksData.value = page.tasks
         recordsData.value = page.records
         totalsData.value = page.totals
         setRecordValue(page.record)
@@ -217,7 +216,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun processPage(page: TimeListPage) {
         projectsData.postValue(page.projects)
-        tasksData.postValue(page.tasks)
         recordsData.postValue(page.records)
         totalsData.postValue(page.totals)
         setRecordValue(page.record)

@@ -33,15 +33,13 @@
 package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import java.util.*
 
 class TimeEditPage(record: TimeRecord,
                    projects: List<Project>,
-                   tasks: List<ProjectTask>,
                    errorMessage: String?,
                    val date: Calendar) :
-    FormPage<TimeRecord>(record, projects, tasks, errorMessage)
+    FormPage<TimeRecord>(record, projects, errorMessage)
 
 class MutableTimeEditPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {
     var date: Calendar = Calendar.getInstance()

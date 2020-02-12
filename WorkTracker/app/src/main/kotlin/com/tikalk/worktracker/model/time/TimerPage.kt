@@ -33,9 +33,7 @@
 package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 
 class TimerPage(record: TimeRecord,
-                projects: List<Project>,
-                tasks: List<ProjectTask>) :
-    FormPage<TimeRecord>(record, projects, tasks, null)
+                projects: List<Project>) :
+    FormPage<TimeRecord>(record, projects, null)

@@ -33,9 +33,8 @@
 package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 
-class ReportFormPage(filter: ReportFilter, projects: List<Project>, tasks: List<ProjectTask>, errorMessage: String?) :
-    FormPage<ReportFilter>(filter, projects, tasks, errorMessage)
+class ReportFormPage(filter: ReportFilter, projects: List<Project>, errorMessage: String?) :
+    FormPage<ReportFilter>(filter, projects, errorMessage)
 
 class MutableReportFormPage(filter: ReportFilter) : MutableFormPage<ReportFilter>(filter)

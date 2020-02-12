@@ -51,19 +51,17 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
 
     override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
         val projects = ArrayList<Project>()
-        val tasks = ArrayList<ProjectTask>()
         val errorMessage: String? = null
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+                populateProjects(projectsWithTasks, projects)
 
                 val record = loadRecord(db, recordId) ?: TimeRecord.EMPTY.copy()
 
                 return@map TimeEditPage(
                     record,
                     projects,
-                    tasks,
                     errorMessage,
                     record.start ?: Calendar.getInstance()
                 )
@@ -134,18 +132,16 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
         val projects = ArrayList<Project>()
-        val tasks = ArrayList<ProjectTask>()
         val filter = ReportFilter()
         val errorMessage: String? = null
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+                populateProjects(projectsWithTasks, projects)
 
                 return@map ReportFormPage(
                     filter,
                     projects,
-                    tasks,
                     errorMessage
                 )
             }
@@ -156,27 +152,24 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         return projectsDao.queryAllWithTasksObservable()
     }
 
-    private fun populateProjectsWithTasks(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>, tasks: MutableCollection<ProjectTask>) {
+    private fun populateProjects(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>) {
         projects.clear()
-        tasks.clear()
 
         for (projectWithTasks in projectsWithTasks) {
             val project = projectWithTasks.project
             project.tasks = projectWithTasks.tasks
             projects.add(project)
-            tasks.addAll(projectWithTasks.tasks)
         }
     }
 
     override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
         val projects = ArrayList<Project>()
-        val tasks = ArrayList<ProjectTask>()
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+                populateProjects(projectsWithTasks, projects)
 
-                val records = loadReportRecords(db, filter, projects, tasks)
+                val records = loadReportRecords(db, filter, projects)
 
                 val totals = calculateTotals(records)
 
@@ -188,7 +181,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             }
     }
 
-    private fun loadReportRecords(db: TrackerDatabase, filter: ReportFilter, projects: Collection<Project>?, tasks: Collection<ProjectTask>?): List<TimeRecord> {
+    private fun loadReportRecords(db: TrackerDatabase, filter: ReportFilter, projects: Collection<Project>?): List<TimeRecord> {
         val start = filter.startTime
         val finish = filter.finishTime
         val reportRecordsDao = db.reportRecordDao()
@@ -199,7 +192,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             val recordsDb = recordsDao.queryByDate(start, finish)
             return recordsDb.map { it.toTimeRecord() }
         }
-        return reportRecordsDb.map { it.toTimeRecord(projects, tasks) }
+        return reportRecordsDb.map { it.toTimeRecord(projects) }
     }
 
     private fun calculateTotals(records: List<TimeRecord>?): ReportTotals {
@@ -221,13 +214,12 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
         val projects = ArrayList<Project>()
-        val tasks = ArrayList<ProjectTask>()
         val record = TimeRecord.EMPTY
         val errorMessage: String? = null
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+                populateProjects(projectsWithTasks, projects)
 
                 val records = loadRecords(db, date)
                     .map { entity ->
@@ -239,7 +231,6 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                 return@map TimeListPage(
                     record,
                     projects,
-                    tasks,
                     errorMessage,
                     date,
                     records,
@@ -319,17 +310,15 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
 
     override fun timerPage(refresh: Boolean): Observable<TimerPage> {
         val projects = ArrayList<Project>()
-        val tasks = ArrayList<ProjectTask>()
         val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
 
         return loadProjectsWithTasks(db)
             .map { projectsWithTasks ->
-                populateProjectsWithTasks(projectsWithTasks, projects, tasks)
+                populateProjects(projectsWithTasks, projects)
 
                 return@map TimerPage(
                     record,
-                    projects,
-                    tasks
+                    projects
                 )
             }
     }

@@ -38,7 +38,6 @@ import com.tikalk.worktracker.model.ProjectTask
 open class FormPage<R : TimeRecord>(
     val record: R,
     val projects: List<Project>,
-    val tasks: List<ProjectTask>,
     val errorMessage: String? = null
 )
 
@@ -46,6 +45,5 @@ open class MutableFormPage<R : TimeRecord>(
     var record: R
 ) {
     var projects: List<Project> = emptyList()
-    var tasks: List<ProjectTask> = emptyList()
     var errorMessage: String? = null
 }

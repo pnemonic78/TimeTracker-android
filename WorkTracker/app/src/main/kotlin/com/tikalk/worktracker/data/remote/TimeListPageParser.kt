@@ -56,7 +56,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
     }
 
     override fun createPage(page: MutableTimeListPage): TimeListPage {
-        return TimeListPage(page.record, page.projects, page.tasks, page.errorMessage, page.date, page.records, page.totals)
+        return TimeListPage(page.record, page.projects, page.errorMessage, page.date, page.records, page.totals)
     }
 
     override fun createMutablePage(record: TimeRecord): MutableTimeListPage {

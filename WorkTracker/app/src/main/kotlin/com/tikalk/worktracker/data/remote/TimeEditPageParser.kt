@@ -53,7 +53,7 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
     }
 
     override fun createPage(page: MutableTimeEditPage): TimeEditPage {
-        return TimeEditPage(page.record, page.projects, page.tasks, page.errorMessage, page.date)
+        return TimeEditPage(page.record, page.projects, page.errorMessage, page.date)
     }
 
     override fun createMutablePage(record: TimeRecord): MutableTimeEditPage {

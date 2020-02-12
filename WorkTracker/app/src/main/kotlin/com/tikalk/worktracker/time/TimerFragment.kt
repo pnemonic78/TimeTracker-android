@@ -255,9 +255,9 @@ class TimerFragment : TimeFormFragment() {
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
 
                 val projects = projectsData.value
-                val project = projects?.firstOrNull { it.id == projectId } ?: projectEmpty
-                val tasks = tasksData.value
-                val task = tasks?.firstOrNull { it.id == taskId } ?: taskEmpty
+                val project = projects?.find { it.id == projectId } ?: projectEmpty
+                val tasks = project.tasks
+                val task = tasks.find { it.id == taskId } ?: taskEmpty
 
                 val record = TimeRecord(TikalEntity.ID_NONE, project, task)
                 if (startTime != TimeRecord.NEVER) {
@@ -277,16 +277,17 @@ class TimerFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
         Timber.i("populateForm recordStarted=$recordStarted")
-        val projects = projectsData.value ?: return
-        val tasks = tasksData.value ?: return
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             applyFavorite()
         } else if (!recordStarted.isEmpty()) {
+            val projects = projectsData.value
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            setRecordProject(projects.firstOrNull { it.id == recordStartedProjectId }
-                ?: record.project)
-            setRecordTask(tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task)
+            val project = projects?.find { it.id == recordStartedProjectId } ?: record.project
+            setRecordProject(project)
+            val tasks = project.tasks
+            val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
+            setRecordTask(task)
             record.start = recordStarted.start
         }
     }
@@ -326,7 +327,6 @@ class TimerFragment : TimeFormFragment() {
 
     private fun processPage(page: TimerPage) {
         projectsData.value = page.projects
-        tasksData.value = page.tasks
         setRecordValue(page.record)
     }
 
@@ -364,8 +364,7 @@ class TimerFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             val projects = projectsData.value
-            val tasks = tasksData.value
-            val record = recordParcel.toTimeRecord(projects, tasks)
+            val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             populateForm(record)
             bindForm(record)

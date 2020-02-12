@@ -128,19 +128,19 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun populateForm(record: TimeRecord) {
         Timber.i("populateForm record=$record")
-        val projects = projectsData.value ?: return
-        val tasks = tasksData.value ?: return
 
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    setRecordProject(projects.firstOrNull { it.id == projectId } ?: projectEmpty)
+                    val projects = projectsData.value
+                    setRecordProject(projects?.find { it.id == projectId } ?: projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
-                    setRecordTask(tasks.firstOrNull { it.id == taskId } ?: taskEmpty)
+                    val tasks = record.project.tasks
+                    setRecordTask(tasks.find { it.id == taskId } ?: taskEmpty)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -376,7 +376,6 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun processPage(page: TimeEditPage) {
         projectsData.value = page.projects
-        tasksData.value = page.tasks
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }
@@ -550,8 +549,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             val projects = projectsData.value
-            val tasks = tasksData.value
-            val record = recordParcel.toTimeRecord(projects, tasks)
+            val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             bindForm(record)
         }

@@ -51,7 +51,8 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
 
     protected open fun savePage(db: TrackerDatabase, page: P) {
         saveProjects(db, page.projects)
-        saveTasks(db, page.tasks)
+        val tasks = page.projects.flatMap { project -> project.tasks }
+        saveTasks(db, tasks)
         saveProjectTaskKeys(db, page.projects)
     }
 

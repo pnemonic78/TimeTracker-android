@@ -77,7 +77,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
                 val value = option.value()
                 if (value.isNotEmpty()) {
                     val id = value.toLong()
-                    return projects.find { id == it.id }!!
+                    return projects.first { id == it.id }
                 }
                 break
             }
@@ -91,7 +91,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
                 val value = option.value()
                 if (value.isNotEmpty()) {
                     val id = value.toLong()
-                    return tasks.find { id == it.id }!!
+                    return tasks.first { id == it.id }
                 }
                 break
             }
@@ -202,7 +202,6 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         populateTaskIds(doc, projects, tasks)
 
         page.projects = projects
-        page.tasks = tasks
         page.record.project = findSelectedProject(inputProjects, projects)
         page.record.task = findSelectedTask(inputTasks, tasks)
     }
@@ -228,7 +227,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
     }
 
     protected open fun createPage(page: MP): P {
-        return FormPage(page.record, page.projects, page.tasks, page.errorMessage) as P
+        return FormPage(page.record, page.projects, page.errorMessage) as P
     }
 
     protected open fun createMutablePage(record: R): MP {

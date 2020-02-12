@@ -56,7 +56,7 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
     }
 
     override fun createPage(page: MutableReportFormPage): ReportFormPage {
-        return ReportFormPage(page.record, page.projects, page.tasks, page.errorMessage)
+        return ReportFormPage(page.record, page.projects, page.errorMessage)
     }
 
     override fun createMutablePage(record: ReportFilter): MutableReportFormPage {
