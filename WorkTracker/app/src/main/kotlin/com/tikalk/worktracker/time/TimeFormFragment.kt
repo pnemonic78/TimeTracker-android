@@ -52,17 +52,19 @@ abstract class TimeFormFragment : InternetFragment(),
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projectsData = MutableLiveData<List<Project>>()
-    var projectEmpty: Project = Project.EMPTY
+    var projectEmpty: Project = Project.EMPTY.copy()
     var taskEmpty: ProjectTask = ProjectTask.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         projectsData.observe(this, Observer { projects ->
             this.projectEmpty = projects.find { it.isEmpty() } ?: projectEmpty
+            projectEmpty.name = getEmptyProjectName()
             val tasks = projectEmpty.tasks
             this.taskEmpty = tasks.find { it.isEmpty() } ?: taskEmpty
+            taskEmpty.name = getEmptyTaskName()
+
             onProjectsUpdated(projects)
-            onTasksUpdated(tasks)
         })
     }
 
@@ -118,11 +120,6 @@ abstract class TimeFormFragment : InternetFragment(),
         bindForm(record)
     }
 
-    protected open fun onTasksUpdated(tasks: List<ProjectTask>) {
-        populateForm(record)
-        bindForm(record)
-    }
-
     protected fun applyFavorite() {
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
@@ -138,6 +135,10 @@ abstract class TimeFormFragment : InternetFragment(),
             }
         }
     }
+
+    open protected fun getEmptyProjectName() = requireContext().getString(R.string.project_name_select)
+
+    open protected fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
 
     companion object {
         const val STATE_RECORD = "record"

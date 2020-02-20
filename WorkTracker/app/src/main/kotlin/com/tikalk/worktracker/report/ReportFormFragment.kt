@@ -459,6 +459,10 @@ class ReportFormFragment : TimeFormFragment() {
         bindProjects(requireContext(), filter, projects)
     }
 
+    override fun getEmptyProjectName() = requireContext().getString(R.string.project_name_all)
+
+    override fun getEmptyTaskName() = requireContext().getString(R.string.task_name_all)
+
     companion object {
         private const val STATE_FILTER = BuildConfig.APPLICATION_ID + ".FILTER"
     }

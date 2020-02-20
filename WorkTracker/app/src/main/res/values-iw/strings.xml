@@ -80,6 +80,7 @@
     <string name="tasks">משימות</string>
     <string name="name_label">שם</string>
     <string name="description_label">תיאור</string>
+    <string name="item_select">(בחר)</string>
 
     <!-- Reports -->
     <string name="reports">דיווחים</string>
@@ -104,6 +105,7 @@
     <string name="action_export_csv">ייצא CSV</string>
     <string name="action_export_html">ייצא HTML</string>
     <string name="action_export_xml">ייצא XML</string>
+    <string name="item_all">(הכל)</string>
 
     <!-- Errors -->
     <string name="error">שגיה</string>
