@@ -15,7 +15,7 @@ project.ext {
     junitVersion = '4.12'
     okhttpVersion = '3.12.3'  // '3.13.0' requires API 21+
     retrofit2Version = '2.6.0'
-    roomVersion = '2.2.3'
+    roomVersion = '2.2.4'
     rxandroid2Version = '2.1.1'
     rxkotlin2Version = '2.3.0'
     timberVersion = '4.7.1'
