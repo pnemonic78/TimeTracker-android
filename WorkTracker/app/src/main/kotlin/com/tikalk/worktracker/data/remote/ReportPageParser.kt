@@ -46,7 +46,7 @@ import org.jsoup.nodes.Element
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ReportPageParser {
+class ReportPageParser(private val filter: ReportFilter) {
 
     fun parse(html: String, db: TrackerDatabase?): ReportPage {
         val doc: Document = Jsoup.parse(html)
@@ -54,7 +54,6 @@ class ReportPageParser {
     }
 
     private fun parse(doc: Document, db: TrackerDatabase?): ReportPage {
-        val filter = createFilter()
         val page = createMutablePage(filter)
 
         if (db != null) {
@@ -67,10 +66,6 @@ class ReportPageParser {
         populatePage(doc, page)
 
         return createPage(page)
-    }
-
-    private fun createFilter(): ReportFilter {
-        return ReportFilter()
     }
 
     private fun createPage(page: MutableReportPage): ReportPage {

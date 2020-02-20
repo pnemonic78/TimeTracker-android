@@ -177,7 +177,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
             .map { response ->
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    val page = parseReportPage(html)
+                    val page = parseReportPage(html, filter)
                     savePage(page)
                     return@map page
                 }
@@ -186,8 +186,8 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
             .toObservable()
     }
 
-    private fun parseReportPage(html: String): ReportPage {
-        return ReportPageParser().parse(html, db)
+    private fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
+        return ReportPageParser(filter).parse(html, db)
     }
 
     private fun savePage(page: ReportPage) {
