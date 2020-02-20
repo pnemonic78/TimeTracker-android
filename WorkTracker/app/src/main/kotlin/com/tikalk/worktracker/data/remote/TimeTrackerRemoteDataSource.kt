@@ -32,18 +32,21 @@
 
 package com.tikalk.worktracker.data.remote
 
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.data.TimeTrackerDataSource
-import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Observable
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import retrofit2.Response
+import java.util.*
 
-class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : TimeTrackerDataSource {
+class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
+                                  private val db: TrackerDatabase,
+                                  private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
 
     private fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
@@ -68,7 +71,32 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
         return false
     }
 
-    override fun projectsPage(): Observable<List<Project>> {
+    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
+        if (recordId == TikalEntity.ID_NONE) {
+            return Observable.empty()
+        }
+        return service.fetchTime(recordId)
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseEditPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseEditPage(html: String): TimeEditPage {
+        return TimeEditPageParser().parse(html)
+    }
+
+    private fun savePage(page: TimeEditPage) {
+        return TimeEditPageSaver(db).save(page)
+    }
+
+    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
         return service.fetchProjects()
             .map { response ->
                 if (isValidResponse(response)) {
@@ -81,61 +109,137 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService) : Tim
     }
 
     private fun parseProjectsPage(html: String): List<Project> {
-        val doc: Document = Jsoup.parse(html)
-        val projects = ArrayList<Project>()
+        return ProjectsPageParser().parse(html)
+    }
 
-        // The first row of the table is the header
-        val table = findProjectsTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            // First row is the header, so drop it.
-            val rows = table.getElementsByTag("tr").drop(1)
-            for (tr in rows) {
-                val project = parseProject(tr)
-                if (project != null) {
-                    projects.add(project)
+    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
+        return service.fetchProjectTasks()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    return@map parseProjectTasksPage(html)
                 }
+                throw AuthenticationException("authentication required")
             }
-        }
-
-        return projects
+            .toObservable()
     }
 
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
-     */
-    private fun findProjectsTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Name") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Description") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
+    private fun parseProjectTasksPage(html: String): List<ProjectTask> {
+        return ProjectTasksPageParser().parse(html)
     }
 
-    private fun parseProject(row: Element): Project? {
-        val cols = row.getElementsByTag("td")
+    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
+        return service.fetchUsers()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseUsersPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
 
-        val tdName = cols[0]
-        val name = tdName.ownText()
+    private fun parseUsersPage(html: String): UsersPage {
+        return UsersPageParser().parse(html)
+    }
 
-        val tdDescription = cols[1]
-        val description = tdDescription.ownText()
+    private fun savePage(page: UsersPage) {
+        UserPageSaver(db).save(page)
+    }
 
-        return Project(name, description)
+    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
+        return service.fetchReports()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseReportFormPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseReportFormPage(html: String): ReportFormPage {
+        return ReportFormPageParser().parse(html)
+    }
+
+    private fun savePage(page: ReportFormPage) {
+        ReportFormPageSaver(db).save(page)
+    }
+
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
+        return service.generateReport(filter.toFields())
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseReportPage(html, filter)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
+        return ReportPageParser(filter).parse(html, db)
+    }
+
+    private fun savePage(page: ReportPage) {
+        ReportPageSaver(db).save(page)
+    }
+
+    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
+        val dateFormatted = formatSystemDate(date)
+        return service.fetchTimes(dateFormatted)
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseTimeListPage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseTimeListPage(html: String): TimeListPage {
+        return TimeListPageParser().parse(html)
+    }
+
+    private fun savePage(page: TimeListPage) {
+        TimeListPageSaver(db).save(page)
+    }
+
+    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
+        return service.fetchProfile()
+            .map { response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    val page = parseProfilePage(html)
+                    savePage(page)
+                    return@map page
+                }
+                throw AuthenticationException("authentication required")
+            }
+            .toObservable()
+    }
+
+    private fun parseProfilePage(html: String): ProfilePage {
+        return ProfilePageParser().parse(html)
+    }
+
+    private fun savePage(page: ProfilePage) {
+        ProfilePageSaver(preferences).save(page)
+    }
+
+    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
+        return Observable.empty()
     }
 }

@@ -91,19 +91,19 @@ val retrofitModule = module {
 }
 
 val dataModule = module {
-    fun provideLocalDataSource(db: TrackerDatabase): TimeTrackerLocalDataSource {
-        return TimeTrackerLocalDataSource(db)
+    fun provideLocalDataSource(db: TrackerDatabase, preferences: TimeTrackerPrefs): TimeTrackerLocalDataSource {
+        return TimeTrackerLocalDataSource(db, preferences)
     }
 
-    fun provideRemoteDataSource(service: TimeTrackerService): TimeTrackerRemoteDataSource {
-        return TimeTrackerRemoteDataSource(service)
+    fun provideRemoteDataSource(service: TimeTrackerService, db: TrackerDatabase, preferences: TimeTrackerPrefs): TimeTrackerRemoteDataSource {
+        return TimeTrackerRemoteDataSource(service, db, preferences)
     }
 
     fun provideRepository(local: TimeTrackerLocalDataSource, remote: TimeTrackerRemoteDataSource): TimeTrackerRepository {
         return TimeTrackerRepository(local, remote)
     }
 
-    single { provideLocalDataSource(get()) }
-    single { provideRemoteDataSource(get()) }
+    single { provideLocalDataSource(get(), get()) }
+    single { provideRemoteDataSource(get(), get(), get()) }
     single { provideRepository(get(), get()) }
 }

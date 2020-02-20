@@ -103,6 +103,9 @@
     <string name="menu_tasks" translatable="false">@string/tasks</string>
     <string name="projects_title" translatable="false">@string/projects</string>
     <string name="tasks_title" translatable="false">@string/tasks</string>
+    <string name="item_select">(Select)</string>
+    <string name="project_name_select" translatable="false">@string/item_select</string>
+    <string name="task_name_select" translatable="false">@string/item_select</string>
 
     <!-- Reports -->
     <string name="reports">Reports</string>
@@ -137,6 +140,9 @@
     <string name="duration_header" translatable="false">@string/duration_label</string>
     <string name="note_header" translatable="false">@string/note_hint</string>
     <string name="cost_header" translatable="false">@string/cost</string>
+    <string name="item_all">(All)</string>
+    <string name="project_name_all" translatable="false">@string/item_all</string>
+    <string name="task_name_all" translatable="false">@string/item_all</string>
 
     <!-- Errors -->
     <string name="error">Error</string>

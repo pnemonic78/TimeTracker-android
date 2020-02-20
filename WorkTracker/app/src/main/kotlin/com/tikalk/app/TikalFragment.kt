@@ -50,6 +50,11 @@ open class TikalFragment() : AppCompatDialogFragment() {
 
     protected val disposables = CompositeDisposable()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        showsDialog = false
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
@@ -89,7 +94,7 @@ fun DialogFragment.isShowing(): Boolean {
 }
 
 fun <F : Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
-    return fragments.firstOrNull { clazz.isAssignableFrom(it.javaClass) } as F?
+    return fragments.find { clazz.isAssignableFrom(it.javaClass) } as F?
 }
 
 fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {

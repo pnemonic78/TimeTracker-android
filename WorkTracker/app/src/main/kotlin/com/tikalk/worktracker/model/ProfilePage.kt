@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,24 +30,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.data
+package com.tikalk.worktracker.model
 
-import com.tikalk.worktracker.model.ProfilePage
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.UsersPage
-import com.tikalk.worktracker.model.time.*
-import io.reactivex.Observable
-import java.util.*
+import com.tikalk.worktracker.auth.model.UserCredentials
 
-interface TimeTrackerDataSource {
-    fun editPage(recordId: Long, refresh: Boolean = true): Observable<TimeEditPage>
-    fun profilePage(refresh: Boolean = true): Observable<ProfilePage>
-    fun projectsPage(refresh: Boolean = true): Observable<List<Project>>
-    fun reportFormPage(refresh: Boolean = true): Observable<ReportFormPage>
-    fun reportPage(filter: ReportFilter, refresh: Boolean = true): Observable<ReportPage>
-    fun tasksPage(refresh: Boolean = true): Observable<List<ProjectTask>>
-    fun timeListPage(date: Calendar, refresh: Boolean = true): Observable<TimeListPage>
-    fun timerPage(refresh: Boolean = true): Observable<TimerPage>
-    fun usersPage(refresh: Boolean = true): Observable<UsersPage>
+class ProfilePage(
+    val user: User,
+    val userCredentials: UserCredentials,
+    val nameInputEditable: Boolean,
+    val emailInputEditable: Boolean,
+    val loginInputEditable: Boolean,
+    val passwordConfirm: String? = null,
+    val errorMessage: String? = null
+)
+
+class MutableProfilePage() {
+    var user: User = User.EMPTY.copy()
+    var userCredentials: UserCredentials = UserCredentials.EMPTY.copy()
+    var nameInputEditable: Boolean = false
+    var emailInputEditable: Boolean = false
+    var loginInputEditable: Boolean = false
+    var passwordConfirm: String? = null
+    var errorMessage: String? = null
 }

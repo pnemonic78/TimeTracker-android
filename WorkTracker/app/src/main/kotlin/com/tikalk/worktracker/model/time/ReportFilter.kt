@@ -225,6 +225,22 @@ class ReportFilter : TimeRecord, Parcelable {
         this.finish?.setToEndOfDay()
     }
 
+    override fun toString(): String {
+        return "{project: $project, task: $task, start: $startTime, finish: $finishTime, period: ${period.name}, show: ${toShowString()}, status: $status}"
+    }
+
+    private fun toShowString(): CharSequence {
+        val s = StringBuffer()
+        if (showProjectField) s.append('P')
+        if (showTaskField) s.append('T')
+        if (showStartField) s.append('S')
+        if (showFinishField) s.append('F')
+        if (showDurationField) s.append('D')
+        if (showNoteField) s.append('N')
+        if (showCostField) s.append('C')
+        return s
+    }
+
     companion object {
 
         @JvmField

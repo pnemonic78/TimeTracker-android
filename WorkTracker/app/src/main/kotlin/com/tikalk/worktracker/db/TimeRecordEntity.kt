@@ -147,9 +147,10 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
 
 fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
     val value: TimeRecordEntity = this
-    val project = projects?.firstOrNull { it.id == value.projectId }
+    val project = projects?.find { it.id == value.projectId }
         ?: Project.EMPTY.copy().apply { id = value.projectId }
-    val task = tasks?.firstOrNull { it.id == value.taskId }
+    val projectTasks = project.tasks
+    val task = (tasks ?: projectTasks).find { it.id == value.taskId }
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
     if ((projects == null) and (project.id != ID_NONE) and project.name.isEmpty()) {

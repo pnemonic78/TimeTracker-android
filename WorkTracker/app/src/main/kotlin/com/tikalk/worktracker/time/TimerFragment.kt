@@ -43,7 +43,6 @@ import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
-import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
@@ -52,17 +51,15 @@ import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimerPage
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_timer.*
-import org.jsoup.nodes.Document
 import timber.log.Timber
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 class TimerFragment : TimeFormFragment() {
@@ -138,6 +135,7 @@ class TimerFragment : TimeFormFragment() {
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
         val projectItems = projects?.toTypedArray() ?: emptyArray()
+        if (projectInput == null) return
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
@@ -206,6 +204,7 @@ class TimerFragment : TimeFormFragment() {
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)
+        if (taskInput == null) return
         taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         taskInput.setSelection(findTask(options, record.task))
     }
@@ -256,9 +255,9 @@ class TimerFragment : TimeFormFragment() {
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
 
                 val projects = projectsData.value
-                val project = projects?.firstOrNull { it.id == projectId } ?: projectEmpty
-                val tasks = tasksData.value
-                val task = tasks?.firstOrNull { it.id == taskId } ?: taskEmpty
+                val project = projects?.find { it.id == projectId } ?: projectEmpty
+                val tasks = project.tasks
+                val task = tasks.find { it.id == taskId } ?: taskEmpty
 
                 val record = TimeRecord(TikalEntity.ID_NONE, project, task)
                 if (startTime != TimeRecord.NEVER) {
@@ -274,25 +273,21 @@ class TimerFragment : TimeFormFragment() {
         return null
     }
 
-    override fun populateForm(date: Calendar, doc: Document) {
-        super.populateForm(date, doc)
-        runOnUiThread { bindForm(record) }
-    }
-
     override fun populateForm(record: TimeRecord) {
         Timber.i("populateForm record=$record")
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
         Timber.i("populateForm recordStarted=$recordStarted")
-        val projects = projectsData.value ?: return
-        val tasks = tasksData.value ?: return
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             applyFavorite()
         } else if (!recordStarted.isEmpty()) {
+            val projects = projectsData.value
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            setRecordProject(projects.firstOrNull { it.id == recordStartedProjectId }
-                ?: record.project)
-            setRecordTask(tasks.firstOrNull { it.id == recordStartedTaskId } ?: record.task)
+            val project = projects?.find { it.id == recordStartedProjectId } ?: record.project
+            setRecordProject(project)
+            val tasks = project.tasks
+            val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
+            setRecordTask(task)
             record.start = recordStarted.start
         }
     }
@@ -309,23 +304,30 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            requireFragmentManager().putFragment(args, TimeEditFragment.EXTRA_CALLER, caller
-                ?: this)
+            parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
 
     fun run() {
-        Timber.i("run")
-        loadForm()
+        Timber.i("run first=$firstRun")
+        dataSource.timerPage(firstRun)
             .subscribeOn(Schedulers.io())
-            .subscribe({
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ page ->
+                processPage(page)
                 populateAndBind()
-                runOnUiThread { handleArguments() }
+                handleArguments()
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
+                handleError(err)
             })
             .addTo(disposables)
+    }
+
+    private fun processPage(page: TimerPage) {
+        projectsData.value = page.projects
+        setRecordValue(page.record)
     }
 
     private fun handleArguments() {
@@ -362,8 +364,7 @@ class TimerFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             val projects = projectsData.value
-            val tasks = tasksData.value
-            val record = recordParcel.toTimeRecord(projects, tasks)
+            val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             populateForm(record)
             bindForm(record)

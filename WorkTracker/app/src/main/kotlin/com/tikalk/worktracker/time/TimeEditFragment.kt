@@ -46,17 +46,14 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
-import com.tikalk.html.selectByName
-import com.tikalk.html.value
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
-import com.tikalk.worktracker.model.time.TaskRecordStatus
+import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
@@ -65,9 +62,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.time_form.*
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.FormElement
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
@@ -132,52 +126,21 @@ class TimeEditFragment : TimeFormFragment() {
         finishInput.setOnClickListener { pickFinishTime() }
     }
 
-    /** Populate the record and then bind the form. */
-    private fun populateForm(date: Calendar, html: String, id: Long) {
-        populateForm(date, html)
-
-        record.id = id
-        record.status = if (id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
-
-        populateAndBind()
-    }
-
-    override fun populateForm(date: Calendar, doc: Document) {
-        super.populateForm(date, doc)
-        errorMessage = findError(doc)?.trim() ?: ""
-    }
-
-    override fun populateForm(date: Calendar, doc: Document, form: FormElement, inputProjects: Element, inputTasks: Element) {
-        super.populateForm(date, doc, form, inputProjects, inputTasks)
-
-        val inputStart = form.selectByName("start") ?: return
-        val startValue = inputStart.value()
-        record.start = parseSystemTime(date, startValue)
-
-        val inputFinish = form.selectByName("finish") ?: return
-        val finishValue = inputFinish.value()
-        record.finish = parseSystemTime(date, finishValue)
-
-        val inputNote = form.selectByName("note")
-        val noteValue = inputNote?.value() ?: ""
-        record.note = noteValue
-    }
-
     override fun populateForm(record: TimeRecord) {
         Timber.i("populateForm record=$record")
-        val projects = projectsData.value ?: return
-        val tasks = tasksData.value ?: return
 
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    setRecordProject(projects.firstOrNull { it.id == projectId } ?: projectEmpty)
+                    val projects = projectsData.value
+                    setRecordProject(projects?.find { it.id == projectId } ?: projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
-                    setRecordTask(tasks.firstOrNull { it.id == taskId } ?: taskEmpty)
+                    val tasks = record.project.tasks
+                    setRecordTask(tasks.find { it.id == taskId } ?: taskEmpty)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -242,6 +205,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
+        if (projectInput == null) return
         val projectItems = projects?.toTypedArray() ?: emptyArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
@@ -362,6 +326,7 @@ class TimeEditFragment : TimeFormFragment() {
         val options = ArrayList<ProjectTask>(filtered.size + 1)
         options.add(taskEmpty)
         options.addAll(filtered)
+        if (taskInput == null) return
         taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
         taskInput.setSelection(findTask(options, record.task))
     }
@@ -378,7 +343,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     fun run() {
-        Timber.i("run")
+        Timber.i("run first=$firstRun")
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {
@@ -393,16 +358,26 @@ class TimeEditFragment : TimeFormFragment() {
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
-        loadForm(recordId)
+        dataSource.editPage(recordId, firstRun)
             .subscribeOn(Schedulers.io())
-            .subscribe({
+            .doOnSubscribe { showProgressMain(true) }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ page ->
+                processPage(page)
                 populateAndBind()
-                maybeFetchPage(date, recordId)
+                showProgress(false)
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 showProgress(false)
+                handleError(err)
             })
             .addTo(disposables)
+    }
+
+    private fun processPage(page: TimeEditPage) {
+        projectsData.value = page.projects
+        errorMessage = page.errorMessage ?: ""
+        setRecordValue(page.record)
     }
 
     override fun onStart() {
@@ -420,65 +395,6 @@ class TimeEditFragment : TimeFormFragment() {
         activity?.finish()
     }
 
-    private fun fetchPage(date: Calendar, id: Long) {
-        val dateFormatted = formatSystemDate(date)
-        Timber.i("fetchPage $dateFormatted id=$id")
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgressMain(true)
-
-        // Fetch from remote server.
-        val fetcher: Single<Response<String>> = if (id == TikalEntity.ID_NONE) {
-            service.fetchTimes(dateFormatted)
-        } else {
-            service.fetchTimes(id)
-        }
-        fetcher
-            .subscribeOn(Schedulers.io())
-            .subscribe({ response ->
-                this.date = date
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(date, id, html)
-                    showProgressMain(false)
-                } else {
-                    authenticateMain()
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                handleErrorMain(err)
-                showProgressMain(false)
-            })
-            .addTo(disposables)
-    }
-
-    private fun maybeFetchPage(date: Calendar, id: Long) {
-        if (projectsData.value.isNullOrEmpty() or tasksData.value.isNullOrEmpty() or (id != record.id)) {
-            fetchPage(date, id)
-        }
-    }
-
-    private fun processPage(date: Calendar, id: Long, html: String) {
-        populateForm(date, html, id)
-    }
-
-    private fun loadForm(recordId: Long = TikalEntity.ID_NONE): Single<Unit> {
-        Timber.i("loadForm recordId=$recordId")
-        return Single.fromCallable {
-            loadFormFromDb(db)
-            loadRecord(db, recordId)
-        }
-    }
-
-    private fun loadRecord(db: TrackerDatabase, recordId: Long) {
-        if (recordId != TikalEntity.ID_NONE) {
-            val recordsDao = db.timeRecordDao()
-            val recordEntity = recordsDao.queryById(recordId)
-            if (recordEntity != null) {
-                setRecordValue(recordEntity.toTimeRecord())
-            }
-        }
-    }
-
     private fun saveRecord(record: TimeRecord) {
         val recordDao = db.timeRecordDao()
         if (record.id == TikalEntity.ID_NONE) {
@@ -492,7 +408,7 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_timeEdit_to_login, args)
         }
@@ -633,8 +549,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         if (recordParcel != null) {
             val projects = projectsData.value
-            val tasks = tasksData.value
-            val record = recordParcel.toTimeRecord(projects, tasks)
+            val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             bindForm(record)
         }

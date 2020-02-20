@@ -41,20 +41,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetFragment
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_users.*
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import timber.log.Timber
 
 class UsersFragment : InternetFragment(),
@@ -86,146 +80,33 @@ class UsersFragment : InternetFragment(),
 
     @MainThread
     fun run() {
-        Timber.i("run")
-        showProgress(true)
-        Single.fromCallable { loadUsers(db) }
+        Timber.i("run first=$firstRun")
+        dataSource.usersPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                fetchPage()
+            .subscribe({ page ->
+                usersData.value = page.users
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
-            })
-            .addTo(disposables)
-    }
-
-    private fun loadUsers(db: TrackerDatabase) {
-        //TODO implement user table!
-        //val usersDao = db.userDao()
-        //val usersDb = usersDao.queryAll()
-        //val users = usersDb
-        //    .filter { it.id != TikalEntity.ID_NONE }
-        //    .sortedBy { it.displayName }
-        val users = emptyList<User>()
-        usersData.postValue(users)
-    }
-
-    private fun fetchPage() {
-        Timber.i("fetchPage")
-
-        // Fetch from remote server.
-        service.fetchUsers()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { showProgress(true) }
-            .doAfterTerminate { showProgress(false) }
-            .subscribe({ response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html)
-                } else {
-                    authenticate(true)
-                }
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
                 handleError(err)
             })
             .addTo(disposables)
-    }
-
-    override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
-            val args = Bundle()
-            requireFragmentManager().putFragment(args, LoginFragment.EXTRA_CALLER, this)
-            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            findNavController().navigate(R.id.action_users_to_login, args)
-        }
-    }
-
-    private fun processPage(html: String) {
-        populateList(html)
-    }
-
-    private fun populateList(html: String) {
-        val doc: Document = Jsoup.parse(html)
-        val users = ArrayList<User>()
-
-        // The first row of the table is the header
-        val table = findUsersTable(doc)
-        if (table != null) {
-            // loop through all the rows and parse each record
-            // First row is the header, so drop it.
-            val rows = table.getElementsByTag("tr").drop(1)
-            for (tr in rows) {
-                val user = parseUser(tr)
-                if (user != null) {
-                    users.add(user)
-                }
-            }
-        }
-
-        usersData.value = users
-    }
-
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Name' and 'Description'
-     */
-    private fun findUsersTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Name") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Login") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Role") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseUser(row: Element): User? {
-        val cols = row.getElementsByTag("td")
-
-        val tdName = cols[0]
-        val name = tdName.ownText()
-        val spans = tdName.select("span")
-        var isUncompletedEntry = false
-        for (span in spans) {
-            val classAttribute = span.attr("class")
-            isUncompletedEntry = isUncompletedEntry or (classAttribute == "uncompleted-entry active")
-        }
-
-        val tdLogin = cols[1]
-        val username = tdLogin.ownText()
-
-        val tdRole = cols[2]
-        val roles = tdRole.ownText()
-
-        val user = User(username, username, name, null, null, roles.split(","))
-        user.isUncompletedEntry = isUncompletedEntry
-        return user
     }
 
     private fun bindList(users: List<User>) {
         listAdapter.submitList(users)
         if (users === this.usersData.value) {
             listAdapter.notifyDataSetChanged()
+        }
+    }
+
+    override fun authenticate(submit: Boolean) {
+        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
+        if (!isNavDestination(R.id.loginFragment)) {
+            val args = Bundle()
+            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
+            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+            findNavController().navigate(R.id.action_users_to_login, args)
         }
     }
 
