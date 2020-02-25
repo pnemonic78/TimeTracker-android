@@ -86,9 +86,9 @@ abstract class TrackerFragment : TikalFragment {
         }
     }
 
-    protected abstract fun authenticate(submit: Boolean = false)
+    protected abstract fun authenticate(submit: Boolean = true)
 
-    protected fun authenticateMain(submit: Boolean = false) {
+    protected fun authenticateMain(submit: Boolean = true) {
         Timber.i("authenticateMain submit=$submit")
         runOnUiThread {
             authenticate(submit)

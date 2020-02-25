@@ -51,21 +51,19 @@ fun HttpCookie.format(): String {
     val sb = StringBuilder()
 
     sb.append(name).append("=\"").append(value).append('"')
-    if (path != null)
+    if (path != null) {
         sb.append("; path=\"").append(path).append('"')
-    if (domain != null)
+    }
+    if (domain != null) {
         sb.append("; domain=\"").append(domain).append('"')
-    if (portlist != null)
+    }
+    if (portlist != null) {
         sb.append("; port=\"").append(portlist).append('"')
-    when {
-        hasExpired() -> sb.append("; max-age=\"").append(0).append('"')
-        maxAge > 0 -> {
-            val whenCreated = System.currentTimeMillis()
-            val date = whenCreated + (maxAge * DateUtils.SECOND_IN_MILLIS)
-            val expires = HttpDate.format(Date(date))
-            sb.append("; expires=\"").append(expires).append('"')
-        }
-        else -> sb.append("; max-age=\"").append(maxAge).append('"')
+    }
+    if (hasExpired()) {
+        sb.append("; max-age=\"").append(0).append('"')
+    } else {
+        sb.append("; max-age=\"").append(maxAge).append('"')
     }
 
     return sb.toString()
