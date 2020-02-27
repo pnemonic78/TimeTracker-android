@@ -210,7 +210,9 @@ class TimeListFragment : TimeFormFragment(),
     private fun processPageMain(page: TimeListPage) {
         projectsData.value = page.projects
         recordsData.value = page.records
-        totalsData.value = page.totals
+        if ((totalsData.value == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
+            totalsData.value = page.totals
+        }
         setRecordValue(page.record)
     }
 
