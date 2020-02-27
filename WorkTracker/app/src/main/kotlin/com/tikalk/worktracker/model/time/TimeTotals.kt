@@ -34,6 +34,8 @@ package com.tikalk.worktracker.model.time
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
+import androidx.room.Ignore
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 
 /**
@@ -52,6 +54,10 @@ data class TimeTotals(
     @ColumnInfo(name = "remaining")
     var remaining: Long = UNKNOWN
 ) : Parcelable {
+
+    @IgnoredOnParcel
+    @Ignore
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
 
     fun clear(unknown: Boolean = true) {
         if (unknown) {

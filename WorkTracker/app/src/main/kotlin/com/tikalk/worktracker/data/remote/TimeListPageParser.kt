@@ -217,6 +217,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
             }
         }
 
+        totals.status = TaskRecordStatus.CURRENT
         page.totals = totals
     }
 
