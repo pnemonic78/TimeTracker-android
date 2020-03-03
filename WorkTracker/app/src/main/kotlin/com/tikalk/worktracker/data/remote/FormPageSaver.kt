@@ -133,6 +133,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
 
         val tasksToDelete = tasksDbById.values
         if (tasksToDelete.isNotEmpty()) {
+            deleteProjectTaskDependencies(db, tasksToDelete)
             tasksDao.delete(tasksToDelete)
         }
 
@@ -144,6 +145,18 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         }
 
         tasksDao.update(tasksToUpdate)
+    }
+
+    private fun deleteProjectTaskDependencies(db: TrackerDatabase, tasksToDelete: Collection<ProjectTask>) {
+        val taskIds = tasksToDelete.map { it.id }
+
+        val projectTasksDao = db.projectTaskKeyDao()
+        val recordsDao = db.timeRecordDao()
+        val reportsDao = db.reportRecordDao()
+
+        projectTasksDao.deleteTasks(taskIds)
+        recordsDao.deleteTasks(taskIds)
+        reportsDao.deleteTasks(taskIds)
     }
 
     protected open fun saveProjectTaskKeys(db: TrackerDatabase, projects: List<Project>) {

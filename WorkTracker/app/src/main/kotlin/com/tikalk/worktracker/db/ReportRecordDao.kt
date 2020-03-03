@@ -106,4 +106,10 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      */
     @Query("DELETE FROM report WHERE project_id IN (:projectIds)")
     fun deleteProjects(projectIds: Collection<Long>): Int
+
+    /**
+     * Delete all records for tasks.
+     */
+    @Query("DELETE FROM report WHERE task_id IN (:taskIds)")
+    fun deleteTasks(taskIds: Collection<Long>): Int
 }
