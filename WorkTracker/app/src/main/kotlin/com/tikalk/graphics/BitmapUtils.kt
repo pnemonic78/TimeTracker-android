@@ -38,7 +38,6 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
-import kotlinx.android.synthetic.main.activity_time_list.view.*
 
 fun drawableToBitmap(drawable: Drawable): Bitmap {
     if (drawable is BitmapDrawable) {
@@ -54,6 +53,7 @@ fun drawableToBitmap(drawable: Drawable): Bitmap {
 }
 
 fun drawableToBitmap(res: Resources, id: Int): Bitmap {
+    @Suppress("DEPRECATION")
     val drawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         res.getDrawable(id, null)
     else

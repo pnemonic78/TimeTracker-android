@@ -228,7 +228,7 @@ fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): 
     return formatter.format(format, hours, minutes)
 }
 
-fun formatCurrency(context: Context, formatter: Formatter, amount: Double): Formatter {
+fun formatCurrency(formatter: Formatter, amount: Double): Formatter {
     return formatter.format("%.2f", amount)
 }
 

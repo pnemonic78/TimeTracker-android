@@ -241,7 +241,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                             if (showCostField) {
                                 td("cellRightAlignedSubtotal") {
                                     timeBuffer.setLength(0)
-                                    +formatCurrency(context, timeFormatter, totals.cost).toString()
+                                    +formatCurrency(timeFormatter, totals.cost).toString()
                                 }
                             }
                         }

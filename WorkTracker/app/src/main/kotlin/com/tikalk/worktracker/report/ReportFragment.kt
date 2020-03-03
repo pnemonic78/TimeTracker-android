@@ -127,7 +127,7 @@ class ReportFragment : InternetFragment(),
         if (filter?.showCostField == true) {
             timeBuffer.setLength(0)
             costTotalLabel.visibility = View.VISIBLE
-            costTotal.text = formatCurrency(context, timeFormatter, totals.cost).toString()
+            costTotal.text = formatCurrency(timeFormatter, totals.cost).toString()
         } else {
             costTotalLabel.visibility = View.INVISIBLE
             costTotal.text = null
