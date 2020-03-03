@@ -135,4 +135,10 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      */
     @Query("DELETE FROM record")
     fun deleteAll(): Int
+
+    /**
+     * Delete all records for projects.
+     */
+    @Query("DELETE FROM record WHERE project_id IN (:projectIds)")
+    fun deleteProjects(projectIds: Collection<Long>): Int
 }

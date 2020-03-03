@@ -69,4 +69,10 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      */
     @Query("DELETE FROM project_task_key")
     fun deleteAll(): Int
+
+    /**
+     * Delete all keys for projects.
+     */
+    @Query("DELETE FROM project_task_key WHERE project_id IN (:projectIds)")
+    fun deleteProjects(projectIds: Collection<Long>): Int
 }
