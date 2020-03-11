@@ -71,7 +71,7 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
                 //recordDb = recordsDbById[recordId]!!
                 //record.dbId = recordDb.dbId
                 recordsToUpdate.add(record)
-            } else {
+            } else if (!record.isEmpty()) {
                 recordsToInsert.add(record)
             }
             recordsDbById.remove(recordId)
