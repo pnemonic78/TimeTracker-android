@@ -39,6 +39,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
 import kotlinx.android.synthetic.main.time_item.view.*
@@ -96,9 +97,9 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
 
     @MainThread
     private fun bindColors(record: TimeRecord) {
-        val projectId = record.project.id
-        val taskId = record.task.id
-        val mappedId = (projectId * taskId).rem(512).toInt()
+        val projectColor = if (record.project.id != TikalEntity.ID_NONE) record.project.id else record.project.hashCode().toLong()
+        val taskColor = if (record.task.id != TikalEntity.ID_NONE) record.task.id else record.task.hashCode().toLong()
+        val mappedId = (projectColor * taskColor).rem(512).toInt()
 
         // 512 combinations => 3 bits per color
         val redBits = mappedId.and(7)

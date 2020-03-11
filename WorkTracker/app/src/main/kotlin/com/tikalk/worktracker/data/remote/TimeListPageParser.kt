@@ -139,11 +139,11 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
             return null
         }
         val projectName = tdProject.ownText()
-        val project = parseRecordProject(projects, projectName) ?: return null
+        val project = parseRecordProject(projects, projectName)
 
         val tdTask = cols[1]
         val taskName = tdTask.ownText()
-        val task = parseRecordTask(project, taskName) ?: return null
+        val task = parseRecordTask(project, taskName)
 
         val tdStart = cols[2]
         val startText = tdStart.ownText()
@@ -164,12 +164,12 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         return TimeRecord(id, project, task, start, finish, note, 0.0, TaskRecordStatus.CURRENT)
     }
 
-    private fun parseRecordProject(projects: List<Project>, name: String): Project? {
-        return projects.find { name == it.name }
+    private fun parseRecordProject(projects: List<Project>, name: String): Project {
+        return projects.find { name == it.name } ?: Project(name)
     }
 
-    private fun parseRecordTask(project: Project, name: String): ProjectTask? {
-        return project.tasks.find { task -> (task.name == name) }
+    private fun parseRecordTask(project: Project, name: String): ProjectTask {
+        return project.tasks.find { task -> (task.name == name) } ?: ProjectTask(name)
     }
 
     private fun parseRecordTime(date: Calendar, text: String): Calendar? {

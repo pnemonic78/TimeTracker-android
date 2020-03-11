@@ -435,20 +435,17 @@ class TimeListFragment : TimeFormFragment(),
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .doAfterTerminate { showProgressMain(false) }
-            .subscribe(
-                { response ->
-                    if (isValidResponse(response)) {
-                        val html = response.body()!!
-                        processPage(html, date)
-                    } else {
-                        authenticateMain()
-                    }
-                },
-                { err ->
-                    Timber.e(err, "Error deleting record: ${err.message}")
-                    handleErrorMain(err)
+            .subscribe({ response ->
+                if (isValidResponse(response)) {
+                    val html = response.body()!!
+                    processPage(html, date)
+                } else {
+                    authenticateMain()
                 }
-            )
+            }, { err ->
+                Timber.e(err, "Error deleting record: ${err.message}")
+                handleErrorMain(err)
+            })
             .addTo(disposables)
     }
 
