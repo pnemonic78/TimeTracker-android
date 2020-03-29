@@ -149,7 +149,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
 
     private fun loadProjectsWithTasks(db: TrackerDatabase): Observable<List<ProjectWithTasks>> {
         val projectsDao = db.projectDao()
-        return projectsDao.queryAllWithTasksSingle().toObservable()
+        return projectsDao.queryAllWithTasksObservable()
     }
 
     private fun populateProjects(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>) {
