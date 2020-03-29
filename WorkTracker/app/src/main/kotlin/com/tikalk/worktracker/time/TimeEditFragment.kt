@@ -206,7 +206,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
         if (projectInput == null) return
-        val projectItems = projects?.sortedBy { it.name }?.toTypedArray() ?: emptyArray()
+        val projectItems = projects?.toTypedArray() ?: emptyArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, record.project)))
@@ -375,7 +375,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }

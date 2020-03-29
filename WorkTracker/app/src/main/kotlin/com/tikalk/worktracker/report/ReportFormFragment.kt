@@ -210,7 +210,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: ReportFormPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         errorMessage = page.errorMessage ?: ""
 
         val filterValue = filterData.value

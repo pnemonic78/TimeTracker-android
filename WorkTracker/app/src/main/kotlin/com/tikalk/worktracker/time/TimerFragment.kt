@@ -134,7 +134,7 @@ class TimerFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
-        val projectItems = projects?.sortedBy { it.name }?.toTypedArray() ?: emptyArray()
+        val projectItems = projects?.toTypedArray() ?: emptyArray()
         if (projectInput == null) return
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
@@ -326,7 +326,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimerPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         setRecordValue(page.record)
     }
 

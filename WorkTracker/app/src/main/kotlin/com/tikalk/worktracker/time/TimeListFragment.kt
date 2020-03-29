@@ -208,7 +208,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPageMain(page: TimeListPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         recordsData.value = page.records
         if ((totalsData.value == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
             totalsData.value = page.totals
@@ -217,7 +217,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPage(page: TimeListPage) {
-        projectsData.postValue(page.projects)
+        projectsData.postValue(page.projects.sortedBy { it.name })
         recordsData.postValue(page.records)
         totalsData.postValue(page.totals)
         setRecordValue(page.record)
