@@ -154,7 +154,7 @@
         android:layout_marginTop="@dimen/form_marginTop"
         android:checked="true"
         android:text="@string/project_label"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_v50"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_x50"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/finishInput" />
 
@@ -165,7 +165,7 @@
         android:checked="true"
         android:text="@string/task_label"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/guideline_v50"
+        app:layout_constraintStart_toEndOf="@+id/guideline_x50"
         app:layout_constraintTop_toTopOf="@+id/showProjectField" />
 
     <CheckBox
@@ -175,7 +175,7 @@
         android:layout_marginTop="@dimen/form_marginTop"
         android:checked="true"
         android:text="@string/start_label"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_v50"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_x50"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/showProjectField" />
 
@@ -186,7 +186,7 @@
         android:checked="true"
         android:text="@string/finish_label"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/guideline_v50"
+        app:layout_constraintStart_toEndOf="@+id/guideline_x50"
         app:layout_constraintTop_toTopOf="@+id/showStartField" />
 
     <CheckBox
@@ -196,7 +196,7 @@
         android:layout_marginTop="@dimen/form_marginTop"
         android:checked="true"
         android:text="@string/duration_label"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_v50"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_x50"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/showStartField" />
 
@@ -207,7 +207,7 @@
         android:checked="true"
         android:text="@string/note_hint"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/guideline_v50"
+        app:layout_constraintStart_toEndOf="@+id/guideline_x50"
         app:layout_constraintTop_toTopOf="@+id/showDurationField" />
 
     <TextView
@@ -237,7 +237,7 @@
     </Button>
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_v50"
+        android:id="@+id/guideline_x50"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
