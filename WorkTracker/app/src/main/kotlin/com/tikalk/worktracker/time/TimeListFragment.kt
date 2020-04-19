@@ -86,6 +86,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
+
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
@@ -687,6 +688,12 @@ class TimeListFragment : TimeFormFragment(),
         when (item.itemId) {
             R.id.menu_date -> {
                 pickDate()
+                return true
+            }
+            R.id.menu_today -> {
+                date = Calendar.getInstance()
+                loadAndFetchPage(date, false)
+                hideEditor()
                 return true
             }
         }

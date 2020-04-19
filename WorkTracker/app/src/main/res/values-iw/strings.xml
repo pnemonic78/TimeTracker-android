@@ -33,7 +33,6 @@
     <string name="error_start_field_required">שעת התחלה חובה</string>
     <string name="error_finish_field_required">שעת סיום חובה</string>
     <string name="error_finish_time_before_start_time">זמן הסיום חייב להיות מאוחר משעת ההתחלה.</string>
-    <string name="pick_date">מעבר לתאריך</string>
     <string name="delete">מחק</string>
 
     <!-- Time recorder -->
@@ -51,6 +50,8 @@
     <string name="remaining_quota">מכסה נותרת</string>
     <string name="month_total">סה\"כ חודש</string>
     <string name="week_total">סה\"כ שבוע</string>
+    <string name="pick_date">מעבר לתאריך</string>
+    <string name="today">היום</string>
 
     <!-- Settings -->
     <string name="settings_label" msgid="1626402585530130914">הגדרות</string>
