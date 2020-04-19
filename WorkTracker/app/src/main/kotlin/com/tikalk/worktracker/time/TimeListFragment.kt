@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.time
 
 import android.app.DatePickerDialog
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -76,7 +77,8 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    TimeEditFragment.OnEditRecordListener {
+    TimeEditFragment.OnEditRecordListener,
+    DialogInterface.OnClickListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -308,7 +310,9 @@ class TimeListFragment : TimeFormFragment(),
                 loadAndFetchPage(cal, true)
                 hideEditor()
             }
-            picker = DatePickerDialog(requireContext(), listener, year, month, dayOfMonth)
+            val context = requireContext()
+            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today), this)
             datePickerDialog = picker
         } else {
             picker.updateDate(year, month, dayOfMonth)
@@ -485,6 +489,14 @@ class TimeListFragment : TimeFormFragment(),
         val cal = date
         cal.add(Calendar.DATE, -1)
         loadAndFetchPage(cal, true)
+        hideEditor()
+    }
+
+    private fun navigateToday() {
+        Timber.i("navigateToday")
+        val today = Calendar.getInstance()
+        date = today
+        loadAndFetchPage(today, false)
         hideEditor()
     }
 
@@ -691,9 +703,7 @@ class TimeListFragment : TimeFormFragment(),
                 return true
             }
             R.id.menu_today -> {
-                date = Calendar.getInstance()
-                loadAndFetchPage(date, false)
-                hideEditor()
+                navigateToday()
                 return true
             }
         }
@@ -714,6 +724,14 @@ class TimeListFragment : TimeFormFragment(),
                     processPage(html, date)
                 }
                 .addTo(disposables)
+        }
+    }
+
+    override fun onClick(dialog: DialogInterface, which: Int) {
+        if (dialog == datePickerDialog) {
+            if (which == DialogInterface.BUTTON_NEUTRAL) {
+                navigateToday()
+            }
         }
     }
 
