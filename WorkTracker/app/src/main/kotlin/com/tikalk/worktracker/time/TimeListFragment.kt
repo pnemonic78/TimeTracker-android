@@ -35,6 +35,7 @@ package com.tikalk.worktracker.time
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
@@ -77,8 +78,7 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    TimeEditFragment.OnEditRecordListener,
-    DialogInterface.OnClickListener {
+    TimeEditFragment.OnEditRecordListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -157,6 +157,7 @@ class TimeListFragment : TimeFormFragment(),
     private fun loadAndFetchPage(date: Calendar, refresh: Boolean) {
         val dateFormatted = formatSystemDate(date)
         Timber.i("loadAndFetchPage $dateFormatted refresh=$refresh")
+        this.date = date
 
         dataSource.timeListPage(date, refresh)
             .subscribeOn(Schedulers.io())
@@ -304,15 +305,28 @@ class TimeListFragment : TimeFormFragment(),
         var picker = datePickerDialog
         if (picker == null) {
             val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
+                val oldYear = date.year
+                val oldMonth = date.month
+                val oldDayOfMonth = date.dayOfMonth
+                val refresh = (pickedYear != oldYear) or (pickedMonth != oldMonth) or (pickedDayOfMonth != oldDayOfMonth)
                 cal.year = pickedYear
                 cal.month = pickedMonth
                 cal.dayOfMonth = pickedDayOfMonth
-                loadAndFetchPage(cal, true)
+                loadAndFetchPage(cal, refresh)
                 hideEditor()
             }
             val context = requireContext()
             picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
-            picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today), this)
+            picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today)) { dialog: DialogInterface, which: Int ->
+                if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
+                    val today = Calendar.getInstance()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
+                    } else {
+                        picker.updateDate(today.year, today.month, today.dayOfMonth)
+                    }
+                }
+            }
             datePickerDialog = picker
         } else {
             picker.updateDate(year, month, dayOfMonth)
@@ -495,7 +509,6 @@ class TimeListFragment : TimeFormFragment(),
     private fun navigateToday() {
         Timber.i("navigateToday")
         val today = Calendar.getInstance()
-        date = today
         loadAndFetchPage(today, false)
         hideEditor()
     }
@@ -724,14 +737,6 @@ class TimeListFragment : TimeFormFragment(),
                     processPage(html, date)
                 }
                 .addTo(disposables)
-        }
-    }
-
-    override fun onClick(dialog: DialogInterface, which: Int) {
-        if (dialog == datePickerDialog) {
-            if (which == DialogInterface.BUTTON_NEUTRAL) {
-                navigateToday()
-            }
         }
     }
 
