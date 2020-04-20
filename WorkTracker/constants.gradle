@@ -1,8 +1,4 @@
 project.ext {
-    // Important: ExoPlayer specifies a minSdkVersion of 14 because various
-    // components provided by the library may be of use on older devices.
-    // However, please note that the core media playback functionality provided
-    // by the library requires API level 16 or greater.
     minSdkVersion = 19
     compileSdkVersion = 29
     targetSdkVersion = 29

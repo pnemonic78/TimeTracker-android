@@ -38,6 +38,7 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.logging.HttpLoggingInterceptor.*
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -78,7 +79,7 @@ class TimeTrackerServiceFactory {
 
             if (BuildConfig.DEBUG) {
                 val interceptorLogging = HttpLoggingInterceptor()
-                interceptorLogging.level = HttpLoggingInterceptor.Level.BODY
+                interceptorLogging.level = Level.BODY
                 httpClientBuilder.addInterceptor(interceptorLogging)
             }
 

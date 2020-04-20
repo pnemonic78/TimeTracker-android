@@ -37,7 +37,6 @@
     <string name="error_start_field_required">Start time required</string>
     <string name="error_finish_field_required">Finish time required</string>
     <string name="error_finish_time_before_start_time">Finish time must be later than start time.</string>
-    <string name="pick_date">Go to date</string>
     <string name="delete">Delete</string>
     <string name="action_delete" translatable="false">@string/delete</string>
     <string name="action_submit" translatable="false">@string/submit</string>
@@ -59,6 +58,9 @@
     <string name="remaining_quota">Remaining quota</string>
     <string name="month_total">Month total</string>
     <string name="week_total">Week total</string>
+    <string name="pick_date">Go to date</string>
+    <string name="today">Today</string>
+    <string name="menu_today" translatable="false">@string/today</string>
 
     <!-- Settings -->
     <string name="settings_label">Settings</string>

@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.time
 
 import android.app.DatePickerDialog
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -76,7 +77,8 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener,
-    TimeEditFragment.OnEditRecordListener {
+    TimeEditFragment.OnEditRecordListener,
+    DialogInterface.OnClickListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -86,6 +88,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
+
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
@@ -208,7 +211,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPageMain(page: TimeListPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         recordsData.value = page.records
         if ((totalsData.value == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
             totalsData.value = page.totals
@@ -217,7 +220,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPage(page: TimeListPage) {
-        projectsData.postValue(page.projects)
+        projectsData.postValue(page.projects.sortedBy { it.name })
         recordsData.postValue(page.records)
         totalsData.postValue(page.totals)
         setRecordValue(page.record)
@@ -307,7 +310,9 @@ class TimeListFragment : TimeFormFragment(),
                 loadAndFetchPage(cal, true)
                 hideEditor()
             }
-            picker = DatePickerDialog(requireContext(), listener, year, month, dayOfMonth)
+            val context = requireContext()
+            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
+            picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today), this)
             datePickerDialog = picker
         } else {
             picker.updateDate(year, month, dayOfMonth)
@@ -484,6 +489,14 @@ class TimeListFragment : TimeFormFragment(),
         val cal = date
         cal.add(Calendar.DATE, -1)
         loadAndFetchPage(cal, true)
+        hideEditor()
+    }
+
+    private fun navigateToday() {
+        Timber.i("navigateToday")
+        val today = Calendar.getInstance()
+        date = today
+        loadAndFetchPage(today, false)
         hideEditor()
     }
 
@@ -689,6 +702,10 @@ class TimeListFragment : TimeFormFragment(),
                 pickDate()
                 return true
             }
+            R.id.menu_today -> {
+                navigateToday()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -707,6 +724,14 @@ class TimeListFragment : TimeFormFragment(),
                     processPage(html, date)
                 }
                 .addTo(disposables)
+        }
+    }
+
+    override fun onClick(dialog: DialogInterface, which: Int) {
+        if (dialog == datePickerDialog) {
+            if (which == DialogInterface.BUTTON_NEUTRAL) {
+                navigateToday()
+            }
         }
     }
 

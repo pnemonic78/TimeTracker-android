@@ -326,7 +326,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimerPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         setRecordValue(page.record)
     }
 

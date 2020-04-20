@@ -375,7 +375,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        projectsData.value = page.projects
+        projectsData.value = page.projects.sortedBy { it.name }
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }
