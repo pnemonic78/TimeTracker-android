@@ -59,7 +59,7 @@ class UsersFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        usersData.observe(this, Observer<List<User>> { users ->
+        usersData.observe(this, Observer { users ->
             bindList(users)
         })
     }

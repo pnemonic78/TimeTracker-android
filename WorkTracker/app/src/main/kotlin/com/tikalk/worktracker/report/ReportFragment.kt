@@ -73,13 +73,13 @@ class ReportFragment : InternetFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer<List<TimeRecord>> { records ->
+        recordsData.observe(this, Observer { records ->
             bindList(records)
         })
-        totalsData.observe(this, Observer<ReportTotals> { totals ->
+        totalsData.observe(this, Observer { totals ->
             bindTotals(totals)
         })
-        filterData.observe(this, Observer<ReportFilter> { filter ->
+        filterData.observe(this, Observer { filter ->
             this.listAdapter = ReportAdapter(filter)
             list.adapter = listAdapter
         })

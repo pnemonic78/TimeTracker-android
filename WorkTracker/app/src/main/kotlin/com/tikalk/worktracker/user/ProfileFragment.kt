@@ -84,10 +84,10 @@ class ProfileFragment : InternetFragment(),
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
 
-        userData.observe(this, Observer<User> { user ->
+        userData.observe(this, Observer { user ->
             bindForm(user, userCredentialsData.value)
         })
-        userCredentialsData.observe(this, Observer<UserCredentials> { userCredentials ->
+        userCredentialsData.observe(this, Observer { userCredentials ->
             bindForm(userData.value, userCredentials)
         })
 

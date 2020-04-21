@@ -96,10 +96,10 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer<List<TimeRecord>> { records ->
+        recordsData.observe(this, Observer { records ->
             bindList(date, records)
         })
-        totalsData.observe(this, Observer<TimeTotals> { totals ->
+        totalsData.observe(this, Observer { totals ->
             bindTotals(totals)
         })
     }
