@@ -63,9 +63,11 @@ class TimeListActivity : InternetActivity(),
 
         // Set up navigation - action bar and sidebar.
         /// Let the navigation view check/uncheck the menu items.
-        val navController = findNavController()
-        nav_view.setupWithNavController(navController)
-        nav_view.setNavigationItemSelectedListener(this)
+        nav_view.post { // wait for NavHostFragment to inflate
+            val navController = findNavController()
+            nav_view.setupWithNavController(navController)
+            nav_view.setNavigationItemSelectedListener(this)
+        }
 
         /// Show the hamburger and back icons
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

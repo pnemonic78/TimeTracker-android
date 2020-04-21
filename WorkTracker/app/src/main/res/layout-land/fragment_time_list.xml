@@ -51,7 +51,7 @@
         app:layout_constraintStart_toEndOf="@+id/time_form_divider"
         app:layout_constraintTop_toTopOf="parent">
 
-        <fragment
+        <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_form"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
