@@ -153,13 +153,11 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             .map { projects ->
                 projects
                     .filter { it.project.id != TikalEntity.ID_NONE }
-                    .sortedBy { it.project.name }
             }
     }
 
     private fun populateProjects(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>) {
         projects.clear()
-        projects.add(Project.EMPTY)
 
         for (projectWithTasks in projectsWithTasks) {
             val project = projectWithTasks.project

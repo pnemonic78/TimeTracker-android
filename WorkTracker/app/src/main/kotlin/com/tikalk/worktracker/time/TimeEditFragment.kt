@@ -322,12 +322,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun filterTasks(project: Project) {
         val context = this.context ?: return
-        val filtered = project.tasks
-        val options = ArrayList<ProjectTask>(filtered.size + 1)
-        options.add(taskEmpty)
-        options.addAll(filtered)
+        val options = addEmpty(project.tasks)
         if (taskInput == null) return
-        taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
         taskInput.setSelection(findTask(options, record.task))
     }
 
@@ -375,7 +372,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        projectsData.value = page.projects.sortedBy { it.name }
+        projectsData.value = addEmpties(page.projects)
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }

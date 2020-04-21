@@ -37,6 +37,7 @@ import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -52,18 +53,13 @@ abstract class TimeFormFragment : InternetFragment(),
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projectsData = MutableLiveData<List<Project>>()
-    var projectEmpty: Project = Project.EMPTY.copy()
-    var taskEmpty: ProjectTask = ProjectTask.EMPTY
+    var projectEmpty: Project = Project.EMPTY.copy(true)
+    var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
+        ?: ProjectTask.EMPTY.copy()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         projectsData.observe(this, Observer { projects ->
-            this.projectEmpty = projects.find { it.isEmpty() } ?: projectEmpty
-            projectEmpty.name = getEmptyProjectName()
-            val tasks = projectEmpty.tasks
-            this.taskEmpty = tasks.find { it.isEmpty() } ?: taskEmpty
-            taskEmpty.name = getEmptyTaskName()
-
             onProjectsUpdated(projects)
         })
     }
@@ -139,6 +135,35 @@ abstract class TimeFormFragment : InternetFragment(),
     open protected fun getEmptyProjectName() = requireContext().getString(R.string.project_name_select)
 
     open protected fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
+
+    protected fun addEmpties(projects: List<Project>): List<Project> {
+        val projectEmptyFind = projects.find { it.isEmpty() }
+        val projectEmpty = projectEmptyFind ?: projectEmpty
+        projectEmpty.name = getEmptyProjectName()
+        val projectsWithEmpty = if (projectEmptyFind != null) {
+            projects.sortedBy { it.name }
+        } else {
+            projects.sortedBy { it.name }.add(0, projectEmpty)
+        }
+        this.projectEmpty = projectEmpty
+
+        val taskEmpty = projectEmpty.tasksById[TikalEntity.ID_NONE] ?: taskEmpty
+        taskEmpty.name = getEmptyTaskName()
+        this.taskEmpty = taskEmpty
+
+        return projectsWithEmpty
+    }
+
+    protected fun addEmpty(tasks: List<ProjectTask>): List<ProjectTask> {
+        val taskEmptyFind = tasks.find { it.isEmpty() }
+        val taskEmpty = taskEmptyFind ?: taskEmpty
+        taskEmpty.name = getEmptyTaskName()
+        return if (taskEmptyFind != null) {
+            tasks.sortedBy { it.name }
+        } else {
+            tasks.sortedBy { it.name }.add(0, taskEmpty)
+        }
+    }
 
     companion object {
         const val STATE_RECORD = "record"
