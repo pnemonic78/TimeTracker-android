@@ -159,6 +159,7 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
 
     private fun populateProjects(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>) {
         projects.clear()
+        projects.add(Project.EMPTY)
 
         for (projectWithTasks in projectsWithTasks) {
             val project = projectWithTasks.project
