@@ -221,7 +221,7 @@ class BundleBuilder {
     }
 
     fun setClassLoader(loader: ClassLoader?): BundleBuilder {
-        bundle.setClassLoader(loader)
+        bundle.classLoader = loader
         return this
     }
 

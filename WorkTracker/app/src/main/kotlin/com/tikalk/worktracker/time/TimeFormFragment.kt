@@ -132,9 +132,9 @@ abstract class TimeFormFragment : InternetFragment(),
         }
     }
 
-    open protected fun getEmptyProjectName() = requireContext().getString(R.string.project_name_select)
+    protected open fun getEmptyProjectName() = requireContext().getString(R.string.project_name_select)
 
-    open protected fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
+    protected open fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
 
     protected fun addEmpties(projects: List<Project>): List<Project> {
         val projectEmptyFind = projects.find { it.isEmpty() }
