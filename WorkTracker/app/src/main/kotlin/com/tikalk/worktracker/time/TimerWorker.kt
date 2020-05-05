@@ -166,7 +166,8 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
     private fun startTimerAction(extras: Bundle): Result<Any> {
         Timber.i("startTimerAction")
-        val record = createRecord(extras) ?: return Result.failure(IllegalArgumentException("missing record"))
+        val record = createRecord(extras)
+            ?: return Result.failure(IllegalArgumentException("missing record"))
 
         prefs.startRecord(record)
 
@@ -181,7 +182,8 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
     private fun stopTimerAction(extras: Bundle): Result<Any> {
         Timber.i("stopTimerAction")
         if (extras.getBoolean(EXTRA_EDIT, false)) {
-            val record = prefs.getStartedRecord() ?: return Result.failure(IllegalArgumentException("missing record"))
+            val record = prefs.getStartedRecord()
+                ?: return Result.failure(IllegalArgumentException("missing record"))
             val projectId = record.project.id
             val taskId = record.task.id
             val startTime = record.startTime
@@ -275,7 +277,8 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
         Timber.i("showNotification visible=$visible")
         if (visible) {
-            val record = createRecord(extras) ?: prefs.getStartedRecord() ?: return Result.failure(IllegalArgumentException("missing record"))
+            val record = createRecord(extras) ?: prefs.getStartedRecord()
+            ?: return Result.failure(IllegalArgumentException("missing record"))
             Timber.i("showNotification record=$record")
             val nm = NotificationManagerCompat.from(context)
             nm.notify(ID_NOTIFY, createNotification(record))

@@ -73,6 +73,7 @@ class ProfileFragment : InternetFragment(),
     private var nameInputEditable = false
     private var emailInputEditable = false
     private var loginInputEditable = false
+
     @Transient
     private var password2 = ""
     private var errorMessage: String = ""

@@ -45,8 +45,8 @@ class AuthenticationInterceptor(private val preferences: TimeTrackerPrefs) : Int
         val authToken = preferences.basicCredentials.authToken()
         val original = chain.request()
         val request = original.newBuilder()
-                .header("Authorization", authToken)
-                .build()
+            .header("Authorization", authToken)
+            .build()
         return chain.proceed(request)
     }
 }

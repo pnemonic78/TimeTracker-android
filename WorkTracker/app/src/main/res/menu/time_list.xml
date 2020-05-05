@@ -12,5 +12,5 @@
         android:icon="@drawable/ic_menu_today"
         android:orderInCategory="901"
         app:showAsAction="ifRoom"
-        android:title="@string/menu_today"/>
+        android:title="@string/menu_today" />
 </menu>
