@@ -41,8 +41,8 @@ import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.*
 import kotlinx.android.synthetic.main.time_item.view.*
+import java.util.*
 
 open class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
     View.OnClickListener {

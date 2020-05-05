@@ -31,8 +31,12 @@
  */
 package com.tikalk.worktracker.db
 
-import androidx.room.*
-import com.tikalk.worktracker.model.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.TypeConverters
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.*
