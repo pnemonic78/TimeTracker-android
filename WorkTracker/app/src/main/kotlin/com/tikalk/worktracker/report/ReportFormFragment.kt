@@ -82,7 +82,7 @@ class ReportFormFragment : TimeFormFragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         filterData.value = ReportFilter()
-        filterData.observe(this, Observer<ReportFilter> { filter ->
+        filterData.observe(this, Observer { filter ->
             setRecordValue(filter)
             bindFilter(filter)
         })
@@ -154,12 +154,9 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.d("filterTasks project=$project")
         val context = this.context ?: return
         if (!isVisible) return
-        val filtered = project.tasks
-        val options = ArrayList<ProjectTask>(filtered.size + 1)
-        options.add(taskEmpty)
-        options.addAll(filtered)
+        val options = addEmpty(project.tasks)
         if (taskInput == null) return
-        taskInput.adapter = ArrayAdapter<ProjectTask>(context, android.R.layout.simple_list_item_1, options)
+        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
 
         val filter = filterData.value
         if (filter != null) {
@@ -212,7 +209,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: ReportFormPage) {
-        projectsData.value = page.projects.sortedBy { it.name }
+        projectsData.value = addEmpties(page.projects)
         errorMessage = page.errorMessage ?: ""
 
         val filterValue = filterData.value

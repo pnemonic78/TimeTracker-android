@@ -44,7 +44,7 @@ class ProfilePage(
     val errorMessage: String? = null
 )
 
-class MutableProfilePage() {
+class MutableProfilePage {
     var user: User = User.EMPTY.copy()
     var userCredentials: UserCredentials = UserCredentials.EMPTY.copy()
     var nameInputEditable: Boolean = false

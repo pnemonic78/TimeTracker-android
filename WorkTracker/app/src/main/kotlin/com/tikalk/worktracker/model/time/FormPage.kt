@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 
 open class FormPage<R : TimeRecord>(
     val record: R,

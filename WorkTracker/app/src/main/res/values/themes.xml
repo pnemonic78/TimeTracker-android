@@ -12,8 +12,7 @@
         <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar</item>
     </style>
 
-    <style name="Theme.WorkTracker" parent="Base.Theme.WorkTracker">
-    </style>
+    <style name="Theme.WorkTracker" parent="Base.Theme.WorkTracker" />
 
     <style name="Theme.WorkTracker.NoActionBar">
         <item name="windowActionBar">false</item>

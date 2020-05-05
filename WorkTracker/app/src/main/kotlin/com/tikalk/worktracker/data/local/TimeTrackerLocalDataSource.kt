@@ -153,7 +153,6 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             .map { projects ->
                 projects
                     .filter { it.project.id != TikalEntity.ID_NONE }
-                    .sortedBy { it.project.name }
             }
     }
 

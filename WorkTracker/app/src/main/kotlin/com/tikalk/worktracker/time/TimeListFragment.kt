@@ -96,10 +96,10 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer<List<TimeRecord>> { records ->
+        recordsData.observe(this, Observer { records ->
             bindList(date, records)
         })
-        totalsData.observe(this, Observer<TimeTotals> { totals ->
+        totalsData.observe(this, Observer { totals ->
             bindTotals(totals)
         })
     }
@@ -214,16 +214,22 @@ class TimeListFragment : TimeFormFragment(),
     private fun processPageMain(page: TimeListPage) {
         projectsData.value = page.projects.sortedBy { it.name }
         recordsData.value = page.records
-        if ((totalsData.value == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
-            totalsData.value = page.totals
+        var totals = totalsData.value
+        if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
+            totals = page.totals
         }
+        totalsData.value = totals
         setRecordValue(page.record)
     }
 
     private fun processPage(page: TimeListPage) {
         projectsData.postValue(page.projects.sortedBy { it.name })
         recordsData.postValue(page.records)
-        totalsData.postValue(page.totals)
+        var totals = totalsData.value
+        if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
+            totals = page.totals
+        }
+        totalsData.postValue(totals)
         setRecordValue(page.record)
     }
 

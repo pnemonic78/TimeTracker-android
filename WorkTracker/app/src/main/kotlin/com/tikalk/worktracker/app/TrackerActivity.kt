@@ -34,5 +34,4 @@ package com.tikalk.worktracker.app
 
 import com.tikalk.app.TikalActivity
 
-abstract class TrackerActivity : TikalActivity() {
-}
+abstract class TrackerActivity : TikalActivity()

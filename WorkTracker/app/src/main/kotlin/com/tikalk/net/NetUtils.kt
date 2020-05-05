@@ -33,10 +33,7 @@ package com.tikalk.net
 
 import android.net.Uri
 import android.os.Parcel
-import android.text.format.DateUtils
-import okhttp3.internal.http.HttpDate
 import java.net.HttpCookie
-import java.util.*
 
 fun createUriFromParcel(parcel: Parcel): Uri? {
     try {

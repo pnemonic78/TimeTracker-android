@@ -36,5 +36,4 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 
-open class ReportFormPageSaver(db: TrackerDatabase) : FormPageSaver<ReportFilter, ReportFormPage>(db) {
-}
+open class ReportFormPageSaver(db: TrackerDatabase) : FormPageSaver<ReportFilter, ReportFormPage>(db)

@@ -34,5 +34,4 @@ package com.tikalk.app
 
 import android.app.Application
 
-open class TikalApplication : Application() {
-}
+open class TikalApplication : Application()

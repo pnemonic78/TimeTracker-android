@@ -42,18 +42,22 @@ enum class TaskRecordStatus {
      * Draft (New).
      */
     DRAFT,
+
     /**
      * Inserted (Exists in the local database).
      */
     INSERTED,
+
     /**
      * Current (Synced with the remote database).
      */
     CURRENT,
+
     /**
      * Modified (Changed).
      */
     MODIFIED,
+
     /**
      * Deleted.
      */

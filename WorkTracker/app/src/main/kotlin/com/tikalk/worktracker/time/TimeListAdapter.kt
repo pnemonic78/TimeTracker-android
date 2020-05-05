@@ -69,7 +69,7 @@ class TimeListAdapter(private val clickListener: OnTimeListListener? = null) : L
         }
 
         override fun areContentsTheSame(oldItem: TimeRecord, newItem: TimeRecord): Boolean {
-           return oldItem == newItem
+            return oldItem == newItem
         }
     }
 }

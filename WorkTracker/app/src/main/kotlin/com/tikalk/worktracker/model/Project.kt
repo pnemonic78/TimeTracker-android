@@ -81,6 +81,14 @@ data class Project(
         }
     }
 
+    fun copy(withTasks: Boolean): Project {
+        val clone = this.copy()
+        if (withTasks) {
+            clone.tasks = this.tasks.map { it.copy() }
+        }
+        return clone
+    }
+
     companion object {
         val EMPTY = Project("")
 

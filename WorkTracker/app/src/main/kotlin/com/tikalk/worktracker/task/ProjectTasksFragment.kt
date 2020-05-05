@@ -60,7 +60,7 @@ class ProjectTasksFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        tasksData.observe(this, Observer<List<ProjectTask>> { tasks ->
+        tasksData.observe(this, Observer { tasks ->
             bindList(tasks)
         })
     }
