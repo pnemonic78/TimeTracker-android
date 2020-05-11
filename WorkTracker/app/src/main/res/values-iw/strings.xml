@@ -104,8 +104,10 @@
     <string name="action_export">ייצא</string>
     <string name="action_export_csv">ייצא CSV</string>
     <string name="action_export_html">ייצא HTML</string>
+    <string name="action_export_odf">ייצא ODF</string>
     <string name="action_export_xml">ייצא XML</string>
     <string name="item_all">(הכל)</string>
+    <string name="error_export">שגיאה בייצוא הדוח!</string>
 
     <!-- Errors -->
     <string name="error">שגיה</string>

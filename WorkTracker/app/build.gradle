@@ -62,11 +62,16 @@ android {
     kotlinOptions {
         freeCompilerArgs += ["-Xallow-result-return-type"]
     }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/INDEX.LIST'
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
 
     // Google Support
@@ -117,6 +122,10 @@ dependencies {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
     implementation 'org.jetbrains.kotlinx:kotlinx-html-jvm:0.6.10'
+    /// ODF
+    implementation 'org.odftoolkit:odfdom-java:0.8.7'
+    implementation 'com.fasterxml.woodstox:woodstox-core:6.2.0'
+    implementation 'org.w3c:dom:2.3.0-jaxb-1.0.6'
 
     // Koin
     implementation 'org.koin:koin-android:2.0.1'

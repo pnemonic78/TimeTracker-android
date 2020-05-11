@@ -39,6 +39,7 @@ import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
@@ -50,16 +51,16 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 /**
- * Write the list of records as a CSV file.
+ * Write the list of records as a Comma-separated Values (CSV) file.
  */
-class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
+class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals) : ReportExporter(context, records, filter, totals) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
-        return ReportExporterCSVRunner(context, records, filter, observer)
+    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>): ReportExporterRunner {
+        return ReportExporterCSVRunner(context, records, filter, totals, observer)
     }
 
-    private class ReportExporterCSVRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
-        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
+    private class ReportExporterCSVRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, totals, observer) {
+        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
             val showStartField = filter.showStartField

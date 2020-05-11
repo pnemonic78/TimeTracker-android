@@ -133,6 +133,7 @@
     <string name="action_export">Export</string>
     <string name="action_export_csv">Export as CSV</string>
     <string name="action_export_html">Export as HTML</string>
+    <string name="action_export_odf">Export as ODF</string>
     <string name="action_export_xml">Export as XML</string>
     <string name="date_header" translatable="false">@string/date_label</string>
     <string name="project_header" translatable="false">@string/project_label</string>
@@ -145,6 +146,7 @@
     <string name="item_all">(All)</string>
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>
+    <string name="error_export">Error exporting report!</string>
 
     <!-- Errors -->
     <string name="error">Error</string>
