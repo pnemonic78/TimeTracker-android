@@ -39,9 +39,13 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.SYSTEM_DATE_PATTERN
 import io.reactivex.SingleObserver
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument
 import org.odftoolkit.odfdom.doc.table.OdfTableCell
+import org.odftoolkit.odfdom.dom.style.OdfStyleFamily
+import org.odftoolkit.odfdom.dom.style.props.OdfParagraphProperties
+import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties
 import java.io.File
 import java.util.*
 
@@ -88,33 +92,48 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
 
             cell = table.getCellByPosition(columnIndex++, rowIndex)
             cell.stringValue = context.getString(R.string.date_header)
+            val cellHeaderDate = cell
+            var cellHeaderProject: OdfTableCell? = null
             if (showProjectField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.project_header)
+                cellHeaderProject = cell
             }
+            var cellHeaderTask: OdfTableCell? = null
             if (showTaskField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.task_header)
+                cellHeaderTask = cell
             }
+            var cellHeaderStart: OdfTableCell? = null
             if (showStartField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.start_header)
+                cellHeaderStart = cell
             }
+            var cellHeaderFinish: OdfTableCell? = null
             if (showFinishField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.finish_header)
+                cellHeaderFinish = cell
             }
+            var cellHeaderDuration: OdfTableCell? = null
             if (showDurationField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.duration_header)
+                cellHeaderDuration = cell
             }
+            var cellHeaderNote: OdfTableCell? = null
             if (showNoteField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.note_header)
+                cellHeaderNote = cell
             }
+            var cellHeaderCost: OdfTableCell? = null
             if (showCostField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.cost_header)
+                cellHeaderCost = cell
             }
 
             for (record in records) {
@@ -123,6 +142,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
 
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.dateValue = record.start
+                cell.formatString = SYSTEM_DATE_PATTERN
                 if (showProjectField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = record.project.name
@@ -159,6 +179,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             columnIndex = 0
             cell = table.getCellByPosition(columnIndex++, rowIndex)
             cell.stringValue = context.getString(R.string.total)
+            val cellSubtotalTotal = cell
             if (showProjectField) {
                 columnIndex++
             }
@@ -171,19 +192,52 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             if (showFinishField) {
                 columnIndex++
             }
+            var cellSubtotalDuration: OdfTableCell? = null
             if (showDurationField) {
                 val durationMs = totals.duration
                 val durationHs = durationMs.toDouble() / DateUtils.HOUR_IN_MILLIS
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.doubleValue = durationHs
+                cellSubtotalDuration = cell
             }
             if (showNoteField) {
                 columnIndex++
             }
+            var cellSubtotalCost: OdfTableCell? = null
             if (showCostField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.setCurrencyValue(totals.cost, currencyCode)
+                cellSubtotalCost = cell
             }
+
+            // Apply styles afterwards because new cells inherit the previous cell's style.
+
+            val documentStyles = doc.documentStyles
+            val tableHeaderStyleName = "tableHeader"
+            val tableHeaderStyle = documentStyles.newStyle(tableHeaderStyleName, OdfStyleFamily.TableCell)
+            tableHeaderStyle.setProperty(OdfTextProperties.FontWeight, "bold")
+
+            val tableHeaderCenteredStyleName = "tableHeaderCentered"
+            val tableHeaderCenteredStyle = documentStyles.newStyle(tableHeaderCenteredStyleName, OdfStyleFamily.TableCell)
+            tableHeaderCenteredStyle.setProperty(OdfTextProperties.FontWeight, "bold")
+            tableHeaderCenteredStyle.setProperty(OdfParagraphProperties.TextAlign, "center")
+
+            val tableSubtotalStyleName = "tableSubtotal"
+            val tableSubtotalStyle = documentStyles.newStyle(tableSubtotalStyleName, OdfStyleFamily.TableCell)
+            tableSubtotalStyle.setProperty(OdfTextProperties.FontWeight, "bold")
+
+            cellHeaderDate.odfElement.tableStyleNameAttribute = tableHeaderStyleName
+            cellHeaderProject?.odfElement?.tableStyleNameAttribute = tableHeaderStyleName
+            cellHeaderTask?.odfElement?.tableStyleNameAttribute = tableHeaderStyleName
+            cellHeaderStart?.odfElement?.tableStyleNameAttribute = tableHeaderCenteredStyleName
+            cellHeaderFinish?.odfElement?.tableStyleNameAttribute = tableHeaderCenteredStyleName
+            cellHeaderDuration?.odfElement?.tableStyleNameAttribute = tableHeaderCenteredStyleName
+            cellHeaderNote?.odfElement?.tableStyleNameAttribute = tableHeaderStyleName
+            cellHeaderCost?.odfElement?.tableStyleNameAttribute = tableHeaderStyleName
+
+            cellSubtotalTotal?.odfElement?.tableStyleNameAttribute = tableSubtotalStyleName
+            cellSubtotalDuration?.odfElement?.tableStyleNameAttribute = tableSubtotalStyleName
+            cellSubtotalCost?.odfElement?.tableStyleNameAttribute = tableSubtotalStyleName
 
             doc.save(file)
             doc.close()
