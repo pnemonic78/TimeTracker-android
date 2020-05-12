@@ -29,7 +29,7 @@ android {
         applicationId "com.tikalk.worktracker"
         minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
-        versionCode versionMajor * 100 + versionMinor
+        versionCode versionMajor * 1000 + versionMinor
         versionName versionMajor + '.' + versionMinor.toString().padLeft(2, '0')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
