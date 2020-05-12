@@ -25,3 +25,6 @@
 #-renamesourcefileattribute SourceFile
 
 -dontobfuscate
+
+# EncryptedSharedPreferences
+-keep class com.google.crypto.tink.** { *; }
