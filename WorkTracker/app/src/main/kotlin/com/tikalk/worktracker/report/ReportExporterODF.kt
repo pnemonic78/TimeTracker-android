@@ -41,15 +41,18 @@ import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.SYSTEM_DATE_PATTERN
+import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.SingleObserver
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument
 import org.odftoolkit.odfdom.doc.table.OdfTableCell
 import org.odftoolkit.odfdom.dom.attribute.style.StyleDataStyleNameAttribute
+import org.odftoolkit.odfdom.dom.element.table.TableTableCellElement
 import org.odftoolkit.odfdom.dom.style.OdfStyleFamily
 import org.odftoolkit.odfdom.dom.style.props.OdfParagraphProperties
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties
 import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties
 import org.odftoolkit.odfdom.incubator.doc.number.OdfNumberDateStyle
+import org.odftoolkit.odfdom.type.Color
 import java.io.File
 import java.util.*
 
@@ -85,6 +88,14 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             var rowIndex = 0
             var columnIndex = 0
             var cell: OdfTableCell
+
+            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
+            cell = table.getCellByPosition(columnIndex, rowIndex)
+            cell.stringValue = titleText
+            val cellTitle = cell
+
+            rowIndex += 2
+            columnIndex = 0
 
             cell = table.getCellByPosition(columnIndex++, rowIndex)
             cell.stringValue = context.getString(R.string.date_header)
@@ -162,6 +173,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.setCurrencyValue(record.cost, currencyCode)
                 }
+                assert(columnIndex == columnCount)
             }
 
             rowIndex += 2
@@ -194,10 +206,17 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.setCurrencyValue(totals.cost, currencyCode)
             }
-
-            // Apply styles afterwards because new cells inherit the previous cell's style.
+            assert(columnIndex == columnCount)
 
             val documentStyles = doc.documentStyles
+
+            val sectionHeaderStyleName = "sectionHeader"
+            val sectionHeaderStyle = documentStyles.newStyle(sectionHeaderStyleName, OdfStyleFamily.TableCell)
+            sectionHeaderStyle.setProperty(OdfTextProperties.FontWeight, "bold")
+            sectionHeaderStyle.setProperty(OdfTextProperties.Color, Color.SILVER.toString())
+            sectionHeaderStyle.setProperty(OdfTextProperties.FontSize, "12pt")
+            sectionHeaderStyle.setProperty(OdfTableCellProperties.BorderBottom, "1pt solid ${Color.SILVER}")
+
             val tableHeaderStyleName = "tableHeader"
             val tableHeaderStyle = documentStyles.newStyle(tableHeaderStyleName, OdfStyleFamily.TableCell)
             tableHeaderStyle.setProperty(OdfTextProperties.FontWeight, "bold")
@@ -233,6 +252,12 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             val rowReportSubtotalStyle = documentStyles.newStyle(rowReportSubtotalStyleName, OdfStyleFamily.TableCell)
             rowReportSubtotalStyle.setProperty(OdfTextProperties.FontWeight, "bold")
             rowReportSubtotalStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#e0e0e0")
+
+            val cellTitleElement = cellTitle.odfElement
+            cellTitleElement.styleName = sectionHeaderStyleName
+            if (cellTitleElement is TableTableCellElement) {
+                cellTitleElement.tableNumberColumnsSpannedAttribute = columnCount
+            }
 
             for (c in 0 until columnCount) {
                 cell = table.getCellByPosition(c, rowIndexHeader)
