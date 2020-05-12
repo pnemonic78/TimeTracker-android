@@ -38,6 +38,7 @@ import androidx.core.content.FileProvider
 import com.github.reactivex.DefaultDisposable
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.Single
@@ -51,18 +52,22 @@ import java.io.Writer
 /**
  * Write the list of records to a file.
  */
-abstract class ReportExporter(val context: Context, val records: List<TimeRecord>, val filter: ReportFilter) : Single<Uri>(), Disposable {
+abstract class ReportExporter(val context: Context, val records: List<TimeRecord>, val filter: ReportFilter, val totals: ReportTotals) : Single<Uri>(), Disposable {
 
     private var runner: ReportExporterRunner? = null
 
     override fun subscribeActual(observer: SingleObserver<in Uri>) {
-        val r = createRunner(context, records, filter, observer)
+        val r = createRunner(context, records, filter, totals, observer)
         runner = r
         observer.onSubscribe(r)
-        r.run()
+        try {
+            r.run()
+        } catch (e: Throwable) {
+            observer.onError(e)
+        }
     }
 
-    protected abstract fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner
+    protected abstract fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>): ReportExporterRunner
 
     override fun isDisposed(): Boolean {
         return runner?.isDisposed ?: false
@@ -78,7 +83,7 @@ abstract class ReportExporter(val context: Context, val records: List<TimeRecord
 
     fun isIdle(): Boolean = (runner == null) || !runner!!.running || isDisposed
 
-    protected abstract class ReportExporterRunner(val context: Context, val records: List<TimeRecord>, val filter: ReportFilter, val observer: SingleObserver<in Uri>) : DefaultDisposable() {
+    protected abstract class ReportExporterRunner(val context: Context, val records: List<TimeRecord>, val filter: ReportFilter, val totals: ReportTotals, val observer: SingleObserver<in Uri>) : DefaultDisposable() {
 
         var running = false
             private set
@@ -97,7 +102,7 @@ abstract class ReportExporter(val context: Context, val records: List<TimeRecord
             val folder = File(context.filesDir, FOLDER_EXPORTS)
             folder.mkdirs()
             val filename = "report_${formatSystemDate(filter.start)}_${formatSystemDate(filter.finish)}"
-            val file = writeContents(context, records, filter, folder, filename)
+            val file = writeContents(context, records, filter, totals, folder, filename)
             val fileUri: Uri? = FileProvider.getUriForFile(context, AUTHORITY, file)
 
             running = false
@@ -111,7 +116,7 @@ abstract class ReportExporter(val context: Context, val records: List<TimeRecord
         }
 
         @Throws(IOException::class)
-        protected abstract fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File
+        protected abstract fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, folder: File, filenamePrefix: String): File
     }
 
     companion object {

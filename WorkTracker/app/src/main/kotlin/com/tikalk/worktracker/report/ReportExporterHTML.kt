@@ -34,6 +34,7 @@ package com.tikalk.worktracker.report
 
 import android.content.Context
 import android.net.Uri
+import com.tikalk.util.isEven
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
@@ -53,16 +54,16 @@ import java.io.Writer
 import java.util.*
 
 /**
- * Write the list of records as an HTML file.
+ * Write the list of records as an Hypertext Markup Language (HTML) file.
  */
-class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: ReportFilter, val totals: ReportTotals) : ReportExporter(context, records, filter) {
+class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals) : ReportExporter(context, records, filter, totals) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
+    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>): ReportExporterRunner {
         return ReportExporterHTMLRunner(context, records, filter, totals, observer)
     }
 
-    private class ReportExporterHTMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, private val totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
-        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
+    private class ReportExporterHTMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, totals, observer) {
+        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
             val showStartField = filter.showStartField
@@ -83,6 +84,8 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
 
             val timeBuffer = StringBuilder(20)
             val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
+            val currencyBuffer = StringBuilder(20)
+            val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
 
             val consumer = DelayedConsumer(HTMLStreamBuilder(writer, prettyPrint = true, xhtmlCompatible = true)).html {
                 head {
@@ -162,7 +165,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                         for (i in records.indices) {
                             val record = records[i]
 
-                            tr(if (i.rem(2) == 0) "rowReportItem" else "rowReportItemAlt") {
+                            tr(if (i.isEven()) "rowReportItem" else "rowReportItemAlt") {
                                 td("cellLeftAligned") {
                                     +formatSystemDate(record.start)
                                 }
@@ -241,7 +244,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                             if (showCostField) {
                                 td("cellRightAlignedSubtotal") {
                                     timeBuffer.setLength(0)
-                                    +formatCurrency(timeFormatter, totals.cost).toString()
+                                    +formatCurrency(currencyFormatter, totals.cost).toString()
                                 }
                             }
                         }

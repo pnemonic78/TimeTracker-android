@@ -39,6 +39,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -114,6 +115,8 @@ class ReportFragment : InternetFragment(),
         val context = this.context ?: return
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
+        val currencyBuffer = StringBuilder(20)
+        val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
         val filter = filterData.value
 
         if (filter?.showDurationField == true) {
@@ -127,7 +130,7 @@ class ReportFragment : InternetFragment(),
         if (filter?.showCostField == true) {
             timeBuffer.setLength(0)
             costTotalLabel.visibility = View.VISIBLE
-            costTotal.text = formatCurrency(timeFormatter, totals.cost).toString()
+            costTotal.text = formatCurrency(currencyFormatter, totals.cost).toString()
         } else {
             costTotalLabel.visibility = View.INVISIBLE
             costTotal.text = null
@@ -211,6 +214,10 @@ class ReportFragment : InternetFragment(),
                 exportHTML(item)
                 return true
             }
+            R.id.menu_export_odf -> {
+                exportODF(item)
+                return true
+            }
             R.id.menu_export_xml -> {
                 exportXML(item)
                 return true
@@ -223,11 +230,12 @@ class ReportFragment : InternetFragment(),
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
+        val totals = totalsData.value ?: return
 
         item?.isEnabled = false
         showProgress(true)
 
-        ReportExporterCSV(context, records, filter)
+        ReportExporterCSV(context, records, filter, totals)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ uri ->
@@ -236,7 +244,7 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error updating profile: ${err.message}")
+                Timber.e(err, "Error exporting report: ${err.message}")
                 showProgress(false)
                 item?.isEnabled = true
             })
@@ -261,8 +269,34 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error updating profile: ${err.message}")
+                Timber.e(err, "Error exporting report: ${err.message}")
                 showProgress(false)
+                item?.isEnabled = true
+            })
+            .addTo(disposables)
+    }
+
+    private fun exportODF(item: MenuItem? = null) {
+        val context = this.context ?: return
+        val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
+        val totals = totalsData.value ?: return
+
+        item?.isEnabled = false
+        showProgress(true)
+
+        ReportExporterODF(context, records, filter, totals)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ file ->
+                Timber.i("Exported ODF to $file")
+                shareFile(context, file, ReportExporterODF.MIME_TYPE)
+                showProgress(false)
+                item?.isEnabled = true
+            }, { err ->
+                Timber.e(err, "Error exporting report: ${err.message}")
+                showProgress(false)
+                alert(err)
                 item?.isEnabled = true
             })
             .addTo(disposables)
@@ -272,11 +306,12 @@ class ReportFragment : InternetFragment(),
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
+        val totals = totalsData.value ?: return
 
         item?.isEnabled = false
         showProgress(true)
 
-        ReportExporterXML(context, records, filter)
+        ReportExporterXML(context, records, filter, totals)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ file ->
@@ -285,7 +320,7 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error updating profile: ${err.message}")
+                Timber.e(err, "Error exporting report: ${err.message}")
                 showProgress(false)
                 item?.isEnabled = true
             })
@@ -307,6 +342,15 @@ class ReportFragment : InternetFragment(),
         } else {
             Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun alert(err: Throwable?) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.error_title)
+            .setIcon(R.drawable.ic_dialog)
+            .setMessage(R.string.error_export)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     companion object {

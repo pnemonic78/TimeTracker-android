@@ -37,6 +37,7 @@ import android.net.Uri
 import android.text.format.DateUtils
 import android.util.Xml
 import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
@@ -48,16 +49,16 @@ import java.io.Writer
 import java.util.*
 
 /**
- * Write the list of records as an XML file.
+ * Write the list of records as an Extensible Markup Language (XML) file.
  */
-class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: ReportFilter) : ReportExporter(context, records, filter) {
+class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals) : ReportExporter(context, records, filter, totals) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>): ReportExporterRunner {
-        return ReportExporterXMLRunner(context, records, filter, observer)
+    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>): ReportExporterRunner {
+        return ReportExporterXMLRunner(context, records, filter, totals, observer)
     }
 
-    private class ReportExporterXMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, observer) {
-        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, folder: File, filenamePrefix: String): File {
+    private class ReportExporterXMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, totals, observer) {
+        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, folder: File, filenamePrefix: String): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
             val showStartField = filter.showStartField
