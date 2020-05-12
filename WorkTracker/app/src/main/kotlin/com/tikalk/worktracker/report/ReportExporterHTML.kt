@@ -34,6 +34,7 @@ package com.tikalk.worktracker.report
 
 import android.content.Context
 import android.net.Uri
+import com.tikalk.util.isEven
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
@@ -164,7 +165,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                         for (i in records.indices) {
                             val record = records[i]
 
-                            tr(if (i.rem(2) == 0) "rowReportItem" else "rowReportItemAlt") {
+                            tr(if (i.isEven()) "rowReportItem" else "rowReportItemAlt") {
                                 td("cellLeftAligned") {
                                     +formatSystemDate(record.start)
                                 }

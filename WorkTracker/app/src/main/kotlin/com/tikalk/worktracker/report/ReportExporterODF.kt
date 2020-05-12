@@ -35,6 +35,7 @@ package com.tikalk.worktracker.report
 import android.content.Context
 import android.net.Uri
 import android.text.format.DateUtils
+import com.tikalk.util.isEven
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
@@ -43,10 +44,12 @@ import com.tikalk.worktracker.time.SYSTEM_DATE_PATTERN
 import io.reactivex.SingleObserver
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument
 import org.odftoolkit.odfdom.doc.table.OdfTableCell
+import org.odftoolkit.odfdom.dom.attribute.style.StyleDataStyleNameAttribute
 import org.odftoolkit.odfdom.dom.style.OdfStyleFamily
 import org.odftoolkit.odfdom.dom.style.props.OdfParagraphProperties
 import org.odftoolkit.odfdom.dom.style.props.OdfTableCellProperties
 import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties
+import org.odftoolkit.odfdom.incubator.doc.number.OdfNumberDateStyle
 import java.io.File
 import java.util.*
 
@@ -77,15 +80,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             out = null
 
             val doc = OdfSpreadsheetDocument.newSpreadsheetDocument()
-            val sheet = doc.contentRoot
-            println(sheet)
-            val tables = doc.tableList
-            println(tables)
-            if (tables.isEmpty()) {
-                val tableElem = sheet.newTableTableElement()
-                sheet.appendChild(tableElem)
-            }
-            val table = tables[0]
+            val table = doc.tableList[0]
 
             var rowIndex = 0
             var columnIndex = 0
@@ -129,6 +124,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             }
             val rowIndexHeader = rowIndex
             val columnCount = columnIndex
+            val rowIndexRecords = rowIndex + 1
 
             for (record in records) {
                 rowIndex++
@@ -136,7 +132,6 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
 
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.dateValue = record.start
-                cell.formatString = SYSTEM_DATE_PATTERN
                 if (showProjectField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = record.project.name
@@ -212,22 +207,64 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             tableHeaderCenteredStyle.setProperty(OdfTextProperties.FontWeight, "bold")
             tableHeaderCenteredStyle.setProperty(OdfParagraphProperties.TextAlign, "center")
 
-            val tableSubtotalStyleName = "tableSubtotal"
-            val tableSubtotalStyle = documentStyles.newStyle(tableSubtotalStyleName, OdfStyleFamily.TableCell)
-            tableSubtotalStyle.setProperty(OdfTextProperties.FontWeight, "bold")
-            tableSubtotalStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#e0e0e0")
+            val rowReportItemStyleName = "rowReportItem"
+            val rowReportItemStyle = documentStyles.newStyle(rowReportItemStyleName, OdfStyleFamily.TableCell)
+            rowReportItemStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#f5f5f5")
+
+            val dateStyleName = "reportItemDate"
+            val dateStyle = OdfNumberDateStyle(doc.stylesDom, SYSTEM_DATE_PATTERN, dateStyleName)
+            documentStyles.appendChild(dateStyle)
+
+            val rowReportItemDateStyleName = "rowReportItemDate"
+            val rowReportItemDateStyle = documentStyles.newStyle(rowReportItemDateStyleName, OdfStyleFamily.TableCell)
+            rowReportItemDateStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#f5f5f5")
+            rowReportItemDateStyle.setOdfAttributeValue(StyleDataStyleNameAttribute.ATTRIBUTE_NAME, dateStyleName)
+
+            val rowReportItemAltStyleName = "rowReportItemAlt"
+            val rowReportItemAltStyle = documentStyles.newStyle(rowReportItemAltStyleName, OdfStyleFamily.TableCell)
+            rowReportItemAltStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#ffffff")
+
+            val rowReportItemDateAltStyleName = "rowReportItemDateAlt"
+            val rowReportItemDateAltStyle = documentStyles.newStyle(rowReportItemDateAltStyleName, OdfStyleFamily.TableCell)
+            rowReportItemDateAltStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#ffffff")
+            rowReportItemDateAltStyle.setOdfAttributeValue(StyleDataStyleNameAttribute.ATTRIBUTE_NAME, dateStyleName)
+
+            val rowReportSubtotalStyleName = "rowReportSubtotal"
+            val rowReportSubtotalStyle = documentStyles.newStyle(rowReportSubtotalStyleName, OdfStyleFamily.TableCell)
+            rowReportSubtotalStyle.setProperty(OdfTextProperties.FontWeight, "bold")
+            rowReportSubtotalStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#e0e0e0")
 
             for (c in 0 until columnCount) {
                 cell = table.getCellByPosition(c, rowIndexHeader)
-                cell.odfElement.tableStyleNameAttribute = tableHeaderStyleName
+                cell.odfElement.styleName = tableHeaderStyleName
 
                 cell = table.getCellByPosition(c, rowIndexSubtotal)
-                cell.odfElement.tableStyleNameAttribute = tableSubtotalStyleName
+                cell.odfElement.styleName = rowReportSubtotalStyleName
             }
 
-            cellHeaderStart?.odfElement?.tableStyleNameAttribute = tableHeaderCenteredStyleName
-            cellHeaderFinish?.odfElement?.tableStyleNameAttribute = tableHeaderCenteredStyleName
-            cellHeaderDuration?.odfElement?.tableStyleNameAttribute = tableHeaderCenteredStyleName
+            for (i in records.indices) {
+                rowIndex = rowIndexRecords + i
+
+                cell = table.getCellByPosition(0, rowIndex)
+                if (i.isEven()) {
+                    cell.odfElement.styleName = rowReportItemDateStyleName
+                } else {
+                    cell.odfElement.styleName = rowReportItemDateAltStyleName
+                }
+
+                for (c in 1 until columnCount) {
+                    cell = table.getCellByPosition(c, rowIndex)
+                    if (i.isEven()) {
+                        cell.odfElement.styleName = rowReportItemStyleName
+                    } else {
+                        cell.odfElement.styleName = rowReportItemAltStyleName
+                    }
+                }
+            }
+
+            cellHeaderStart?.odfElement?.styleName = tableHeaderCenteredStyleName
+            cellHeaderFinish?.odfElement?.styleName = tableHeaderCenteredStyleName
+            cellHeaderDuration?.odfElement?.styleName = tableHeaderCenteredStyleName
 
             doc.save(file)
             doc.close()
