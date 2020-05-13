@@ -244,7 +244,7 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error exporting report: ${err.message}")
+                Timber.e(err, "Error exporting CSV: ${err.message}")
                 showProgress(false)
                 item?.isEnabled = true
             })
@@ -269,7 +269,7 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error exporting report: ${err.message}")
+                Timber.e(err, "Error exporting HTML: ${err.message}")
                 showProgress(false)
                 item?.isEnabled = true
             })
@@ -294,7 +294,7 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error exporting report: ${err.message}")
+                Timber.e(err, "Error exporting ODF: ${err.message}")
                 showProgress(false)
                 alert(err)
                 item?.isEnabled = true
@@ -320,7 +320,7 @@ class ReportFragment : InternetFragment(),
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error exporting report: ${err.message}")
+                Timber.e(err, "Error exporting XML: ${err.message}")
                 showProgress(false)
                 item?.isEnabled = true
             })
