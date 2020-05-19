@@ -97,14 +97,15 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
 
     @MainThread
     private fun bindColors(record: TimeRecord) {
-        val projectColor = if (record.project.id != TikalEntity.ID_NONE) record.project.id else record.project.hashCode().toLong()
-        val taskColor = if (record.task.id != TikalEntity.ID_NONE) record.task.id else record.task.hashCode().toLong()
-        val mappedId = (projectColor * taskColor).rem(512).toInt()
+        val projectHash: Int = if (record.project.id != TikalEntity.ID_NONE) record.project.id.toInt() else record.project.hashCode()
+        val taskHash: Int = if (record.task.id != TikalEntity.ID_NONE) record.task.id.toInt() else record.task.hashCode()
+        val spread = (projectHash * projectHash * taskHash)
+        val spreadBits = spread.and(511)
 
         // 512 combinations => 3 bits per color
-        val redBits = mappedId.and(7)
-        val greenBits = mappedId.shr(3).and(7)
-        val blueBits = mappedId.shr(6).and(7)
+        val redBits = spreadBits.and(0x07)
+        val greenBits = spreadBits.shr(3).and(0x07)
+        val blueBits = spreadBits.shr(6).and(0x07)
         val r = redBits * 24 //*32 => some colors too bright
         val g = greenBits * 24 //*32 => some colors too bright
         val b = blueBits * 24 //*32 => some colors too bright
