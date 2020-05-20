@@ -43,9 +43,12 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
+import com.tikalk.app.DateTimePickerDialog
+import com.tikalk.app.DateTimePickerDialog.OnDateTimeSetListener
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
+import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
@@ -73,7 +76,7 @@ class TimeEditFragment : TimeFormFragment() {
     var listener: OnEditRecordListener? = null
 
     private var startPickerDialog: TimePickerDialog? = null
-    private var finishPickerDialog: TimePickerDialog? = null
+    private var finishPickerDialog: DateTimePickerDialog? = null
     private var errorMessage: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -239,21 +242,30 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickFinishTime() {
         val cal = getCalendar(record.finish)
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
         val hour = cal.hourOfDay
         val minute = cal.minute
         var picker = finishPickerDialog
         if (picker == null) {
-            val listener = TimePickerDialog.OnTimeSetListener { _, pickedHour, pickedMinute ->
-                cal.hourOfDay = pickedHour
-                cal.minute = pickedMinute
-                record.finish = cal
-                finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
-                finishInput.error = null
+            val context = requireContext()
+            val listener = object : OnDateTimeSetListener {
+                override fun onDateTimeSet(view: DateTimePicker, year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
+                    cal.year = year
+                    cal.month = month
+                    cal.dayOfMonth = dayOfMonth
+                    cal.hourOfDay = hourOfDay
+                    cal.minute = minute
+                    record.finish = cal
+                    finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
+                    finishInput.error = null
+                }
             }
-            picker = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
+            picker = DateTimePickerDialog(context, listener, year, month, dayOfMonth, hour, minute, DateFormat.is24HourFormat(context))
             finishPickerDialog = picker
         } else {
-            picker.updateTime(hour, minute)
+            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
         }
         picker.show()
     }
