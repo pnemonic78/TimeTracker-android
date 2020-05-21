@@ -75,7 +75,7 @@ class TimeEditFragment : TimeFormFragment() {
     private var date: Calendar = Calendar.getInstance()
     var listener: OnEditRecordListener? = null
 
-    private var startPickerDialog: TimePickerDialog? = null
+    private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
     private var errorMessage: String = ""
 
@@ -220,22 +220,30 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickStartTime() {
         val cal = getCalendar(record.start)
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
         val hour = cal.hourOfDay
         val minute = cal.minute
         var picker = startPickerDialog
         if (picker == null) {
             val context = requireContext()
-            val listener = TimePickerDialog.OnTimeSetListener { _, pickedHour, pickedMinute ->
-                cal.hourOfDay = pickedHour
-                cal.minute = pickedMinute
-                record.start = cal
-                startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
-                startInput.error = null
+            val listener = object : OnDateTimeSetListener {
+                override fun onDateTimeSet(view: DateTimePicker, year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
+                    cal.year = year
+                    cal.month = month
+                    cal.dayOfMonth = dayOfMonth
+                    cal.hourOfDay = hourOfDay
+                    cal.minute = minute
+                    record.start = cal
+                    startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
+                    startInput.error = null
+                }
             }
-            picker = TimePickerDialog(context, listener, hour, minute, DateFormat.is24HourFormat(context))
+            picker = DateTimePickerDialog(context, listener, year, month, dayOfMonth, hour, minute, DateFormat.is24HourFormat(context))
             startPickerDialog = picker
         } else {
-            picker.updateTime(hour, minute)
+            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
         }
         picker.show()
     }
