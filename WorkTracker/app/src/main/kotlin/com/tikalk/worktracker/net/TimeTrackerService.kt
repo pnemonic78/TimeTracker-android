@@ -54,6 +54,7 @@ interface TimeTrackerService {
         const val PHP_USERS = "users.php"
         const val PHP_REPORTS = "reports.php"
         const val PHP_REPORT = "report.php"
+        const val PHP_ACCESS_DENIED = "access_denied.php"
     }
 
     @FormUrlEncoded

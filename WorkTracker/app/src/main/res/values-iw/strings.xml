@@ -113,4 +113,5 @@
     <!-- Errors -->
     <string name="error">שגיה</string>
     <string name="error_unknownHost">לא ניתן להתחבר לשרת המרוחק.</string>
+    <string name="error_accessDenied">לא ניתן לגשת לדף המבוקש.</string>
 </resources>

@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.data.remote
 
+import com.tikalk.worktracker.auth.AccessDeniedException
 import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -48,7 +49,8 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
                                   private val db: TrackerDatabase,
                                   private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
 
-    private fun isValidResponse(response: Response<String>): Boolean {
+    @Throws(Exception::class)
+    private fun validateResponse(response: Response<String>) {
         val html = response.body()
         if (response.isSuccessful && (html != null)) {
             val networkResponse = response.raw().networkResponse()
@@ -57,18 +59,21 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
                 val networkUrl = networkResponse.request().url()
                 val priorUrl = priorResponse.request().url()
                 if (networkUrl == priorUrl) {
-                    return true
+                    return
                 }
                 when (networkUrl.pathSegments()[networkUrl.pathSize() - 1]) {
                     TimeTrackerService.PHP_TIME,
                     TimeTrackerService.PHP_REPORT ->
-                        return true
+                        return
+                    TimeTrackerService.PHP_ACCESS_DENIED ->
+                        throw AccessDeniedException()
+                    else ->
+                        throw AuthenticationException("authentication required")
                 }
-                return false
             }
-            return true
+            return
         }
-        return false
+        throw AuthenticationException("authentication required")
     }
 
     override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
@@ -77,13 +82,11 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         }
         return service.fetchTime(recordId)
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    val page = parseEditPage(html)
-                    savePage(page)
-                    return@map page
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                val page = parseEditPage(html)
+                savePage(page)
+                return@map page
             }
             .toObservable()
     }
@@ -99,11 +102,9 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
         return service.fetchProjects()
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    return@map parseProjectsPage(html)
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                return@map parseProjectsPage(html)
             }
             .toObservable()
     }
@@ -115,11 +116,9 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
         return service.fetchProjectTasks()
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    return@map parseProjectTasksPage(html)
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                return@map parseProjectTasksPage(html)
             }
             .toObservable()
     }
@@ -131,13 +130,11 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     override fun usersPage(refresh: Boolean): Observable<UsersPage> {
         return service.fetchUsers()
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    val page = parseUsersPage(html)
-                    savePage(page)
-                    return@map page
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                val page = parseUsersPage(html)
+                savePage(page)
+                return@map page
             }
             .toObservable()
     }
@@ -153,13 +150,11 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
         return service.fetchReports()
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    val page = parseReportFormPage(html)
-                    savePage(page)
-                    return@map page
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                val page = parseReportFormPage(html)
+                savePage(page)
+                return@map page
             }
             .toObservable()
     }
@@ -175,13 +170,11 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
         return service.generateReport(filter.toFields())
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    val page = parseReportPage(html, filter)
-                    savePage(page)
-                    return@map page
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                val page = parseReportPage(html, filter)
+                savePage(page)
+                return@map page
             }
             .toObservable()
     }
@@ -198,13 +191,11 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         val dateFormatted = formatSystemDate(date)
         return service.fetchTimes(dateFormatted)
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    val page = parseTimeListPage(html)
-                    savePage(page)
-                    return@map page
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                val page = parseTimeListPage(html)
+                savePage(page)
+                return@map page
             }
             .toObservable()
     }
@@ -220,13 +211,11 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
         return service.fetchProfile()
             .map { response ->
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    val page = parseProfilePage(html)
-                    savePage(page)
-                    return@map page
-                }
-                throw AuthenticationException("authentication required")
+                validateResponse(response)
+                val html = response.body()!!
+                val page = parseProfilePage(html)
+                savePage(page)
+                return@map page
             }
             .toObservable()
     }

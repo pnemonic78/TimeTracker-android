@@ -39,6 +39,7 @@ import com.tikalk.app.runOnUiThread
 import com.tikalk.html.textBr
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.auth.AccessDeniedException
 import com.tikalk.worktracker.auth.AuthenticationException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -69,6 +70,8 @@ abstract class InternetFragment : TrackerFragment {
                     TimeTrackerService.PHP_TIME,
                     TimeTrackerService.PHP_REPORT ->
                         return true
+                    TimeTrackerService.PHP_ACCESS_DENIED ->
+                        throw AccessDeniedException()
                 }
                 return false
             }
@@ -119,6 +122,7 @@ abstract class InternetFragment : TrackerFragment {
      */
     protected fun handleError(error: Throwable) {
         when (error) {
+            is AccessDeniedException -> showAccessDeniedError()
             is AuthenticationException -> authenticate()
             is UnknownHostException -> showUnknownHostError()
         }
@@ -145,5 +149,9 @@ abstract class InternetFragment : TrackerFragment {
 
     protected fun showUnknownHostError() {
         showError(R.string.error_unknownHost)
+    }
+
+    protected fun showAccessDeniedError() {
+        showError(R.string.error_accessDenied)
     }
 }
