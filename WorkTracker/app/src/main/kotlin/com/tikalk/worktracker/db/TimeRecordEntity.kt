@@ -34,10 +34,7 @@ package com.tikalk.worktracker.db
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
-import com.tikalk.worktracker.model.Converters
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -77,7 +74,10 @@ open class TimeRecordEntity(
     @ColumnInfo(name = "cost")
     var cost: Double = 0.0,
     @ColumnInfo(name = "status")
-    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
+    @ColumnInfo(name = "remote")
+    // "isRemote" is invalid member name!
+    var remote: Boolean = false
 ) : TikalEntity(id), Parcelable {
 
     constructor(parcel: Parcel) : this(ID_NONE, ID_NONE, ID_NONE) {
@@ -91,6 +91,7 @@ open class TimeRecordEntity(
         finish = if (finishTime == NEVER) null else finishTime.toCalendar()
         note = parcel.readString() ?: ""
         status = TaskRecordStatus.values()[parcel.readInt()]
+        remote = parcel.readInt() != 0
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -102,6 +103,7 @@ open class TimeRecordEntity(
         parcel.writeLong(finish?.timeInMillis ?: NEVER)
         parcel.writeString(note)
         parcel.writeInt(status.ordinal)
+        parcel.writeInt(if (remote) 1 else 0)
     }
 
     override fun describeContents(): Int {
@@ -131,6 +133,12 @@ open class TimeRecordConverters : Converters() {
 
     @TypeConverter
     fun toRecordStatus(value: Int): TaskRecordStatus = TaskRecordStatus.values()[value]
+
+    @TypeConverter
+    fun fromRecordRemote(value: Remote): Long = value.id
+
+    @TypeConverter
+    fun toRecordRemote(value: Long): Remote = Remote.valueOf(value)
 }
 
 fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
@@ -142,7 +150,8 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         this.finish,
         this.note,
         this.cost,
-        this.status
+        this.status,
+        this.isRemote
     )
 
 fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
@@ -168,6 +177,7 @@ fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: 
         value.finish,
         value.note,
         value.cost,
-        value.status
+        value.status,
+        value.remote
     )
 }

@@ -80,7 +80,7 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
         val recordsToDelete = recordsDbById.values
         recordsDao.delete(recordsToDelete)
 
-        val recordIds = recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
+        /*val recordIds =*/ recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
         //for (i in recordIds.indices) {
         //    recordsToInsert[i].dbId = recordIds[i]
         //}

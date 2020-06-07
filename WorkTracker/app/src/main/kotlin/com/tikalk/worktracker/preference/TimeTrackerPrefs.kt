@@ -62,6 +62,8 @@ class TimeTrackerPrefs(context: Context) {
         private const val PROJECT_ID = "project.id"
         private const val PROJECT_NAME = "project.name"
         private const val PROJECT_FAVORITE = "project.favorite"
+        private const val REMOTE = "remote"
+        private const val REMOTE_FAVORITE = "remote.favorite"
         private const val TASK_ID = "task.id"
         private const val TASK_NAME = "task.name"
         private const val TASK_FAVORITE = "task.favorite"
@@ -101,13 +103,14 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long) {
+    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, isRemote: Boolean) {
         prefs.edit()
             .putLong(PROJECT_ID, projectId)
             .putString(PROJECT_NAME, projectName)
             .putLong(TASK_ID, taskId)
             .putString(TASK_NAME, taskName)
             .putLong(START_TIME, startTime)
+            .putBoolean(REMOTE, isRemote)
             .apply()
     }
 
@@ -116,7 +119,8 @@ class TimeTrackerPrefs(context: Context) {
             record.project.name,
             record.task.id,
             record.task.name,
-            record.startTime)
+            record.startTime,
+            record.isRemote)
     }
 
     fun getStartedRecord(): TimeRecord? {
@@ -140,7 +144,9 @@ class TimeTrackerPrefs(context: Context) {
         project.addTask(task)
         val start = startTime.toCalendar()
 
-        return TimeRecord(TikalEntity.ID_NONE, project, task, start)
+        val isRemote = prefs.getBoolean(REMOTE, false)
+
+        return TimeRecord(TikalEntity.ID_NONE, project, task, start, isRemote = isRemote)
     }
 
     fun stopRecord() {
@@ -154,17 +160,18 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun setFavorite(record: TimeRecord) {
-        setFavorite(record.project, record.task)
+        setFavorite(record.project, record.task, record.isRemote)
     }
 
-    fun setFavorite(project: Project, task: ProjectTask) {
-        setFavorite(project.id, task.id)
+    fun setFavorite(project: Project, task: ProjectTask, isRemote: Boolean) {
+        setFavorite(project.id, task.id, isRemote)
     }
 
-    fun setFavorite(projectId: Long, taskId: Long) {
+    fun setFavorite(projectId: Long, taskId: Long, isRemote: Boolean = false) {
         prefs.edit()
             .putLong(PROJECT_FAVORITE, projectId)
             .putLong(TASK_FAVORITE, taskId)
+            .putBoolean(REMOTE_FAVORITE, isRemote)
             .apply()
     }
 
@@ -174,6 +181,10 @@ class TimeTrackerPrefs(context: Context) {
 
     fun getFavoriteTask(): Long {
         return prefs.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
+    }
+
+    fun getFavoriteRemote(): Boolean {
+        return prefs.getBoolean(REMOTE_FAVORITE, false)
     }
 
     private var _user: User? = null

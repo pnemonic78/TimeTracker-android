@@ -37,6 +37,7 @@ import com.tikalk.html.textBr
 import com.tikalk.html.value
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.MutableFormPage
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -97,6 +98,20 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
             }
         }
         return ProjectTask.EMPTY
+    }
+
+    protected fun findSelectedRemote(remoteInput: Element): Remote {
+        for (option in remoteInput.children()) {
+            if (option.hasAttr("selected")) {
+                val value = option.value()
+                if (value.isNotEmpty()) {
+                    val id = value.toLong()
+                    return Remote.valueOf(id)
+                }
+                break
+            }
+        }
+        return Remote.NO
     }
 
     private fun parseProjects(select: Element): List<Project> {
@@ -223,14 +238,17 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
     }
 
     protected open fun createRecord(): R {
+        @Suppress("UNCHECKED_CAST")
         return TimeRecord.EMPTY.copy() as R
     }
 
     protected open fun createPage(page: MP): P {
+        @Suppress("UNCHECKED_CAST")
         return FormPage(page.record, page.projects, page.errorMessage) as P
     }
 
     protected open fun createMutablePage(record: R): MP {
+        @Suppress("UNCHECKED_CAST")
         return MutableFormPage(record) as MP
     }
 

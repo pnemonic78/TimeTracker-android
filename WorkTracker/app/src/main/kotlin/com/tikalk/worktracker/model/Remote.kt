@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,55 +29,28 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.db
 
-import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.User
+package com.tikalk.worktracker.model
 
-/**
- * Work Tracker database.
- */
-@Database(
-    entities = [
-        Project::class,
-        ProjectTask::class,
-        ProjectTaskKey::class,
-        ReportRecord::class,
-        TimeRecordEntity::class,
-        User::class
-    ],
-    version = 10,
-    exportSchema = false
-)
-abstract class TrackerDatabase : RoomDatabase() {
-    abstract fun projectDao(): ProjectDao
-    abstract fun taskDao(): ProjectTaskDao
-    abstract fun projectTaskKeyDao(): ProjectTaskKeyDao
-    abstract fun reportRecordDao(): ReportRecordDao
-    abstract fun timeRecordDao(): TimeRecordDao
-    abstract fun userDao(): UserDao
+enum class Remote(val id: Long) {
+    NO(11),
+    YES(10);
+
+    fun toBoolean(): Boolean {
+        return this == YES
+    }
 
     companion object {
-        @Volatile
-        private var instance: TrackerDatabase? = null
+        fun valueOf(id: Long): Remote {
+            return values().firstOrNull { id == it.id } ?: NO
+        }
 
-        fun getDatabase(context: Context): TrackerDatabase {
-            if (instance == null) {
-                synchronized(TrackerDatabase::class.java) {
-                    if (instance == null) {
-                        // Create database here
-                        instance = Room.databaseBuilder(context.applicationContext, TrackerDatabase::class.java, "tracker.db")
-                            .fallbackToDestructiveMigration()
-                            .build()
-                    }
-                }
-            }
-            return instance!!
+        fun valueOf(value: Boolean): Remote {
+            return if (value) YES else NO
         }
     }
+}
+
+fun Boolean.toRemote(): Remote {
+    return if (this) Remote.YES else Remote.NO
 }

@@ -85,5 +85,10 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         record.note = noteValue
 
         record.status = if (record.id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
+
+        val inputRemote = form.selectByName("time_field_5")
+        if (inputRemote != null) {
+            record.isRemote = findSelectedRemote(inputRemote).toBoolean()
+        }
     }
 }

@@ -98,6 +98,7 @@ class TimerFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
+        remoteInput.setOnCheckedChangeListener { _, isChecked -> record.isRemote = isChecked }
 
         actionStart.setOnClickListener { startTimer() }
         actionStop.setOnClickListener { stopTimer() }
@@ -116,15 +117,19 @@ class TimerFragment : TimeFormFragment() {
         val projects = projectsData.value
         bindProjects(context, record, projects)
 
+        remoteInput.isChecked = record.isRemote
+
         val startTime = record.startTime
         if (startTime <= TimeRecord.NEVER) {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
+            remoteInput.isEnabled = true
             actionSwitcher.displayedChild = CHILD_START
             activity?.invalidateOptionsMenu()
         } else {
             projectInput.isEnabled = false
             taskInput.isEnabled = false
+            remoteInput.isEnabled = false
             actionSwitcher.displayedChild = CHILD_STOP
             activity?.invalidateOptionsMenu()
 
@@ -192,6 +197,7 @@ class TimerFragment : TimeFormFragment() {
             args.remove(EXTRA_TASK_ID)
             args.remove(EXTRA_START_TIME)
             args.remove(EXTRA_FINISH_TIME)
+            args.remove(EXTRA_REMOTE)
         }
 
         bindForm(record)
@@ -250,6 +256,7 @@ class TimerFragment : TimeFormFragment() {
                 val taskId = args.getLong(EXTRA_TASK_ID)
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
+                val isRemote = args.getBoolean(EXTRA_REMOTE)
 
                 val projects = projectsData.value
                 val project = projects?.find { it.id == projectId } ?: projectEmpty
@@ -263,6 +270,7 @@ class TimerFragment : TimeFormFragment() {
                 if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
+                record.isRemote = isRemote
                 return record
             }
         }
@@ -286,6 +294,7 @@ class TimerFragment : TimeFormFragment() {
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
             setRecordTask(task)
             record.start = recordStarted.start
+            record.isRemote = recordStarted.isRemote
         }
     }
 
@@ -301,6 +310,7 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+            args.putBoolean(TimeEditFragment.EXTRA_REMOTE, record.isRemote)
             parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }

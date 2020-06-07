@@ -34,6 +34,7 @@ package com.tikalk.worktracker.model.time
 import android.text.format.DateUtils
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.time.*
 import java.util.*
@@ -51,7 +52,8 @@ open class TimeRecord(
     finish: Calendar? = null,
     var note: String = "",
     var cost: Double = 0.0,
-    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
+    var isRemote: Boolean = false
 ) : TikalEntity(id) {
 
     var start: Calendar? = start
@@ -97,7 +99,8 @@ open class TimeRecord(
             finish,
             note,
             cost,
-            status
+            status,
+            isRemote
         )
     }
 
@@ -110,7 +113,8 @@ open class TimeRecord(
             finish,
             note,
             cost,
-            status
+            status,
+            isRemote
         )
     }
 

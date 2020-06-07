@@ -29,48 +29,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.db
 
-import androidx.room.Embedded
-import androidx.room.Relation
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.time.TimeRecord
+package com.tikalk.worktracker.auth
 
-/**
- * Time record entity with its project and task.
- *
- * @author Moshe Waisberg.
- */
-data class WholeTimeRecordEntity(
-    @Embedded
-    val record: TimeRecordEntity,
-    @Relation(
-        parentColumn = "project_id",// in Record
-        entity = Project::class,
-        entityColumn = "id"// in Project
-    )
-    val project: Project,
-    @Relation(
-        parentColumn = "task_id",// in Record
-        entity = ProjectTask::class,
-        entityColumn = "id"// in ProjectTask
-    )
-    val task: ProjectTask
-)
-
-fun WholeTimeRecordEntity.toTimeRecord(): TimeRecord {
-    val value: TimeRecordEntity = this.record
-
-    return TimeRecord(
-        value.id,
-        project,
-        task,
-        value.start,
-        value.finish,
-        value.note,
-        value.cost,
-        value.status,
-        value.remote
-    )
+class AccessDeniedException : SecurityException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
 }
