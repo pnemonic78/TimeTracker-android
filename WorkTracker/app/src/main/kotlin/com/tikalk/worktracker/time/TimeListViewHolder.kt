@@ -83,6 +83,7 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
         itemView.timeDuration.text = formatterElapsed.out() as CharSequence
         itemView.note.text = record.note
         itemView.cost.text = formatCost(record.cost)
+        itemView.remoteIcon.visibility = if (record.isRemote) View.VISIBLE else View.INVISIBLE
     }
 
     @MainThread
@@ -93,6 +94,7 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
         itemView.timeDuration.text = ""
         itemView.note.text = ""
         itemView.cost.text = ""
+        itemView.remoteIcon.visibility = View.INVISIBLE
     }
 
     @MainThread
