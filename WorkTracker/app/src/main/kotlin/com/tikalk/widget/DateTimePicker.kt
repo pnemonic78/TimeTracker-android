@@ -44,7 +44,7 @@ import com.tikalk.worktracker.R
 /**
  * Provides a widget for selecting a date and time.
  */
-class DateTimePicker(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : FrameLayout(context, attrs, defStyleAttr),
+class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0, defStyleRes: Int = 0) : FrameLayout(context, attrs, defStyleAttr),
     DatePicker.OnDateChangedListener,
     TimePicker.OnTimeChangedListener {
 
@@ -93,6 +93,7 @@ class DateTimePicker(context: Context, attrs: AttributeSet?, defStyleAttr: Int, 
         datePicker.updateDate(year, month, dayOfMonth)
     }
 
+    @Suppress("DEPRECATION")
     fun updateTime(hourOfDay: Int, minuteOfHour: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             timePicker.hour = hourOfDay

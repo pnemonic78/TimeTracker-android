@@ -223,14 +223,17 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
     }
 
     protected open fun createRecord(): R {
+        @Suppress("UNCHECKED_CAST")
         return TimeRecord.EMPTY.copy() as R
     }
 
     protected open fun createPage(page: MP): P {
+        @Suppress("UNCHECKED_CAST")
         return FormPage(page.record, page.projects, page.errorMessage) as P
     }
 
     protected open fun createMutablePage(record: R): MP {
+        @Suppress("UNCHECKED_CAST")
         return MutableFormPage(record) as MP
     }
 

@@ -94,6 +94,7 @@ fun DialogFragment.isShowing(): Boolean {
 }
 
 fun <F : Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
+    @Suppress("UNCHECKED_CAST")
     return fragments.find { clazz.isAssignableFrom(it.javaClass) } as F?
 }
 
@@ -102,6 +103,7 @@ fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {
     while (parent != null) {
         val parentClass = parent.javaClass
         if (clazz.isAssignableFrom(parentClass)) {
+            @Suppress("UNCHECKED_CAST")
             return parent as F?
         }
         parent = parent.parentFragment
