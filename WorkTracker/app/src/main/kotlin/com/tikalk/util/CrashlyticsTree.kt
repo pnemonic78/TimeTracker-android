@@ -31,7 +31,9 @@
  */
 package com.tikalk.util
 
-import com.crashlytics.android.Crashlytics
+import android.util.Log
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import java.util.*
 
 /**
  * Crashlytics logger tree for Timber.
@@ -39,14 +41,28 @@ import com.crashlytics.android.Crashlytics
  * @author Moshe Waisberg
  */
 class CrashlyticsTree(debug: Boolean) : LogTree(debug) {
+
+    private val crashlytics: FirebaseCrashlytics = FirebaseCrashlytics.getInstance()
+
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         super.log(priority, tag, message, t)
+        val logMessage = priorityChar[priority] + "/" + tag + ": " + message
+        crashlytics.log(logMessage)
+        if (t != null) {
+            crashlytics.recordException(t)
+        }
+    }
 
-        if (release) {
-            Crashlytics.log(priority, tag, message)
-            if (t != null) {
-                Crashlytics.logException(t)
-            }
+    companion object {
+        private val priorityChar: MutableMap<Int, String> = HashMap()
+
+        init {
+            priorityChar[Log.ASSERT] = "A"
+            priorityChar[Log.ERROR] = "E"
+            priorityChar[Log.DEBUG] = "D"
+            priorityChar[Log.INFO] = "I"
+            priorityChar[Log.VERBOSE] = "V"
+            priorityChar[Log.WARN] = "W"
         }
     }
 }

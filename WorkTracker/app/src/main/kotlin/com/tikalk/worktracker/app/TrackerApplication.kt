@@ -36,14 +36,12 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.multidex.MultiDex
-import com.crashlytics.android.Crashlytics
 import com.tikalk.app.TikalApplication
 import com.tikalk.util.CrashlyticsTree
 import com.tikalk.util.LogTree
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.TimerWorker
-import io.fabric.sdk.android.Fabric
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -69,10 +67,9 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         // Logging
         val enableDebugLogging = BuildConfig.DEBUG
         if (enableDebugLogging) {
-            Timber.plant(LogTree(true))
+            Timber.plant(LogTree(enableDebugLogging))
         } else {
-            Fabric.with(this, Crashlytics())
-            Timber.plant(CrashlyticsTree(false))
+            Timber.plant(CrashlyticsTree(enableDebugLogging))
         }
 
         registerActivityLifecycleCallbacks(this)
