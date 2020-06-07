@@ -22,6 +22,7 @@
     <string name="prompt_username">שם משתמש</string>
     <string name="project_label">פרויקט</string>
     <string name="task_label">משימה</string>
+    <string name="remote_label">מרוחק</string>
     <string name="date_label">תאריך</string>
     <string name="start_label">שעת התחלה</string>
     <string name="finish_label">שעת סיום</string>

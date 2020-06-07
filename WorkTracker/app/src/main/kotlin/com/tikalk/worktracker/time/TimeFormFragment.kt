@@ -111,6 +111,11 @@ abstract class TimeFormFragment : InternetFragment(),
         record.task = task
     }
 
+    protected open fun setRecordRemote(isRemote: Boolean) {
+        Timber.d("setRecordRemote isRemote=$isRemote")
+        record.isRemote = isRemote
+    }
+
     protected open fun onProjectsUpdated(projects: List<Project>) {
         populateForm(record)
         bindForm(record)
@@ -129,6 +134,9 @@ abstract class TimeFormFragment : InternetFragment(),
                 val task = tasks.find { it.id == taskFavorite } ?: record.task
                 setRecordTask(task)
             }
+
+            val isRemoteFavorite = preferences.getFavoriteRemote()
+            setRecordRemote(isRemoteFavorite)
         }
     }
 
@@ -175,5 +183,6 @@ abstract class TimeFormFragment : InternetFragment(),
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
+        const val EXTRA_REMOTE = BuildConfig.APPLICATION_ID + ".form.REMOTE"
     }
 }

@@ -34,12 +34,8 @@ package com.tikalk.worktracker.db
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
-import com.tikalk.worktracker.model.Converters
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
-import com.tikalk.worktracker.model.time.Remote
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.toCalendar
@@ -80,7 +76,8 @@ open class TimeRecordEntity(
     @ColumnInfo(name = "status")
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
     @ColumnInfo(name = "remote")
-    var remote: Remote = Remote.NO
+    // "isRemote" is invalid member name!
+    var remote: Boolean = false
 ) : TikalEntity(id), Parcelable {
 
     constructor(parcel: Parcel) : this(ID_NONE, ID_NONE, ID_NONE) {
@@ -94,7 +91,7 @@ open class TimeRecordEntity(
         finish = if (finishTime == NEVER) null else finishTime.toCalendar()
         note = parcel.readString() ?: ""
         status = TaskRecordStatus.values()[parcel.readInt()]
-        remote = Remote.valueOf(parcel.readLong())
+        remote = parcel.readInt() != 0
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -106,7 +103,7 @@ open class TimeRecordEntity(
         parcel.writeLong(finish?.timeInMillis ?: NEVER)
         parcel.writeString(note)
         parcel.writeInt(status.ordinal)
-        parcel.writeLong(remote.id)
+        parcel.writeInt(if (remote) 1 else 0)
     }
 
     override fun describeContents(): Int {

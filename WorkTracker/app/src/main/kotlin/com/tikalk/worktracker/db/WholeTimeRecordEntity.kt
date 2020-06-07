@@ -70,6 +70,7 @@ fun WholeTimeRecordEntity.toTimeRecord(): TimeRecord {
         value.finish,
         value.note,
         value.cost,
-        value.status
+        value.status,
+        value.remote
     )
 }

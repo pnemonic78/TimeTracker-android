@@ -30,15 +30,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model.time
+package com.tikalk.worktracker.model
 
 enum class Remote(val id: Long) {
     NO(11),
     YES(10);
 
+    fun toBoolean(): Boolean {
+        return this == YES
+    }
+
     companion object {
         fun valueOf(id: Long): Remote {
             return values().firstOrNull { id == it.id } ?: NO
         }
+
+        fun valueOf(value: Boolean): Remote {
+            return if (value) YES else NO
+        }
     }
+}
+
+fun Boolean.toRemote(): Remote {
+    return if (this) Remote.YES else Remote.NO
 }

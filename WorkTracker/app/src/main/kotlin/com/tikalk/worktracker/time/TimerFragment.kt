@@ -301,6 +301,7 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+            args.putBoolean(TimeEditFragment.EXTRA_REMOTE, record.isRemote)
             parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }

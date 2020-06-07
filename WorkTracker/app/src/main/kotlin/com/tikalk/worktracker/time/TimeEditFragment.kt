@@ -160,6 +160,10 @@ class TimeEditFragment : TimeFormFragment() {
                         record.finish = null
                     }
                 }
+                if (args.containsKey(EXTRA_REMOTE)) {
+                    val isRemote = args.getBoolean(EXTRA_REMOTE)
+                    record.isRemote = isRemote
+                }
             }
         }
 
@@ -179,6 +183,8 @@ class TimeEditFragment : TimeFormFragment() {
 
         val projects = projectsData.value
         bindProjects(context, record, projects)
+
+        remoteInput.isChecked = record.isRemote
 
         val startTime = record.startTime
         startInput.text = if (startTime != TimeRecord.NEVER)
@@ -203,6 +209,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindRecord(record: TimeRecord) {
         record.note = noteInput.text.toString()
+        record.isRemote = remoteInput.isChecked
     }
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
@@ -469,7 +476,7 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note,
-                record.isRemote.id)
+                record.isRemote.toRemote().id)
         } else {
             service.editTime(record.id,
                 record.project.id,
@@ -478,7 +485,7 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note,
-                record.isRemote.id)
+                record.isRemote.toRemote().id)
         }
         submitter
             .subscribeOn(Schedulers.io())
@@ -594,6 +601,7 @@ class TimeEditFragment : TimeFormFragment() {
         args.putLong(EXTRA_START_TIME, record.startTime)
         args.putLong(EXTRA_FINISH_TIME, record.finishTime)
         args.putLong(EXTRA_RECORD_ID, record.id)
+        args.putBoolean(EXTRA_REMOTE, record.isRemote)
         run()
     }
 
@@ -685,6 +693,7 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
+        const val EXTRA_REMOTE = TimeFormFragment.EXTRA_REMOTE
 
         private const val STATE_DATE = "date"
     }

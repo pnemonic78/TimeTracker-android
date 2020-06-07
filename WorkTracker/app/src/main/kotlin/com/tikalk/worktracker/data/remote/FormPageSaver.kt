@@ -87,7 +87,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         }
 
         if (projectsToInsert.isNotEmpty()) {
-            val projectIds = projectsDao.insert(projectsToInsert)
+            /*val projectIds =*/ projectsDao.insert(projectsToInsert)
             //for (i in projectIds.indices) {
             //    projectsToInsert[i].dbId = projectIds[i]
             //}
@@ -138,7 +138,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         }
 
         if (tasksToInsert.isNotEmpty()) {
-            val taskIds = tasksDao.insert(tasksToInsert)
+            /*val taskIds =*/ tasksDao.insert(tasksToInsert)
             //for (i in taskIds.indices) {
             //    tasksToInsert[i].dbId = taskIds[i]
             //}
@@ -193,7 +193,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         }
 
         if (keysToInsert.isNotEmpty()) {
-            val keyIds = projectTasksDao.insert(keysToInsert)
+            /*val keyIds =*/ projectTasksDao.insert(keysToInsert)
             //for (i in keyIds.indices) {
             //    keysToInsert[i].dbId = keyIds[i]
             //}
