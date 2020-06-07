@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -469,7 +468,8 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemDate(record.start),
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
-                record.note)
+                record.note,
+                record.isRemote.id)
         } else {
             service.editTime(record.id,
                 record.project.id,
@@ -477,7 +477,8 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemDate(record.start),
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
-                record.note)
+                record.note,
+                record.isRemote.id)
         }
         submitter
             .subscribeOn(Schedulers.io())
