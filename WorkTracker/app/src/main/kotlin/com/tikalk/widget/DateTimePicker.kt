@@ -116,6 +116,7 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
         return datePicker.dayOfMonth
     }
 
+    @Suppress("DEPRECATION")
     fun getHour(): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             timePicker.hour
@@ -124,6 +125,7 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
         }
     }
 
+    @Suppress("DEPRECATION")
     fun getMinute(): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             timePicker.minute
