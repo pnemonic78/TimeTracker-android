@@ -126,6 +126,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         startInput.setOnClickListener { pickStartTime() }
         finishInput.setOnClickListener { pickFinishTime() }
+        remoteInput.setOnCheckedChangeListener { _, isChecked -> record.isRemote = isChecked }
     }
 
     override fun populateForm(record: TimeRecord) {
@@ -209,7 +210,6 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindRecord(record: TimeRecord) {
         record.note = noteInput.text.toString()
-        record.isRemote = remoteInput.isChecked
     }
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {

@@ -77,21 +77,42 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:layout_marginTop="@dimen/form_marginTop"
         android:prompt="@string/task_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/taskIcon"
         app:layout_constraintTop_toBottomOf="@+id/projectInput"
         tools:listitem="@android:layout/simple_list_item_1" />
 
+    <ImageView
+        android:id="@+id/remoteIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/remote_label"
+        app:layout_constraintBottom_toBottomOf="@+id/remoteInput"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/remoteInput"
+        app:srcCompat="@drawable/ic_home_work" />
+
+    <CheckBox
+        android:id="@+id/remoteInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="@dimen/form_marginTop"
+        android:text="@string/remote_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/remoteIcon"
+        app:layout_constraintTop_toBottomOf="@+id/taskInput" />
+
     <ViewSwitcher
         android:id="@+id/actionSwitcher"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/time_list_marginTop"
+        android:layout_marginTop="@dimen/form_marginTop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/taskInput">
+        app:layout_constraintTop_toBottomOf="@+id/remoteInput">
 
         <Button
             android:id="@+id/actionStart"
