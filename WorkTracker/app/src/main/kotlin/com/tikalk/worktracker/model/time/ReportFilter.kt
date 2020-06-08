@@ -60,6 +60,7 @@ class ReportFilter : TimeRecord, Parcelable {
     var showDurationField: Boolean = true
     var showNoteField: Boolean = true
     var showCostField: Boolean = false
+    var showRemoteField: Boolean = true
 
     constructor() : super(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 
@@ -76,7 +77,8 @@ class ReportFilter : TimeRecord, Parcelable {
         showFinishField: Boolean = true,
         showDurationField: Boolean = true,
         showNoteField: Boolean = true,
-        showCostField: Boolean = false
+        showCostField: Boolean = false,
+        showRemoteField: Boolean = true
     ) : super(ID_NONE, project, task, start, finish) {
         this.period = period
         this.favorite = favorite
@@ -87,6 +89,7 @@ class ReportFilter : TimeRecord, Parcelable {
         this.showDurationField = showDurationField
         this.showNoteField = showNoteField
         this.showCostField = showCostField
+        this.showRemoteField = showRemoteField
     }
 
     constructor(parcel: Parcel) : super(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
@@ -108,6 +111,7 @@ class ReportFilter : TimeRecord, Parcelable {
         showDurationField = parcel.readBool()
         showNoteField = parcel.readBool()
         showCostField = parcel.readBool()
+        showRemoteField = parcel.readBool()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -122,6 +126,7 @@ class ReportFilter : TimeRecord, Parcelable {
         parcel.writeBool(showDurationField)
         parcel.writeBool(showNoteField)
         parcel.writeBool(showCostField)
+        parcel.writeBool(showRemoteField)
     }
 
     override fun describeContents(): Int {
@@ -151,6 +156,9 @@ class ReportFilter : TimeRecord, Parcelable {
             }
             //put("chcost", "1")
             //put("chtotalsonly", "1")
+            if (showRemoteField) {
+                put("show_time_field_5", "1")
+            }
 
             // Grouping
             put("group_by1", "no_grouping")
@@ -238,6 +246,7 @@ class ReportFilter : TimeRecord, Parcelable {
         if (showDurationField) s.append('D')
         if (showNoteField) s.append('N')
         if (showCostField) s.append('C')
+        if (showRemoteField) s.append('R')
         return s
     }
 

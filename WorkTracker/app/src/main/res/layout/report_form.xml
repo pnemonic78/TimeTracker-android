@@ -210,6 +210,17 @@
         app:layout_constraintStart_toEndOf="@+id/guideline_x50"
         app:layout_constraintTop_toTopOf="@+id/showDurationField" />
 
+    <CheckBox
+        android:id="@+id/showRemoteField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
+        android:checked="true"
+        android:text="@string/remote_label"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_x50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showDurationField" />
+
     <TextView
         android:id="@+id/errorLabel"
         style="@style/Widget.TextView.Error"
@@ -217,7 +228,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/form_marginTop"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/showDurationField"
+        app:layout_constraintTop_toBottomOf="@+id/showRemoteField"
         tools:text="@tools:sample/lorem"
         tools:visibility="visible" />
 

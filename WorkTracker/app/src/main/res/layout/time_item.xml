@@ -87,7 +87,7 @@
             android:layout_marginStart="4dp"
             android:ellipsize="end"
             android:maxLines="1"
-            app:layout_constraintEnd_toStartOf="@+id/remoteIcon"
+            app:layout_constraintEnd_toStartOf="@+id/timeDuration"
             app:layout_constraintStart_toEndOf="@+id/taskIcon"
             app:layout_constraintTop_toBottomOf="@+id/project"
             tools:text="@string/task_label" />
@@ -118,7 +118,7 @@
             android:layout_marginStart="4dp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/remoteIcon"
+            app:layout_constraintStart_toEndOf="@+id/task"
             app:layout_constraintTop_toBottomOf="@+id/timeRange"
             tools:text="@tools:sample/date/hhmm" />
 
@@ -140,7 +140,7 @@
             android:ellipsize="end"
             android:maxLength="80"
             android:maxLines="2"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/remoteIcon"
             app:layout_constraintStart_toEndOf="@+id/noteIcon"
             app:layout_constraintTop_toBottomOf="@+id/task"
             tools:text="@tools:sample/lorem/random" />
@@ -151,10 +151,8 @@
             android:layout_height="@dimen/icon_item"
             android:contentDescription="@string/remote_label"
             android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="@id/task"
-            app:layout_constraintEnd_toStartOf="@id/timeDuration"
-            app:layout_constraintStart_toEndOf="@id/task"
-            app:layout_constraintTop_toTopOf="@+id/task"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/note"
             app:srcCompat="@drawable/ic_home_work"
             tools:visibility="visible" />
 

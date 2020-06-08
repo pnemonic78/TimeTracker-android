@@ -34,6 +34,8 @@ package com.tikalk.worktracker.db
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
+import com.tikalk.os.readBool
+import com.tikalk.os.writeBool
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
 import com.tikalk.worktracker.model.time.TaskRecordStatus
@@ -91,7 +93,7 @@ open class TimeRecordEntity(
         finish = if (finishTime == NEVER) null else finishTime.toCalendar()
         note = parcel.readString() ?: ""
         status = TaskRecordStatus.values()[parcel.readInt()]
-        remote = parcel.readInt() != 0
+        remote = parcel.readBool()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -103,7 +105,7 @@ open class TimeRecordEntity(
         parcel.writeLong(finish?.timeInMillis ?: NEVER)
         parcel.writeString(note)
         parcel.writeInt(status.ordinal)
-        parcel.writeInt(if (remote) 1 else 0)
+        parcel.writeBool(remote)
     }
 
     override fun describeContents(): Int {

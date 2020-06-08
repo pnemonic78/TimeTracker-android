@@ -284,6 +284,7 @@ class ReportFormFragment : TimeFormFragment() {
         showFinishField.isChecked = filter.showFinishField
         showDurationField.isChecked = filter.showDurationField
         showNoteField.isChecked = filter.showNoteField
+        showRemoteField.isChecked = filter.showRemoteField
 
         setErrorLabel(errorMessage)
     }
@@ -390,6 +391,7 @@ class ReportFormFragment : TimeFormFragment() {
         filter.showFinishField = showFinishField.isChecked
         filter.showDurationField = showDurationField.isChecked
         filter.showNoteField = showNoteField.isChecked
+        filter.showRemoteField = showRemoteField.isChecked
         filter.updateDates(date)
         return filter
     }
