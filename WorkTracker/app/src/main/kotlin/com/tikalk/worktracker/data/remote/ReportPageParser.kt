@@ -37,6 +37,7 @@ import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
@@ -110,6 +111,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         var columnIndexFinish = -1
         var columnIndexNote = -1
         var columnIndexCost = -1
+        var columnIndexRemote = -1
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
@@ -133,6 +135,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             "Finish" -> columnIndexFinish = col
                             "Note" -> columnIndexNote = col
                             "Cost" -> columnIndexCost = col
+                            "Remote" -> columnIndexRemote = col
                         }
                     }
 
@@ -148,6 +151,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexFinish,
                             columnIndexNote,
                             columnIndexCost,
+                            columnIndexRemote,
                             projects)
                         if (record != null) {
                             records.add(record)
@@ -185,6 +189,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexFinish: Int,
                             columnIndexNote: Int,
                             columnIndexCost: Int,
+                            columnIndexRemote: Int,
                             projects: MutableCollection<Project>): TimeRecord? {
         val cols = row.getElementsByTag("td")
         val record = TimeRecord.EMPTY.copy()
@@ -195,7 +200,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         val date = parseSystemDate(tdDate.ownText()) ?: return null
 
         var project: Project = record.project
-        if (columnIndexProject > 0) {
+        if (columnIndexProject >= 0) {
             val tdProject = cols[columnIndexProject]
             if (tdProject.attr("class") == "tableHeader") {
                 return null
@@ -205,39 +210,46 @@ class ReportPageParser(private val filter: ReportFilter) {
             record.project = project
         }
 
-        if (columnIndexTask > 0) {
+        if (columnIndexTask >= 0) {
             val tdTask = cols[columnIndexTask]
             val taskName = tdTask.ownText()
             val task = parseRecordTask(project, taskName)
             record.task = task
         }
 
-        if (columnIndexStart > 0) {
+        if (columnIndexStart >= 0) {
             val tdStart = cols[columnIndexStart]
             val startText = tdStart.ownText()
             val start = parseRecordTime(date, startText) ?: return null
             record.start = start
         }
 
-        if (columnIndexFinish > 0) {
+        if (columnIndexFinish >= 0) {
             val tdFinish = cols[columnIndexFinish]
             val finishText = tdFinish.ownText()
             val finish = parseRecordTime(date, finishText) ?: return null
             record.finish = finish
         }
 
-        if (columnIndexNote > 0) {
+        if (columnIndexNote >= 0) {
             val tdNote = cols[columnIndexNote]
             val noteText = tdNote.ownText()
             val note = parseRecordNote(noteText)
             record.note = note
         }
 
-        if (columnIndexCost > 0) {
+        if (columnIndexCost >= 0) {
             val tdCost = cols[columnIndexCost]
             val costText = tdCost.ownText()
             val cost = parseCost(costText)
             record.cost = cost
+        }
+
+        if (columnIndexRemote >= 0) {
+            val tdRemote = cols[columnIndexRemote]
+            val isRemoteText = tdRemote.ownText()
+            val remote = parseRemote(isRemoteText)
+            record.isRemote = remote.toBoolean()
         }
 
         return record
@@ -269,8 +281,16 @@ class ReportPageParser(private val filter: ReportFilter) {
         return text.trim()
     }
 
-    private fun parseCost(cost: String): Double {
-        return if (cost.isBlank()) 0.00 else cost.toDouble()
+    private fun parseCost(text: String): Double {
+        return if (text.isBlank()) 0.00 else text.toDouble()
+    }
+
+    private fun parseRemote(text: String): Remote {
+        return when (text) {
+            "yes" -> Remote.YES
+            "no" -> Remote.NO
+            else -> Remote.EMPTY
+        }
     }
 
     private fun populateTotals(records: List<TimeRecord>?, page: MutableReportPage) {

@@ -3,6 +3,9 @@
 
     <string name="drawer_close">"סגירת חלונית ההזזה לניווט"</string>
 
+    <string name="no">לא</string>
+    <string name="yes">כן</string>
+
     <!-- Strings related to login -->
     <string name="activity_login">כניסה</string>
     <string name="prompt_login">שם כניסה</string>

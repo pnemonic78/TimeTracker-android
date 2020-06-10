@@ -71,6 +71,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
+            val showRemoteField = filter.showRemoteField
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -135,6 +136,11 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                     +context.getString(R.string.task_header)
                                 }
                             }
+                            if (showRemoteField) {
+                                td("tableHeader") {
+                                    +context.getString(R.string.remote_header)
+                                }
+                            }
                             if (showStartField) {
                                 td("tableHeaderCentered") {
                                     +context.getString(R.string.start_header)
@@ -177,6 +183,15 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                 if (showTaskField) {
                                     td("cellLeftAligned") {
                                         +record.task.name
+                                    }
+                                }
+                                if (showRemoteField){
+                                    td("cellLeftAligned") {
+                                        val text = if (record.isRemote)
+                                            context.getString(R.string.remote_label_yes)
+                                        else
+                                            context.getString(R.string.remote_label_no)
+                                        +text
                                     }
                                 }
                                 if (showStartField) {

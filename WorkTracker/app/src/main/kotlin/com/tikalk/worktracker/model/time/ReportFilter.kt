@@ -39,6 +39,7 @@ import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.ReportTimePeriod
 import com.tikalk.worktracker.time.*
 import java.util.*
@@ -51,6 +52,11 @@ import java.util.*
 //TODO @Parcelize
 class ReportFilter : TimeRecord, Parcelable {
 
+    var remote: Remote = Remote.EMPTY
+        set(value) {
+            field = value
+            isRemote = value.toBoolean()
+        }
     var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
     var favorite: String? = null
     var showProjectField: Boolean = true
@@ -60,6 +66,7 @@ class ReportFilter : TimeRecord, Parcelable {
     var showDurationField: Boolean = true
     var showNoteField: Boolean = true
     var showCostField: Boolean = false
+    var showRemoteField: Boolean = true
 
     constructor() : super(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 
@@ -70,16 +77,19 @@ class ReportFilter : TimeRecord, Parcelable {
         finish: Calendar? = null,
         period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
         favorite: String? = null,
+        remote: Remote = Remote.EMPTY,
         showProjectField: Boolean = true,
         showTaskField: Boolean = true,
         showStartField: Boolean = true,
         showFinishField: Boolean = true,
         showDurationField: Boolean = true,
         showNoteField: Boolean = true,
-        showCostField: Boolean = false
+        showCostField: Boolean = false,
+        showRemoteField: Boolean = true
     ) : super(ID_NONE, project, task, start, finish) {
         this.period = period
         this.favorite = favorite
+        this.remote = remote
         this.showProjectField = showProjectField
         this.showTaskField = showTaskField
         this.showStartField = showStartField
@@ -87,6 +97,7 @@ class ReportFilter : TimeRecord, Parcelable {
         this.showDurationField = showDurationField
         this.showNoteField = showNoteField
         this.showCostField = showCostField
+        this.showRemoteField = showRemoteField
     }
 
     constructor(parcel: Parcel) : super(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
@@ -100,6 +111,7 @@ class ReportFilter : TimeRecord, Parcelable {
         cost = entity.cost
         status = entity.status
         period = ReportTimePeriod.values()[parcel.readInt()]
+        remote = Remote.valueOf(parcel.readLong())
         favorite = parcel.readString()
         showProjectField = parcel.readBool()
         showTaskField = parcel.readBool()
@@ -108,12 +120,14 @@ class ReportFilter : TimeRecord, Parcelable {
         showDurationField = parcel.readBool()
         showNoteField = parcel.readBool()
         showCostField = parcel.readBool()
+        showRemoteField = parcel.readBool()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         val entity = toTimeRecordEntity()
         entity.writeToParcel(parcel, flags)
         parcel.writeInt(period.ordinal)
+        parcel.writeLong(remote.id)
         parcel.writeString(favorite)
         parcel.writeBool(showProjectField)
         parcel.writeBool(showTaskField)
@@ -122,6 +136,7 @@ class ReportFilter : TimeRecord, Parcelable {
         parcel.writeBool(showDurationField)
         parcel.writeBool(showNoteField)
         parcel.writeBool(showCostField)
+        parcel.writeBool(showRemoteField)
     }
 
     override fun describeContents(): Int {
@@ -136,6 +151,7 @@ class ReportFilter : TimeRecord, Parcelable {
             put("period", period.toString())
             put("start_date", formatSystemDate(start))
             put("end_date", formatSystemDate(finish))
+            put("time_field_5", remote.id.toString())
 
             // Always fetch these fields - just hide them in UI.
             put("chproject", "1")
@@ -151,6 +167,9 @@ class ReportFilter : TimeRecord, Parcelable {
             }
             //put("chcost", "1")
             //put("chtotalsonly", "1")
+            if (showRemoteField) {
+                put("show_time_field_5", "1")
+            }
 
             // Grouping
             put("group_by1", "no_grouping")
@@ -238,6 +257,7 @@ class ReportFilter : TimeRecord, Parcelable {
         if (showDurationField) s.append('D')
         if (showNoteField) s.append('N')
         if (showCostField) s.append('C')
+        if (showRemoteField) s.append('R')
         return s
     }
 

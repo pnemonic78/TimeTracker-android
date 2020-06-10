@@ -60,18 +60,19 @@ class ReportViewHolder(itemView: View, val filter: ReportFilter) : TimeListViewH
         } else if (filter.showFinishField) {
             itemView.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
         }
+        itemView.remoteIcon.visibility = if (filter.showRemoteField && record.isRemote) View.VISIBLE else View.GONE
 
-        bindFilter()
+        bindFilter(filter)
     }
 
     @MainThread
     override fun clear() {
         super.clear()
-        bindFilter()
+        bindFilter(filter)
     }
 
     @MainThread
-    private fun bindFilter() {
+    private fun bindFilter(filter: ReportFilter) {
         itemView.project.visibility = if (filter.showProjectField) View.VISIBLE else View.GONE
         itemView.projectIcon.visibility = itemView.project.visibility
         itemView.task.visibility = if (filter.showTaskField) View.VISIBLE else View.GONE

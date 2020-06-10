@@ -84,6 +84,28 @@
         tools:listitem="@android:layout/simple_list_item_1" />
 
     <ImageView
+        android:id="@+id/remoteIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/remote_label"
+        app:layout_constraintBottom_toBottomOf="@+id/remoteInput"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/remoteInput"
+        app:srcCompat="@drawable/ic_home_work" />
+
+    <Spinner
+        android:id="@+id/remoteInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="@dimen/form_marginTop"
+        android:prompt="@string/remote_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/remoteIcon"
+        app:layout_constraintTop_toBottomOf="@+id/taskInput"
+        tools:listitem="@android:layout/simple_list_item_1" />
+
+    <ImageView
         android:id="@+id/periodIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -102,7 +124,7 @@
         android:prompt="@string/period_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/periodIcon"
-        app:layout_constraintTop_toBottomOf="@+id/taskInput"
+        app:layout_constraintTop_toBottomOf="@+id/remoteInput"
         tools:listitem="@android:layout/simple_list_item_1" />
 
     <ImageView
@@ -210,6 +232,17 @@
         app:layout_constraintStart_toEndOf="@+id/guideline_x50"
         app:layout_constraintTop_toTopOf="@+id/showDurationField" />
 
+    <CheckBox
+        android:id="@+id/showRemoteField"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_marginTop"
+        android:checked="true"
+        android:text="@string/remote_label"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_x50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showDurationField" />
+
     <TextView
         android:id="@+id/errorLabel"
         style="@style/Widget.TextView.Error"
@@ -217,7 +250,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/form_marginTop"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/showDurationField"
+        app:layout_constraintTop_toBottomOf="@+id/showRemoteField"
         tools:text="@tools:sample/lorem"
         tools:visibility="visible" />
 

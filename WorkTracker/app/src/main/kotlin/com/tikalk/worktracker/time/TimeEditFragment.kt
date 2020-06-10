@@ -305,6 +305,8 @@ class TimeEditFragment : TimeFormFragment() {
         startInput.isFocusableInTouchMode = false
         finishInput.error = null
         finishInput.isFocusableInTouchMode = false
+        remoteInput.error = null
+        remoteInput.isFocusableInTouchMode = false
         setErrorLabel("")
 
         if (record.project.id == TikalEntity.ID_NONE) {

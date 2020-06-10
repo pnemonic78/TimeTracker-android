@@ -73,6 +73,7 @@ class ReportFormFragment : TimeFormFragment() {
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
     private val periods = ReportTimePeriod.values()
+    private var remoteEmpty: RemoteItem = RemoteItem(Remote.EMPTY, "")
 
     init {
         record = ReportFilter()
@@ -115,6 +116,16 @@ class ReportFormFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
+        remoteInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                remoteItemSelected(remoteEmpty)
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val remote = adapterView.adapter.getItem(position) as RemoteItem
+                remoteItemSelected(remote)
+            }
+        }
         periodInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 periodItemSelected(ReportTimePeriod.CUSTOM)
@@ -127,6 +138,14 @@ class ReportFormFragment : TimeFormFragment() {
         }
         startInput.setOnClickListener { pickStartDate() }
         finishInput.setOnClickListener { pickFinishDate() }
+
+        showProjectField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showProjectField = isChecked }
+        showTaskField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showTaskField = isChecked }
+        showStartField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showStartField = isChecked }
+        showFinishField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showFinishField = isChecked }
+        showDurationField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showDurationField = isChecked }
+        showNoteField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showNoteField = isChecked }
+        showRemoteField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showRemoteField = isChecked }
 
         actionGenerate.setOnClickListener { generateReport() }
     }
@@ -262,6 +281,8 @@ class ReportFormFragment : TimeFormFragment() {
         periodInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, periodItems)
         periodInput.setSelection(filter.period.ordinal)
 
+        bindRemote(context, filter)
+
         val startTime = filter.startTime
         startInput.text = if (startTime != TimeRecord.NEVER)
             DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
@@ -284,20 +305,43 @@ class ReportFormFragment : TimeFormFragment() {
         showFinishField.isChecked = filter.showFinishField
         showDurationField.isChecked = filter.showDurationField
         showNoteField.isChecked = filter.showNoteField
+        showRemoteField.isChecked = filter.showRemoteField
 
         setErrorLabel(errorMessage)
     }
 
     private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
         Timber.i("bindProjects filter=$filter projects=$projects")
-        val projectItems = projects?.toTypedArray() ?: emptyArray()
         if (projectInput == null) return
+        val projectItems = projects?.toTypedArray() ?: emptyArray()
         projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
             projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
             projectItemSelected(filter.project)
         }
         projectInput.requestFocus()
+    }
+
+    private fun bindRemote(context: Context, filter: ReportFilter) {
+        Timber.i("bindRemote filter=$filter")
+        if (remoteInput == null) return
+        val remoteItems = buildRemoteItems()
+        remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
+        if (remoteItems.isNotEmpty()) {
+            remoteInput.setSelection(max(0, findRemote(remoteItems, filter.remote)))
+            remoteItemSelected(filter.remote)
+        }
+    }
+
+    private fun buildRemoteItems(): List<RemoteItem> {
+        val items = ArrayList<RemoteItem>()
+        val values = Remote.values()
+        val context = requireContext()
+        for (value in values) {
+            items.add(value.toRemoteItem(context))
+        }
+        remoteEmpty = items[0]
+        return items
     }
 
     private fun pickStartDate() {
@@ -384,12 +428,6 @@ class ReportFormFragment : TimeFormFragment() {
     private fun populateFilter(): ReportFilter {
         Timber.i("populateFilter")
         val filter = filterData.value ?: ReportFilter()
-        filter.showProjectField = showProjectField.isChecked
-        filter.showTaskField = showTaskField.isChecked
-        filter.showStartField = showStartField.isChecked
-        filter.showFinishField = showFinishField.isChecked
-        filter.showDurationField = showDurationField.isChecked
-        filter.showNoteField = showNoteField.isChecked
         filter.updateDates(date)
         return filter
     }
@@ -481,6 +519,20 @@ class ReportFormFragment : TimeFormFragment() {
     override fun getEmptyProjectName() = requireContext().getString(R.string.project_name_all)
 
     override fun getEmptyTaskName() = requireContext().getString(R.string.task_name_all)
+
+    private fun remoteItemSelected(remote: RemoteItem) {
+        remoteItemSelected(remote.remote)
+    }
+
+    private fun remoteItemSelected(remote: Remote) {
+        Timber.d("remoteItemSelected remote=$remote")
+        setRecordRemote(remote)
+    }
+
+    override fun setRecordRemote(remote: Remote) {
+        super.setRecordRemote(remote)
+        (record as ReportFilter).remote = remote
+    }
 
     companion object {
         private const val STATE_FILTER = BuildConfig.APPLICATION_ID + ".FILTER"

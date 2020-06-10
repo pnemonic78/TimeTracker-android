@@ -43,6 +43,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
@@ -114,6 +115,11 @@ abstract class TimeFormFragment : InternetFragment(),
     protected open fun setRecordRemote(isRemote: Boolean) {
         Timber.d("setRecordRemote isRemote=$isRemote")
         record.isRemote = isRemote
+    }
+
+    protected open fun setRecordRemote(remote: Remote) {
+        Timber.d("setRecordRemote remote=$remote")
+        setRecordRemote(remote.toBoolean())
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {

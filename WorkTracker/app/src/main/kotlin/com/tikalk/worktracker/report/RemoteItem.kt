@@ -30,28 +30,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.report
 
-enum class Remote(val id: Long) {
-    EMPTY(TikalEntity.ID_NONE),
-    NO(11),
-    YES(10);
+import android.content.Context
+import android.widget.AdapterView
+import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.Remote
 
-    fun toBoolean(): Boolean {
-        return this == YES
-    }
-
-    companion object {
-        fun valueOf(id: Long): Remote {
-            return values().firstOrNull { id == it.id } ?: NO
-        }
-
-        fun valueOf(value: Boolean): Remote {
-            return if (value) YES else NO
-        }
+data class RemoteItem(val remote: Remote, val label: String) {
+    override fun toString(): String {
+        return label
     }
 }
 
-fun Boolean.toRemote(): Remote {
-    return if (this) Remote.YES else Remote.NO
+fun Remote.toRemoteItem(context: Context): RemoteItem {
+    val label: String = when {
+        this == Remote.EMPTY -> context.getString(R.string.remote_label_all)
+        this == Remote.NO -> context.getString(R.string.remote_label_no)
+        this == Remote.YES -> context.getString(R.string.remote_label_yes)
+        else -> ""
+    }
+    return RemoteItem(this, label)
+}
+
+fun findRemote(remotes: List<RemoteItem>, remote: Remote): Int {
+    val id = remote.id
+    for (i in remotes.indices) {
+        val item = remotes[i]
+        if (item.remote == remote) {
+            return i
+        }
+    }
+    return AdapterView.INVALID_POSITION
 }
