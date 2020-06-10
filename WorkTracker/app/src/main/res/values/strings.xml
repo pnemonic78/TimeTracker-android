@@ -147,6 +147,7 @@
     <string name="duration_header" translatable="false">@string/duration_label</string>
     <string name="note_header" translatable="false">@string/note_hint</string>
     <string name="cost_header" translatable="false">@string/cost</string>
+    <string name="remote_header" translatable="false">@string/remote_label</string>
     <string name="item_all">(All)</string>
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>

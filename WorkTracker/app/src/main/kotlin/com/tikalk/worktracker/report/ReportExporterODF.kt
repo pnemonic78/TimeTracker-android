@@ -74,6 +74,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
+            val showRemoteField = filter.showRemoteField
 
             val locale = Locale.getDefault()
             val currency = Currency.getInstance(locale)
@@ -106,6 +107,10 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             if (showTaskField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.task_header)
+            }
+            if (showRemoteField) {
+                cell = table.getCellByPosition(columnIndex++, rowIndex)
+                cell.stringValue = context.getString(R.string.remote_header)
             }
             var cellHeaderStart: OdfTableCell? = null
             if (showStartField) {
@@ -151,6 +156,14 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = record.task.name
                 }
+                if (showRemoteField) {
+                    val text = if (record.isRemote)
+                        context.getString(R.string.remote_label_yes)
+                    else
+                        context.getString(R.string.remote_label_no)
+                    cell = table.getCellByPosition(columnIndex++, rowIndex)
+                    cell.stringValue = text
+                }
                 if (showStartField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.timeValue = record.start
@@ -185,6 +198,9 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                 columnIndex++
             }
             if (showTaskField) {
+                columnIndex++
+            }
+            if (showRemoteField) {
                 columnIndex++
             }
             if (showStartField) {

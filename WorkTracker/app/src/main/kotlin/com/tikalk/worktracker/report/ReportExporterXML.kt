@@ -36,6 +36,7 @@ import android.content.Context
 import android.net.Uri
 import android.text.format.DateUtils
 import android.util.Xml
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -66,6 +67,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
+            val showRemoteField = filter.showRemoteField
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -92,6 +94,15 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
                     xmlWriter.startTag(ns, "task")
                     xmlWriter.text(record.task.name)
                     xmlWriter.endTag(ns, "task")
+                }
+                if (showRemoteField) {
+                    val text = if (record.isRemote)
+                        context.getString(R.string.remote_label_yes)
+                    else
+                        context.getString(R.string.remote_label_no)
+                    xmlWriter.startTag(ns, "remote")
+                    xmlWriter.text(text)
+                    xmlWriter.endTag(ns, "remote")
                 }
                 if (showStartField) {
                     xmlWriter.startTag(ns, "start")

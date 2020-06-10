@@ -68,6 +68,7 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
+            val showRemoteField = filter.showRemoteField
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -81,6 +82,9 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
             }
             if (showTaskField) {
                 headerRecord.add(context.getString(R.string.task_header))
+            }
+            if (showRemoteField) {
+                headerRecord.add(context.getString(R.string.remote_header))
             }
             if (showStartField) {
                 headerRecord.add(context.getString(R.string.start_header))
@@ -108,6 +112,13 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
                 }
                 if (showTaskField) {
                     row.add(record.task.name)
+                }
+                if (showRemoteField) {
+                    val text = if (record.isRemote)
+                        context.getString(R.string.remote_label_yes)
+                    else
+                        context.getString(R.string.remote_label_no)
+                    row.add(text)
                 }
                 if (showStartField) {
                     row.add(formatSystemTime(record.start))
