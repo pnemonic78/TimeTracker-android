@@ -44,15 +44,13 @@ import com.tikalk.worktracker.R
 /**
  * Provides a widget for selecting a date and time.
  */
-class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0, defStyleRes: Int = 0) : FrameLayout(context, attrs, defStyleAttr),
+class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : FrameLayout(context, attrs, defStyleAttr),
     DatePicker.OnDateChangedListener,
     TimePicker.OnTimeChangedListener {
 
-    constructor(context: Context) : this(context, null, 0, 0)
+    constructor(context: Context) : this(context, null, 0)
 
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0, 0)
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : this(context, attrs, defStyleAttr, 0)
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
     val datePicker: DatePicker
     val timePicker: TimePicker

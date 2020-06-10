@@ -54,7 +54,6 @@ fun Remote.toRemoteItem(context: Context): RemoteItem {
 }
 
 fun findRemote(remotes: List<RemoteItem>, remote: Remote): Int {
-    val id = remote.id
     for (i in remotes.indices) {
         val item = remotes[i]
         if (item.remote == remote) {
