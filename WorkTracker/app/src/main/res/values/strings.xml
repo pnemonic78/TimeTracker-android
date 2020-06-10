@@ -6,6 +6,9 @@
     <string name="drawer_open" translatable="false">@string/nav_app_bar_open_drawer_description</string>
     <string name="drawer_close">Close navigation drawer</string>
 
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+
     <!-- Strings related to login -->
     <string name="activity_login">Sign in</string>
     <string name="prompt_login">Login name</string>
@@ -148,6 +151,9 @@
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>
     <string name="error_export">Error exporting report!</string>
+    <string name="remote_label_all" translatable="false">@string/item_all</string>
+    <string name="remote_label_no" translatable="false">@string/no</string>
+    <string name="remote_label_yes" translatable="false">@string/yes</string>
 
     <!-- Errors -->
     <string name="error">Error</string>

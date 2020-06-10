@@ -289,7 +289,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         return when (text) {
             "yes" -> Remote.YES
             "no" -> Remote.NO
-            else -> Remote.NO
+            else -> Remote.EMPTY
         }
     }
 
