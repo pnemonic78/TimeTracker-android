@@ -159,6 +159,8 @@
     <!-- Errors -->
     <string name="error">Error</string>
     <string name="error_title" translatable="false">@string/error</string>
-    <string name="error_unknownHost">Cannot connect to the remote server.</string>
+    <string name="error_unknownHost" translatable="false">@string/error_connection</string>
     <string name="error_accessDenied">Cannot access the requested page.</string>
+    <string name="error_unknown">An unknown error occurred.</string>
+    <string name="error_connection">Cannot connect to the remote server.</string>
 </resources>

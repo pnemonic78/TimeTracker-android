@@ -44,6 +44,8 @@ import com.tikalk.worktracker.auth.AuthenticationException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import retrofit2.Response
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 /**
@@ -124,12 +126,15 @@ abstract class InternetFragment : TrackerFragment {
         when (error) {
             is AccessDeniedException -> showAccessDeniedError()
             is AuthenticationException -> authenticate()
+            is ConnectException -> showConnectionError()
+            is SocketTimeoutException -> showConnectionError()
             is UnknownHostException -> showUnknownHostError()
+            else -> showUnknownError()
         }
     }
 
     /**
-     * Handle an error, on the main threadd.
+     * Handle an error, on the main thread.
      * @param error the error.
      */
     protected fun handleErrorMain(error: Throwable) {
@@ -147,11 +152,19 @@ abstract class InternetFragment : TrackerFragment {
             .show()
     }
 
-    protected fun showUnknownHostError() {
+    private fun showUnknownHostError() {
         showError(R.string.error_unknownHost)
     }
 
-    protected fun showAccessDeniedError() {
+    private fun showAccessDeniedError() {
         showError(R.string.error_accessDenied)
+    }
+
+    private fun showUnknownError() {
+        showError(R.string.error_unknown)
+    }
+
+    private fun showConnectionError() {
+        showError(R.string.error_connection)
     }
 }

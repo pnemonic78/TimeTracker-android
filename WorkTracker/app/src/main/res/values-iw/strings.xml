@@ -115,6 +115,7 @@
 
     <!-- Errors -->
     <string name="error">שגיה</string>
-    <string name="error_unknownHost">לא ניתן להתחבר לשרת המרוחק.</string>
+    <string name="error_connection">לא ניתן להתחבר לשרת המרוחק.</string>
     <string name="error_accessDenied">לא ניתן לגשת לדף המבוקש.</string>
+    <string name="error_unknown">אירעה שגיאה לא ידועה.</string>
 </resources>
