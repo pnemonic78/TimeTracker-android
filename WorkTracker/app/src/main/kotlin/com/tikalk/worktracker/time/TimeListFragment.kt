@@ -35,7 +35,6 @@ package com.tikalk.worktracker.time
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
@@ -326,11 +325,7 @@ class TimeListFragment : TimeFormFragment(),
             picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today)) { dialog: DialogInterface, which: Int ->
                 if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
                     val today = Calendar.getInstance()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
-                    } else {
-                        picker.updateDate(today.year, today.month, today.dayOfMonth)
-                    }
+                    listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
                 }
             }
             datePickerDialog = picker

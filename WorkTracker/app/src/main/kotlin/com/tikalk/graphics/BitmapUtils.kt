@@ -53,10 +53,6 @@ fun drawableToBitmap(drawable: Drawable): Bitmap {
 }
 
 fun drawableToBitmap(res: Resources, id: Int): Bitmap {
-    @Suppress("DEPRECATION")
-    val drawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        res.getDrawable(id, null)
-    else
-        res.getDrawable(id)
+    val drawable = res.getDrawable(id, null)
     return drawableToBitmap(drawable)
 }
