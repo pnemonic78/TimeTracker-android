@@ -1,5 +1,5 @@
 project.ext {
-    minSdkVersion = 19
+    minSdkVersion = 21
     compileSdkVersion = 29
     targetSdkVersion = 29
 
@@ -8,9 +8,9 @@ project.ext {
     exoplayerVersion = '2.6.1'
     glideVersion = '4.1.1'
     guavaVersion = '18.0'
-    junitVersion = '4.12'
-    okhttpVersion = '3.12.3'  // '3.13.0' requires API 21+
-    retrofit2Version = '2.6.0'
+    junitVersion = '4.13'
+    okhttpVersion = '3.13.0'
+    retrofit2Version = '2.9.0'
     roomVersion = '2.2.5'
     rxandroid2Version = '2.1.1'
     rxkotlin2Version = '2.3.0'
