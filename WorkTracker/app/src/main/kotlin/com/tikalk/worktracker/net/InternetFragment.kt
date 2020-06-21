@@ -60,15 +60,15 @@ abstract class InternetFragment : TrackerFragment {
     protected fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
         if (response.isSuccessful && (html != null)) {
-            val networkResponse = response.raw().networkResponse()
-            val priorResponse = response.raw().priorResponse()
+            val networkResponse = response.raw().networkResponse
+            val priorResponse = response.raw().priorResponse
             if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request().url()
-                val priorUrl = priorResponse.request().url()
+                val networkUrl = networkResponse.request.url
+                val priorUrl = priorResponse.request.url
                 if (networkUrl == priorUrl) {
                     return true
                 }
-                when (networkUrl.pathSegments()[networkUrl.pathSize() - 1]) {
+                when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
                     TimeTrackerService.PHP_TIME,
                     TimeTrackerService.PHP_REPORT ->
                         return true

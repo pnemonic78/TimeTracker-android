@@ -248,8 +248,8 @@ class LoginFragment : InternetFragment,
     private fun authenticate(login: String, response: Response): Boolean {
         val challenges = response.challenges()
         for (challenge in challenges) {
-            if (challenge.scheme() == BasicCredentials.SCHEME) {
-                authenticateBasicRealm(login, challenge.realm())
+            if (challenge.scheme == BasicCredentials.SCHEME) {
+                authenticateBasicRealm(login, challenge.realm ?: "")
                 return true
             }
         }

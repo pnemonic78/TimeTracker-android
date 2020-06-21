@@ -53,15 +53,15 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
     private fun validateResponse(response: Response<String>) {
         val html = response.body()
         if (response.isSuccessful && (html != null)) {
-            val networkResponse = response.raw().networkResponse()
-            val priorResponse = response.raw().priorResponse()
+            val networkResponse = response.raw().networkResponse
+            val priorResponse = response.raw().priorResponse
             if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request().url()
-                val priorUrl = priorResponse.request().url()
+                val networkUrl = networkResponse.request.url
+                val priorUrl = priorResponse.request.url
                 if (networkUrl == priorUrl) {
                     return
                 }
-                when (networkUrl.pathSegments()[networkUrl.pathSize() - 1]) {
+                when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
                     TimeTrackerService.PHP_TIME,
                     TimeTrackerService.PHP_REPORT ->
                         return
