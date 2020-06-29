@@ -47,6 +47,8 @@ import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import com.tikalk.worktracker.report.RemoteItem
+import com.tikalk.worktracker.report.toRemoteItem
 import timber.log.Timber
 
 abstract class TimeFormFragment : InternetFragment(),
@@ -57,6 +59,7 @@ abstract class TimeFormFragment : InternetFragment(),
     var projectEmpty: Project = Project.EMPTY.copy(true)
     var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
         ?: ProjectTask.EMPTY.copy()
+    var remoteEmpty: RemoteItem = RemoteItem(Remote.EMPTY, "")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,6 +180,17 @@ abstract class TimeFormFragment : InternetFragment(),
         } else {
             tasks.sortedBy { it.name }.add(0, taskEmpty)
         }
+    }
+
+    protected fun buildRemoteItems(): List<RemoteItem> {
+        val items = ArrayList<RemoteItem>()
+        val values = Remote.values()
+        val context = requireContext()
+        for (value in values) {
+            items.add(value.toRemoteItem(context))
+        }
+        remoteEmpty = items[0]
+        return items
     }
 
     companion object {

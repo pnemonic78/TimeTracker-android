@@ -52,6 +52,8 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
+import com.tikalk.worktracker.report.RemoteItem
+import com.tikalk.worktracker.report.findRemote
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -98,7 +100,16 @@ class TimerFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        remoteInput.setOnCheckedChangeListener { _, isChecked -> record.isRemote = isChecked }
+        remoteInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                remoteItemSelected(remoteEmpty)
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val task = adapterView.adapter.getItem(position) as RemoteItem
+                remoteItemSelected(task)
+            }
+        }
 
         actionStart.setOnClickListener { startTimer() }
         actionStop.setOnClickListener { stopTimer() }
@@ -117,7 +128,7 @@ class TimerFragment : TimeFormFragment() {
         val projects = projectsData.value
         bindProjects(context, record, projects)
 
-        remoteInput.isChecked = record.isRemote
+        bindRemote(context, record)
 
         val startTime = record.startTime
         if (startTime <= TimeRecord.NEVER) {
@@ -147,6 +158,19 @@ class TimerFragment : TimeFormFragment() {
             projectItemSelected(record.project)
         }
         projectInput.requestFocus()
+    }
+
+    private fun bindRemote(context: Context, record: TimeRecord) {
+        Timber.i("bindRemote record=$record")
+        if (remoteInput == null) return
+        val remoteItems = buildRemoteItems()
+        remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
+        if (remoteItems.isNotEmpty()) {
+            val index = findRemote(remoteItems, record.isRemote.toRemote())
+            remoteInput.setSelection(max(0, index))
+            val selectedItem = if (index >= 0) remoteItems[index] else remoteEmpty
+            remoteItemSelected(selectedItem)
+        }
     }
 
     private fun startTimer() {
@@ -242,6 +266,11 @@ class TimerFragment : TimeFormFragment() {
         setRecordTask(task)
         if (!isVisible) return
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
+    }
+
+    private fun remoteItemSelected(remote: RemoteItem) {
+        Timber.d("remoteItemSelected remote=$remote")
+        setRecordRemote(remote.remote)
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {

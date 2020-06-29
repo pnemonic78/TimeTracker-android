@@ -72,7 +72,6 @@ class ReportFormFragment : TimeFormFragment() {
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
     private val periods = ReportTimePeriod.values()
-    private var remoteEmpty: RemoteItem = RemoteItem(Remote.EMPTY, "")
 
     init {
         record = ReportFilter()
@@ -330,17 +329,6 @@ class ReportFormFragment : TimeFormFragment() {
             remoteInput.setSelection(max(0, findRemote(remoteItems, filter.remote)))
             remoteItemSelected(filter.remote)
         }
-    }
-
-    private fun buildRemoteItems(): List<RemoteItem> {
-        val items = ArrayList<RemoteItem>()
-        val values = Remote.values()
-        val context = requireContext()
-        for (value in values) {
-            items.add(value.toRemoteItem(context))
-        }
-        remoteEmpty = items[0]
-        return items
     }
 
     private fun pickStartDate() {
