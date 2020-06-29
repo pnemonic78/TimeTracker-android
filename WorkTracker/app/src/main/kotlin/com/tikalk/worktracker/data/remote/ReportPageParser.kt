@@ -287,8 +287,12 @@ class ReportPageParser(private val filter: ReportFilter) {
 
     private fun parseRemote(text: String): Remote {
         return when (text) {
-            "yes" -> Remote.YES
-            "no" -> Remote.NO
+            "yes",
+            "home" -> Remote.HOME
+            "no",
+            "client" -> Remote.CLIENT
+            "other" -> Remote.OTHER
+            "tikal" -> Remote.TIKAL
             else -> Remote.EMPTY
         }
     }

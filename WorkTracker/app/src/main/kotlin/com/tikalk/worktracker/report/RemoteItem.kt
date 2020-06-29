@@ -44,11 +44,12 @@ data class RemoteItem(val remote: Remote, val label: String) {
 }
 
 fun Remote.toRemoteItem(context: Context): RemoteItem {
-    val label: String = when {
-        this == Remote.EMPTY -> context.getString(R.string.remote_label_all)
-        this == Remote.NO -> context.getString(R.string.remote_label_no)
-        this == Remote.YES -> context.getString(R.string.remote_label_yes)
-        else -> ""
+    val label: String = when (this) {
+        Remote.EMPTY -> context.getString(R.string.remote_label_all)
+        Remote.CLIENT -> context.getString(R.string.remote_label_client)
+        Remote.HOME -> context.getString(R.string.remote_label_home)
+        Remote.TIKAL -> context.getString(R.string.remote_label_tikal)
+        else -> context.getString(R.string.remote_label_other)
     }
     return RemoteItem(this, label)
 }

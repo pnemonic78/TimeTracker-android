@@ -40,6 +40,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.toRemote
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
 import io.reactivex.SingleObserver
@@ -96,10 +97,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
                     xmlWriter.endTag(ns, "task")
                 }
                 if (showRemoteField) {
-                    val text = if (record.isRemote)
-                        context.getString(R.string.remote_label_yes)
-                    else
-                        context.getString(R.string.remote_label_no)
+                    val text = record.isRemote.toRemote().toRemoteItem(context).label
                     xmlWriter.startTag(ns, "remote")
                     xmlWriter.text(text)
                     xmlWriter.endTag(ns, "remote")

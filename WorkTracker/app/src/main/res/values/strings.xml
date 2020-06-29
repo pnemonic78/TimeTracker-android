@@ -151,10 +151,11 @@
     <string name="item_all">(All)</string>
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>
-    <string name="error_export">Error exporting report!</string>
     <string name="remote_label_all" translatable="false">@string/item_all</string>
-    <string name="remote_label_no" translatable="false">@string/no</string>
-    <string name="remote_label_yes" translatable="false">@string/yes</string>
+    <string name="remote_label_client">Client</string>
+    <string name="remote_label_home">Home</string>
+    <string name="remote_label_other">Other</string>
+    <string name="remote_label_tikal">Tikal</string>
 
     <!-- Errors -->
     <string name="error">Error</string>
@@ -163,4 +164,5 @@
     <string name="error_accessDenied">Cannot access the requested page.</string>
     <string name="error_unknown">An unknown error occurred.</string>
     <string name="error_connection">Cannot connect to the remote server.</string>
+    <string name="error_export">Error exporting report!</string>
 </resources>
