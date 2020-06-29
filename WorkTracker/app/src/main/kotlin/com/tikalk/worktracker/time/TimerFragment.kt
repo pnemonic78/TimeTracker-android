@@ -166,7 +166,7 @@ class TimerFragment : TimeFormFragment() {
         val remoteItems = buildRemoteItems()
         remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
         if (remoteItems.isNotEmpty()) {
-            val index = findRemote(remoteItems, record.isRemote.toRemote())
+            val index = findRemote(remoteItems, record.remote)
             remoteInput.setSelection(max(0, index))
             val selectedItem = if (index >= 0) remoteItems[index] else remoteEmpty
             remoteItemSelected(selectedItem)
@@ -285,7 +285,7 @@ class TimerFragment : TimeFormFragment() {
                 val taskId = args.getLong(EXTRA_TASK_ID)
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
-                val isRemote = args.getBoolean(EXTRA_REMOTE)
+                val remoteId = args.getLong(EXTRA_REMOTE)
 
                 val projects = projectsData.value
                 val project = projects?.find { it.id == projectId } ?: projectEmpty
@@ -299,7 +299,7 @@ class TimerFragment : TimeFormFragment() {
                 if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
-                record.isRemote = isRemote
+                record.remote = Remote.valueOf(remoteId)
                 return record
             }
         }
@@ -323,7 +323,7 @@ class TimerFragment : TimeFormFragment() {
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
             setRecordTask(task)
             record.start = recordStarted.start
-            record.isRemote = recordStarted.isRemote
+            record.remote = recordStarted.remote
         }
     }
 
@@ -339,7 +339,7 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            args.putBoolean(TimeEditFragment.EXTRA_REMOTE, record.isRemote)
+            args.putLong(TimeEditFragment.EXTRA_REMOTE, record.remote.id)
             parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }

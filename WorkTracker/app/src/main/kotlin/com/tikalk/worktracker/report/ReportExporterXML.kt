@@ -36,11 +36,9 @@ import android.content.Context
 import android.net.Uri
 import android.text.format.DateUtils
 import android.util.Xml
-import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.toRemote
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
 import io.reactivex.SingleObserver
@@ -97,7 +95,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
                     xmlWriter.endTag(ns, "task")
                 }
                 if (showRemoteField) {
-                    val text = record.isRemote.toRemote().toRemoteItem(context).label
+                    val text = record.remote.toRemoteItem(context).label
                     xmlWriter.startTag(ns, "remote")
                     xmlWriter.text(text)
                     xmlWriter.endTag(ns, "remote")

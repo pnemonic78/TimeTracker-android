@@ -45,15 +45,11 @@ enum class Remote(val id: Long) {
 
     companion object {
         fun valueOf(id: Long): Remote {
-            return values().firstOrNull { id == it.id } ?: CLIENT
+            return values().firstOrNull { id == it.id } ?: OTHER
         }
 
         fun valueOf(value: Boolean): Remote {
             return if (value) HOME else CLIENT
         }
     }
-}
-
-fun Boolean.toRemote(): Remote {
-    return if (this) Remote.HOME else Remote.CLIENT
 }

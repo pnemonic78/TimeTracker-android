@@ -40,7 +40,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.toRemote
 import com.tikalk.worktracker.time.SYSTEM_DATE_PATTERN
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.SingleObserver
@@ -158,7 +157,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                     cell.stringValue = record.task.name
                 }
                 if (showRemoteField) {
-                    val text = record.isRemote.toRemote().toRemoteItem(context).label
+                    val text = record.remote.toRemoteItem(context).label
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = text
                 }

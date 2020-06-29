@@ -52,11 +52,6 @@ import java.util.*
 //TODO @Parcelize
 class ReportFilter : TimeRecord, Parcelable {
 
-    var remote: Remote = Remote.EMPTY
-        set(value) {
-            field = value
-            isRemote = value.toBoolean()
-        }
     var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
     var favorite: String? = null
     var showProjectField: Boolean = true

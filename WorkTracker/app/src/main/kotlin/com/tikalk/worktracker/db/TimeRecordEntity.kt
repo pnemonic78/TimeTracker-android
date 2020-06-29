@@ -77,9 +77,8 @@ open class TimeRecordEntity(
     var cost: Double = 0.0,
     @ColumnInfo(name = "status")
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
-    @ColumnInfo(name = "remote")
-    // "isRemote" is invalid member name!
-    var remote: Boolean = false
+    @ColumnInfo(name = "remote_id")
+    var remoteId: Long = ID_NONE
 ) : TikalEntity(id), Parcelable {
 
     constructor(parcel: Parcel) : this(ID_NONE, ID_NONE, ID_NONE) {
@@ -93,7 +92,7 @@ open class TimeRecordEntity(
         finish = if (finishTime == NEVER) null else finishTime.toCalendar()
         note = parcel.readString() ?: ""
         status = TaskRecordStatus.values()[parcel.readInt()]
-        remote = parcel.readBool()
+        remoteId = parcel.readLong()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -105,7 +104,7 @@ open class TimeRecordEntity(
         parcel.writeLong(finish?.timeInMillis ?: NEVER)
         parcel.writeString(note)
         parcel.writeInt(status.ordinal)
-        parcel.writeBool(remote)
+        parcel.writeLong(remoteId)
     }
 
     override fun describeContents(): Int {
@@ -153,7 +152,7 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         this.note,
         this.cost,
         this.status,
-        this.isRemote
+        this.remote.id
     )
 
 fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
@@ -180,6 +179,6 @@ fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: 
         value.note,
         value.cost,
         value.status,
-        value.remote
+        Remote.valueOf(value.remoteId)
     )
 }

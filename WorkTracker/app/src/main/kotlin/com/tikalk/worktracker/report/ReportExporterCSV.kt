@@ -41,7 +41,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.toRemote
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
 import io.reactivex.SingleObserver
@@ -115,7 +114,7 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
                     row.add(record.task.name)
                 }
                 if (showRemoteField) {
-                    val text = record.isRemote.toRemote().toRemoteItem(context).label
+                    val text = record.remote.toRemoteItem(context).label
                     row.add(text)
                 }
                 if (showStartField) {

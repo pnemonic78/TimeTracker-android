@@ -39,7 +39,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.toRemote
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.formatSystemDate
@@ -188,7 +187,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                 }
                                 if (showRemoteField) {
                                     td("cellLeftAligned") {
-                                        +record.isRemote.toRemote().toRemoteItem(context).label
+                                        +record.remote.toRemoteItem(context).label
                                     }
                                 }
                                 if (showStartField) {

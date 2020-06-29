@@ -177,8 +177,8 @@ class TimeEditFragment : TimeFormFragment() {
                     }
                 }
                 if (args.containsKey(EXTRA_REMOTE)) {
-                    val isRemote = args.getBoolean(EXTRA_REMOTE)
-                    record.isRemote = isRemote
+                    val remoteId = args.getLong(EXTRA_REMOTE, TikalEntity.ID_NONE)
+                    record.remote = Remote.valueOf(remoteId)
                 }
             }
         }
@@ -245,7 +245,7 @@ class TimeEditFragment : TimeFormFragment() {
         val remoteItems = buildRemoteItems()
         remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
         if (remoteItems.isNotEmpty()) {
-            val index = findRemote(remoteItems, record.isRemote.toRemote())
+            val index = findRemote(remoteItems, record.remote)
             remoteInput.setSelection(max(0, index))
             val selectedItem = if (index >= 0) remoteItems[index] else remoteEmpty
             remoteItemSelected(selectedItem)
@@ -512,7 +512,7 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note,
-                record.isRemote.toRemote().id)
+                record.remote.id)
         } else {
             service.editTime(record.id,
                 record.project.id,
@@ -521,7 +521,7 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note,
-                record.isRemote.toRemote().id)
+                record.remote.id)
         }
         submitter
             .subscribeOn(Schedulers.io())
@@ -637,7 +637,7 @@ class TimeEditFragment : TimeFormFragment() {
         args.putLong(EXTRA_START_TIME, record.startTime)
         args.putLong(EXTRA_FINISH_TIME, record.finishTime)
         args.putLong(EXTRA_RECORD_ID, record.id)
-        args.putBoolean(EXTRA_REMOTE, record.isRemote)
+        args.putLong(EXTRA_REMOTE, record.remote.id)
         run()
     }
 

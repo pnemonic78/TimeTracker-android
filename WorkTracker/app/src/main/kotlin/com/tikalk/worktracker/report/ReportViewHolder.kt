@@ -60,7 +60,7 @@ class ReportViewHolder(itemView: View, val filter: ReportFilter) : TimeListViewH
         } else if (filter.showFinishField) {
             itemView.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
         }
-        itemView.remoteIcon.visibility = if (filter.showRemoteField && record.isRemote) View.VISIBLE else View.GONE
+        //TODO itemView.remoteIcon.visibility = if (filter.showRemoteField && record.remote) View.VISIBLE else View.GONE
 
         bindFilter(filter)
     }

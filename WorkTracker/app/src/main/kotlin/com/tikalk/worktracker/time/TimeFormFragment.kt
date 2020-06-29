@@ -115,14 +115,9 @@ abstract class TimeFormFragment : InternetFragment(),
         record.task = task
     }
 
-    protected open fun setRecordRemote(isRemote: Boolean) {
-        Timber.d("setRecordRemote isRemote=$isRemote")
-        record.isRemote = isRemote
-    }
-
     protected open fun setRecordRemote(remote: Remote) {
         Timber.d("setRecordRemote remote=$remote")
-        setRecordRemote(remote.toBoolean())
+        record.remote = remote
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
@@ -144,8 +139,9 @@ abstract class TimeFormFragment : InternetFragment(),
                 setRecordTask(task)
             }
 
-            val isRemoteFavorite = preferences.getFavoriteRemote()
-            setRecordRemote(isRemoteFavorite)
+            val remoteFavorite = preferences.getFavoriteRemote()
+            val remote = Remote.valueOf(remoteFavorite)
+            setRecordRemote(remote)
         }
     }
 

@@ -249,7 +249,7 @@ class ReportPageParser(private val filter: ReportFilter) {
             val tdRemote = cols[columnIndexRemote]
             val isRemoteText = tdRemote.ownText()
             val remote = parseRemote(isRemoteText)
-            record.isRemote = remote.toBoolean()
+            record.remote = remote
         }
 
         return record
