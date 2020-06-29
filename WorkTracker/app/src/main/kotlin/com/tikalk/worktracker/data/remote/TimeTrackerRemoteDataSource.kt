@@ -204,7 +204,7 @@ class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
         return TimeListPageParser().parse(html)
     }
 
-    private fun savePage(page: TimeListPage) {
+    override fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
     }
 

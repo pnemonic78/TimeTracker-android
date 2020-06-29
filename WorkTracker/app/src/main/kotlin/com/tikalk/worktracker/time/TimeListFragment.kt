@@ -208,6 +208,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
+        dataSource.savePage(page)
     }
 
     private fun processPageMain(page: TimeListPage) {

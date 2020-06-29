@@ -50,4 +50,6 @@ interface TimeTrackerDataSource {
     fun timeListPage(date: Calendar, refresh: Boolean = true): Observable<TimeListPage>
     fun timerPage(refresh: Boolean = true): Observable<TimerPage>
     fun usersPage(refresh: Boolean = true): Observable<UsersPage>
+
+    fun savePage(page: TimeListPage)
 }

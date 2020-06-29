@@ -536,7 +536,7 @@ class TimeEditFragment : TimeFormFragment() {
 
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    processSubmittedPage(html, last)
+                    processSubmittedPage(record, html, last)
                 } else {
                     authenticateMain(true)
                 }
@@ -548,7 +548,7 @@ class TimeEditFragment : TimeFormFragment() {
             .addTo(disposables)
     }
 
-    private fun processSubmittedPage(html: String, last: Boolean) {
+    private fun processSubmittedPage(record: TimeRecord, html: String, last: Boolean) {
         Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {

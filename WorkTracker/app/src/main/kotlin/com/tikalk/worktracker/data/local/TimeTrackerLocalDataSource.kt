@@ -34,6 +34,7 @@ package com.tikalk.worktracker.data.local
 
 import android.text.format.DateUtils
 import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.data.remote.TimeListPageSaver
 import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
@@ -325,6 +326,10 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
                     projects
                 )
             }
+    }
+
+    override fun savePage(page: TimeListPage) {
+        TimeListPageSaver(db).save(page)
     }
 
     companion object {
