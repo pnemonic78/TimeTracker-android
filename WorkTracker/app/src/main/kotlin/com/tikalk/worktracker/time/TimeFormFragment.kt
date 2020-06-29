@@ -180,7 +180,7 @@ abstract class TimeFormFragment : InternetFragment(),
 
     protected fun buildRemoteItems(): List<RemoteItem> {
         val items = ArrayList<RemoteItem>()
-        val values = Remote.values()
+        val values = Remote.values
         val context = requireContext()
         for (value in values) {
             items.add(value.toRemoteItem(context))

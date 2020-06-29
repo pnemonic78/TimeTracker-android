@@ -32,20 +32,37 @@
 
 package com.tikalk.worktracker.model
 
-enum class Remote(val id: Long) {
-    EMPTY(TikalEntity.ID_NONE),
-    CLIENT(11),
-    HOME(10),
-    OTHER(13),
-    TIKAL(12);
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 
-    fun toBoolean(): Boolean {
-        return this == HOME
+/**
+ * Task that belongs to a project entity.
+ *
+ * @author Moshe Waisberg.
+ */
+@Entity(tableName = "remote")
+data class Remote(
+    @ColumnInfo(name = "name")
+    var name: String,
+    @ColumnInfo(name = "description")
+    var description: String? = null
+) : TikalEntity() {
+
+    constructor(id: Long, name: String) : this(name, "") {
+        this.id = id
     }
 
     companion object {
+        val EMPTY = Remote(ID_NONE, "")
+        val CLIENT = Remote(11L, "client")
+        val HOME = Remote(10L, "home")
+        val OTHER = Remote(13L, "other")
+        val TIKAL = Remote(12L, "tikal")
+
+        val values = arrayOf(EMPTY, CLIENT, HOME, OTHER, TIKAL)
+
         fun valueOf(id: Long): Remote {
-            return values().firstOrNull { id == it.id } ?: OTHER
+            return values.firstOrNull { id == it.id } ?: OTHER
         }
 
         fun valueOf(value: Boolean): Remote {
