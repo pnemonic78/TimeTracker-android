@@ -122,23 +122,23 @@
             tools:text="@tools:sample/date/hhmm" />
 
         <ImageView
-            android:id="@+id/remoteIcon"
+            android:id="@+id/locationIcon"
             android:layout_width="@dimen/icon_item"
             android:layout_height="@dimen/icon_item"
-            android:contentDescription="@string/remote_label"
-            app:layout_constraintBottom_toBottomOf="@id/remote"
+            android:contentDescription="@string/location_label"
+            app:layout_constraintBottom_toBottomOf="@id/location"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/remote"
+            app:layout_constraintTop_toTopOf="@+id/location"
             app:srcCompat="@drawable/ic_home_work"
             tools:visibility="visible" />
 
         <TextView
-            android:id="@+id/remote"
+            android:id="@+id/location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:maxLines="1"
-            app:layout_constraintStart_toEndOf="@+id/remoteIcon"
+            app:layout_constraintStart_toEndOf="@+id/locationIcon"
             app:layout_constraintTop_toBottomOf="@+id/task"
             tools:text="@tools:sample/lorem" />
 
@@ -162,7 +162,7 @@
             android:maxLines="2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/noteIcon"
-            app:layout_constraintTop_toBottomOf="@+id/remote"
+            app:layout_constraintTop_toBottomOf="@+id/location"
             tools:text="@tools:sample/lorem/random" />
 
         <ImageView

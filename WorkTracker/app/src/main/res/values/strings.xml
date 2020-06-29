@@ -28,7 +28,7 @@
     <string name="prompt_username">Username</string>
     <string name="project_label">Project</string>
     <string name="task_label">Task</string>
-    <string name="remote_label">Remote</string>
+    <string name="location_label">Location</string>
     <string name="date_label">Date</string>
     <string name="start_label">Start Time</string>
     <string name="finish_label">Finish Time</string>
@@ -147,15 +147,15 @@
     <string name="duration_header" translatable="false">@string/duration_label</string>
     <string name="note_header" translatable="false">@string/note_hint</string>
     <string name="cost_header" translatable="false">@string/cost</string>
-    <string name="remote_header" translatable="false">@string/remote_label</string>
+    <string name="location_header" translatable="false">@string/location_label</string>
     <string name="item_all">(All)</string>
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>
-    <string name="remote_label_all" translatable="false">@string/item_all</string>
-    <string name="remote_label_client">Client</string>
-    <string name="remote_label_home">Home</string>
-    <string name="remote_label_other">Other</string>
-    <string name="remote_label_tikal">Tikal</string>
+    <string name="location_label_all" translatable="false">@string/item_all</string>
+    <string name="location_label_client">Client</string>
+    <string name="location_label_home">Home</string>
+    <string name="location_label_other">Other</string>
+    <string name="location_label_tikal">Tikal</string>
 
     <!-- Errors -->
     <string name="error">Error</string>

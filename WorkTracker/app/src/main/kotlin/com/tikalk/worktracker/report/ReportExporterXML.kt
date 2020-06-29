@@ -66,7 +66,7 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
-            val showRemoteField = filter.showRemoteField
+            val showLocationField = filter.showLocationField
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -94,11 +94,11 @@ class ReportExporterXML(context: Context, records: List<TimeRecord>, filter: Rep
                     xmlWriter.text(record.task.name)
                     xmlWriter.endTag(ns, "task")
                 }
-                if (showRemoteField) {
-                    val text = record.remote.toRemoteItem(context).label
-                    xmlWriter.startTag(ns, "remote")
+                if (showLocationField) {
+                    val text = record.location.toLocationItem(context).label
+                    xmlWriter.startTag(ns, "location")
                     xmlWriter.text(text)
-                    xmlWriter.endTag(ns, "remote")
+                    xmlWriter.endTag(ns, "location")
                 }
                 if (showStartField) {
                     xmlWriter.startTag(ns, "start")

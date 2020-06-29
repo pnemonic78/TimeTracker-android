@@ -35,29 +35,29 @@ package com.tikalk.worktracker.report
 import android.content.Context
 import android.widget.AdapterView
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Remote
+import com.tikalk.worktracker.model.Location
 
-data class RemoteItem(val remote: Remote, val label: String) {
+data class LocationItem(val location: Location, val label: String) {
     override fun toString(): String {
         return label
     }
 }
 
-fun Remote.toRemoteItem(context: Context): RemoteItem {
+fun Location.toLocationItem(context: Context): LocationItem {
     val label: String = when (this) {
-        Remote.EMPTY -> context.getString(R.string.remote_label_all)
-        Remote.CLIENT -> context.getString(R.string.remote_label_client)
-        Remote.HOME -> context.getString(R.string.remote_label_home)
-        Remote.TIKAL -> context.getString(R.string.remote_label_tikal)
-        else -> context.getString(R.string.remote_label_other)
+        Location.EMPTY -> context.getString(R.string.location_label_all)
+        Location.CLIENT -> context.getString(R.string.location_label_client)
+        Location.HOME -> context.getString(R.string.location_label_home)
+        Location.TIKAL -> context.getString(R.string.location_label_tikal)
+        else -> context.getString(R.string.location_label_other)
     }
-    return RemoteItem(this, label)
+    return LocationItem(this, label)
 }
 
-fun findRemote(remotes: List<RemoteItem>, remote: Remote): Int {
+fun findLocation(remotes: List<LocationItem>, location: Location): Int {
     for (i in remotes.indices) {
         val item = remotes[i]
-        if (item.remote == remote) {
+        if (item.location == location) {
             return i
         }
     }

@@ -75,7 +75,7 @@ interface TimeTrackerService {
                 @Field("start") start: String,
                 @Field("finish") finish: String,
                 @Field("note") note: String,
-                @Field("time_field_5") isRemote: Long,
+                @Field("time_field_5") locationId: Long,
                 @Field("btn_submit") submit: String = "Submit",
                 @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 
@@ -91,7 +91,7 @@ interface TimeTrackerService {
                  @Field("start") start: String,
                  @Field("finish") finish: String,
                  @Field("note") note: String,
-                 @Field("time_field_5") isRemote: Long,
+                 @Field("time_field_5") locationId: Long,
                  @Field("btn_save") submit: String = "Save",
                  @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
 

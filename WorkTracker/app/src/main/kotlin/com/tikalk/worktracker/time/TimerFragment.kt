@@ -52,8 +52,8 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
-import com.tikalk.worktracker.report.RemoteItem
-import com.tikalk.worktracker.report.findRemote
+import com.tikalk.worktracker.report.LocationItem
+import com.tikalk.worktracker.report.findLocation
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -100,14 +100,14 @@ class TimerFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        remoteInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                remoteItemSelected(remoteEmpty)
+                locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = adapterView.adapter.getItem(position) as RemoteItem
-                remoteItemSelected(task)
+                val task = adapterView.adapter.getItem(position) as LocationItem
+                locationItemSelected(task)
             }
         }
 
@@ -128,19 +128,19 @@ class TimerFragment : TimeFormFragment() {
         val projects = projectsData.value
         bindProjects(context, record, projects)
 
-        bindRemote(context, record)
+        bindLocation(context, record)
 
         val startTime = record.startTime
         if (startTime <= TimeRecord.NEVER) {
             projectInput.isEnabled = true
             taskInput.isEnabled = true
-            remoteInput.isEnabled = true
+            locationInput.isEnabled = true
             actionSwitcher.displayedChild = CHILD_START
             activity?.invalidateOptionsMenu()
         } else {
             projectInput.isEnabled = false
             taskInput.isEnabled = false
-            remoteInput.isEnabled = false
+            locationInput.isEnabled = false
             actionSwitcher.displayedChild = CHILD_STOP
             activity?.invalidateOptionsMenu()
 
@@ -160,16 +160,16 @@ class TimerFragment : TimeFormFragment() {
         projectInput.requestFocus()
     }
 
-    private fun bindRemote(context: Context, record: TimeRecord) {
-        Timber.i("bindRemote record=$record")
-        if (remoteInput == null) return
-        val remoteItems = buildRemoteItems()
-        remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
-        if (remoteItems.isNotEmpty()) {
-            val index = findRemote(remoteItems, record.remote)
-            remoteInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) remoteItems[index] else remoteEmpty
-            remoteItemSelected(selectedItem)
+    private fun bindLocation(context: Context, record: TimeRecord) {
+        Timber.i("bindLocation record=$record")
+        if (locationInput == null) return
+        val locations = buildLocations()
+        locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
+        if (locations.isNotEmpty()) {
+            val index = findLocation(locations, record.location)
+            locationInput.setSelection(max(0, index))
+            val selectedItem = if (index >= 0) locations[index] else locationEmpty
+            locationItemSelected(selectedItem)
         }
     }
 
@@ -221,7 +221,7 @@ class TimerFragment : TimeFormFragment() {
             args.remove(EXTRA_TASK_ID)
             args.remove(EXTRA_START_TIME)
             args.remove(EXTRA_FINISH_TIME)
-            args.remove(EXTRA_REMOTE)
+            args.remove(EXTRA_LOCATION)
         }
 
         bindForm(record)
@@ -268,9 +268,9 @@ class TimerFragment : TimeFormFragment() {
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
-    private fun remoteItemSelected(remote: RemoteItem) {
-        Timber.d("remoteItemSelected remote=$remote")
-        setRecordRemote(remote.remote)
+    private fun locationItemSelected(location: LocationItem) {
+        Timber.d("locationItemSelected location=$location")
+        setRecordLocation(location.location)
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
@@ -285,7 +285,7 @@ class TimerFragment : TimeFormFragment() {
                 val taskId = args.getLong(EXTRA_TASK_ID)
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
-                val remoteId = args.getLong(EXTRA_REMOTE)
+                val locationId = args.getLong(EXTRA_LOCATION)
 
                 val projects = projectsData.value
                 val project = projects?.find { it.id == projectId } ?: projectEmpty
@@ -299,7 +299,7 @@ class TimerFragment : TimeFormFragment() {
                 if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
-                record.remote = Remote.valueOf(remoteId)
+                record.location = Location.valueOf(locationId)
                 return record
             }
         }
@@ -323,7 +323,7 @@ class TimerFragment : TimeFormFragment() {
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
             setRecordTask(task)
             record.start = recordStarted.start
-            record.remote = recordStarted.remote
+            record.location = recordStarted.location
         }
     }
 
@@ -339,7 +339,7 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            args.putLong(TimeEditFragment.EXTRA_REMOTE, record.remote.id)
+            args.putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
             parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }

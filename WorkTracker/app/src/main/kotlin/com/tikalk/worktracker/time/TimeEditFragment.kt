@@ -59,17 +59,13 @@ import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.report.RemoteItem
-import com.tikalk.worktracker.report.findRemote
+import com.tikalk.worktracker.report.LocationItem
+import com.tikalk.worktracker.report.findLocation
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_timer.*
 import kotlinx.android.synthetic.main.time_form.*
-import kotlinx.android.synthetic.main.time_form.projectInput
-import kotlinx.android.synthetic.main.time_form.remoteInput
-import kotlinx.android.synthetic.main.time_form.taskInput
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
@@ -130,14 +126,14 @@ class TimeEditFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        remoteInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                remoteItemSelected(remoteEmpty)
+                locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val task = adapterView.adapter.getItem(position) as RemoteItem
-                remoteItemSelected(task)
+                val task = adapterView.adapter.getItem(position) as LocationItem
+                locationItemSelected(task)
             }
         }
         startInput.setOnClickListener { pickStartTime() }
@@ -176,9 +172,9 @@ class TimeEditFragment : TimeFormFragment() {
                         record.finish = null
                     }
                 }
-                if (args.containsKey(EXTRA_REMOTE)) {
-                    val remoteId = args.getLong(EXTRA_REMOTE, TikalEntity.ID_NONE)
-                    record.remote = Remote.valueOf(remoteId)
+                if (args.containsKey(EXTRA_LOCATION)) {
+                    val locationId = args.getLong(EXTRA_LOCATION, TikalEntity.ID_NONE)
+                    record.location = Location.valueOf(locationId)
                 }
             }
         }
@@ -200,7 +196,7 @@ class TimeEditFragment : TimeFormFragment() {
         val projects = projectsData.value
         bindProjects(context, record, projects)
 
-        bindRemote(context, record)
+        bindLocation(context, record)
 
         val startTime = record.startTime
         startInput.text = if (startTime != TimeRecord.NEVER)
@@ -239,16 +235,16 @@ class TimeEditFragment : TimeFormFragment() {
         projectInput.requestFocus()
     }
 
-    private fun bindRemote(context: Context, record: TimeRecord) {
-        Timber.i("bindRemote record=$record")
-        if (remoteInput == null) return
-        val remoteItems = buildRemoteItems()
-        remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
-        if (remoteItems.isNotEmpty()) {
-            val index = findRemote(remoteItems, record.remote)
-            remoteInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) remoteItems[index] else remoteEmpty
-            remoteItemSelected(selectedItem)
+    private fun bindLocation(context: Context, record: TimeRecord) {
+        Timber.i("bindLocation record=$record")
+        if (locationInput == null) return
+        val locations = buildLocations()
+        locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
+        if (locations.isNotEmpty()) {
+            val index = findLocation(locations, record.location)
+            locationInput.setSelection(max(0, index))
+            val selectedItem = if (index >= 0) locations[index] else locationEmpty
+            locationItemSelected(selectedItem)
         }
     }
 
@@ -324,7 +320,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun validateForm(record: TimeRecord): Boolean {
         val projectInputView = projectInput.selectedView as TextView
         val taskInputView = taskInput.selectedView as TextView
-        val remoteInputView = remoteInput.selectedView as TextView
+        val locationInputView = locationInput.selectedView as TextView
 
         projectInputView.error = null
         projectInputView.isFocusableInTouchMode = false
@@ -334,8 +330,8 @@ class TimeEditFragment : TimeFormFragment() {
         startInput.isFocusableInTouchMode = false
         finishInput.error = null
         finishInput.isFocusableInTouchMode = false
-        remoteInputView.error = null
-        remoteInputView.isFocusableInTouchMode = false
+        locationInputView.error = null
+        locationInputView.isFocusableInTouchMode = false
         setErrorLabel("")
 
         if (record.project.id == TikalEntity.ID_NONE) {
@@ -396,9 +392,9 @@ class TimeEditFragment : TimeFormFragment() {
         setRecordTask(task)
     }
 
-    private fun remoteItemSelected(remote: RemoteItem) {
-        Timber.d("remoteItemSelected remote=$remote")
-        setRecordRemote(remote.remote)
+    private fun locationItemSelected(location: LocationItem) {
+        Timber.d("remoteItemSelected location=$location")
+        setRecordLocation(location.location)
     }
 
     fun run() {
@@ -512,7 +508,7 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note,
-                record.remote.id)
+                record.location.id)
         } else {
             service.editTime(record.id,
                 record.project.id,
@@ -521,7 +517,7 @@ class TimeEditFragment : TimeFormFragment() {
                 formatSystemTime(record.start),
                 formatSystemTime(record.finish),
                 record.note,
-                record.remote.id)
+                record.location.id)
         }
         submitter
             .subscribeOn(Schedulers.io())
@@ -637,7 +633,7 @@ class TimeEditFragment : TimeFormFragment() {
         args.putLong(EXTRA_START_TIME, record.startTime)
         args.putLong(EXTRA_FINISH_TIME, record.finishTime)
         args.putLong(EXTRA_RECORD_ID, record.id)
-        args.putLong(EXTRA_REMOTE, record.remote.id)
+        args.putLong(EXTRA_LOCATION, record.location.id)
         run()
     }
 
@@ -729,7 +725,7 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
-        const val EXTRA_REMOTE = TimeFormFragment.EXTRA_REMOTE
+        const val EXTRA_LOCATION = TimeFormFragment.EXTRA_LOCATION
 
         private const val STATE_DATE = "date"
     }

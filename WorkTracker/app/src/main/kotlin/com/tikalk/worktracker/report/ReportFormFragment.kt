@@ -114,14 +114,14 @@ class ReportFormFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        remoteInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                remoteItemSelected(remoteEmpty)
+                locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val remote = adapterView.adapter.getItem(position) as RemoteItem
-                remoteItemSelected(remote)
+                val location = adapterView.adapter.getItem(position) as LocationItem
+                locationItemSelected(location)
             }
         }
         periodInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -143,7 +143,7 @@ class ReportFormFragment : TimeFormFragment() {
         showFinishField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showFinishField = isChecked }
         showDurationField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showDurationField = isChecked }
         showNoteField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showNoteField = isChecked }
-        showRemoteField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showRemoteField = isChecked }
+        showLocationField.setOnCheckedChangeListener { _, isChecked -> (record as ReportFilter).showLocationField = isChecked }
 
         actionGenerate.setOnClickListener { generateReport() }
     }
@@ -279,7 +279,7 @@ class ReportFormFragment : TimeFormFragment() {
         periodInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, periodItems)
         periodInput.setSelection(filter.period.ordinal)
 
-        bindRemote(context, filter)
+        bindLocation(context, filter)
 
         val startTime = filter.startTime
         startInput.text = if (startTime != TimeRecord.NEVER)
@@ -303,7 +303,7 @@ class ReportFormFragment : TimeFormFragment() {
         showFinishField.isChecked = filter.showFinishField
         showDurationField.isChecked = filter.showDurationField
         showNoteField.isChecked = filter.showNoteField
-        showRemoteField.isChecked = filter.showRemoteField
+        showLocationField.isChecked = filter.showLocationField
 
         setErrorLabel(errorMessage)
     }
@@ -320,14 +320,14 @@ class ReportFormFragment : TimeFormFragment() {
         projectInput.requestFocus()
     }
 
-    private fun bindRemote(context: Context, filter: ReportFilter) {
-        Timber.i("bindRemote filter=$filter")
-        if (remoteInput == null) return
-        val remoteItems = buildRemoteItems()
-        remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
-        if (remoteItems.isNotEmpty()) {
-            remoteInput.setSelection(max(0, findRemote(remoteItems, filter.remote)))
-            remoteItemSelected(filter.remote)
+    private fun bindLocation(context: Context, filter: ReportFilter) {
+        Timber.i("bindLocation filter=$filter")
+        if (locationInput == null) return
+        val locations = buildLocations()
+        locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
+        if (locations.isNotEmpty()) {
+            locationInput.setSelection(max(0, findLocation(locations, filter.location)))
+            locationItemSelected(filter.location)
         }
     }
 
@@ -499,18 +499,18 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun getEmptyTaskName() = requireContext().getString(R.string.task_name_all)
 
-    private fun remoteItemSelected(remote: RemoteItem) {
-        remoteItemSelected(remote.remote)
+    private fun locationItemSelected(location: LocationItem) {
+        locationItemSelected(location.location)
     }
 
-    private fun remoteItemSelected(remote: Remote) {
-        Timber.d("remoteItemSelected remote=$remote")
-        setRecordRemote(remote)
+    private fun locationItemSelected(location: Location) {
+        Timber.d("remoteItemSelected location=$location")
+        setRecordLocation(location)
     }
 
-    override fun setRecordRemote(remote: Remote) {
-        super.setRecordRemote(remote)
-        (record as ReportFilter).remote = remote
+    override fun setRecordLocation(location: Location) {
+        super.setRecordLocation(location)
+        (record as ReportFilter).location = location
     }
 
     companion object {

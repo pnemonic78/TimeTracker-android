@@ -84,24 +84,24 @@
         tools:listitem="@android:layout/simple_list_item_1" />
 
     <ImageView
-        android:id="@+id/remoteIcon"
+        android:id="@+id/locationIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/remote_label"
-        app:layout_constraintBottom_toBottomOf="@+id/remoteInput"
+        android:contentDescription="@string/location_label"
+        app:layout_constraintBottom_toBottomOf="@+id/locationInput"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/remoteInput"
+        app:layout_constraintTop_toTopOf="@+id/locationInput"
         app:srcCompat="@drawable/ic_home_work" />
 
     <Spinner
-        android:id="@+id/remoteInput"
+        android:id="@+id/locationInput"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginTop="@dimen/form_marginTop"
-        android:prompt="@string/remote_label"
+        android:prompt="@string/location_label"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/remoteIcon"
+        app:layout_constraintStart_toEndOf="@+id/locationIcon"
         app:layout_constraintTop_toBottomOf="@+id/taskInput"
         tools:listitem="@android:layout/simple_list_item_1" />
 
@@ -124,7 +124,7 @@
         android:hint="@string/start_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/startIcon"
-        app:layout_constraintTop_toBottomOf="@+id/remoteInput" />
+        app:layout_constraintTop_toBottomOf="@+id/locationInput" />
 
     <ImageView
         android:id="@+id/finishIcon"

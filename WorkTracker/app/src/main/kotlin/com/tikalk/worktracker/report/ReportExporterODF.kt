@@ -74,7 +74,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
-            val showRemoteField = filter.showRemoteField
+            val showLocationField = filter.showLocationField
 
             val locale = Locale.getDefault()
             val currency = Currency.getInstance(locale)
@@ -108,9 +108,9 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.task_header)
             }
-            if (showRemoteField) {
+            if (showLocationField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
-                cell.stringValue = context.getString(R.string.remote_header)
+                cell.stringValue = context.getString(R.string.location_header)
             }
             var cellHeaderStart: OdfTableCell? = null
             if (showStartField) {
@@ -156,8 +156,8 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = record.task.name
                 }
-                if (showRemoteField) {
-                    val text = record.remote.toRemoteItem(context).label
+                if (showLocationField) {
+                    val text = record.location.toLocationItem(context).label
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = text
                 }
@@ -197,7 +197,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             if (showTaskField) {
                 columnIndex++
             }
-            if (showRemoteField) {
+            if (showLocationField) {
                 columnIndex++
             }
             if (showStartField) {

@@ -36,12 +36,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 
 /**
- * Task that belongs to a project entity.
+ * Where was the task done?
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "remote")
-data class Remote(
+@Entity(tableName = "location")
+data class Location(
     @ColumnInfo(name = "name")
     var name: String,
     @ColumnInfo(name = "description")
@@ -53,19 +53,19 @@ data class Remote(
     }
 
     companion object {
-        val EMPTY = Remote(ID_NONE, "")
-        val CLIENT = Remote(11L, "client")
-        val HOME = Remote(10L, "home")
-        val OTHER = Remote(13L, "other")
-        val TIKAL = Remote(12L, "tikal")
+        val EMPTY = Location(ID_NONE, "")
+        val CLIENT = Location(11L, "client")
+        val HOME = Location(10L, "home")
+        val OTHER = Location(13L, "other")
+        val TIKAL = Location(12L, "tikal")
 
         val values = arrayOf(EMPTY, CLIENT, HOME, OTHER, TIKAL)
 
-        fun valueOf(id: Long): Remote {
+        fun valueOf(id: Long): Location {
             return values.firstOrNull { id == it.id } ?: OTHER
         }
 
-        fun valueOf(value: Boolean): Remote {
+        fun valueOf(value: Boolean): Location {
             return if (value) HOME else CLIENT
         }
     }
