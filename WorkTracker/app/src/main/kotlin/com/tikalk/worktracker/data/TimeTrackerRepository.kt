@@ -104,4 +104,8 @@ class TimeTrackerRepository(private val localRepository: TimeTrackerLocalDataSou
     override fun timerPage(refresh: Boolean): Observable<TimerPage> {
         return localRepository.timerPage(refresh)
     }
+
+    override fun savePage(page: TimeListPage) {
+        localRepository.savePage(page)
+    }
 }

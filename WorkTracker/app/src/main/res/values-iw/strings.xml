@@ -111,10 +111,15 @@
     <string name="action_export_odf">ייצא ODF</string>
     <string name="action_export_xml">ייצא XML</string>
     <string name="item_all">(הכל)</string>
-    <string name="error_export">שגיאה בייצוא הדוח!</string>
+    <string name="remote_label_client">לקוח</string>
+    <string name="remote_label_home">בית</string>
+    <string name="remote_label_other">אחר</string>
+    <string name="remote_label_tikal">טיקאל</string>
 
     <!-- Errors -->
     <string name="error">שגיה</string>
-    <string name="error_unknownHost">לא ניתן להתחבר לשרת המרוחק.</string>
+    <string name="error_connection">לא ניתן להתחבר לשרת המרוחק.</string>
     <string name="error_accessDenied">לא ניתן לגשת לדף המבוקש.</string>
+    <string name="error_unknown">אירעה שגיאה לא ידועה.</string>
+    <string name="error_export">שגיאה בייצוא הדוח!</string>
 </resources>

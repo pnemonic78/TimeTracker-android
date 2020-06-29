@@ -34,24 +34,22 @@ package com.tikalk.worktracker.model
 
 enum class Remote(val id: Long) {
     EMPTY(TikalEntity.ID_NONE),
-    NO(11),
-    YES(10);
+    CLIENT(11),
+    HOME(10),
+    OTHER(13),
+    TIKAL(12);
 
     fun toBoolean(): Boolean {
-        return this == YES
+        return this == HOME
     }
 
     companion object {
         fun valueOf(id: Long): Remote {
-            return values().firstOrNull { id == it.id } ?: NO
+            return values().firstOrNull { id == it.id } ?: OTHER
         }
 
         fun valueOf(value: Boolean): Remote {
-            return if (value) YES else NO
+            return if (value) HOME else CLIENT
         }
     }
-}
-
-fun Boolean.toRemote(): Remote {
-    return if (this) Remote.YES else Remote.NO
 }

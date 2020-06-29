@@ -114,10 +114,7 @@ class ReportExporterCSV(context: Context, records: List<TimeRecord>, filter: Rep
                     row.add(record.task.name)
                 }
                 if (showRemoteField) {
-                    val text = if (record.isRemote)
-                        context.getString(R.string.remote_label_yes)
-                    else
-                        context.getString(R.string.remote_label_no)
+                    val text = record.remote.toRemoteItem(context).label
                     row.add(text)
                 }
                 if (showStartField) {

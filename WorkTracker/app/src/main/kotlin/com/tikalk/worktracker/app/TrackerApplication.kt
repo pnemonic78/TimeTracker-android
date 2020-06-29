@@ -33,9 +33,7 @@ package com.tikalk.worktracker.app
 
 import android.app.Activity
 import android.app.Application
-import android.content.Context
 import android.os.Bundle
-import androidx.multidex.MultiDex
 import com.tikalk.app.TikalApplication
 import com.tikalk.util.CrashlyticsTree
 import com.tikalk.util.LogTree
@@ -55,11 +53,6 @@ import kotlin.math.max
 class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
-
-    override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
-    }
 
     override fun onCreate() {
         super.onCreate()

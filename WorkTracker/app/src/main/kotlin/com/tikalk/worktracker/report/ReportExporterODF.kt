@@ -157,10 +157,7 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
                     cell.stringValue = record.task.name
                 }
                 if (showRemoteField) {
-                    val text = if (record.isRemote)
-                        context.getString(R.string.remote_label_yes)
-                    else
-                        context.getString(R.string.remote_label_no)
+                    val text = record.remote.toRemoteItem(context).label
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = text
                 }

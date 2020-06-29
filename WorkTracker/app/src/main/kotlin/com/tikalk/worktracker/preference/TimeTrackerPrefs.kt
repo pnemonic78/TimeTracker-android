@@ -34,10 +34,7 @@ package com.tikalk.worktracker.preference
 import android.content.Context
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.toCalendar
 
@@ -62,7 +59,7 @@ class TimeTrackerPrefs(context: Context) {
         private const val PROJECT_ID = "project.id"
         private const val PROJECT_NAME = "project.name"
         private const val PROJECT_FAVORITE = "project.favorite"
-        private const val REMOTE = "remote"
+        private const val REMOTE = "remote.id"
         private const val REMOTE_FAVORITE = "remote.favorite"
         private const val TASK_ID = "task.id"
         private const val TASK_NAME = "task.name"
@@ -103,14 +100,14 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, isRemote: Boolean) {
+    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, remoteId: Long) {
         prefs.edit()
             .putLong(PROJECT_ID, projectId)
             .putString(PROJECT_NAME, projectName)
             .putLong(TASK_ID, taskId)
             .putString(TASK_NAME, taskName)
             .putLong(START_TIME, startTime)
-            .putBoolean(REMOTE, isRemote)
+            .putLong(REMOTE, remoteId)
             .apply()
     }
 
@@ -120,7 +117,7 @@ class TimeTrackerPrefs(context: Context) {
             record.task.id,
             record.task.name,
             record.startTime,
-            record.isRemote)
+            record.remote.id)
     }
 
     fun getStartedRecord(): TimeRecord? {
@@ -144,9 +141,10 @@ class TimeTrackerPrefs(context: Context) {
         project.addTask(task)
         val start = startTime.toCalendar()
 
-        val isRemote = prefs.getBoolean(REMOTE, false)
+        val remoteId = prefs.getLong(REMOTE, TikalEntity.ID_NONE)
+        val remote = Remote.valueOf(remoteId)
 
-        return TimeRecord(TikalEntity.ID_NONE, project, task, start, isRemote = isRemote)
+        return TimeRecord(TikalEntity.ID_NONE, project, task, start, remote = remote)
     }
 
     fun stopRecord() {
@@ -160,18 +158,18 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun setFavorite(record: TimeRecord) {
-        setFavorite(record.project, record.task, record.isRemote)
+        setFavorite(record.project, record.task, record.remote)
     }
 
-    fun setFavorite(project: Project, task: ProjectTask, isRemote: Boolean) {
-        setFavorite(project.id, task.id, isRemote)
+    fun setFavorite(project: Project, task: ProjectTask, remote: Remote) {
+        setFavorite(project.id, task.id, remote.id)
     }
 
-    fun setFavorite(projectId: Long, taskId: Long, isRemote: Boolean = false) {
+    fun setFavorite(projectId: Long, taskId: Long, remoteId: Long = TikalEntity.ID_NONE) {
         prefs.edit()
             .putLong(PROJECT_FAVORITE, projectId)
             .putLong(TASK_FAVORITE, taskId)
-            .putBoolean(REMOTE_FAVORITE, isRemote)
+            .putLong(REMOTE_FAVORITE, remoteId)
             .apply()
     }
 
@@ -183,8 +181,8 @@ class TimeTrackerPrefs(context: Context) {
         return prefs.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
     }
 
-    fun getFavoriteRemote(): Boolean {
-        return prefs.getBoolean(REMOTE_FAVORITE, false)
+    fun getFavoriteRemote(): Long {
+        return prefs.getLong(REMOTE_FAVORITE, TikalEntity.ID_NONE)
     }
 
     private var _user: User? = null

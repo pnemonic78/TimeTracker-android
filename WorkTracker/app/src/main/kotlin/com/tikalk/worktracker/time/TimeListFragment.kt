@@ -35,7 +35,6 @@ package com.tikalk.worktracker.time
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
@@ -209,6 +208,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
+        dataSource.savePage(page)
     }
 
     private fun processPageMain(page: TimeListPage) {
@@ -326,11 +326,7 @@ class TimeListFragment : TimeFormFragment(),
             picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today)) { dialog: DialogInterface, which: Int ->
                 if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
                     val today = Calendar.getInstance()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
-                    } else {
-                        picker.updateDate(today.year, today.month, today.dayOfMonth)
-                    }
+                    listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
                 }
             }
             datePickerDialog = picker
@@ -448,7 +444,7 @@ class TimeListFragment : TimeFormFragment(),
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            args.putBoolean(TimeEditFragment.EXTRA_REMOTE, record.isRemote)
+            args.putLong(TimeEditFragment.EXTRA_REMOTE, record.remote.id)
             parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
             formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
         }

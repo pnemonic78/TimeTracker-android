@@ -32,8 +32,10 @@
 
 package com.tikalk.os
 
-import android.annotation.TargetApi
-import android.os.*
+import android.os.Bundle
+import android.os.IBinder
+import android.os.Parcelable
+import android.os.PersistableBundle
 import android.util.Size
 import android.util.SizeF
 import android.util.SparseArray
@@ -44,7 +46,6 @@ class BundleBuilder {
 
     private val bundle = Bundle()
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     fun putAll(bundle: PersistableBundle): BundleBuilder {
         this.bundle.putAll(bundle)
         return this
@@ -187,13 +188,11 @@ class BundleBuilder {
         return this
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     fun putSize(key: String?, value: Size?): BundleBuilder {
         bundle.putSize(key, value)
         return this
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     fun putSizeF(key: String?, value: SizeF?): BundleBuilder {
         bundle.putSizeF(key, value)
         return this

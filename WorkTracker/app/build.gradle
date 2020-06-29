@@ -20,7 +20,6 @@ android {
         versionName versionMajor + '.' + versionMinor.toString().padLeft(2, '0')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        multiDexEnabled true
         vectorDrawables.useSupportLibrary true
     }
 
@@ -81,11 +80,10 @@ dependencies {
 
     // Google Support
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.2.0-alpha06'
+    implementation 'com.google.android.material:material:1.3.0-alpha01'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.security:security-crypto:1.0.0-rc01'
-    //implementation 'androidx.work:work-runtime-ktx:2.3.0-beta01'
+    implementation 'androidx.security:security-crypto:1.1.0-alpha01'
 
     // Testing
     androidTestImplementation 'androidx.test:core:1.2.0'

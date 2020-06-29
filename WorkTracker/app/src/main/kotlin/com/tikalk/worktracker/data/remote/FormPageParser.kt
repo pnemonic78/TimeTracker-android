@@ -111,7 +111,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
                 break
             }
         }
-        return Remote.NO
+        return Remote.OTHER
     }
 
     private fun parseProjects(select: Element): List<Project> {

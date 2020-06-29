@@ -185,13 +185,9 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                         +record.task.name
                                     }
                                 }
-                                if (showRemoteField){
+                                if (showRemoteField) {
                                     td("cellLeftAligned") {
-                                        val text = if (record.isRemote)
-                                            context.getString(R.string.remote_label_yes)
-                                        else
-                                            context.getString(R.string.remote_label_no)
-                                        +text
+                                        +record.remote.toRemoteItem(context).label
                                     }
                                 }
                                 if (showStartField) {

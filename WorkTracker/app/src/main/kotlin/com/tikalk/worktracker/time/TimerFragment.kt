@@ -52,6 +52,8 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
+import com.tikalk.worktracker.report.RemoteItem
+import com.tikalk.worktracker.report.findRemote
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -98,7 +100,16 @@ class TimerFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        remoteInput.setOnCheckedChangeListener { _, isChecked -> record.isRemote = isChecked }
+        remoteInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(adapterView: AdapterView<*>) {
+                remoteItemSelected(remoteEmpty)
+            }
+
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val task = adapterView.adapter.getItem(position) as RemoteItem
+                remoteItemSelected(task)
+            }
+        }
 
         actionStart.setOnClickListener { startTimer() }
         actionStop.setOnClickListener { stopTimer() }
@@ -117,7 +128,7 @@ class TimerFragment : TimeFormFragment() {
         val projects = projectsData.value
         bindProjects(context, record, projects)
 
-        remoteInput.isChecked = record.isRemote
+        bindRemote(context, record)
 
         val startTime = record.startTime
         if (startTime <= TimeRecord.NEVER) {
@@ -147,6 +158,19 @@ class TimerFragment : TimeFormFragment() {
             projectItemSelected(record.project)
         }
         projectInput.requestFocus()
+    }
+
+    private fun bindRemote(context: Context, record: TimeRecord) {
+        Timber.i("bindRemote record=$record")
+        if (remoteInput == null) return
+        val remoteItems = buildRemoteItems()
+        remoteInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, remoteItems)
+        if (remoteItems.isNotEmpty()) {
+            val index = findRemote(remoteItems, record.remote)
+            remoteInput.setSelection(max(0, index))
+            val selectedItem = if (index >= 0) remoteItems[index] else remoteEmpty
+            remoteItemSelected(selectedItem)
+        }
     }
 
     private fun startTimer() {
@@ -244,6 +268,11 @@ class TimerFragment : TimeFormFragment() {
         actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
     }
 
+    private fun remoteItemSelected(remote: RemoteItem) {
+        Timber.d("remoteItemSelected remote=$remote")
+        setRecordRemote(remote.remote)
+    }
+
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
         val started = preferences.getStartedRecord()
         if (started != null) {
@@ -256,7 +285,7 @@ class TimerFragment : TimeFormFragment() {
                 val taskId = args.getLong(EXTRA_TASK_ID)
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
-                val isRemote = args.getBoolean(EXTRA_REMOTE)
+                val remoteId = args.getLong(EXTRA_REMOTE)
 
                 val projects = projectsData.value
                 val project = projects?.find { it.id == projectId } ?: projectEmpty
@@ -270,7 +299,7 @@ class TimerFragment : TimeFormFragment() {
                 if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
-                record.isRemote = isRemote
+                record.remote = Remote.valueOf(remoteId)
                 return record
             }
         }
@@ -294,7 +323,7 @@ class TimerFragment : TimeFormFragment() {
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
             setRecordTask(task)
             record.start = recordStarted.start
-            record.isRemote = recordStarted.isRemote
+            record.remote = recordStarted.remote
         }
     }
 
@@ -310,7 +339,7 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            args.putBoolean(TimeEditFragment.EXTRA_REMOTE, record.isRemote)
+            args.putLong(TimeEditFragment.EXTRA_REMOTE, record.remote.id)
             parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }

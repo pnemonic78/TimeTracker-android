@@ -88,7 +88,7 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
 
         val inputRemote = form.selectByName("time_field_5")
         if (inputRemote != null) {
-            record.isRemote = findSelectedRemote(inputRemote).toBoolean()
+            record.remote = findSelectedRemote(inputRemote)
         }
     }
 }

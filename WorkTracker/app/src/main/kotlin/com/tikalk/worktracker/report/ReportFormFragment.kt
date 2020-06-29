@@ -35,7 +35,6 @@ package com.tikalk.worktracker.report
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
@@ -73,7 +72,6 @@ class ReportFormFragment : TimeFormFragment() {
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
     private val periods = ReportTimePeriod.values()
-    private var remoteEmpty: RemoteItem = RemoteItem(Remote.EMPTY, "")
 
     init {
         record = ReportFilter()
@@ -333,17 +331,6 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
-    private fun buildRemoteItems(): List<RemoteItem> {
-        val items = ArrayList<RemoteItem>()
-        val values = Remote.values()
-        val context = requireContext()
-        for (value in values) {
-            items.add(value.toRemoteItem(context))
-        }
-        remoteEmpty = items[0]
-        return items
-    }
-
     private fun pickStartDate() {
         val filter = filterData.value ?: return
         val cal = getCalendar(filter.start)
@@ -365,11 +352,7 @@ class ReportFormFragment : TimeFormFragment() {
             picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today)) { dialog: DialogInterface, which: Int ->
                 if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
                     val today = Calendar.getInstance()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
-                    } else {
-                        picker.updateDate(today.year, today.month, today.dayOfMonth)
-                    }
+                    listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
                 }
             }
             startPickerDialog = picker
@@ -400,11 +383,7 @@ class ReportFormFragment : TimeFormFragment() {
             picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today)) { dialog: DialogInterface, which: Int ->
                 if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
                     val today = Calendar.getInstance()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
-                    } else {
-                        picker.updateDate(today.year, today.month, today.dayOfMonth)
-                    }
+                    listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
                 }
             }
             finishPickerDialog = picker

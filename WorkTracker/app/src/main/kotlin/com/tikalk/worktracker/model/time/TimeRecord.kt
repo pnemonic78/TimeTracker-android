@@ -53,7 +53,7 @@ open class TimeRecord(
     var note: String = "",
     var cost: Double = 0.0,
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
-    var isRemote: Boolean = false
+    var remote: Remote = Remote.EMPTY
 ) : TikalEntity(id) {
 
     var start: Calendar? = start
@@ -100,7 +100,7 @@ open class TimeRecord(
             note,
             cost,
             status,
-            isRemote
+            remote
         )
     }
 
@@ -114,7 +114,7 @@ open class TimeRecord(
             note,
             cost,
             status,
-            isRemote
+            remote
         )
     }
 

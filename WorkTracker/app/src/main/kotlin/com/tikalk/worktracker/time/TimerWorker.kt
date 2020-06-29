@@ -47,6 +47,7 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -117,7 +118,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
                 .putLong(EXTRA_TASK_ID, record.task.id)
                 .putString(EXTRA_TASK_NAME, record.task.name)
                 .putLong(EXTRA_START_TIME, record.startTime)
-                .putBoolean(EXTRA_REMOTE, record.isRemote)
+                .putLong(EXTRA_REMOTE, record.remote.id)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
 
@@ -238,7 +239,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         // The PendingIntent to launch our activity if the user selects this notification.
         val contentIntent = createActivityIntent(context)
 
-        val stopActionIntent = createActionIntent(context, ACTION_STOP, record.project.id, record.task.id, record.startTime, record.isRemote)
+        val stopActionIntent = createActionIntent(context, ACTION_STOP, record.project.id, record.task.id, record.startTime, record.remote.id)
         val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
@@ -264,13 +265,13 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         return PendingIntent.getActivity(context, ID_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    private fun createActionIntent(context: Context, action: String, projectId: Long, taskId: Long, startTime: Long, isRemote: Boolean): PendingIntent {
+    private fun createActionIntent(context: Context, action: String, projectId: Long, taskId: Long, startTime: Long, remoteId: Long): PendingIntent {
         val intent = Intent(context, TimeReceiver::class.java).apply {
             this.action = action
             putExtra(EXTRA_PROJECT_ID, projectId)
             putExtra(EXTRA_TASK_ID, taskId)
             putExtra(EXTRA_START_TIME, startTime)
-            putExtra(EXTRA_REMOTE, isRemote)
+            putExtra(EXTRA_REMOTE, remoteId)
             putExtra(EXTRA_EDIT, true)
         }
         return PendingIntent.getBroadcast(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -299,14 +300,14 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
     }
 
     private fun createRecord(extras: Bundle): TimeRecord? {
-        val projectId = extras.getLong(EXTRA_PROJECT_ID, 0L)
+        val projectId = extras.getLong(EXTRA_PROJECT_ID, TikalEntity.ID_NONE)
         val projectName = extras.getString(EXTRA_PROJECT_NAME)
-        val taskId = extras.getLong(EXTRA_TASK_ID, 0L)
+        val taskId = extras.getLong(EXTRA_TASK_ID, TikalEntity.ID_NONE)
         val taskName = extras.getString(EXTRA_TASK_NAME)
         val startTime = extras.getLong(EXTRA_START_TIME, TimeRecord.NEVER)
         val finishTime = extras.getLong(EXTRA_FINISH_TIME, TimeRecord.NEVER)
-        val isRemote = extras.getBoolean(EXTRA_REMOTE)
-        Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime,$isRemote")
+        val remoteId = extras.getLong(EXTRA_REMOTE, TikalEntity.ID_NONE)
+        Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime,$remoteId")
 
         if (projectId <= 0L) return null
         if (projectName.isNullOrEmpty()) return null
@@ -321,7 +322,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val record = TimeRecord(TikalEntity.ID_NONE, project, task)
         record.startTime = startTime
         record.finishTime = finishTime
-        record.isRemote = isRemote
+        record.remote = Remote.valueOf(remoteId)
         return record
     }
 }
