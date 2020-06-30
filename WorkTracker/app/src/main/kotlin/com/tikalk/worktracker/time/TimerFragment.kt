@@ -258,19 +258,21 @@ class TimerFragment : TimeFormFragment() {
         setRecordProject(project)
         if (!isVisible) return
         filterTasks(project)
-        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
+        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.d("taskItemSelected task=$task")
         setRecordTask(task)
         if (!isVisible) return
-        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE)
+        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
 
     private fun locationItemSelected(location: LocationItem) {
         Timber.d("locationItemSelected location=$location")
         setRecordLocation(location.location)
+        if (!isVisible) return
+        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {

@@ -348,6 +348,13 @@ class TimeEditFragment : TimeFormFragment() {
             taskInputView.post { taskInputView.requestFocus() }
             return false
         }
+        if (record.location.id == TikalEntity.ID_NONE) {
+            locationInputView.error = getText(R.string.error_location_field_required)
+            setErrorLabel(getText(R.string.error_location_field_required))
+            locationInputView.isFocusableInTouchMode = true
+            locationInputView.post { locationInputView.requestFocus() }
+            return false
+        }
         if (record.start == null) {
             startInput.error = getText(R.string.error_start_field_required)
             setErrorLabel(getText(R.string.error_start_field_required))
