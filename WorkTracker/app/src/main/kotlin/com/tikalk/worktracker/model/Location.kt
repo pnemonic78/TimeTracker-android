@@ -30,36 +30,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.report
+package com.tikalk.worktracker.model
 
-import android.content.Context
-import android.widget.AdapterView
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Remote
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 
-data class RemoteItem(val remote: Remote, val label: String) {
-    override fun toString(): String {
-        return label
+/**
+ * Where was the task done?
+ *
+ * @author Moshe Waisberg.
+ */
+@Entity(tableName = "location")
+data class Location(
+    @ColumnInfo(name = "name")
+    var name: String,
+    @ColumnInfo(name = "description")
+    var description: String? = null
+) : TikalEntity() {
+
+    constructor(id: Long, name: String) : this(name, "") {
+        this.id = id
     }
-}
 
-fun Remote.toRemoteItem(context: Context): RemoteItem {
-    val label: String = when (this) {
-        Remote.EMPTY -> context.getString(R.string.remote_label_all)
-        Remote.CLIENT -> context.getString(R.string.remote_label_client)
-        Remote.HOME -> context.getString(R.string.remote_label_home)
-        Remote.TIKAL -> context.getString(R.string.remote_label_tikal)
-        else -> context.getString(R.string.remote_label_other)
-    }
-    return RemoteItem(this, label)
-}
+    companion object {
+        val EMPTY = Location(ID_NONE, "")
+        val CLIENT = Location(11L, "client")
+        val HOME = Location(10L, "home")
+        val OTHER = Location(13L, "other")
+        val TIKAL = Location(12L, "tikal")
 
-fun findRemote(remotes: List<RemoteItem>, remote: Remote): Int {
-    for (i in remotes.indices) {
-        val item = remotes[i]
-        if (item.remote == remote) {
-            return i
+        val values = arrayOf(EMPTY, CLIENT, HOME, OTHER, TIKAL)
+
+        fun valueOf(id: Long): Location {
+            return values.firstOrNull { id == it.id } ?: OTHER
+        }
+
+        fun valueOf(value: Boolean): Location {
+            return if (value) HOME else CLIENT
         }
     }
-    return AdapterView.INVALID_POSITION
 }

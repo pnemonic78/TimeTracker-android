@@ -71,7 +71,7 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val showDurationField = filter.showDurationField
             val showNoteField = filter.showNoteField
             val showCostField = filter.showCostField
-            val showRemoteField = filter.showRemoteField
+            val showLocationField = filter.showLocationField
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -136,9 +136,9 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                     +context.getString(R.string.task_header)
                                 }
                             }
-                            if (showRemoteField) {
+                            if (showLocationField) {
                                 td("tableHeader") {
-                                    +context.getString(R.string.remote_header)
+                                    +context.getString(R.string.location_header)
                                 }
                             }
                             if (showStartField) {
@@ -185,9 +185,9 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                                         +record.task.name
                                     }
                                 }
-                                if (showRemoteField) {
+                                if (showLocationField) {
                                     td("cellLeftAligned") {
-                                        +record.remote.toRemoteItem(context).label
+                                        +record.location.toLocationItem(context).label
                                     }
                                 }
                                 if (showStartField) {

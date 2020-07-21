@@ -41,7 +41,7 @@ import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.report.toRemoteItem
+import com.tikalk.worktracker.report.toLocationItem
 import kotlinx.android.synthetic.main.time_item.view.*
 import java.util.*
 
@@ -84,7 +84,7 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
         itemView.timeDuration.text = formatterElapsed.out() as CharSequence
         itemView.note.text = record.note
         itemView.cost.text = formatCost(record.cost)
-        itemView.remote.text = if (record.remote.id != TikalEntity.ID_NONE) record.remote.toRemoteItem(context).label else ""
+        itemView.location.text = if (record.location.id != TikalEntity.ID_NONE) record.location.toLocationItem(context).label else ""
     }
 
     @MainThread
@@ -95,7 +95,7 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
         itemView.timeDuration.text = ""
         itemView.note.text = ""
         itemView.cost.text = ""
-        itemView.remote.text = ""
+        itemView.location.text = ""
     }
 
     @MainThread
@@ -123,7 +123,7 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
         itemView.task.setTextColor(color)
         itemView.note.setTextColor(color)
         itemView.cost.setTextColor(color)
-        itemView.remote.setTextColor(color)
+        itemView.location.setTextColor(color)
     }
 
     private fun formatCost(cost: Double): CharSequence {

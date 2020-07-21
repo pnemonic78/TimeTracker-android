@@ -35,9 +35,9 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
@@ -111,7 +111,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         var columnIndexFinish = -1
         var columnIndexNote = -1
         var columnIndexCost = -1
-        var columnIndexRemote = -1
+        var columnIndexLocation = -1
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
@@ -135,7 +135,8 @@ class ReportPageParser(private val filter: ReportFilter) {
                             "Finish" -> columnIndexFinish = col
                             "Note" -> columnIndexNote = col
                             "Cost" -> columnIndexCost = col
-                            "Remote" -> columnIndexRemote = col
+                            "Remote",
+                            "Work from" -> columnIndexLocation = col
                         }
                     }
 
@@ -151,7 +152,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexFinish,
                             columnIndexNote,
                             columnIndexCost,
-                            columnIndexRemote,
+                            columnIndexLocation,
                             projects)
                         if (record != null) {
                             records.add(record)
@@ -189,7 +190,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexFinish: Int,
                             columnIndexNote: Int,
                             columnIndexCost: Int,
-                            columnIndexRemote: Int,
+                            columnIndexLocation: Int,
                             projects: MutableCollection<Project>): TimeRecord? {
         val cols = row.getElementsByTag("td")
         val record = TimeRecord.EMPTY.copy()
@@ -245,11 +246,11 @@ class ReportPageParser(private val filter: ReportFilter) {
             record.cost = cost
         }
 
-        if (columnIndexRemote >= 0) {
-            val tdRemote = cols[columnIndexRemote]
-            val isRemoteText = tdRemote.ownText()
-            val remote = parseRemote(isRemoteText)
-            record.remote = remote
+        if (columnIndexLocation >= 0) {
+            val tdLocation = cols[columnIndexLocation]
+            val locationText = tdLocation.ownText()
+            val location = parseLocation(locationText)
+            record.location = location
         }
 
         return record
@@ -285,15 +286,15 @@ class ReportPageParser(private val filter: ReportFilter) {
         return if (text.isBlank()) 0.00 else text.toDouble()
     }
 
-    private fun parseRemote(text: String): Remote {
+    private fun parseLocation(text: String): Location {
         return when (text) {
             "yes",
-            "home" -> Remote.HOME
+            "home" -> Location.HOME
             "no",
-            "client" -> Remote.CLIENT
-            "other" -> Remote.OTHER
-            "tikal" -> Remote.TIKAL
-            else -> Remote.EMPTY
+            "client" -> Location.CLIENT
+            "other" -> Location.OTHER
+            "tikal" -> Location.TIKAL
+            else -> Location.EMPTY
         }
     }
 

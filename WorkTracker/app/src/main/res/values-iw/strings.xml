@@ -25,7 +25,7 @@
     <string name="prompt_username">שם משתמש</string>
     <string name="project_label">פרויקט</string>
     <string name="task_label">משימה</string>
-    <string name="remote_label">מרוחק</string>
+    <string name="location_label">מיקום</string>
     <string name="date_label">תאריך</string>
     <string name="start_label">שעת התחלה</string>
     <string name="finish_label">שעת סיום</string>
@@ -37,6 +37,7 @@
     <string name="error_start_field_required">שעת התחלה חובה</string>
     <string name="error_finish_field_required">שעת סיום חובה</string>
     <string name="error_finish_time_before_start_time">זמן הסיום חייב להיות מאוחר משעת ההתחלה.</string>
+    <string name="error_location_field_required">מיקום חובה</string>
     <string name="delete">מחק</string>
 
     <!-- Time recorder -->
@@ -111,10 +112,10 @@
     <string name="action_export_odf">ייצא ODF</string>
     <string name="action_export_xml">ייצא XML</string>
     <string name="item_all">(הכל)</string>
-    <string name="remote_label_client">לקוח</string>
-    <string name="remote_label_home">בית</string>
-    <string name="remote_label_other">אחר</string>
-    <string name="remote_label_tikal">טיקאל</string>
+    <string name="location_label_client">לקוח</string>
+    <string name="location_label_home">בית</string>
+    <string name="location_label_other">אחר</string>
+    <string name="location_label_tikal">טיקאל</string>
 
     <!-- Errors -->
     <string name="error">שגיה</string>

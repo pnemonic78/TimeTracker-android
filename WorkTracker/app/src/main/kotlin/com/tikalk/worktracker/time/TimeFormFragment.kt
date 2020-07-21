@@ -41,14 +41,14 @@ import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.report.RemoteItem
-import com.tikalk.worktracker.report.toRemoteItem
+import com.tikalk.worktracker.report.LocationItem
+import com.tikalk.worktracker.report.toLocationItem
 import timber.log.Timber
 
 abstract class TimeFormFragment : InternetFragment(),
@@ -59,7 +59,7 @@ abstract class TimeFormFragment : InternetFragment(),
     var projectEmpty: Project = Project.EMPTY.copy(true)
     var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
         ?: ProjectTask.EMPTY.copy()
-    var remoteEmpty: RemoteItem = RemoteItem(Remote.EMPTY, "")
+    var locationEmpty: LocationItem = LocationItem(Location.EMPTY, "")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,9 +115,9 @@ abstract class TimeFormFragment : InternetFragment(),
         record.task = task
     }
 
-    protected open fun setRecordRemote(remote: Remote) {
-        Timber.d("setRecordRemote remote=$remote")
-        record.remote = remote
+    protected open fun setRecordLocation(location: Location) {
+        Timber.d("setRecordLocation location=$location")
+        record.location = location
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
@@ -139,9 +139,9 @@ abstract class TimeFormFragment : InternetFragment(),
                 setRecordTask(task)
             }
 
-            val remoteFavorite = preferences.getFavoriteRemote()
-            val remote = Remote.valueOf(remoteFavorite)
-            setRecordRemote(remote)
+            val locationFavorite = preferences.getFavoriteLocation()
+            val location = Location.valueOf(locationFavorite)
+            setRecordLocation(location)
         }
     }
 
@@ -178,14 +178,14 @@ abstract class TimeFormFragment : InternetFragment(),
         }
     }
 
-    protected fun buildRemoteItems(): List<RemoteItem> {
-        val items = ArrayList<RemoteItem>()
-        val values = Remote.values()
+    protected fun buildLocations(): List<LocationItem> {
+        val items = ArrayList<LocationItem>()
+        val values = Location.values
         val context = requireContext()
         for (value in values) {
-            items.add(value.toRemoteItem(context))
+            items.add(value.toLocationItem(context))
         }
-        remoteEmpty = items[0]
+        locationEmpty = items[0]
         return items
     }
 
@@ -199,6 +199,6 @@ abstract class TimeFormFragment : InternetFragment(),
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
-        const val EXTRA_REMOTE = BuildConfig.APPLICATION_ID + ".form.REMOTE"
+        const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".form.LOCATION"
     }
 }

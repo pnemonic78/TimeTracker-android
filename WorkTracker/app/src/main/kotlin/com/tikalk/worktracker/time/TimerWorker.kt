@@ -45,9 +45,9 @@ import com.tikalk.graphics.drawableToBitmap
 import com.tikalk.os.BundleBuilder
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.Remote
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -63,7 +63,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
         const val EXTRA_PROJECT_NAME = BuildConfig.APPLICATION_ID + ".PROJECT_NAME"
-        const val EXTRA_REMOTE = BuildConfig.APPLICATION_ID + ".REMOTE"
+        const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".LOCATION"
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
         const val EXTRA_TASK_NAME = BuildConfig.APPLICATION_ID + ".TASK_NAME"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
@@ -118,7 +118,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
                 .putLong(EXTRA_TASK_ID, record.task.id)
                 .putString(EXTRA_TASK_NAME, record.task.name)
                 .putLong(EXTRA_START_TIME, record.startTime)
-                .putLong(EXTRA_REMOTE, record.remote.id)
+                .putLong(EXTRA_LOCATION, record.location.id)
                 .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
 
@@ -239,7 +239,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         // The PendingIntent to launch our activity if the user selects this notification.
         val contentIntent = createActivityIntent(context)
 
-        val stopActionIntent = createActionIntent(context, ACTION_STOP, record.project.id, record.task.id, record.startTime, record.remote.id)
+        val stopActionIntent = createActionIntent(context, ACTION_STOP, record.project.id, record.task.id, record.startTime, record.location.id)
         val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
@@ -271,7 +271,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             putExtra(EXTRA_PROJECT_ID, projectId)
             putExtra(EXTRA_TASK_ID, taskId)
             putExtra(EXTRA_START_TIME, startTime)
-            putExtra(EXTRA_REMOTE, remoteId)
+            putExtra(EXTRA_LOCATION, remoteId)
             putExtra(EXTRA_EDIT, true)
         }
         return PendingIntent.getBroadcast(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -306,8 +306,8 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val taskName = extras.getString(EXTRA_TASK_NAME)
         val startTime = extras.getLong(EXTRA_START_TIME, TimeRecord.NEVER)
         val finishTime = extras.getLong(EXTRA_FINISH_TIME, TimeRecord.NEVER)
-        val remoteId = extras.getLong(EXTRA_REMOTE, TikalEntity.ID_NONE)
-        Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime,$remoteId")
+        val locationId = extras.getLong(EXTRA_LOCATION, TikalEntity.ID_NONE)
+        Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime,$locationId")
 
         if (projectId <= 0L) return null
         if (projectName.isNullOrEmpty()) return null
@@ -322,7 +322,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val record = TimeRecord(TikalEntity.ID_NONE, project, task)
         record.startTime = startTime
         record.finishTime = finishTime
-        record.remote = Remote.valueOf(remoteId)
+        record.location = Location.valueOf(locationId)
         return record
     }
 }

@@ -76,19 +76,16 @@ class TimeTrackerServiceFactory {
 
         fun createHttpClient(preferences: TimeTrackerPrefs? = null, cookieHandler: CookieHandler): OkHttpClient {
             val httpClientBuilder = OkHttpClient.Builder()
+                .cookieJar(JavaNetCookieJar(cookieHandler))
 
             if (BuildConfig.DEBUG) {
-                val interceptorLogging = HttpLoggingInterceptor()
-                interceptorLogging.level = Level.BODY
-                httpClientBuilder.addInterceptor(interceptorLogging)
+                httpClientBuilder.addInterceptor(HttpLoggingInterceptor()
+                    .setLevel(Level.BODY))
             }
 
             if (preferences != null) {
-                val interceptorAuth = AuthenticationInterceptor(preferences)
-                httpClientBuilder.addInterceptor(interceptorAuth)
+                httpClientBuilder.addInterceptor(AuthenticationInterceptor(preferences))
             }
-
-            httpClientBuilder.cookieJar(JavaNetCookieJar(cookieHandler))
 
             return httpClientBuilder.build()
         }
