@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.time
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -190,10 +191,9 @@ abstract class TimeFormFragment : InternetFragment(),
         }
     }
 
-    protected fun buildLocations(): List<LocationItem> {
+    protected open fun buildLocations(context: Context): List<LocationItem> {
         val items = ArrayList<LocationItem>()
         val values = Location.values
-        val context = requireContext()
         for (value in values) {
             items.add(value.toLocationItem(context))
         }

@@ -156,6 +156,7 @@
     <string name="location_label_client">Client</string>
     <string name="location_label_home">Home</string>
     <string name="location_label_other">Other</string>
+    <string name="location_label_select" translatable="false">@string/item_select</string>
     <string name="location_label_tikal">Tikal</string>
 
     <!-- Errors -->

@@ -163,7 +163,7 @@ class TimerFragment : TimeFormFragment() {
     private fun bindLocation(context: Context, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
         if (locationInput == null) return
-        val locations = buildLocations()
+        val locations = buildLocations(context)
         locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
