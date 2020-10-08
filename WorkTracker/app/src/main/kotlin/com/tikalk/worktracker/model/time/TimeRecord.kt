@@ -140,6 +140,50 @@ open class TimeRecord(
         return result
     }
 
+    operator fun compareTo(that: TimeRecord): Int {
+        val id1 = this.id
+        val id2 = that.id
+        var c = id1.compareTo(id2)
+        if (c != 0) return c
+
+        val s1 = this.status
+        val s2 = that.status
+        c = s1.compareTo(s2)
+        if (c != 0) return c
+
+        val v1 = this.version
+        val v2 = that.version
+        c = v1.compareTo(v2)
+        if (c != 0) return c
+
+        val st1 = this.startTime
+        val st2 = that.startTime
+        c = st1.compareTo(st2)
+        if (c != 0) return c
+
+        val f1 = this.finishTime
+        val f2 = that.finishTime
+        c = f1.compareTo(f2)
+        if (c != 0) return c
+
+        val p1 = this.project
+        val p2 = that.project
+        c = p1.compareTo(p2)
+        if (c != 0) return c
+
+        val t1 = this.task
+        val t2 = that.task
+        c = t1.compareTo(t2)
+        if (c != 0) return c
+
+        val c1 = this.cost
+        val c2 = that.cost
+        c = c1.compareTo(c2)
+        if (c != 0) return c
+
+        return 0
+    }
+
     companion object {
         val EMPTY: TimeRecord = TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 

@@ -323,12 +323,20 @@ class ReportFormFragment : TimeFormFragment() {
     private fun bindLocation(context: Context, filter: ReportFilter) {
         Timber.i("bindLocation filter=$filter")
         if (locationInput == null) return
-        val locations = buildLocations()
+        val locations = buildLocations(context)
         locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
         if (locations.isNotEmpty()) {
             locationInput.setSelection(max(0, findLocation(locations, filter.location)))
             locationItemSelected(filter.location)
         }
+    }
+
+    override fun buildLocations(context: Context): List<LocationItem> {
+        val items = ArrayList(super.buildLocations(context))
+        val all = LocationItem(items[0].location, context.getString(R.string.location_label_all))
+        items[0] = all
+        locationEmpty = all
+        return items
     }
 
     private fun pickStartDate() {

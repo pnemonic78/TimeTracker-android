@@ -34,6 +34,7 @@ package com.tikalk.worktracker.model
 import android.widget.AdapterView
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import com.tikalk.util.compareTo
 
 /**
  * Task that belongs to a project entity.
@@ -58,6 +59,30 @@ data class ProjectTask(
 
     fun isEmpty(): Boolean {
         return (id == ID_NONE) || name.isEmpty()
+    }
+
+    fun compareTo(that: ProjectTask): Int {
+        val id1 = this.id
+        val id2 = that.id
+        var c = id1.compareTo(id2)
+        if (c != 0) return c
+
+        val n1 = this.name
+        val n2 = that.name
+        c = n1.compareTo(n2)
+        if (c != 0) return c
+
+        val d1 = this.description
+        val d2 = that.description
+        c = d1.compareTo(d2)
+        if (c != 0) return c
+
+        val v1 = this.version
+        val v2 = that.version
+        c = v1.compareTo(v2)
+        if (c != 0) return c
+
+        return 0
     }
 
     companion object {

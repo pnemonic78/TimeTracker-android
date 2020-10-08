@@ -30,36 +30,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.report
+package com.tikalk.util
 
-import android.content.Context
-import android.widget.AdapterView
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Location
-
-data class LocationItem(val location: Location, val label: String) {
-    override fun toString(): String {
-        return label
+fun String?.compareTo(that: String?): Int {
+    if (this == null) {
+        return if (that == null) 0 else -1
     }
-}
-
-fun Location.toLocationItem(context: Context): LocationItem {
-    val label: String = when (this) {
-        Location.EMPTY -> context.getString(R.string.location_label_select)
-        Location.CLIENT -> context.getString(R.string.location_label_client)
-        Location.HOME -> context.getString(R.string.location_label_home)
-        Location.TIKAL -> context.getString(R.string.location_label_tikal)
-        else -> context.getString(R.string.location_label_other)
+    if (that == null) {
+        return 1
     }
-    return LocationItem(this, label)
-}
-
-fun findLocation(remotes: List<LocationItem>, location: Location): Int {
-    for (i in remotes.indices) {
-        val item = remotes[i]
-        if (item.location == location) {
-            return i
-        }
-    }
-    return AdapterView.INVALID_POSITION
+    return this.compareTo(that)
 }

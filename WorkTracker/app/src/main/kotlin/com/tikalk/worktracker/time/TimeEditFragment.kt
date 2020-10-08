@@ -238,7 +238,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun bindLocation(context: Context, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
         if (locationInput == null) return
-        val locations = buildLocations()
+        val locations = buildLocations(context)
         locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
@@ -265,9 +265,7 @@ class TimeEditFragment : TimeFormFragment() {
                     cal.dayOfMonth = dayOfMonth
                     cal.hourOfDay = hourOfDay
                     cal.minute = minute
-                    record.start = cal
-                    startInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
-                    startInput.error = null
+                    setRecordStart(cal)
                 }
             }
             picker = DateTimePickerDialog(context, listener, year, month, dayOfMonth, hour, minute, DateFormat.is24HourFormat(context))
@@ -295,9 +293,7 @@ class TimeEditFragment : TimeFormFragment() {
                     cal.dayOfMonth = dayOfMonth
                     cal.hourOfDay = hourOfDay
                     cal.minute = minute
-                    record.finish = cal
-                    finishInput.text = DateUtils.formatDateTime(context, cal.timeInMillis, FORMAT_TIME_BUTTON)
-                    finishInput.error = null
+                    setRecordFinish(cal)
                 }
             }
             picker = DateTimePickerDialog(context, listener, year, month, dayOfMonth, hour, minute, DateFormat.is24HourFormat(context))
@@ -392,16 +388,19 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("projectItemSelected $project")
         setRecordProject(project)
         filterTasks(project)
+        markRecordUserModified()
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.i("taskItemSelected $task")
         setRecordTask(task)
+        markRecordUserModified()
     }
 
     private fun locationItemSelected(location: LocationItem) {
         Timber.d("remoteItemSelected location=$location")
         setRecordLocation(location.location)
+        markRecordUserModified()
     }
 
     fun run() {
@@ -685,6 +684,28 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onProjectsUpdated(projects: List<Project>) {
         super.onProjectsUpdated(projects)
         bindProjects(requireContext(), record, projects)
+    }
+
+    override fun setRecordValue(record: TimeRecord) {
+        if ((record.id != this.record.id) || (record > this.record)) {
+            super.setRecordValue(record)
+        }
+    }
+
+    override fun setRecordStart(time: Calendar) {
+        super.setRecordStart(time)
+        startInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
+        startInput.error = null
+    }
+
+    override fun setRecordFinish(time: Calendar) {
+        super.setRecordFinish(time)
+        finishInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
+        finishInput.error = null
+    }
+
+    private fun markRecordUserModified() {
+        record.version++
     }
 
     /**
