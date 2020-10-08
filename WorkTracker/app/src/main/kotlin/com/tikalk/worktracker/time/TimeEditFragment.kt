@@ -55,6 +55,7 @@ import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
@@ -706,6 +707,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun markRecordUserModified() {
         record.version++
+        if (record.status == TaskRecordStatus.CURRENT) {
+            record.status = TaskRecordStatus.MODIFIED
+        }
     }
 
     /**
