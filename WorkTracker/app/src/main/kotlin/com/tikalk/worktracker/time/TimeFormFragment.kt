@@ -50,6 +50,8 @@ import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
 import timber.log.Timber
+import java.util.*
+import kotlin.collections.ArrayList
 
 abstract class TimeFormFragment : InternetFragment(),
     LoginFragment.OnLoginListener {
@@ -118,6 +120,16 @@ abstract class TimeFormFragment : InternetFragment(),
     protected open fun setRecordLocation(location: Location) {
         Timber.d("setRecordLocation location=$location")
         record.location = location
+    }
+
+    protected open fun setRecordStart(time: Calendar) {
+        Timber.d("setRecordStart time=$time")
+        record.start = time
+    }
+
+    protected open fun setRecordFinish(time: Calendar) {
+        Timber.d("setRecordFinish time=$time")
+        record.finish = time
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
