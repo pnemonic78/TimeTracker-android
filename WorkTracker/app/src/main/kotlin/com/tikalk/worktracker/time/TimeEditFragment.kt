@@ -308,7 +308,9 @@ class TimeEditFragment : TimeFormFragment() {
     private fun getCalendar(cal: Calendar?): Calendar {
         if (cal == null) {
             val calDate = Calendar.getInstance()
-            calDate.timeInMillis = date.timeInMillis
+            calDate.year = date.year
+            calDate.month = date.month
+            calDate.dayOfMonth = date.dayOfMonth
             return calDate
         }
         return cal
