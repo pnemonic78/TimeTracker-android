@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/WorkTracker.iml" filepath="$PROJECT_DIR$/WorkTracker.iml" group="WorkTracker" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="WorkTracker/app" />
+      <module fileurl="file://$PROJECT_DIR$/WorkTracker.iml" filepath="$PROJECT_DIR$/WorkTracker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/WorkTracker.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/WorkTracker.app.iml" />
     </modules>
   </component>
 </project>
