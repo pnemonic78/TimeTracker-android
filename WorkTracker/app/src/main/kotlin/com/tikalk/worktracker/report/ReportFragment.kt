@@ -45,7 +45,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
@@ -339,17 +338,18 @@ class ReportFragment : InternetFragment() {
         }
     }
 
-    private fun alert(err: Throwable?) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.error_title)
-            .setIcon(R.drawable.ic_dialog)
-            .setMessage(R.string.error_export)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
+    private fun alert(error: Throwable?) {
+        if (error != null) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.error_title)
+                .setIcon(R.drawable.ic_dialog)
+                .setMessage(R.string.error_export)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
     }
 
     companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_FILTER = "filter"
 
         private const val CHILD_LIST = 0

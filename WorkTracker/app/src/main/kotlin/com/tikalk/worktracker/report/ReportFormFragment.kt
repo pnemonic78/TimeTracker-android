@@ -424,7 +424,6 @@ class ReportFormFragment : TimeFormFragment() {
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()
             val args = Bundle()
-            parentFragmentManager.putFragment(args, ReportFragment.EXTRA_CALLER, this)
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
 
             var reportFragmentController: NavController? = null
