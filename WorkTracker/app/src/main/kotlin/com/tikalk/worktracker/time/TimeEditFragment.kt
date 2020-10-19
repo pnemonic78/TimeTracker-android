@@ -49,7 +49,6 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
@@ -75,7 +74,7 @@ import kotlin.math.max
 class TimeEditFragment : TimeFormFragment() {
 
     private var date: Calendar = Calendar.getInstance()
-    var listener: OnEditRecordListener? = null
+    private lateinit var timeViewModel: TimeViewModel
 
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
@@ -85,19 +84,7 @@ class TimeEditFragment : TimeFormFragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        val caller = this.caller
-        if (caller != null) {
-            if (caller is OnEditRecordListener) {
-                this.listener = caller
-            }
-        } else {
-            val activity = this.activity
-            if (activity != null) {
-                if (activity is OnEditRecordListener) {
-                    this.listener = activity
-                }
-            }
-        }
+        timeViewModel = TimeViewModel.get(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -556,10 +543,10 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
-            listener?.onRecordEditSubmitted(this, record, last, html)
+            timeViewModel.onRecordEditSubmitted(record, last, html)
         } else {
             setErrorLabelMain(errorMessage)
-            listener?.onRecordEditFailure(this, record, errorMessage)
+            timeViewModel.onRecordEditFailure(record, errorMessage)
         }
     }
 
@@ -570,7 +557,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
-            listener?.onRecordEditDeleted(this, record)
+            timeViewModel.onRecordEditDeleted(record)
             return
         }
 
@@ -585,7 +572,7 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgress(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    listener?.onRecordEditDeleted(this, record, html)
+                    timeViewModel.onRecordEditDeleted(record, html)
                 } else {
                     authenticate()
                 }
@@ -622,7 +609,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun markFavorite(record: TimeRecord) {
         super.markFavorite(record)
-        listener?.onRecordEditFavorited(this, record)
+        timeViewModel.onRecordEditFavorited(record)
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
@@ -713,45 +700,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    /**
-     * Listener for editing a record callbacks.
-     */
-    interface OnEditRecordListener {
-        /**
-         * The record was submitted.
-         * @param fragment the editor fragment.
-         * @param record the record.
-         * @param last is this the last record in a series that was submitted?
-         * @param responseHtml the response HTML.
-         */
-        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true, responseHtml: String = "")
-
-        /**
-         * The record was deleted.
-         * @param fragment the editor fragment.
-         * @param record the record.
-         * @param responseHtml the response HTML.
-         */
-        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String = "")
-
-        /**
-         * The record was marked as favorite.
-         * @param fragment the editor fragment.
-         * @param record the record.
-         */
-        fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord)
-
-        /**
-         * Editing record failed.
-         * @param fragment the login fragment.
-         * @param record the record.
-         * @param reason the failure reason.
-         */
-        fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String)
-    }
-
     companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID

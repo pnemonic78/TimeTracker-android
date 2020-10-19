@@ -342,7 +342,6 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
             args.putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
-            parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, caller ?: this)
             findNavController().navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
@@ -454,7 +453,6 @@ class TimerFragment : TimeFormFragment() {
 
     companion object {
         const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME

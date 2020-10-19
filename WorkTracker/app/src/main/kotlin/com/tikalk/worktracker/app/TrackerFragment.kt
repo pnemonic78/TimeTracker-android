@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.app
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
@@ -57,37 +56,13 @@ abstract class TrackerFragment : TikalFragment {
     protected val dataSource by inject<TimeTrackerRepository>()
     protected var firstRun = true
         private set
-    protected var caller: Fragment? = null
-        private set
     protected lateinit var authenticationViewModel: AuthenticationViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         authenticationViewModel = AuthenticationViewModel.get(this)
 
-        val args = this.arguments
-        if (args != null) {
-            if (args.containsKey(EXTRA_CALLER)) {
-                caller = findCaller(args)
-            }
-        }
         firstRun = (savedInstanceState == null)
-    }
-
-    private fun findCaller(args: Bundle): Fragment? {
-        var fragment: Fragment = this
-        while (true) {
-            val fm = fragment.fragmentManager ?: return null
-            try {
-                val caller = fm.getFragment(args, EXTRA_CALLER)
-                if (caller != null) {
-                    return caller
-                }
-            } catch (e: IllegalStateException) {
-                // ignore
-            }
-            fragment = fragment.parentFragment ?: return null
-        }
     }
 
     protected abstract fun authenticate(submit: Boolean = true)
@@ -100,7 +75,6 @@ abstract class TrackerFragment : TikalFragment {
     }
 
     companion object {
-        const val EXTRA_CALLER = "callerId"
         const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
 
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
