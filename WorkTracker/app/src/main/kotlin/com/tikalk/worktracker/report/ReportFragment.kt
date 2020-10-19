@@ -42,11 +42,11 @@ import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
@@ -64,7 +64,7 @@ import timber.log.Timber
 import java.util.*
 
 class ReportFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+    AuthenticationViewModel.OnLoginListener {
 
     private val recordsData = MutableLiveData<List<TimeRecord>>()
     private val totalsData = MutableLiveData<ReportTotals>()
@@ -74,16 +74,17 @@ class ReportFragment : InternetFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer { records ->
+        recordsData.observe(this, { records ->
             bindList(records)
         })
-        totalsData.observe(this, Observer { totals ->
+        totalsData.observe(this, { totals ->
             bindTotals(totals)
         })
-        filterData.observe(this, Observer { filter ->
+        filterData.observe(this, { filter ->
             this.listAdapter = ReportAdapter(filter)
             list.adapter = listAdapter
         })
+        authenticationViewModel.addLoginListener(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -94,6 +95,11 @@ class ReportFragment : InternetFragment(),
         super.onViewCreated(view, savedInstanceState)
 
         list.adapter = listAdapter
+    }
+
+    override fun onDestroy() {
+        authenticationViewModel.removeLoginListener(this)
+        super.onDestroy()
     }
 
     @MainThread
@@ -141,7 +147,6 @@ class ReportFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_reportList_to_login, args)
         }

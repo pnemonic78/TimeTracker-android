@@ -37,6 +37,7 @@ import androidx.fragment.app.Fragment
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
@@ -58,9 +59,12 @@ abstract class TrackerFragment : TikalFragment {
         private set
     protected var caller: Fragment? = null
         private set
+    protected lateinit var authenticationViewModel: AuthenticationViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        authenticationViewModel = AuthenticationViewModel.get(this)
+
         val args = this.arguments
         if (args != null) {
             if (args.containsKey(EXTRA_CALLER)) {

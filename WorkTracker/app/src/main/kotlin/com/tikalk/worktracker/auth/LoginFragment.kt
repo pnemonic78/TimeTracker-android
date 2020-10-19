@@ -45,7 +45,6 @@ import androidx.annotation.MainThread
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.net.InternetFragment
@@ -56,47 +55,19 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_login.*
 import okhttp3.Response
 import timber.log.Timber
-import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A login screen that offers login via login/password.
  */
-class LoginFragment : InternetFragment,
-    BasicRealmFragment.OnBasicRealmListener {
+class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmListener {
 
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
 
-    private val listeners: MutableList<OnLoginListener> = CopyOnWriteArrayList<OnLoginListener>()
-
-    fun addListener(listener: OnLoginListener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener)
-        }
-    }
-
-    fun removeListener(listener: OnLoginListener) {
-        listeners.remove(listener)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
-
-        val caller = this.caller
-        if (caller != null) {
-            if (caller is OnLoginListener) {
-                addListener(caller)
-            }
-        } else {
-            val activity = this.activity
-            if (activity != null) {
-                if (activity is OnLoginListener) {
-                    addListener(activity)
-                }
-            }
-        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -266,7 +237,6 @@ class LoginFragment : InternetFragment,
                 putString(BasicRealmFragment.EXTRA_REALM, realm)
                 putString(BasicRealmFragment.EXTRA_USER, userClean)
             }
-            parentFragmentManager.putFragment(args, BasicRealmFragment.EXTRA_CALLER, this)
             findNavController().navigate(R.id.action_basicRealmLogin, args)
         }
     }
@@ -282,17 +252,11 @@ class LoginFragment : InternetFragment,
     }
 
     private fun notifyLoginSuccess(login: String) {
-        val fragment: LoginFragment = this
-        for (listener in listeners) {
-            listener.onLoginSuccess(fragment, login)
-        }
+        authenticationViewModel.onLoginSuccess(this, login)
     }
 
     private fun notifyLoginFailure(login: String, reason: String) {
-        val fragment: LoginFragment = this
-        for (listener in listeners) {
-            listener.onLoginFailure(fragment, login, reason)
-        }
+        authenticationViewModel.onLoginFailure(this, login, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -300,28 +264,7 @@ class LoginFragment : InternetFragment,
         notifyLoginFailure("", "onCancel")
     }
 
-    /**
-     * Listener for login callbacks.
-     */
-    interface OnLoginListener {
-        /**
-         * Login was successful.
-         * @param fragment the login fragment.
-         * @param login the user's login that was used.
-         */
-        fun onLoginSuccess(fragment: LoginFragment, login: String)
-
-        /**
-         * Login failed.
-         * @param fragment the login fragment.
-         * @param login the user's login that was used.
-         * @param reason the failure reason.
-         */
-        fun onLoginFailure(fragment: LoginFragment, login: String, reason: String)
-    }
-
     companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_LOGIN = "login"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"

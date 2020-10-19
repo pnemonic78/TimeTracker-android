@@ -42,6 +42,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.net.InternetFragment
@@ -53,7 +54,7 @@ import kotlinx.android.synthetic.main.fragment_tasks.*
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+    AuthenticationViewModel.OnLoginListener {
 
     private val tasksData = MutableLiveData<List<ProjectTask>>()
     private val listAdapter = ProjectTasksAdapter()
@@ -63,6 +64,7 @@ class ProjectTasksFragment : InternetFragment(),
         tasksData.observe(this, Observer { tasks ->
             bindList(tasks)
         })
+        authenticationViewModel.addLoginListener(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -77,6 +79,11 @@ class ProjectTasksFragment : InternetFragment(),
     override fun onStart() {
         super.onStart()
         run()
+    }
+
+    override fun onDestroy() {
+        authenticationViewModel.removeLoginListener(this)
+        super.onDestroy()
     }
 
     @MainThread
@@ -105,7 +112,6 @@ class ProjectTasksFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_projectTasks_to_login, args)
         }

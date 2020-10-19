@@ -41,6 +41,7 @@ import androidx.lifecycle.Observer
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
@@ -55,7 +56,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 abstract class TimeFormFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+    AuthenticationViewModel.OnLoginListener {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projectsData = MutableLiveData<List<Project>>()
@@ -69,6 +70,12 @@ abstract class TimeFormFragment : InternetFragment(),
         projectsData.observe(this, Observer { projects ->
             onProjectsUpdated(projects)
         })
+        authenticationViewModel.addLoginListener(this)
+    }
+
+    override fun onDestroy() {
+        authenticationViewModel.removeLoginListener(this)
+        super.onDestroy()
     }
 
     abstract fun populateForm(record: TimeRecord)

@@ -46,6 +46,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.auth.model.set
@@ -65,7 +66,7 @@ import timber.log.Timber
  * User's profile screen.
  */
 class ProfileFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+    AuthenticationViewModel.OnLoginListener {
 
     var listener: OnProfileListener? = null
     private var userData = MutableLiveData<User>()
@@ -85,12 +86,13 @@ class ProfileFragment : InternetFragment(),
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
 
-        userData.observe(this, Observer { user ->
+        userData.observe(this, { user ->
             bindForm(user, userCredentialsData.value)
         })
-        userCredentialsData.observe(this, Observer { userCredentials ->
+        userCredentialsData.observe(this, { userCredentials ->
             bindForm(userData.value, userCredentials)
         })
+        authenticationViewModel.addLoginListener(this)
 
         val caller = this.caller
         if (caller != null) {
@@ -121,6 +123,11 @@ class ProfileFragment : InternetFragment(),
         super.onViewCreated(view, savedInstanceState)
 
         actionSave.setOnClickListener { attemptSave() }
+    }
+
+    override fun onDestroy() {
+        authenticationViewModel.removeLoginListener(this)
+        super.onDestroy()
     }
 
     @MainThread
@@ -299,7 +306,6 @@ class ProfileFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_profile_to_login, args)
         }
