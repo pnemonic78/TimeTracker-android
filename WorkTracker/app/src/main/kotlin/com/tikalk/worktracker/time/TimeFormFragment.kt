@@ -40,7 +40,6 @@ import androidx.lifecycle.MutableLiveData
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -53,8 +52,7 @@ import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class TimeFormFragment : InternetFragment(),
-    AuthenticationViewModel.OnLoginListener {
+abstract class TimeFormFragment : InternetFragment() {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projectsData = MutableLiveData<List<Project>>()
@@ -68,12 +66,13 @@ abstract class TimeFormFragment : InternetFragment(),
         projectsData.observe(this, { projects ->
             onProjectsUpdated(projects)
         })
-        authenticationViewModel.addLoginListener(this)
-    }
-
-    override fun onDestroy() {
-        authenticationViewModel.removeLoginListener(this)
-        super.onDestroy()
+        authenticationViewModel.login.observe(this, { (login, reason) ->
+            if (reason == null) {
+                onLoginSuccess(login)
+            } else {
+                onLoginFailure(login, reason)
+            }
+        })
     }
 
     abstract fun populateForm(record: TimeRecord)
@@ -99,11 +98,11 @@ abstract class TimeFormFragment : InternetFragment(),
         bindForm(record)
     }
 
-    override fun onLoginSuccess(login: String) {
+    protected open fun onLoginSuccess(login: String) {
         Timber.i("login success")
     }
 
-    override fun onLoginFailure(login: String, reason: String) {
+    protected open fun onLoginFailure(login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 

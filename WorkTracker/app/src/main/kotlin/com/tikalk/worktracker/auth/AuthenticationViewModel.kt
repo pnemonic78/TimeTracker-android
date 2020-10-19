@@ -33,6 +33,8 @@
 package com.tikalk.worktracker.auth
 
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
@@ -40,55 +42,39 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 class AuthenticationViewModel : TrackerViewModel() {
 
-    private val loginListeners: MutableList<OnLoginListener> = CopyOnWriteArrayList()
+    private val loginData = MutableLiveData<LoginData>()
+    val login: LiveData<LoginData> = loginData
+
     private val basicRealmListeners: MutableList<OnBasicRealmListener> = CopyOnWriteArrayList()
 
     /**
-     * Listener for login callbacks.
+     * Data for login callbacks.
      */
-    interface OnLoginListener {
-        /**
-         * Login was successful.
-         * @param login the user's login that was used.
-         */
-        fun onLoginSuccess(login: String)
+    data class LoginData(val login: String, val reason: String? = null)
 
-        /**
-         * Login failed.
-         * @param login the user's login that was used.
-         * @param reason the failure reason.
-         */
-        fun onLoginFailure(login: String, reason: String)
+    /**
+     * Login was successful.
+     * @param login the user's login that was used.
+     */
+    fun onLoginSuccess(login: String) {
+        notifyLoginSuccess(login)
     }
 
-    fun addLoginListener(listener: OnLoginListener) {
-        if (!loginListeners.contains(listener)) {
-            loginListeners.add(listener)
-        }
+    /**
+     * Login failed.
+     * @param login the user's login that was used.
+     * @param reason the failure reason.
+     */
+    fun onLoginFailure(login: String, reason: String) {
+        notifyLoginFailure(login, reason)
     }
 
-    fun removeLoginListener(listener: OnLoginListener) {
-        loginListeners.remove(listener)
+    private fun notifyLoginSuccess(login: String) {
+        loginData.postValue(LoginData(login))
     }
 
-    fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        notifyLoginSuccess(fragment, login)
-    }
-
-    fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        notifyLoginFailure(fragment, login, reason)
-    }
-
-    private fun notifyLoginSuccess(fragment: LoginFragment, login: String) {
-        for (listener in loginListeners) {
-            listener.onLoginSuccess(login)
-        }
-    }
-
-    private fun notifyLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        for (listener in loginListeners) {
-            listener.onLoginFailure(login, reason)
-        }
+    private fun notifyLoginFailure(login: String, reason: String) {
+        loginData.postValue(LoginData(login, reason))
     }
 
     /**

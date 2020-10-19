@@ -41,7 +41,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.net.InternetFragment
@@ -51,8 +50,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_projects.*
 import timber.log.Timber
 
-class ProjectsFragment : InternetFragment(),
-    AuthenticationViewModel.OnLoginListener {
+class ProjectsFragment : InternetFragment() {
 
     private val projectsData = MutableLiveData<List<Project>>()
     private val listAdapter = ProjectsAdapter()
@@ -62,7 +60,14 @@ class ProjectsFragment : InternetFragment(),
         projectsData.observe(this, { projects ->
             bindList(projects)
         })
-        authenticationViewModel.addLoginListener(this)
+        authenticationViewModel.login.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("login success")
+                run()
+            } else {
+                Timber.e("login failure: $reason")
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -77,11 +82,6 @@ class ProjectsFragment : InternetFragment(),
     override fun onStart() {
         super.onStart()
         run()
-    }
-
-    override fun onDestroy() {
-        authenticationViewModel.removeLoginListener(this)
-        super.onDestroy()
     }
 
     @MainThread
@@ -113,14 +113,5 @@ class ProjectsFragment : InternetFragment(),
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_projects_to_login, args)
         }
-    }
-
-    override fun onLoginSuccess(login: String) {
-        Timber.i("login success")
-        run()
-    }
-
-    override fun onLoginFailure(login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 }

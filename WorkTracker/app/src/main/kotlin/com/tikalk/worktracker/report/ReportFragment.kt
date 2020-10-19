@@ -46,7 +46,6 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
-import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
@@ -63,8 +62,7 @@ import kotlinx.android.synthetic.main.report_totals.*
 import timber.log.Timber
 import java.util.*
 
-class ReportFragment : InternetFragment(),
-    AuthenticationViewModel.OnLoginListener {
+class ReportFragment : InternetFragment() {
 
     private val recordsData = MutableLiveData<List<TimeRecord>>()
     private val totalsData = MutableLiveData<ReportTotals>()
@@ -84,7 +82,14 @@ class ReportFragment : InternetFragment(),
             this.listAdapter = ReportAdapter(filter)
             list.adapter = listAdapter
         })
-        authenticationViewModel.addLoginListener(this)
+        authenticationViewModel.login.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("login success")
+                run()
+            } else {
+                Timber.e("login failure: $reason")
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -95,11 +100,6 @@ class ReportFragment : InternetFragment(),
         super.onViewCreated(view, savedInstanceState)
 
         list.adapter = listAdapter
-    }
-
-    override fun onDestroy() {
-        authenticationViewModel.removeLoginListener(this)
-        super.onDestroy()
     }
 
     @MainThread
@@ -192,15 +192,6 @@ class ReportFragment : InternetFragment(),
     override fun onStart() {
         super.onStart()
         run()
-    }
-
-    override fun onLoginSuccess(login: String) {
-        Timber.i("login success")
-        run()
-    }
-
-    override fun onLoginFailure(login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

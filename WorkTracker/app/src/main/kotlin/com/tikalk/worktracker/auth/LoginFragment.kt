@@ -258,11 +258,11 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
 
     private fun notifyLoginSuccess(login: String) {
         dismissAllowingStateLoss()
-        authenticationViewModel.onLoginSuccess(this, login)
+        authenticationViewModel.onLoginSuccess(login)
     }
 
     private fun notifyLoginFailure(login: String, reason: String) {
-        authenticationViewModel.onLoginFailure(this, login, reason)
+        authenticationViewModel.onLoginFailure(login, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {

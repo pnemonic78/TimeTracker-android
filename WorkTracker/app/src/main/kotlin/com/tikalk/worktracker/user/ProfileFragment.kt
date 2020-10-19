@@ -45,7 +45,6 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
-import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.auth.model.set
@@ -64,8 +63,7 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment(),
-    AuthenticationViewModel.OnLoginListener {
+class ProfileFragment : InternetFragment() {
 
     var listener: OnProfileListener? = null
     private var userData = MutableLiveData<User>()
@@ -91,7 +89,14 @@ class ProfileFragment : InternetFragment(),
         userCredentialsData.observe(this, { userCredentials ->
             bindForm(userData.value, userCredentials)
         })
-        authenticationViewModel.addLoginListener(this)
+        authenticationViewModel.login.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("login success")
+                run()
+            } else {
+                Timber.e("login failure: $reason")
+            }
+        })
 
         val caller = this.caller
         if (caller != null) {
@@ -122,11 +127,6 @@ class ProfileFragment : InternetFragment(),
         super.onViewCreated(view, savedInstanceState)
 
         actionSave.setOnClickListener { attemptSave() }
-    }
-
-    override fun onDestroy() {
-        authenticationViewModel.removeLoginListener(this)
-        super.onDestroy()
     }
 
     @MainThread
@@ -354,15 +354,6 @@ class ProfileFragment : InternetFragment(),
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         notifyProfileFailure(userData.value!!, "onCancel")
-    }
-
-    override fun onLoginSuccess(login: String) {
-        Timber.i("login success")
-        run()
-    }
-
-    override fun onLoginFailure(login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 
     private fun setErrorLabel(text: CharSequence) {
