@@ -97,20 +97,18 @@ class AuthenticationViewModel : TrackerViewModel() {
     interface OnBasicRealmListener {
         /**
          * Login was successful.
-         * @param fragment the login fragment.
          * @param realm the realm name that was used.
          * @param username the user's name that was used.
          */
-        fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String)
+        fun onBasicRealmSuccess(realm: String, username: String)
 
         /**
          * Login failed.
-         * @param fragment the login fragment.
          * @param realm the realm name that was used.
          * @param username the user's name that was used.
          * @param reason the failure reason.
          */
-        fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String)
+        fun onBasicRealmFailure(realm: String, username: String, reason: String)
     }
 
     fun addBasicRealmListener(listener: OnBasicRealmListener) {
@@ -123,23 +121,23 @@ class AuthenticationViewModel : TrackerViewModel() {
         basicRealmListeners.remove(listener)
     }
 
-    fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
-        notifyLoginSuccess(fragment, realm, username)
+    fun onBasicRealmSuccess(realm: String, username: String) {
+        notifyLoginSuccess(realm, username)
     }
 
-    fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String) {
-        notifyLoginFailure(fragment, realm, username, reason)
+    fun onBasicRealmFailure(realm: String, username: String, reason: String) {
+        notifyLoginFailure(realm, username, reason)
     }
 
-    private fun notifyLoginSuccess(fragment: BasicRealmFragment, realmName: String, username: String) {
+    private fun notifyLoginSuccess(realmName: String, username: String) {
         for (listener in basicRealmListeners) {
-            listener.onBasicRealmSuccess(fragment, realmName, username)
+            listener.onBasicRealmSuccess(realmName, username)
         }
     }
 
-    private fun notifyLoginFailure(fragment: BasicRealmFragment, realmName: String, username: String, reason: String) {
+    private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
         for (listener in basicRealmListeners) {
-            listener.onBasicRealmFailure(fragment, realmName, username, reason)
+            listener.onBasicRealmFailure(realmName, username, reason)
         }
     }
 

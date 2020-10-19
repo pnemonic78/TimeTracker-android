@@ -193,11 +193,12 @@ class BasicRealmFragment : InternetFragment() {
     }
 
     private fun notifyLoginSuccess(realmName: String, username: String) {
-        authenticationViewModel.onBasicRealmSuccess(this, realmName, username)
+        dismissAllowingStateLoss()
+        authenticationViewModel.onBasicRealmSuccess(realmName, username)
     }
 
     private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
-        authenticationViewModel.onBasicRealmFailure(this, realmName, username, reason)
+        authenticationViewModel.onBasicRealmFailure(realmName, username, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {

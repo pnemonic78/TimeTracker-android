@@ -247,13 +247,12 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
         }
     }
 
-    override fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String) {
+    override fun onBasicRealmSuccess(realm: String, username: String) {
         Timber.i("basic realm success for \"$realm\"")
-        fragment.dismissAllowingStateLoss()
         attemptLogin()
     }
 
-    override fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String) {
+    override fun onBasicRealmFailure(realm: String, username: String, reason: String) {
         Timber.e("basic realm failure for \"$realm\": $reason")
     }
 
