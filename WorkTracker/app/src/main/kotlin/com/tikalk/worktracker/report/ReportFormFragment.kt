@@ -244,8 +244,8 @@ class ReportFormFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        super.onLoginSuccess(fragment, login)
+    override fun onLoginSuccess(login: String) {
+        super.onLoginSuccess(login)
         run()
     }
 

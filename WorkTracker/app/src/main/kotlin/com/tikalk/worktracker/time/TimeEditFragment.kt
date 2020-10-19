@@ -449,13 +449,13 @@ class TimeEditFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        super.onLoginSuccess(fragment, login)
+    override fun onLoginSuccess(login: String) {
+        super.onLoginSuccess(login)
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        super.onLoginFailure(fragment, login, reason)
+    override fun onLoginFailure(login: String, reason: String) {
+        super.onLoginFailure(login, reason)
         activity?.finish()
     }
 

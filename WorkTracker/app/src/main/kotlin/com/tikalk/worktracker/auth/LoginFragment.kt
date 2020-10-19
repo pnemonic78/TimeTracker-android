@@ -252,6 +252,7 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
     }
 
     private fun notifyLoginSuccess(login: String) {
+        dismissAllowingStateLoss()
         authenticationViewModel.onLoginSuccess(this, login)
     }
 

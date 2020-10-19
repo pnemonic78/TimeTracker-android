@@ -194,13 +194,12 @@ class ReportFragment : InternetFragment(),
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+    override fun onLoginSuccess(login: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+    override fun onLoginFailure(login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 

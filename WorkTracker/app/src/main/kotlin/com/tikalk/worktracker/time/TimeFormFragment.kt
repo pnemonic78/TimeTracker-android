@@ -37,12 +37,10 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AuthenticationViewModel
-import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -67,7 +65,7 @@ abstract class TimeFormFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        projectsData.observe(this, Observer { projects ->
+        projectsData.observe(this, { projects ->
             onProjectsUpdated(projects)
         })
         authenticationViewModel.addLoginListener(this)
@@ -101,12 +99,11 @@ abstract class TimeFormFragment : InternetFragment(),
         bindForm(record)
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+    override fun onLoginSuccess(login: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+    override fun onLoginFailure(login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 

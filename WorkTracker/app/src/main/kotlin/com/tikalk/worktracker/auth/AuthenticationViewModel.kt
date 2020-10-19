@@ -52,7 +52,7 @@ class AuthenticationViewModel : TrackerViewModel() {
          * @param fragment the login fragment.
          * @param login the user's login that was used.
          */
-        fun onLoginSuccess(fragment: LoginFragment, login: String)
+        fun onLoginSuccess(login: String)
 
         /**
          * Login failed.
@@ -60,7 +60,7 @@ class AuthenticationViewModel : TrackerViewModel() {
          * @param login the user's login that was used.
          * @param reason the failure reason.
          */
-        fun onLoginFailure(fragment: LoginFragment, login: String, reason: String)
+        fun onLoginFailure(login: String, reason: String)
     }
 
     fun addLoginListener(listener: OnLoginListener) {
@@ -83,13 +83,13 @@ class AuthenticationViewModel : TrackerViewModel() {
 
     private fun notifyLoginSuccess(fragment: LoginFragment, login: String) {
         for (listener in loginListeners) {
-            listener.onLoginSuccess(fragment, login)
+            listener.onLoginSuccess(login)
         }
     }
 
     private fun notifyLoginFailure(fragment: LoginFragment, login: String, reason: String) {
         for (listener in loginListeners) {
-            listener.onLoginFailure(fragment, login, reason)
+            listener.onLoginFailure(login, reason)
         }
     }
 

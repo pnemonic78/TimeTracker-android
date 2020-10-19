@@ -40,7 +40,6 @@ import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
@@ -95,10 +94,10 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer { records ->
+        recordsData.observe(this, { records ->
             bindList(date, records)
         })
-        totalsData.observe(this, Observer { totals ->
+        totalsData.observe(this, { totals ->
             bindTotals(totals)
         })
     }
@@ -591,13 +590,13 @@ class TimeListFragment : TimeFormFragment(),
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        super.onLoginSuccess(fragment, login)
+    override fun onLoginSuccess(login: String) {
+        super.onLoginSuccess(login)
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        super.onLoginFailure(fragment, login, reason)
+    override fun onLoginFailure(login: String, reason: String) {
+        super.onLoginFailure(login, reason)
         loginAutomatic = false
         if (login.isEmpty() or (reason == "onCancel")) {
             activity?.finish()

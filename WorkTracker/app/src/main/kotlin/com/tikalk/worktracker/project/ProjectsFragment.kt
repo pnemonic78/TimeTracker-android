@@ -38,7 +38,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
@@ -60,7 +59,7 @@ class ProjectsFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        projectsData.observe(this, Observer { projects ->
+        projectsData.observe(this, { projects ->
             bindList(projects)
         })
         authenticationViewModel.addLoginListener(this)
@@ -116,13 +115,12 @@ class ProjectsFragment : InternetFragment(),
         }
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+    override fun onLoginSuccess(login: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+    override fun onLoginFailure(login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 }

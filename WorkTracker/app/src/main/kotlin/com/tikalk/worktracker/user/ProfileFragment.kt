@@ -41,7 +41,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
@@ -357,13 +356,12 @@ class ProfileFragment : InternetFragment(),
         notifyProfileFailure(userData.value!!, "onCancel")
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+    override fun onLoginSuccess(login: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+    override fun onLoginFailure(login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 
