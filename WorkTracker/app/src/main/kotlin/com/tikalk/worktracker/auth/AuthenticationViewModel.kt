@@ -49,14 +49,12 @@ class AuthenticationViewModel : TrackerViewModel() {
     interface OnLoginListener {
         /**
          * Login was successful.
-         * @param fragment the login fragment.
          * @param login the user's login that was used.
          */
         fun onLoginSuccess(login: String)
 
         /**
          * Login failed.
-         * @param fragment the login fragment.
          * @param login the user's login that was used.
          * @param reason the failure reason.
          */

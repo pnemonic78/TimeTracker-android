@@ -68,6 +68,7 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
+        authenticationViewModel.addBasicRealmListener(this)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -96,6 +97,11 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
         passwordInput.setText(preferences.userCredentials.password)
 
         actionSignIn.setOnClickListener { attemptLogin() }
+    }
+
+    override fun onDestroy() {
+        authenticationViewModel.removeBasicRealmListener(this)
+        super.onDestroy()
     }
 
     @MainThread
