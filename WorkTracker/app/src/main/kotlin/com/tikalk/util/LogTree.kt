@@ -40,14 +40,9 @@ import timber.log.Timber
  *
  * @author Moshe Waisberg
  */
-class LogTree(debug: Boolean) : Timber.DebugTree() {
+class LogTree(private val debug: Boolean) : Timber.DebugTree() {
 
-    private val release: Boolean = !debug
-
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (release && (priority == Log.DEBUG || priority == Log.VERBOSE)) {
-            return
-        }
-        super.log(priority, tag, message, t)
+    override fun isLoggable(tag: String?, priority: Int): Boolean {
+        return debug || (priority == Log.DEBUG || priority == Log.VERBOSE)
     }
 }
