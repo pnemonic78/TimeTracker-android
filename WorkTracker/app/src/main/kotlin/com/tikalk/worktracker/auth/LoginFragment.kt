@@ -59,7 +59,7 @@ import timber.log.Timber
 /**
  * A login screen that offers login via login/password.
  */
-class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmListener {
+class LoginFragment : InternetFragment {
 
     constructor() : super()
 
@@ -68,7 +68,15 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
-        authenticationViewModel.addBasicRealmListener(this)
+
+        authenticationViewModel.basicRealm.observe(this, { (realm, username, reason) ->
+            if (reason == null) {
+                Timber.i("basic realm success for \"$realm\"")
+                attemptLogin()
+            } else {
+                Timber.e("basic realm failure for \"$realm\": $reason")
+            }
+        })
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -97,11 +105,6 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
         passwordInput.setText(preferences.userCredentials.password)
 
         actionSignIn.setOnClickListener { attemptLogin() }
-    }
-
-    override fun onDestroy() {
-        authenticationViewModel.removeBasicRealmListener(this)
-        super.onDestroy()
     }
 
     @MainThread
@@ -245,15 +248,6 @@ class LoginFragment : InternetFragment, AuthenticationViewModel.OnBasicRealmList
             }
             findNavController().navigate(R.id.action_basicRealmLogin, args)
         }
-    }
-
-    override fun onBasicRealmSuccess(realm: String, username: String) {
-        Timber.i("basic realm success for \"$realm\"")
-        attemptLogin()
-    }
-
-    override fun onBasicRealmFailure(realm: String, username: String, reason: String) {
-        Timber.e("basic realm failure for \"$realm\": $reason")
     }
 
     private fun notifyLoginSuccess(login: String) {

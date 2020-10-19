@@ -38,14 +38,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
-import java.util.concurrent.CopyOnWriteArrayList
 
 class AuthenticationViewModel : TrackerViewModel() {
 
     private val loginData = MutableLiveData<LoginData>()
     val login: LiveData<LoginData> = loginData
 
-    private val basicRealmListeners: MutableList<OnBasicRealmListener> = CopyOnWriteArrayList()
+    private val basicRealmData = MutableLiveData<BasicRealmData>()
+    val basicRealm: LiveData<BasicRealmData> = basicRealmData
 
     /**
      * Data for login callbacks.
@@ -78,53 +78,35 @@ class AuthenticationViewModel : TrackerViewModel() {
     }
 
     /**
-     * Listener for basic realm login callbacks.
+     * Data for basic realm login callbacks.
      */
-    interface OnBasicRealmListener {
-        /**
-         * Login was successful.
-         * @param realm the realm name that was used.
-         * @param username the user's name that was used.
-         */
-        fun onBasicRealmSuccess(realm: String, username: String)
+    data class BasicRealmData(val realm: String, val username: String, val reason: String? = null)
 
-        /**
-         * Login failed.
-         * @param realm the realm name that was used.
-         * @param username the user's name that was used.
-         * @param reason the failure reason.
-         */
-        fun onBasicRealmFailure(realm: String, username: String, reason: String)
-    }
-
-    fun addBasicRealmListener(listener: OnBasicRealmListener) {
-        if (!basicRealmListeners.contains(listener)) {
-            basicRealmListeners.add(listener)
-        }
-    }
-
-    fun removeBasicRealmListener(listener: OnBasicRealmListener) {
-        basicRealmListeners.remove(listener)
-    }
-
+    /**
+     * Login was successful.
+     * @param realm the realm name that was used.
+     * @param username the user's name that was used.
+     */
     fun onBasicRealmSuccess(realm: String, username: String) {
         notifyLoginSuccess(realm, username)
     }
 
+    /**
+     * Login failed.
+     * @param realm the realm name that was used.
+     * @param username the user's name that was used.
+     * @param reason the failure reason.
+     */
     fun onBasicRealmFailure(realm: String, username: String, reason: String) {
         notifyLoginFailure(realm, username, reason)
     }
 
     private fun notifyLoginSuccess(realmName: String, username: String) {
-        for (listener in basicRealmListeners) {
-            listener.onBasicRealmSuccess(realmName, username)
-        }
+        basicRealmData.postValue(BasicRealmData(realmName, username))
     }
 
     private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
-        for (listener in basicRealmListeners) {
-            listener.onBasicRealmFailure(realmName, username, reason)
-        }
+        basicRealmData.postValue(BasicRealmData(realmName, username, reason))
     }
 
     companion object {
