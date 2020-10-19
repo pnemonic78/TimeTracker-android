@@ -42,17 +42,16 @@ import com.google.android.material.navigation.NavigationView
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetActivity
-import com.tikalk.worktracker.user.ProfileFragment
+import com.tikalk.worktracker.user.ProfileViewModel
 import kotlinx.android.synthetic.main.activity_time_list.*
 import kotlinx.android.synthetic.main.progress.*
 import timber.log.Timber
 
 class TimeListActivity : InternetActivity(),
-    NavigationView.OnNavigationItemSelectedListener,
-    ProfileFragment.OnProfileListener {
+    NavigationView.OnNavigationItemSelectedListener {
 
+    private lateinit var profileViewModule: ProfileViewModel
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +72,15 @@ class TimeListActivity : InternetActivity(),
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         drawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close)
         drawerLayout.addDrawerListener(drawerToggle)
+
+        profileViewModule = ProfileViewModel.get(this)
+        profileViewModule.profileUpdate.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("profile success")
+            } else {
+                Timber.e("profile failure: $reason")
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -161,15 +169,6 @@ class TimeListActivity : InternetActivity(),
             }
         }
         super.onBackPressed()
-    }
-
-    override fun onProfileSuccess(fragment: ProfileFragment, user: User) {
-        Timber.i("profile success")
-        fragment.dismissAllowingStateLoss()
-    }
-
-    override fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String) {
-        Timber.e("profile failure: $reason")
     }
 
     private fun findMainFragment(): TimeListFragment? {
