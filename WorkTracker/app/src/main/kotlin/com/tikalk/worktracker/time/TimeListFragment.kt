@@ -34,29 +34,20 @@ package com.tikalk.worktracker.time
 
 import android.app.DatePickerDialog
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.*
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
-import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.data.remote.TimeListPageParser
-import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.db.WholeTimeRecordEntity
-import com.tikalk.worktracker.db.toTimeRecordEntity
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
@@ -68,16 +59,13 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_time_list.*
 import kotlinx.android.synthetic.main.time_totals.*
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
-    TimeListAdapter.OnTimeListListener,
-    TimeEditFragment.OnEditRecordListener {
+    TimeListAdapter.OnTimeListListener {
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -87,6 +75,7 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
+    private lateinit var timeViewModel: TimeViewModel
 
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -95,11 +84,25 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer { records ->
+        recordsData.observe(this, { records ->
             bindList(date, records)
         })
-        totalsData.observe(this, Observer { totals ->
+        totalsData.observe(this, { totals ->
             bindTotals(totals)
+        })
+
+        timeViewModel = TimeViewModel.get(this)
+        timeViewModel.delete.observe(this, { data ->
+            onRecordEditDeleted(data.record, data.responseHtml)
+        })
+        timeViewModel.edit.observe(this, { data ->
+            onRecordEditSubmitted(data.record, data.last, data.responseHtml)
+        })
+        timeViewModel.editFailure.observe(this, { data ->
+            onRecordEditFailure(data.record, data.reason)
+        })
+        timeViewModel.favorite.observe(this, { record ->
+            onRecordEditFavorited(record)
         })
     }
 
@@ -285,7 +288,6 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_timeList_to_login, args)
         }
@@ -340,100 +342,12 @@ class TimeListFragment : TimeFormFragment(),
         editRecord(TimeRecord.EMPTY)
     }
 
-    /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
-     */
-    private fun findRecordsTable(doc: Document): Element? {
-        val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
-        var label: String
-
-        for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
-            if (label != "Project") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Task") {
-                continue
-            }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
-            if (label != "Start") {
-                continue
-            }
-            return findParentElement(td, "table")
-        }
-
-        return null
-    }
-
-    private fun parseRecord(row: Element): TimeRecord? {
-        val cols = row.getElementsByTag("td")
-
-        val tdProject = cols[0]
-        if (tdProject.attr("class") == "tableHeader") {
-            return null
-        }
-        val projectName = tdProject.ownText()
-        val project = parseRecordProject(projectName) ?: return null
-
-        val tdTask = cols[1]
-        val taskName = tdTask.ownText()
-        val task = parseRecordTask(project, taskName) ?: return null
-
-        val tdStart = cols[2]
-        val startText = tdStart.ownText()
-        val start = parseRecordTime(startText) ?: return null
-
-        val tdFinish = cols[3]
-        val finishText = tdFinish.ownText()
-        val finish = parseRecordTime(finishText) ?: return null
-
-        val tdNote = cols[5]
-        val noteText = tdNote.text()
-        val note = parseRecordNote(noteText)
-
-        val tdEdit = cols[6]
-        val editLink = tdEdit.child(0).attr("href")
-        val id = parseRecordId(editLink)
-
-        return TimeRecord(id, project, task, start, finish, note, 0.0, TaskRecordStatus.CURRENT)
-    }
-
-    private fun parseRecordProject(name: String): Project? {
-        val projects = projectsData.value
-        return projects?.find { name == it.name }
-    }
-
-    private fun parseRecordTask(project: Project, name: String): ProjectTask? {
-        return project.tasks.find { task -> (task.name == name) }
-    }
-
-    private fun parseRecordTime(text: String): Calendar? {
-        return parseSystemTime(date, text)
-    }
-
-    private fun parseRecordNote(text: String): String {
-        return text.trim()
-    }
-
-    private fun parseRecordId(link: String): Long {
-        val uri = Uri.parse(link)
-        val id = uri.getQueryParameter("id")!!
-        return id.toLong()
-    }
-
     fun editRecord(record: TimeRecord, timer: Boolean = false) {
         Timber.i("editRecord record=$record timer=$timer")
         recordForTimer = timer
 
         val form = findTopFormFragment()
         if (form is TimeEditFragment) {
-            form.listener = this
             form.editRecord(record, date)
         } else {
             Timber.i("editRecord editor.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
@@ -445,7 +359,6 @@ class TimeListFragment : TimeFormFragment(),
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
             args.putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
-            parentFragmentManager.putFragment(args, TimeEditFragment.EXTRA_CALLER, this)
             formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
@@ -520,54 +433,6 @@ class TimeListFragment : TimeFormFragment(),
         return Locale.getDefault().language == "iw"
     }
 
-    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
-        Timber.i("saveRecords ${formatSystemDate(day)}")
-        val recordsDao = db.timeRecordDao()
-        val recordsDb = queryRecords(db, day)
-        val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
-        for (entity in recordsDb) {
-            recordsDbById[entity.record.id] = entity.record
-        }
-
-        val recordsToInsert = ArrayList<TimeRecord>()
-        val recordsToUpdate = ArrayList<TimeRecord>()
-        //var recordDb: TimeRecordEntity
-        for (record in records) {
-            val recordId = record.id
-            if (recordsDbById.containsKey(recordId)) {
-                //recordDb = recordsDbById[recordId]!!
-                //record.dbId = recordDb.dbId
-                recordsToUpdate.add(record)
-            } else {
-                recordsToInsert.add(record)
-            }
-            recordsDbById.remove(recordId)
-        }
-
-        val recordsToDelete = recordsDbById.values
-        recordsDao.delete(recordsToDelete)
-
-        /*val recordIds =*/ recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
-        //for (i in recordIds.indices) {
-        //    recordsToInsert[i].dbId = recordIds[i]
-        //}
-
-        recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
-    }
-
-    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
-        val recordsDao = db.timeRecordDao()
-        return if (day == null) {
-            recordsDao.queryAll()
-        } else {
-            val start = day.copy()
-            start.setToStartOfDay()
-            val finish = day.copy()
-            finish.setToEndOfDay()
-            recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
-        }
-    }
-
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
@@ -592,20 +457,20 @@ class TimeListFragment : TimeFormFragment(),
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        super.onLoginSuccess(fragment, login)
+    override fun onLoginSuccess(login: String) {
+        super.onLoginSuccess(login)
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        super.onLoginFailure(fragment, login, reason)
+    override fun onLoginFailure(login: String, reason: String) {
+        super.onLoginFailure(login, reason)
         loginAutomatic = false
         if (login.isEmpty() or (reason == "onCancel")) {
             activity?.finish()
         }
     }
 
-    override fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean, responseHtml: String) {
+    private fun onRecordEditSubmitted(record: TimeRecord, last: Boolean, responseHtml: String) {
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
@@ -620,7 +485,6 @@ class TimeListFragment : TimeFormFragment(),
                 val args = Bundle()
                 args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
                 args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
-                parentFragmentManager.putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
                 // Refresh the list with the inserted item.
                 maybeFetchPage(date, responseHtml)
@@ -647,14 +511,13 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String) {
+    private fun onRecordEditDeleted(record: TimeRecord, responseHtml: String) {
         Timber.i("record deleted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
                 val args = Bundle()
                 args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
                 args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
-                parentFragmentManager.putFragment(args, TimerFragment.EXTRA_CALLER, this)
                 showTimer(args, true)
             } else {
                 showTimer()
@@ -675,11 +538,11 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord) {
+    private fun onRecordEditFavorited(record: TimeRecord) {
         Timber.i("record favorited: ${record.project} / ${record.task}")
     }
 
-    override fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String) {
+    private fun onRecordEditFailure(record: TimeRecord, reason: String) {
         Timber.e("record failure: $reason")
     }
 

@@ -42,11 +42,9 @@ import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
@@ -63,8 +61,7 @@ import kotlinx.android.synthetic.main.report_totals.*
 import timber.log.Timber
 import java.util.*
 
-class ReportFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+class ReportFragment : InternetFragment() {
 
     private val recordsData = MutableLiveData<List<TimeRecord>>()
     private val totalsData = MutableLiveData<ReportTotals>()
@@ -74,15 +71,23 @@ class ReportFragment : InternetFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, Observer { records ->
+        recordsData.observe(this, { records ->
             bindList(records)
         })
-        totalsData.observe(this, Observer { totals ->
+        totalsData.observe(this, { totals ->
             bindTotals(totals)
         })
-        filterData.observe(this, Observer { filter ->
+        filterData.observe(this, { filter ->
             this.listAdapter = ReportAdapter(filter)
             list.adapter = listAdapter
+        })
+        authenticationViewModel.login.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("login success")
+                run()
+            } else {
+                Timber.e("login failure: $reason")
+            }
         })
     }
 
@@ -141,7 +146,6 @@ class ReportFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_reportList_to_login, args)
         }
@@ -187,16 +191,6 @@ class ReportFragment : InternetFragment(),
     override fun onStart() {
         super.onStart()
         run()
-    }
-
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
-        run()
-    }
-
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -344,17 +338,18 @@ class ReportFragment : InternetFragment(),
         }
     }
 
-    private fun alert(err: Throwable?) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.error_title)
-            .setIcon(R.drawable.ic_dialog)
-            .setMessage(R.string.error_export)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
+    private fun alert(error: Throwable?) {
+        if (error != null) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.error_title)
+                .setIcon(R.drawable.ic_dialog)
+                .setMessage(R.string.error_export)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
     }
 
     companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_FILTER = "filter"
 
         private const val CHILD_LIST = 0

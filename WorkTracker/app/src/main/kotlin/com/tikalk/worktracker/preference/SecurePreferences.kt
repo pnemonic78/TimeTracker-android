@@ -34,11 +34,9 @@ package com.tikalk.worktracker.preference
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
-import android.preference.PreferenceManager
 import android.provider.Settings
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import com.tikalk.security.CipherHelper
 import com.tikalk.security.SimpleCipherHelper
 import java.util.*
@@ -163,6 +161,8 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
         private const val KEYS_PREFS_NAME = "secpref"
         private const val PREF_KEY = "private_key"
 
+        private var masterKeyAES256: MasterKey? = null
+
         /**
          * Gets a [SecurePreferences] instance that points to the default file that is used by
          * the preference framework in the given context.
@@ -177,14 +177,18 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
         }
 
         fun getSharedPreferences(context: Context, name: String, mode: Int): SharedPreferences {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                EncryptedSharedPreferences.create(name,
-                    MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
-                    context,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
-            else
-                SecurePreferences(context, name, mode)
+            var masterKey = masterKeyAES256
+            if (masterKey == null) {
+                masterKey = MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build()
+                masterKeyAES256 = masterKey
+            }
+            return EncryptedSharedPreferences.create(context,
+                name,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
         }
 
         /**
@@ -195,11 +199,7 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
          * @see Context#getSharedPreferencesPath(String)
          */
         fun getDefaultSharedPreferencesName(context: Context): String {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                PreferenceManager.getDefaultSharedPreferencesName(context)
-            } else {
-                context.packageName + "_preferences"
-            }
+            return context.packageName + "_preferences"
         }
 
         fun getDefaultSharedPreferencesMode(): Int {

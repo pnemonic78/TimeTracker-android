@@ -38,7 +38,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
@@ -51,16 +50,23 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_projects.*
 import timber.log.Timber
 
-class ProjectsFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+class ProjectsFragment : InternetFragment() {
 
     private val projectsData = MutableLiveData<List<Project>>()
     private val listAdapter = ProjectsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        projectsData.observe(this, Observer { projects ->
+        projectsData.observe(this, { projects ->
             bindList(projects)
+        })
+        authenticationViewModel.login.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("login success")
+                run()
+            } else {
+                Timber.e("login failure: $reason")
+            }
         })
     }
 
@@ -104,19 +110,8 @@ class ProjectsFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_projects_to_login, args)
         }
-    }
-
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
-        run()
-    }
-
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 }

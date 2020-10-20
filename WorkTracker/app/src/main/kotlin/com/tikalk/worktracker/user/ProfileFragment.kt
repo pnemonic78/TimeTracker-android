@@ -41,11 +41,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.auth.model.set
@@ -64,10 +62,9 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+class ProfileFragment : InternetFragment() {
 
-    var listener: OnProfileListener? = null
+    private lateinit var profileViewModule: ProfileViewModel
     private var userData = MutableLiveData<User>()
     private var userCredentialsData = MutableLiveData<UserCredentials>()
     private var nameInputEditable = false
@@ -85,26 +82,22 @@ class ProfileFragment : InternetFragment(),
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
 
-        userData.observe(this, Observer { user ->
+        userData.observe(this, { user ->
             bindForm(user, userCredentialsData.value)
         })
-        userCredentialsData.observe(this, Observer { userCredentials ->
+        userCredentialsData.observe(this, { userCredentials ->
             bindForm(userData.value, userCredentials)
         })
+        authenticationViewModel.login.observe(this, { (_, reason) ->
+            if (reason == null) {
+                Timber.i("login success")
+                run()
+            } else {
+                Timber.e("login failure: $reason")
+            }
+        })
 
-        val caller = this.caller
-        if (caller != null) {
-            if (caller is OnProfileListener) {
-                this.listener = caller
-            }
-        } else {
-            val activity = this.activity
-            if (activity != null) {
-                if (activity is OnProfileListener) {
-                    this.listener = activity
-                }
-            }
-        }
+        profileViewModule = ProfileViewModel.get(this)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -299,7 +292,6 @@ class ProfileFragment : InternetFragment(),
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_profile_to_login, args)
         }
@@ -312,13 +304,12 @@ class ProfileFragment : InternetFragment(),
     }
 
     private fun notifyProfileSuccess(user: User) {
-        val fragment: ProfileFragment = this
-        listener?.onProfileSuccess(fragment, user)
+        dismissAllowingStateLoss()
+        profileViewModule.onProfileSuccess(user)
     }
 
     private fun notifyProfileFailure(user: User, reason: String) {
-        val fragment: ProfileFragment = this
-        listener?.onProfileFailure(fragment, user, reason)
+        profileViewModule.onProfileFailure(user, reason)
     }
 
     private fun processEdit(html: String, loginValue: String, emailValue: String, nameValue: String, passwordValue: String, confirmPasswordValue: String) {
@@ -351,42 +342,8 @@ class ProfileFragment : InternetFragment(),
         notifyProfileFailure(userData.value!!, "onCancel")
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
-        run()
-    }
-
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        Timber.e("login failure: $reason")
-    }
-
     private fun setErrorLabel(text: CharSequence) {
         errorLabel.text = text
         errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
-    }
-
-    /**
-     * Listener for profile callbacks.
-     */
-    interface OnProfileListener {
-        /**
-         * Profile update was successful.
-         * @param fragment the login fragment.
-         * @param user the updated user.
-         */
-        fun onProfileSuccess(fragment: ProfileFragment, user: User)
-
-        /**
-         * Profile update failed.
-         * @param fragment the login fragment.
-         * @param user the current user.
-         * @param reason the failure reason.
-         */
-        fun onProfileFailure(fragment: ProfileFragment, user: User, reason: String)
-    }
-
-    companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
     }
 }

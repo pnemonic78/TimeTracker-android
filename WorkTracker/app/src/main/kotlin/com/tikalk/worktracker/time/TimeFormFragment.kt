@@ -37,11 +37,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -54,8 +52,7 @@ import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class TimeFormFragment : InternetFragment(),
-    LoginFragment.OnLoginListener {
+abstract class TimeFormFragment : InternetFragment() {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     val projectsData = MutableLiveData<List<Project>>()
@@ -66,8 +63,15 @@ abstract class TimeFormFragment : InternetFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        projectsData.observe(this, Observer { projects ->
+        projectsData.observe(this, { projects ->
             onProjectsUpdated(projects)
+        })
+        authenticationViewModel.login.observe(this, { (login, reason) ->
+            if (reason == null) {
+                onLoginSuccess(login)
+            } else {
+                onLoginFailure(login, reason)
+            }
         })
     }
 
@@ -94,43 +98,62 @@ abstract class TimeFormFragment : InternetFragment(),
         bindForm(record)
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
+    protected open fun onLoginSuccess(login: String) {
         Timber.i("login success")
-        fragment.dismissAllowingStateLoss()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
+    protected open fun onLoginFailure(login: String, reason: String) {
         Timber.e("login failure: $reason")
     }
 
     protected open fun setRecordValue(record: TimeRecord) {
-        Timber.d("setRecordValue record=$record")
+        Timber.d("${javaClass.simpleName} setRecordValue record=$record")
         this.record = record
     }
 
-    protected open fun setRecordProject(project: Project) {
-        Timber.d("setRecordProject project=$project")
-        record.project = project
+    protected open fun setRecordProject(project: Project): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordProject project=$project")
+        if (record.project != project) {
+            record.project = project
+            return true
+        }
+        return false
     }
 
-    protected open fun setRecordTask(task: ProjectTask) {
-        Timber.d("setRecordTask task=$task")
-        record.task = task
+    protected open fun setRecordTask(task: ProjectTask): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordTask task=$task")
+        if (record.task != task) {
+            record.task = task
+            return true
+        }
+        return false
     }
 
-    protected open fun setRecordLocation(location: Location) {
-        Timber.d("setRecordLocation location=$location")
-        record.location = location
+    protected open fun setRecordLocation(location: Location): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordLocation location=$location")
+        if (record.location != location) {
+            record.location = location
+            return true
+        }
+        return false
     }
 
-    protected open fun setRecordStart(time: Calendar) {
-        Timber.d("setRecordStart time=$time")
-        record.start = time
+    protected open fun setRecordStart(time: Calendar): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordStart time=$time")
+        if (record.start != time) {
+            record.start = time
+            return true
+        }
+        return false
     }
 
-    protected open fun setRecordFinish(time: Calendar) {
-        Timber.d("setRecordFinish time=$time")
-        record.finish = time
+    protected open fun setRecordFinish(time: Calendar): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordFinish time=$time")
+        if (record.finish != time) {
+            record.finish = time
+            return true
+        }
+        return false
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {

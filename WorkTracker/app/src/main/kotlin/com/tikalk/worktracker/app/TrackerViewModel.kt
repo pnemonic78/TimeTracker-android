@@ -30,51 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.app
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import androidx.lifecycle.ViewModel
 
-/**
- * Where was the task done?
- *
- * @author Moshe Waisberg.
- */
-@Entity(tableName = "location")
-data class Location(
-    @ColumnInfo(name = "name")
-    var name: String,
-    @ColumnInfo(name = "description")
-    var description: String? = null
-) : TikalEntity() {
+open class TrackerViewModel : ViewModel() {
 
-    constructor(id: Long, name: String) : this(name, "") {
-        this.id = id
-    }
-
-    override fun toString(): String {
-        return name
-    }
-
-    fun compareTo(that: Location): Int {
-        return this.id.compareTo(that.id)
-    }
-
-    companion object {
-        val EMPTY = Location(ID_NONE, "")
-        val CLIENT = Location(11L, "client")
-        val HOME = Location(10L, "home")
-        val OTHER = Location(13L, "other")
-        val TIKAL = Location(12L, "tikal")
-
-        val values = arrayOf(EMPTY, CLIENT, HOME, OTHER, TIKAL)
-
-        fun valueOf(id: Long): Location {
-            return values.firstOrNull { id == it.id } ?: OTHER
-        }
-
-        fun valueOf(value: Boolean): Location {
-            return if (value) HOME else CLIENT
-        }
-    }
+//    companion object {
+//        fun get(fragment: Fragment) = get(fragment.requireActivity())
+//
+//        fun get(owner: ViewModelStoreOwner) = ViewModelProvider(owner).get(TrackerViewModel::class.java)
+//    }
 }

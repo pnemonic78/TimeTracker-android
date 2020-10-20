@@ -42,7 +42,6 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.android.synthetic.main.fragment_basic_realm.*
@@ -58,25 +57,10 @@ class BasicRealmFragment : InternetFragment() {
             field = value
             realmTitle?.text = getString(R.string.authentication_basic_realm, value)
         }
-    var listener: OnBasicRealmListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
-
-        val caller = this.caller
-        if (caller != null) {
-            if (caller is OnBasicRealmListener) {
-                this.listener = caller
-            }
-        } else {
-            val activity = this.activity
-            if (activity != null) {
-                if (activity is OnBasicRealmListener) {
-                    this.listener = activity
-                }
-            }
-        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -209,11 +193,12 @@ class BasicRealmFragment : InternetFragment() {
     }
 
     private fun notifyLoginSuccess(realmName: String, username: String) {
-        listener?.onBasicRealmSuccess(this, realmName, username)
+        dismissAllowingStateLoss()
+        authenticationViewModel.onBasicRealmSuccess(realmName, username)
     }
 
     private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
-        listener?.onBasicRealmFailure(this, realmName, username, reason)
+        authenticationViewModel.onBasicRealmFailure(realmName, username, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -224,30 +209,7 @@ class BasicRealmFragment : InternetFragment() {
     override fun authenticate(submit: Boolean) {
     }
 
-    /**
-     * Listener for basic realm login callbacks.
-     */
-    interface OnBasicRealmListener {
-        /**
-         * Login was successful.
-         * @param fragment the login fragment.
-         * @param realm the realm name that was used.
-         * @param username the user's name that was used.
-         */
-        fun onBasicRealmSuccess(fragment: BasicRealmFragment, realm: String, username: String)
-
-        /**
-         * Login failed.
-         * @param fragment the login fragment.
-         * @param realm the realm name that was used.
-         * @param username the user's name that was used.
-         * @param reason the failure reason.
-         */
-        fun onBasicRealmFailure(fragment: BasicRealmFragment, realm: String, username: String, reason: String)
-    }
-
     companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_REALM = "realm"
         const val EXTRA_USER = "user"
         const val EXTRA_PASSWORD = "password"

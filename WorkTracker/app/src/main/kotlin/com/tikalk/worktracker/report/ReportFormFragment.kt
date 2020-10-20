@@ -81,7 +81,7 @@ class ReportFormFragment : TimeFormFragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         filterData.value = ReportFilter()
-        filterData.observe(this, Observer { filter ->
+        filterData.observe(this, { filter ->
             setRecordValue(filter)
             bindFilter(filter)
         })
@@ -96,7 +96,7 @@ class ReportFormFragment : TimeFormFragment() {
 
         projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                projectItemSelected(projectEmpty)
+                //projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -106,7 +106,7 @@ class ReportFormFragment : TimeFormFragment() {
         }
         taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                taskItemSelected(taskEmpty)
+                //taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -116,7 +116,7 @@ class ReportFormFragment : TimeFormFragment() {
         }
         locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                locationItemSelected(locationEmpty)
+                //locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -126,7 +126,7 @@ class ReportFormFragment : TimeFormFragment() {
         }
         periodInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                periodItemSelected(ReportTimePeriod.CUSTOM)
+                //periodItemSelected(ReportTimePeriod.CUSTOM)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -244,8 +244,8 @@ class ReportFormFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        super.onLoginSuccess(fragment, login)
+    override fun onLoginSuccess(login: String) {
+        super.onLoginSuccess(login)
         run()
     }
 
@@ -253,7 +253,6 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_reportForm_to_login, args)
         }
@@ -425,7 +424,6 @@ class ReportFormFragment : TimeFormFragment() {
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()
             val args = Bundle()
-            parentFragmentManager.putFragment(args, ReportFragment.EXTRA_CALLER, this)
             args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
 
             var reportFragmentController: NavController? = null
@@ -487,14 +485,20 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
-    override fun setRecordProject(project: Project) {
-        super.setRecordProject(project)
-        filterData.value?.project = project
+    override fun setRecordProject(project: Project): Boolean {
+        if (super.setRecordProject(project)) {
+            filterData.value?.project = project
+            return true
+        }
+        return false
     }
 
-    override fun setRecordTask(task: ProjectTask) {
-        super.setRecordTask(task)
-        filterData.value?.task = task
+    override fun setRecordTask(task: ProjectTask): Boolean {
+        if (super.setRecordTask(task)) {
+            filterData.value?.task = task
+            return true
+        }
+        return false
     }
 
     override fun onProjectsUpdated(projects: List<Project>) {
@@ -516,9 +520,12 @@ class ReportFormFragment : TimeFormFragment() {
         setRecordLocation(location)
     }
 
-    override fun setRecordLocation(location: Location) {
-        super.setRecordLocation(location)
-        (record as ReportFilter).location = location
+    override fun setRecordLocation(location: Location): Boolean {
+        if (super.setRecordLocation(location)) {
+            filterData.value?.location = location
+            return true
+        }
+        return false
     }
 
     companion object {

@@ -49,12 +49,12 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
@@ -74,7 +74,7 @@ import kotlin.math.max
 class TimeEditFragment : TimeFormFragment() {
 
     private var date: Calendar = Calendar.getInstance()
-    var listener: OnEditRecordListener? = null
+    private lateinit var timeViewModel: TimeViewModel
 
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
@@ -84,19 +84,7 @@ class TimeEditFragment : TimeFormFragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        val caller = this.caller
-        if (caller != null) {
-            if (caller is OnEditRecordListener) {
-                this.listener = caller
-            }
-        } else {
-            val activity = this.activity
-            if (activity != null) {
-                if (activity is OnEditRecordListener) {
-                    this.listener = activity
-                }
-            }
-        }
+        timeViewModel = TimeViewModel.get(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -108,7 +96,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                projectItemSelected(projectEmpty)
+                //projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -118,7 +106,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                taskItemSelected(taskEmpty)
+                //taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -128,7 +116,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                locationItemSelected(locationEmpty)
+                //locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -146,6 +134,10 @@ class TimeEditFragment : TimeFormFragment() {
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
+                if (args.containsKey(EXTRA_RECORD_ID)) {
+                    val recordId = args.getLong(EXTRA_RECORD_ID)
+                    record.id = recordId
+                }
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
                     val projects = projectsData.value
@@ -307,7 +299,9 @@ class TimeEditFragment : TimeFormFragment() {
     private fun getCalendar(cal: Calendar?): Calendar {
         if (cal == null) {
             val calDate = Calendar.getInstance()
-            calDate.timeInMillis = date.timeInMillis
+            calDate.year = date.year
+            calDate.month = date.month
+            calDate.dayOfMonth = date.dayOfMonth
             return calDate
         }
         return cal
@@ -377,6 +371,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun filterTasks(project: Project) {
+        Timber.i("filterTasks $project")
         val context = this.context ?: return
         val options = addEmpty(project.tasks)
         if (taskInput == null) return
@@ -386,21 +381,24 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun projectItemSelected(project: Project) {
         Timber.i("projectItemSelected $project")
-        setRecordProject(project)
+        if (setRecordProject(project)) {
+            markRecordModified()
+        }
         filterTasks(project)
-        markRecordUserModified()
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.i("taskItemSelected $task")
-        setRecordTask(task)
-        markRecordUserModified()
+        if (setRecordTask(task)) {
+            markRecordModified()
+        }
     }
 
     private fun locationItemSelected(location: LocationItem) {
-        Timber.d("remoteItemSelected location=$location")
-        setRecordLocation(location.location)
-        markRecordUserModified()
+        Timber.d("locationItemSelected location=$location")
+        if (setRecordLocation(location.location)) {
+            markRecordModified()
+        }
     }
 
     fun run() {
@@ -446,13 +444,13 @@ class TimeEditFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onLoginSuccess(fragment: LoginFragment, login: String) {
-        super.onLoginSuccess(fragment, login)
+    override fun onLoginSuccess(login: String) {
+        super.onLoginSuccess(login)
         run()
     }
 
-    override fun onLoginFailure(fragment: LoginFragment, login: String, reason: String) {
-        super.onLoginFailure(fragment, login, reason)
+    override fun onLoginFailure(login: String, reason: String) {
+        super.onLoginFailure(login, reason)
         activity?.finish()
     }
 
@@ -469,7 +467,6 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
-            parentFragmentManager.putFragment(args, LoginFragment.EXTRA_CALLER, this)
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
             findNavController().navigate(R.id.action_timeEdit_to_login, args)
         }
@@ -554,10 +551,10 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
-            listener?.onRecordEditSubmitted(this, record, last, html)
+            timeViewModel.onRecordEditSubmitted(record, last, html)
         } else {
             setErrorLabelMain(errorMessage)
-            listener?.onRecordEditFailure(this, record, errorMessage)
+            timeViewModel.onRecordEditFailure(record, errorMessage)
         }
     }
 
@@ -568,7 +565,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
-            listener?.onRecordEditDeleted(this, record)
+            timeViewModel.onRecordEditDeleted(record)
             return
         }
 
@@ -583,7 +580,7 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgress(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    listener?.onRecordEditDeleted(this, record, html)
+                    timeViewModel.onRecordEditDeleted(record, html)
                 } else {
                     authenticate()
                 }
@@ -620,7 +617,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun markFavorite(record: TimeRecord) {
         super.markFavorite(record)
-        listener?.onRecordEditFavorited(this, record)
+        timeViewModel.onRecordEditFavorited(record)
     }
 
     fun editRecord(record: TimeRecord, date: Calendar) {
@@ -692,61 +689,32 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    override fun setRecordStart(time: Calendar) {
-        super.setRecordStart(time)
-        startInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
-        startInput.error = null
+    override fun setRecordStart(time: Calendar):Boolean {
+        if (super.setRecordStart(time)) {
+            startInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
+            startInput.error = null
+            return true
+        }
+        return false
     }
 
-    override fun setRecordFinish(time: Calendar) {
-        super.setRecordFinish(time)
-        finishInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
-        finishInput.error = null
+    override fun setRecordFinish(time: Calendar):Boolean {
+        if (super.setRecordFinish(time)) {
+            finishInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
+            finishInput.error = null
+            return true
+        }
+        return false
     }
 
-    private fun markRecordUserModified() {
-        record.version++
-    }
-
-    /**
-     * Listener for editing a record callbacks.
-     */
-    interface OnEditRecordListener {
-        /**
-         * The record was submitted.
-         * @param fragment the editor fragment.
-         * @param record the record.
-         * @param last is this the last record in a series that was submitted?
-         * @param responseHtml the response HTML.
-         */
-        fun onRecordEditSubmitted(fragment: TimeEditFragment, record: TimeRecord, last: Boolean = true, responseHtml: String = "")
-
-        /**
-         * The record was deleted.
-         * @param fragment the editor fragment.
-         * @param record the record.
-         * @param responseHtml the response HTML.
-         */
-        fun onRecordEditDeleted(fragment: TimeEditFragment, record: TimeRecord, responseHtml: String = "")
-
-        /**
-         * The record was marked as favorite.
-         * @param fragment the editor fragment.
-         * @param record the record.
-         */
-        fun onRecordEditFavorited(fragment: TimeEditFragment, record: TimeRecord)
-
-        /**
-         * Editing record failed.
-         * @param fragment the login fragment.
-         * @param record the record.
-         * @param reason the failure reason.
-         */
-        fun onRecordEditFailure(fragment: TimeEditFragment, record: TimeRecord, reason: String)
+    private fun markRecordModified() {
+        if (record.status == TaskRecordStatus.CURRENT) {
+            record.status = TaskRecordStatus.MODIFIED
+            record.version++
+        }
     }
 
     companion object {
-        const val EXTRA_CALLER = TrackerFragment.EXTRA_CALLER
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID

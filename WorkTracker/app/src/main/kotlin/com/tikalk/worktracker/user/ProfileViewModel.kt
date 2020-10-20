@@ -30,51 +30,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model
+package com.tikalk.worktracker.user
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.model.User
 
-/**
- * Where was the task done?
- *
- * @author Moshe Waisberg.
- */
-@Entity(tableName = "location")
-data class Location(
-    @ColumnInfo(name = "name")
-    var name: String,
-    @ColumnInfo(name = "description")
-    var description: String? = null
-) : TikalEntity() {
+class ProfileViewModel: TrackerViewModel() {
 
-    constructor(id: Long, name: String) : this(name, "") {
-        this.id = id
+    private val profileUpdateData = MutableLiveData<ProfileData>()
+    val profileUpdate: LiveData<ProfileData> = profileUpdateData
+
+    /**
+     * Data for profile callbacks.
+     */
+    data class ProfileData(val user: User, val reason: String? = null)
+
+    /**
+     * Profile update was successful.
+     * @param user the updated user.
+     */
+    fun onProfileSuccess(user: User) {
+        notifyProfileSuccess(user)
     }
 
-    override fun toString(): String {
-        return name
+    /**
+     * Profile update failed.
+     * @param user the current user.
+     * @param reason the failure reason.
+     */
+    fun onProfileFailure(user: User, reason: String) {
+        notifyProfileFailure(user, reason)
     }
 
-    fun compareTo(that: Location): Int {
-        return this.id.compareTo(that.id)
+    private fun notifyProfileSuccess(user: User) {
+        profileUpdateData.postValue(ProfileData(user))
+    }
+
+    private fun notifyProfileFailure(user: User, reason: String) {
+        profileUpdateData.postValue(ProfileData(user, reason))
     }
 
     companion object {
-        val EMPTY = Location(ID_NONE, "")
-        val CLIENT = Location(11L, "client")
-        val HOME = Location(10L, "home")
-        val OTHER = Location(13L, "other")
-        val TIKAL = Location(12L, "tikal")
+        fun get(fragment: Fragment) = get(fragment.requireActivity())
 
-        val values = arrayOf(EMPTY, CLIENT, HOME, OTHER, TIKAL)
-
-        fun valueOf(id: Long): Location {
-            return values.firstOrNull { id == it.id } ?: OTHER
-        }
-
-        fun valueOf(value: Boolean): Location {
-            return if (value) HOME else CLIENT
-        }
+        fun get(owner: ViewModelStoreOwner) = ViewModelProvider(owner).get(ProfileViewModel::class.java)
     }
 }
