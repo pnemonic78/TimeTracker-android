@@ -56,6 +56,10 @@ data class Location(
         return name
     }
 
+    fun compareTo(that: Location): Int {
+        return this.id.compareTo(that.id)
+    }
+
     companion object {
         val EMPTY = Location(ID_NONE, "")
         val CLIENT = Location(11L, "client")

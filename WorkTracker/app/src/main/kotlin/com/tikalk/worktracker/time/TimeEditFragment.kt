@@ -96,7 +96,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                projectItemSelected(projectEmpty)
+                //projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -106,7 +106,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                taskItemSelected(taskEmpty)
+                //taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -116,7 +116,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                locationItemSelected(locationEmpty)
+                //locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -134,6 +134,10 @@ class TimeEditFragment : TimeFormFragment() {
         if (record.id == TikalEntity.ID_NONE) {
             val args = arguments
             if (args != null) {
+                if (args.containsKey(EXTRA_RECORD_ID)) {
+                    val recordId = args.getLong(EXTRA_RECORD_ID)
+                    record.id = recordId
+                }
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
                     val projects = projectsData.value
@@ -367,6 +371,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun filterTasks(project: Project) {
+        Timber.i("filterTasks $project")
         val context = this.context ?: return
         val options = addEmpty(project.tasks)
         if (taskInput == null) return
@@ -376,21 +381,24 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun projectItemSelected(project: Project) {
         Timber.i("projectItemSelected $project")
-        setRecordProject(project)
+        if (setRecordProject(project)) {
+            markRecordModified()
+        }
         filterTasks(project)
-        markRecordUserModified()
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.i("taskItemSelected $task")
-        setRecordTask(task)
-        markRecordUserModified()
+        if (setRecordTask(task)) {
+            markRecordModified()
+        }
     }
 
     private fun locationItemSelected(location: LocationItem) {
         Timber.d("locationItemSelected location=$location")
-        setRecordLocation(location.location)
-        markRecordUserModified()
+        if (setRecordLocation(location.location)) {
+            markRecordModified()
+        }
     }
 
     fun run() {
@@ -681,22 +689,28 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    override fun setRecordStart(time: Calendar) {
-        super.setRecordStart(time)
-        startInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
-        startInput.error = null
+    override fun setRecordStart(time: Calendar):Boolean {
+        if (super.setRecordStart(time)) {
+            startInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
+            startInput.error = null
+            return true
+        }
+        return false
     }
 
-    override fun setRecordFinish(time: Calendar) {
-        super.setRecordFinish(time)
-        finishInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
-        finishInput.error = null
+    override fun setRecordFinish(time: Calendar):Boolean {
+        if (super.setRecordFinish(time)) {
+            finishInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
+            finishInput.error = null
+            return true
+        }
+        return false
     }
 
-    private fun markRecordUserModified() {
-        record.version++
+    private fun markRecordModified() {
         if (record.status == TaskRecordStatus.CURRENT) {
             record.status = TaskRecordStatus.MODIFIED
+            record.version++
         }
     }
 

@@ -130,7 +130,7 @@ open class TimeRecord(
     }
 
     override fun toString(): String {
-        return "{id: $id, project: $project, task: $task, location: $location, start: $startTime, finish: $finishTime, status: $status}"
+        return "{id: $id, project: $project, task: $task, location: $location, start: $startTime, finish: $finishTime, version: $version, $status}"
     }
 
     override fun hashCode(): Int {
@@ -174,6 +174,11 @@ open class TimeRecord(
         val t1 = this.task
         val t2 = that.task
         c = t1.compareTo(t2)
+        if (c != 0) return c
+
+        val l1 = this.location
+        val l2 = that.location
+        c = l1.compareTo(l2)
         if (c != 0) return c
 
         val c1 = this.cost

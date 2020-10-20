@@ -82,7 +82,7 @@ class TimerFragment : TimeFormFragment() {
 
         projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                projectItemSelected(projectEmpty)
+                //projectItemSelected(projectEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -92,7 +92,7 @@ class TimerFragment : TimeFormFragment() {
         }
         taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                taskItemSelected(taskEmpty)
+                //taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -102,7 +102,7 @@ class TimerFragment : TimeFormFragment() {
         }
         locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                locationItemSelected(locationEmpty)
+                //locationItemSelected(locationEmpty)
             }
 
             override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
