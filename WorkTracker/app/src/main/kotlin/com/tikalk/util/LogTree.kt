@@ -43,6 +43,6 @@ import timber.log.Timber
 class LogTree(private val debug: Boolean) : Timber.DebugTree() {
 
     override fun isLoggable(tag: String?, priority: Int): Boolean {
-        return debug || (priority == Log.DEBUG || priority == Log.VERBOSE)
+        return (debug || priority >= Log.INFO) && super.isLoggable(tag, priority)
     }
 }
