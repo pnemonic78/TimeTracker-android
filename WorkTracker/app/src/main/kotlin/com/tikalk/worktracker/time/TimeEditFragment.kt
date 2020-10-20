@@ -388,7 +388,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun locationItemSelected(location: LocationItem) {
-        Timber.d("remoteItemSelected location=$location")
+        Timber.d("locationItemSelected location=$location")
         setRecordLocation(location.location)
         markRecordUserModified()
     }

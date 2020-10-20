@@ -52,6 +52,10 @@ data class Location(
         this.id = id
     }
 
+    override fun toString(): String {
+        return name
+    }
+
     companion object {
         val EMPTY = Location(ID_NONE, "")
         val CLIENT = Location(11L, "client")
