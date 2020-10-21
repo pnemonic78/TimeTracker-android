@@ -41,7 +41,6 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -226,7 +225,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: ReportFormPage) {
-        projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = addEmpties(page.projects)
         errorMessage = page.errorMessage ?: ""
 
         val filterValue = filterData.value
@@ -264,10 +263,10 @@ class ReportFormFragment : TimeFormFragment() {
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(taskEmpty)
+        val taskItems = arrayOf(timeViewModel.taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = projectsData.value
+        val projects = timeViewModel.projectsData.value
         bindProjects(context, filter, projects)
 
         val periodList = ArrayList<String>(periods.size)
@@ -334,7 +333,7 @@ class ReportFormFragment : TimeFormFragment() {
         val items = ArrayList(super.buildLocations(context))
         val all = LocationItem(items[0].location, context.getString(R.string.location_label_all))
         items[0] = all
-        locationEmpty = all
+        timeViewModel.locationEmpty = all
         return items
     }
 

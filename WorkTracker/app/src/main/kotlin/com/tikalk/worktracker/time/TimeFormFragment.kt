@@ -36,7 +36,6 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
-import androidx.lifecycle.MutableLiveData
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -55,15 +54,13 @@ import kotlin.collections.ArrayList
 abstract class TimeFormFragment : InternetFragment() {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
-    val projectsData = MutableLiveData<List<Project>>()
-    var projectEmpty: Project = Project.EMPTY.copy(true)
-    var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
-        ?: ProjectTask.EMPTY.copy()
-    var locationEmpty: LocationItem = LocationItem(Location.EMPTY, "")
+    protected lateinit var timeViewModel: TimeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        projectsData.observe(this, { projects ->
+
+        timeViewModel = TimeViewModel.get(this)
+        timeViewModel.projectsData.observe(this, { projects ->
             onProjectsUpdated(projects)
         })
         authenticationViewModel.login.observe(this, { (login, reason) ->
@@ -147,6 +144,17 @@ abstract class TimeFormFragment : InternetFragment() {
         return false
     }
 
+    protected fun setRecordStart(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordStart date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        val time = Calendar.getInstance()
+        time.year = year
+        time.month = month
+        time.dayOfMonth = dayOfMonth
+        time.hourOfDay = hourOfDay
+        time.minute = minute
+        return setRecordStart(time)
+    }
+
     protected open fun setRecordFinish(time: Calendar): Boolean {
         Timber.d("${javaClass.simpleName} setRecordFinish time=$time")
         if (record.finish != time) {
@@ -154,6 +162,17 @@ abstract class TimeFormFragment : InternetFragment() {
             return true
         }
         return false
+    }
+
+    protected fun setRecordFinish(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordFinish date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        val time = Calendar.getInstance()
+        time.year = year
+        time.month = month
+        time.dayOfMonth = dayOfMonth
+        time.hourOfDay = hourOfDay
+        time.minute = minute
+        return setRecordFinish(time)
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
@@ -164,7 +183,7 @@ abstract class TimeFormFragment : InternetFragment() {
     protected fun applyFavorite() {
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
-            val projects = projectsData.value
+            val projects = timeViewModel.projectsData.value
             val project = projects?.find { it.id == projectFavorite } ?: record.project
             setRecordProject(project)
 
@@ -187,25 +206,25 @@ abstract class TimeFormFragment : InternetFragment() {
 
     protected fun addEmpties(projects: List<Project>): List<Project> {
         val projectEmptyFind = projects.find { it.isEmpty() }
-        val projectEmpty = projectEmptyFind ?: projectEmpty
+        val projectEmpty = projectEmptyFind ?: timeViewModel.projectEmpty
         projectEmpty.name = getEmptyProjectName()
         val projectsWithEmpty = if (projectEmptyFind != null) {
             projects.sortedBy { it.name }
         } else {
             projects.sortedBy { it.name }.add(0, projectEmpty)
         }
-        this.projectEmpty = projectEmpty
+        timeViewModel.projectEmpty = projectEmpty
 
-        val taskEmpty = projectEmpty.tasksById[TikalEntity.ID_NONE] ?: taskEmpty
+        val taskEmpty = projectEmpty.tasksById[TikalEntity.ID_NONE] ?: timeViewModel.taskEmpty
         taskEmpty.name = getEmptyTaskName()
-        this.taskEmpty = taskEmpty
+        timeViewModel.taskEmpty = taskEmpty
 
         return projectsWithEmpty
     }
 
     protected fun addEmpty(tasks: List<ProjectTask>): List<ProjectTask> {
         val taskEmptyFind = tasks.find { it.isEmpty() }
-        val taskEmpty = taskEmptyFind ?: taskEmpty
+        val taskEmpty = taskEmptyFind ?: timeViewModel.taskEmpty
         taskEmpty.name = getEmptyTaskName()
         return if (taskEmptyFind != null) {
             tasks.sortedBy { it.name }
@@ -220,7 +239,7 @@ abstract class TimeFormFragment : InternetFragment() {
         for (value in values) {
             items.add(value.toLocationItem(context))
         }
-        locationEmpty = items[0]
+        timeViewModel.locationEmpty = items[0]
         return items
     }
 

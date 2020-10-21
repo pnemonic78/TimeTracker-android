@@ -122,10 +122,10 @@ class TimerFragment : TimeFormFragment() {
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(taskEmpty)
+        val taskItems = arrayOf(timeViewModel.taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = projectsData.value
+        val projects = timeViewModel.projectsData.value
         bindProjects(context, record, projects)
 
         bindLocation(context, record)
@@ -168,7 +168,7 @@ class TimerFragment : TimeFormFragment() {
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
             locationInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) locations[index] else locationEmpty
+            val selectedItem = if (index >= 0) locations[index] else timeViewModel.locationEmpty
             locationItemSelected(selectedItem)
         }
     }
@@ -289,10 +289,10 @@ class TimerFragment : TimeFormFragment() {
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
                 val locationId = args.getLong(EXTRA_LOCATION)
 
-                val projects = projectsData.value
-                val project = projects?.find { it.id == projectId } ?: projectEmpty
+                val projects = timeViewModel.projectsData.value
+                val project = projects?.find { it.id == projectId } ?: timeViewModel.projectEmpty
                 val tasks = project.tasks
-                val task = tasks.find { it.id == taskId } ?: taskEmpty
+                val task = tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty
 
                 val record = TimeRecord(TikalEntity.ID_NONE, project, task)
                 if (startTime != TimeRecord.NEVER) {
@@ -316,7 +316,7 @@ class TimerFragment : TimeFormFragment() {
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             applyFavorite()
         } else if (!recordStarted.isEmpty()) {
-            val projects = projectsData.value
+            val projects = timeViewModel.projectsData.value
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
             val project = projects?.find { it.id == recordStartedProjectId } ?: record.project
@@ -363,7 +363,7 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimerPage) {
-        projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = addEmpties(page.projects)
         setRecordValue(page.record)
     }
 
@@ -400,7 +400,7 @@ class TimerFragment : TimeFormFragment() {
         val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity>(STATE_RECORD)
 
         if (recordParcel != null) {
-            val projects = projectsData.value
+            val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             populateForm(record)
