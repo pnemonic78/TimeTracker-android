@@ -75,7 +75,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private lateinit var timeViewModel: TimeViewModel
 
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -91,7 +90,6 @@ class TimeListFragment : TimeFormFragment(),
             bindTotals(totals)
         })
 
-        timeViewModel = TimeViewModel.get(this)
         timeViewModel.delete.observe(this, { data ->
             onRecordEditDeleted(data.record, data.responseHtml)
         })
@@ -215,7 +213,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPageMain(page: TimeListPage) {
-        projectsData.value = page.projects.sortedBy { it.name }
+        timeViewModel.projectsData.value = page.projects.sortedBy { it.name }
         recordsData.value = page.records
         var totals = totalsData.value
         if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
@@ -226,7 +224,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun processPage(page: TimeListPage) {
-        projectsData.postValue(page.projects.sortedBy { it.name })
+        timeViewModel.projectsData.postValue(page.projects.sortedBy { it.name })
         recordsData.postValue(page.records)
         var totals = totalsData.value
         if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {

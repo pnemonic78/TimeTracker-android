@@ -74,7 +74,6 @@ import kotlin.math.max
 class TimeEditFragment : TimeFormFragment() {
 
     private var date: Calendar = Calendar.getInstance()
-    private lateinit var timeViewModel: TimeViewModel
 
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
@@ -83,8 +82,6 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-
-        timeViewModel = TimeViewModel.get(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -140,13 +137,13 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    val projects = projectsData.value
-                    setRecordProject(projects?.find { it.id == projectId } ?: projectEmpty)
+                    val projects = timeViewModel.projectsData.value
+                    setRecordProject(projects?.find { it.id == projectId } ?: timeViewModel.projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     val tasks = record.project.tasks
-                    setRecordTask(tasks.find { it.id == taskId } ?: taskEmpty)
+                    setRecordTask(tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty)
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -182,10 +179,10 @@ class TimeEditFragment : TimeFormFragment() {
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(taskEmpty)
+        val taskItems = arrayOf(timeViewModel.taskEmpty)
         taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = projectsData.value
+        val projects = timeViewModel.projectsData.value
         bindProjects(context, record, projects)
 
         bindLocation(context, record)
@@ -235,7 +232,7 @@ class TimeEditFragment : TimeFormFragment() {
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
             locationInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) locations[index] else locationEmpty
+            val selectedItem = if (index >= 0) locations[index] else timeViewModel.locationEmpty
             locationItemSelected(selectedItem)
         }
     }
@@ -424,7 +421,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = addEmpties(page.projects)
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }
@@ -598,7 +595,7 @@ class TimeEditFragment : TimeFormFragment() {
         val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity>(STATE_RECORD)
 
         if (recordParcel != null) {
-            val projects = projectsData.value
+            val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             bindForm(record)

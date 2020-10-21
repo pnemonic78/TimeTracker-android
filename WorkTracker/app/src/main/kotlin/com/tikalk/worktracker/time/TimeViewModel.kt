@@ -38,9 +38,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.model.Location
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.report.LocationItem
 
 class TimeViewModel : TrackerViewModel() {
+
+    val projectsData = MutableLiveData<List<Project>>()
+    var projectEmpty: Project = Project.EMPTY.copy(true)
+    var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
+        ?: ProjectTask.EMPTY.copy()
+    var locationEmpty: LocationItem = LocationItem(Location.EMPTY, "")
 
     data class RecordEditData(val record: TimeRecord, val last: Boolean = true, val responseHtml: String = "")
 
