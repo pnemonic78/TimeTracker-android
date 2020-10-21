@@ -147,6 +147,17 @@ abstract class TimeFormFragment : InternetFragment() {
         return false
     }
 
+    protected fun setRecordStart(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordStart date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        val time = Calendar.getInstance()
+        time.year = year
+        time.month = month
+        time.dayOfMonth = dayOfMonth
+        time.hourOfDay = hourOfDay
+        time.minute = minute
+        return setRecordStart(time)
+    }
+
     protected open fun setRecordFinish(time: Calendar): Boolean {
         Timber.d("${javaClass.simpleName} setRecordFinish time=$time")
         if (record.finish != time) {
@@ -154,6 +165,17 @@ abstract class TimeFormFragment : InternetFragment() {
             return true
         }
         return false
+    }
+
+    protected fun setRecordFinish(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordFinish date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        val time = Calendar.getInstance()
+        time.year = year
+        time.month = month
+        time.dayOfMonth = dayOfMonth
+        time.hourOfDay = hourOfDay
+        time.minute = minute
+        return setRecordFinish(time)
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {

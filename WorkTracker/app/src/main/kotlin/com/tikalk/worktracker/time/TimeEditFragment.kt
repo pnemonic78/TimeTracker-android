@@ -252,12 +252,7 @@ class TimeEditFragment : TimeFormFragment() {
             val context = requireContext()
             val listener = object : OnDateTimeSetListener {
                 override fun onDateTimeSet(view: DateTimePicker, year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
-                    cal.year = year
-                    cal.month = month
-                    cal.dayOfMonth = dayOfMonth
-                    cal.hourOfDay = hourOfDay
-                    cal.minute = minute
-                    setRecordStart(cal)
+                    setRecordStart(year, month, dayOfMonth, hourOfDay, minute)
                 }
             }
             picker = DateTimePickerDialog(context, listener, year, month, dayOfMonth, hour, minute, DateFormat.is24HourFormat(context))
@@ -280,12 +275,7 @@ class TimeEditFragment : TimeFormFragment() {
             val context = requireContext()
             val listener = object : OnDateTimeSetListener {
                 override fun onDateTimeSet(view: DateTimePicker, year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
-                    cal.year = year
-                    cal.month = month
-                    cal.dayOfMonth = dayOfMonth
-                    cal.hourOfDay = hourOfDay
-                    cal.minute = minute
-                    setRecordFinish(cal)
+                    setRecordFinish(year, month, dayOfMonth, hourOfDay, minute)
                 }
             }
             picker = DateTimePickerDialog(context, listener, year, month, dayOfMonth, hour, minute, DateFormat.is24HourFormat(context))
@@ -689,7 +679,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    override fun setRecordStart(time: Calendar):Boolean {
+    override fun setRecordStart(time: Calendar): Boolean {
         if (super.setRecordStart(time)) {
             startInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
             startInput.error = null
@@ -698,7 +688,7 @@ class TimeEditFragment : TimeFormFragment() {
         return false
     }
 
-    override fun setRecordFinish(time: Calendar):Boolean {
+    override fun setRecordFinish(time: Calendar): Boolean {
         if (super.setRecordFinish(time)) {
             finishInput.text = DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
             finishInput.error = null
