@@ -33,4 +33,21 @@
 object BuildVersions {
     const val kotlin_version = "1.4.31"
     const val nav_version = "2.3.5"
+
+    const val minSdkVersion = 21
+    const val compileSdkVersion = 29
+    const val targetSdkVersion = 29
+
+    // App dependencies
+    const val espressoVersion = "3.0.1"
+    const val exoplayerVersion = "2.6.1"
+    const val glideVersion = "4.1.1"
+    const val guavaVersion = "18.0"
+    const val junitVersion = "4.13"
+    const val okhttpVersion = "4.8.0"
+    const val retrofit2Version = "2.9.0"
+    const val roomVersion = "2.3.0"
+    const val rxandroid2Version = "2.1.1"
+    const val rxkotlin2Version = "2.3.0"
+    const val timberVersion = "4.7.1"
 }
