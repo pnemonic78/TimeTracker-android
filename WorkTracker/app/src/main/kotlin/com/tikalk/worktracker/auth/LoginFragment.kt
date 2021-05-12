@@ -68,6 +68,7 @@ class LoginFragment : InternetFragment {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
+        isCancelable = false
 
         authenticationViewModel.basicRealm.observe(this, { (realm, username, reason) ->
             if (reason == null) {
@@ -85,7 +86,11 @@ class LoginFragment : InternetFragment {
         return dialog
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 

@@ -61,6 +61,7 @@ class BasicRealmFragment : InternetFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
+        isCancelable = false
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
