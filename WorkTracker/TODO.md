@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* kotlin 1.5.0
 * refactor TikalFragment() : Fragment(layout)
 * Please remove usages of `jcenter()` Maven repository from your build scripts and migrate your build to other Maven repositories.
 
