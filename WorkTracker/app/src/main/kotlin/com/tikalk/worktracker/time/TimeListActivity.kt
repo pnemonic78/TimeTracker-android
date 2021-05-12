@@ -42,15 +42,16 @@ import com.google.android.material.navigation.NavigationView
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.databinding.ActivityTimeListBinding
+import com.tikalk.worktracker.databinding.ProgressBinding
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.user.ProfileViewModel
-import kotlinx.android.synthetic.main.activity_time_list.*
-import kotlinx.android.synthetic.main.progress.*
 import timber.log.Timber
 
 class TimeListActivity : InternetActivity(),
     NavigationView.OnNavigationItemSelectedListener {
 
+    private lateinit var binding: ActivityTimeListBinding
     private lateinit var profileViewModule: ProfileViewModel
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
@@ -58,20 +59,26 @@ class TimeListActivity : InternetActivity(),
         super.onCreate(savedInstanceState)
 
         // Set up the form and list.
-        setContentView(R.layout.activity_time_list)
+        binding = ActivityTimeListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Set up navigation - action bar and sidebar.
         /// Let the navigation view check/uncheck the menu items.
-        nav_view.post { // wait for NavHostFragment to inflate
+        binding.navView.post { // wait for NavHostFragment to inflate
             val navController = findNavController()
-            nav_view.setupWithNavController(navController)
-            nav_view.setNavigationItemSelectedListener(this)
+            binding.navView.setupWithNavController(navController)
+            binding.navView.setNavigationItemSelectedListener(this)
         }
 
         /// Show the hamburger and back icons
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        drawerToggle = ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close)
-        drawerLayout.addDrawerListener(drawerToggle)
+        drawerToggle = ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            R.string.drawer_open,
+            R.string.drawer_close
+        )
+        binding.drawerLayout.addDrawerListener(drawerToggle)
 
         profileViewModule = ProfileViewModel.get(this)
         profileViewModule.profileUpdate.observe(this, { (_, reason) ->
@@ -110,37 +117,37 @@ class TimeListActivity : InternetActivity(),
         when (item.itemId) {
             R.id.profileFragment -> {
                 showProfile()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
             R.id.projectsFragment -> {
                 showProjects()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
             R.id.reportFormFragment -> {
                 showReports()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
             R.id.tasksFragment -> {
                 showTasks()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
             R.id.timeListFragment -> {
                 showMainFragment()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
             R.id.timeSettingsFragment -> {
                 showSettings()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
             R.id.usersFragment -> {
                 showUsers()
-                drawerLayout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 return true
             }
         }
@@ -148,7 +155,7 @@ class TimeListActivity : InternetActivity(),
     }
 
     override fun showProgress(show: Boolean) {
-        progress?.showAnimated(show)
+        binding.progress.progress.showAnimated(show)
     }
 
     private fun handleIntent(intent: Intent) {

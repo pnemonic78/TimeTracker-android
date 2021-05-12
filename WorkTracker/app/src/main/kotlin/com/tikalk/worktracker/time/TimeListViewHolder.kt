@@ -39,18 +39,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.databinding.TimeItemBinding
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.toLocationItem
-import kotlinx.android.synthetic.main.time_item.view.*
 import java.util.*
 
-open class TimeListViewHolder(itemView: View, private val clickListener: TimeListAdapter.OnTimeListListener? = null) : RecyclerView.ViewHolder(itemView),
+open class TimeListViewHolder(
+    private val binding: TimeItemBinding,
+    private val clickListener: TimeListAdapter.OnTimeListListener? = null
+) : RecyclerView.ViewHolder(binding.root),
     View.OnClickListener {
 
     protected val timeBuffer = StringBuilder(20)
     protected val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
-    protected val night = (itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    protected val night =
+        (binding.root.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
     var record: TimeRecord? = null
         set(value) {
@@ -64,44 +68,48 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
         }
 
     init {
-        itemView.setOnClickListener(this)
+        binding.root.setOnClickListener(this)
         // CardView does not handle clicks.
-        (itemView as ViewGroup).getChildAt(0).setOnClickListener(this)
+        (binding.root as ViewGroup).getChildAt(0).setOnClickListener(this)
     }
 
     @MainThread
     protected open fun bind(record: TimeRecord) {
-        val context: Context = itemView.context
-        itemView.project.text = record.project.name
-        itemView.task.text = record.task.name
+        val context: Context = binding.root.context
+        binding.project.text = record.project.name
+        binding.task.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
         timeBuffer.setLength(0)
-        val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
-        itemView.timeRange.text = formatterRange.out() as CharSequence
+        val formatterRange =
+            DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
+        binding.timeRange.text = formatterRange.out() as CharSequence
         timeBuffer.setLength(0)
         val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
-        itemView.timeDuration.text = formatterElapsed.out() as CharSequence
-        itemView.note.text = record.note
-        itemView.cost.text = formatCost(record.cost)
-        itemView.location.text = if (record.location.id != TikalEntity.ID_NONE) record.location.toLocationItem(context).label else ""
+        binding.timeDuration.text = formatterElapsed.out() as CharSequence
+        binding.note.text = record.note
+        binding.cost.text = formatCost(record.cost)
+        binding.location.text =
+            if (record.location.id != TikalEntity.ID_NONE) record.location.toLocationItem(context).label else ""
     }
 
     @MainThread
     protected open fun clear() {
-        itemView.project.text = ""
-        itemView.task.text = ""
-        itemView.timeRange.text = ""
-        itemView.timeDuration.text = ""
-        itemView.note.text = ""
-        itemView.cost.text = ""
-        itemView.location.text = ""
+        binding.project.text = ""
+        binding.task.text = ""
+        binding.timeRange.text = ""
+        binding.timeDuration.text = ""
+        binding.note.text = ""
+        binding.cost.text = ""
+        binding.location.text = ""
     }
 
     @MainThread
     private fun bindColors(record: TimeRecord) {
-        val projectHash: Int = if (record.project.id != TikalEntity.ID_NONE) record.project.id.toInt() else record.project.hashCode()
-        val taskHash: Int = if (record.task.id != TikalEntity.ID_NONE) record.task.id.toInt() else record.task.hashCode()
+        val projectHash: Int =
+            if (record.project.id != TikalEntity.ID_NONE) record.project.id.toInt() else record.project.hashCode()
+        val taskHash: Int =
+            if (record.task.id != TikalEntity.ID_NONE) record.task.id.toInt() else record.task.hashCode()
         val spread = (projectHash * projectHash * taskHash)
         val spreadBits = spread.and(511)
 
@@ -119,11 +127,11 @@ open class TimeListViewHolder(itemView: View, private val clickListener: TimeLis
 
     @MainThread
     protected open fun bindColors(record: TimeRecord, color: Int) {
-        itemView.project.setTextColor(color)
-        itemView.task.setTextColor(color)
-        itemView.note.setTextColor(color)
-        itemView.cost.setTextColor(color)
-        itemView.location.setTextColor(color)
+        binding.project.setTextColor(color)
+        binding.task.setTextColor(color)
+        binding.note.setTextColor(color)
+        binding.cost.setTextColor(color)
+        binding.location.setTextColor(color)
     }
 
     private fun formatCost(cost: Double): CharSequence {

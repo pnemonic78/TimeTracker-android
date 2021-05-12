@@ -36,29 +36,29 @@ import android.content.Context
 import android.text.format.DateUtils
 import android.view.View
 import androidx.annotation.MainThread
+import com.tikalk.worktracker.databinding.TimeItemBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.TimeListViewHolder
-import kotlinx.android.synthetic.main.time_item.view.*
 
-class ReportViewHolder(itemView: View, val filter: ReportFilter) : TimeListViewHolder(itemView) {
+class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) : TimeListViewHolder(binding) {
 
     @MainThread
     override fun bind(record: TimeRecord) {
         super.bind(record)
-        val context: Context = itemView.context
+        val context: Context = binding.root.context
         val startTime = record.startTime
         val endTime = record.finishTime
         if (filter.showStartField) {
             if (filter.showFinishField) {
                 timeBuffer.setLength(0)
                 val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
-                itemView.timeRange.text = formatterRange.out() as CharSequence
+                binding.timeRange.text = formatterRange.out() as CharSequence
             } else {
-                itemView.timeRange.text = DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)
+                binding.timeRange.text = DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)
             }
         } else if (filter.showFinishField) {
-            itemView.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
+            binding.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
         }
 
         bindFilter(filter)
@@ -72,17 +72,17 @@ class ReportViewHolder(itemView: View, val filter: ReportFilter) : TimeListViewH
 
     @MainThread
     private fun bindFilter(filter: ReportFilter) {
-        itemView.project.visibility = if (filter.showProjectField) View.VISIBLE else View.GONE
-        itemView.projectIcon.visibility = itemView.project.visibility
-        itemView.task.visibility = if (filter.showTaskField) View.VISIBLE else View.GONE
-        itemView.taskIcon.visibility = itemView.task.visibility
-        itemView.timeRange.visibility = if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
-        itemView.timeRangeIcon.visibility = itemView.timeRange.visibility
-        itemView.timeDuration.visibility = if (filter.showDurationField) View.VISIBLE else View.GONE
-        itemView.note.visibility = if (filter.showNoteField) View.VISIBLE else View.GONE
-        itemView.noteIcon.visibility = itemView.note.visibility
-        itemView.cost.visibility = if (filter.showCostField) View.VISIBLE else View.GONE
-        itemView.costIcon.visibility = itemView.cost.visibility
+        binding.project.visibility = if (filter.showProjectField) View.VISIBLE else View.GONE
+        binding.projectIcon.visibility = binding.project.visibility
+        binding.task.visibility = if (filter.showTaskField) View.VISIBLE else View.GONE
+        binding.taskIcon.visibility = binding.task.visibility
+        binding.timeRange.visibility = if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
+        binding.timeRangeIcon.visibility = binding.timeRange.visibility
+        binding.timeDuration.visibility = if (filter.showDurationField) View.VISIBLE else View.GONE
+        binding.note.visibility = if (filter.showNoteField) View.VISIBLE else View.GONE
+        binding.noteIcon.visibility = binding.note.visibility
+        binding.cost.visibility = if (filter.showCostField) View.VISIBLE else View.GONE
+        binding.costIcon.visibility = binding.cost.visibility
     }
 
     companion object {

@@ -1,8 +1,8 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-android-extensions")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
@@ -64,6 +64,10 @@ android {
         exclude("META-INF/DEPENDENCIES")
         exclude("META-INF/INDEX.LIST")
         exclude("META-INF/*.kotlin_module")
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 }
 

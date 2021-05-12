@@ -44,6 +44,8 @@
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         app:cardCornerRadius="@dimen/card_cornerRadius">
 
-        <include layout="@layout/report_form" />
+        <include
+            android:id="@+id/form"
+            layout="@layout/report_form" />
     </androidx.cardview.widget.CardView>
 </ScrollView>

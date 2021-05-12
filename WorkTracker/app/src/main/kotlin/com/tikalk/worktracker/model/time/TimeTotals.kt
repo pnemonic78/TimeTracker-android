@@ -34,8 +34,8 @@ package com.tikalk.worktracker.model.time
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
-import kotlinx.android.parcel.IgnoredOnParcel
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 
 /**
  * Totals for the day.

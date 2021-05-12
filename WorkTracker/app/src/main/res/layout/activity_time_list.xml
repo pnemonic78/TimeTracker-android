@@ -17,6 +17,7 @@
 
     <!-- Progress indicator -->
     <include
+        android:id="@+id/progress"
         layout="@layout/progress"
         tools:visibility="gone" />
 

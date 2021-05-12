@@ -47,12 +47,12 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.databinding.FragmentLoginBinding
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_login.*
 import okhttp3.Response
 import timber.log.Timber
 
@@ -65,12 +65,15 @@ class LoginFragment : InternetFragment {
 
     constructor(args: Bundle) : super(args)
 
+    private var _binding: FragmentLoginBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
         isCancelable = false
 
-        authenticationViewModel.basicRealm.observe(this, { (realm, username, reason) ->
+        authenticationViewModel.basicRealm.observe(this, { (realm, _, reason) ->
             if (reason == null) {
                 Timber.i("basic realm success for \"$realm\"")
                 attemptLogin()
@@ -90,26 +93,32 @@ class LoginFragment : InternetFragment {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_login, container, false)
+    ): View {
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loginInput.setText(preferences.userCredentials.login)
+        binding.loginInput.setText(preferences.userCredentials.login)
 
         val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
+        binding.passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
             if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
             }
             false
         })
-        passwordInput.setText(preferences.userCredentials.password)
+        binding.passwordInput.setText(preferences.userCredentials.password)
 
-        actionSignIn.setOnClickListener { attemptLogin() }
+        binding.actionSignIn.setOnClickListener { attemptLogin() }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @MainThread
@@ -118,11 +127,11 @@ class LoginFragment : InternetFragment {
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_LOGIN)) {
-            loginInput.setText(args.getString(EXTRA_LOGIN))
-            passwordInput.text = null
+            binding.loginInput.setText(args.getString(EXTRA_LOGIN))
+            binding.passwordInput.text = null
 
             if (args.containsKey(EXTRA_PASSWORD)) {
-                passwordInput.setText(args.getString(EXTRA_PASSWORD))
+                binding.passwordInput.setText(args.getString(EXTRA_PASSWORD))
             }
         }
         if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
@@ -141,40 +150,40 @@ class LoginFragment : InternetFragment {
      * errors are presented and no actual login attempt is made.
      */
     private fun attemptLogin() {
-        if (!actionSignIn.isEnabled) {
+        if (!binding.actionSignIn.isEnabled) {
             return
         }
 
         // Reset errors.
-        loginInput.error = null
-        passwordInput.error = null
+        binding.loginInput.error = null
+        binding.passwordInput.error = null
 
         // Store values at the time of the login attempt.
-        val loginValue = loginInput.text.toString()
-        val passwordValue = passwordInput.text.toString()
+        val loginValue = binding.loginInput.text.toString()
+        val passwordValue = binding.passwordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid login name.
         if (loginValue.isEmpty()) {
-            loginInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = loginInput
+            binding.loginInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.loginInput
             cancel = true
         } else if (!isLoginValid(loginValue)) {
-            loginInput.error = getString(R.string.error_invalid_login)
-            if (focusView == null) focusView = loginInput
+            binding.loginInput.error = getString(R.string.error_invalid_login)
+            if (focusView == null) focusView = binding.loginInput
             cancel = true
         }
 
         // Check for a valid password, if the user entered one.
         if (passwordValue.isEmpty()) {
-            passwordInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = passwordInput
+            binding.passwordInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.passwordInput
             cancel = true
         } else if (!isPasswordValid(passwordValue)) {
-            passwordInput.error = getString(R.string.error_invalid_password)
-            if (focusView == null) focusView = passwordInput
+            binding.passwordInput.error = getString(R.string.error_invalid_password)
+            if (focusView == null) focusView = binding.passwordInput
             cancel = true
         }
 
@@ -183,7 +192,7 @@ class LoginFragment : InternetFragment {
             // form field with an error.
             focusView?.requestFocus()
         } else {
-            actionSignIn.isEnabled = false
+            binding.actionSignIn.isEnabled = false
 
             preferences.userCredentials = UserCredentials(loginValue, passwordValue)
 
@@ -194,7 +203,7 @@ class LoginFragment : InternetFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
-                    actionSignIn.isEnabled = true
+                    binding.actionSignIn.isEnabled = true
 
                     if (isValidResponse(response)) {
                         val html = response.body()!!
@@ -202,17 +211,17 @@ class LoginFragment : InternetFragment {
                         if (errorMessage.isNullOrEmpty()) {
                             notifyLoginSuccess(loginValue)
                         } else {
-                            loginInput.error = errorMessage
+                            binding.loginInput.error = errorMessage
                             notifyLoginFailure(loginValue, errorMessage)
                         }
                     } else {
-                        passwordInput.requestFocus()
+                        binding.passwordInput.requestFocus()
                         authenticate(loginValue, response.raw())
                     }
                 }, { err ->
                     Timber.e(err, "Error signing in: ${err.message}")
                     handleError(err)
-                    actionSignIn.isEnabled = true
+                    binding.actionSignIn.isEnabled = true
                 })
                 .addTo(disposables)
         }

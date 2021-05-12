@@ -42,16 +42,19 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.databinding.FragmentTasksBinding
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.project.ProjectTasksAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_tasks.*
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment() {
+
+    private var _binding: FragmentTasksBinding? = null
+    private val binding get() = _binding!!
 
     private val tasksData = MutableLiveData<List<ProjectTask>>()
     private val listAdapter = ProjectTasksAdapter()
@@ -71,13 +74,23 @@ class ProjectTasksFragment : InternetFragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_tasks, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentTasksBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        list.adapter = listAdapter
+        binding.list.adapter = listAdapter
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onStart() {
