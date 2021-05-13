@@ -37,7 +37,6 @@ import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.google.gson.Gson
 import com.tikalk.worktracker.time.toCalendar
 import java.util.*
 
@@ -73,8 +72,6 @@ abstract class TikalEntity(
 
 open class Converters {
 
-    private val gson = Gson()
-
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? = value?.let { Date(it) }
 
@@ -92,14 +89,4 @@ open class Converters {
 
     @TypeConverter
     fun toUri(value: String?): Uri? = value?.toUri()
-
-    @TypeConverter
-    fun fromStringList(value: List<String>?): String? {
-        return gson.toJson(value)
-    }
-
-    @TypeConverter
-    fun toStringList(value: String?): List<String>? {
-        return gson.fromJson(value, Array<String>::class.java)?.toList()
-    }
 }

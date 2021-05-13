@@ -106,12 +106,10 @@ dependencies {
     // Web
     implementation("com.squareup.retrofit2:retrofit:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.retrofit2:adapter-rxjava2:${BuildVersions.retrofit2Version}")
-    implementation("com.squareup.retrofit2:converter-gson:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.retrofit2:converter-scalars:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.okhttp3:logging-interceptor:${BuildVersions.okhttpVersion}")
     implementation("com.squareup.okhttp3:okhttp:${BuildVersions.okhttpVersion}")
     implementation("com.squareup.okhttp3:okhttp-urlconnection:${BuildVersions.okhttpVersion}")
-    implementation("com.google.code.gson:gson:2.8.6")
     implementation("org.jsoup:jsoup:1.13.1")
 
     // Logging
