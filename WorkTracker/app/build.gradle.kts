@@ -129,7 +129,6 @@ dependencies {
     /// ODF
     implementation("org.odftoolkit:odfdom-java:0.8.7")
     implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
-    implementation("org.w3c:dom:2.3.0-jaxb-1.0.6")
 
     // Dependency Injection
     implementation("io.insert-koin:koin-android:2.0.1")
