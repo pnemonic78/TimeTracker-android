@@ -96,8 +96,8 @@ dependencies {
     kapt("androidx.room:room-compiler:${BuildVersions.roomVersion}")
 
     // Rx
-    implementation("io.reactivex.rxjava2:rxandroid:${BuildVersions.rxandroid2Version}")
-    implementation("io.reactivex.rxjava2:rxkotlin:${BuildVersions.rxkotlin2Version}")
+    implementation("io.reactivex.rxjava2:rxandroid:${BuildVersions.rxAndroidVersion}")
+    implementation("io.reactivex.rxjava2:rxkotlin:${BuildVersions.rxKotlinVersion}")
 
     // Web
     implementation("com.squareup.retrofit2:retrofit:${BuildVersions.retrofit2Version}")
@@ -128,6 +128,5 @@ dependencies {
     implementation("org.w3c:dom:2.3.0-jaxb-1.0.6")
 
     // Koin
-    implementation("org.koin:koin-android:2.0.1")
-    implementation("org.koin:koin-androidx-scope:2.0.1")
+    implementation("io.insert-koin:koin-android:2.0.1")
 }
