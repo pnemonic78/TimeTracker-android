@@ -108,7 +108,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:${BuildVersions.okhttpVersion}")
     implementation("com.squareup.okhttp3:okhttp-urlconnection:${BuildVersions.okhttpVersion}")
     implementation("com.google.code.gson:gson:2.8.6")
-    implementation("org.jsoup:jsoup:1.12.1")
+    implementation("org.jsoup:jsoup:1.13.1")
 
     // Logging
     implementation("com.jakewharton.timber:timber:${BuildVersions.timberVersion}")
@@ -121,10 +121,10 @@ dependencies {
     implementation("com.opencsv:opencsv:5.0") {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
     /// ODF
     implementation("org.odftoolkit:odfdom-java:0.8.7")
-    implementation("com.fasterxml.woodstox:woodstox-core:6.2.0")
+    implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
     implementation("org.w3c:dom:2.3.0-jaxb-1.0.6")
 
     // Koin
