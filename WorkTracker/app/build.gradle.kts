@@ -60,6 +60,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")
         exclude("META-INF/INDEX.LIST")
@@ -127,6 +131,6 @@ dependencies {
     implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
     implementation("org.w3c:dom:2.3.0-jaxb-1.0.6")
 
-    // Koin
+    // Dependency Injection
     implementation("io.insert-koin:koin-android:2.0.1")
 }
