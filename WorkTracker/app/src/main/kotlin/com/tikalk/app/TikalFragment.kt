@@ -60,6 +60,11 @@ open class TikalFragment() : AppCompatDialogFragment() {
         disposables.dispose()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposables.clear()
+    }
+
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         if (savedInstanceState != null) {
