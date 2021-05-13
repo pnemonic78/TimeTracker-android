@@ -122,7 +122,7 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:${BuildVersions.nav_version}")
 
     // Export
-    implementation("com.opencsv:opencsv:5.0") {
+    implementation("com.opencsv:opencsv:5.4") {
         exclude(group = "commons-logging", module = "commons-logging")
     }
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
@@ -131,5 +131,5 @@ dependencies {
     implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
 
     // Dependency Injection
-    implementation("io.insert-koin:koin-android:2.0.1")
+    implementation("io.insert-koin:koin-android:3.0.1")
 }
