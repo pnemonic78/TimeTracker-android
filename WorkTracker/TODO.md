@@ -2,6 +2,7 @@ To-Do List
 ====
 
 * refactor TikalFragment() : Fragment(layout)
+* rx3
 
 * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * Reports - group by

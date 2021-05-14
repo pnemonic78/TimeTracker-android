@@ -32,42 +32,56 @@
 
 package com.tikalk.app
 
+import android.app.Dialog
 import android.os.Bundle
+import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.navigation.fragment.findNavController
 import io.reactivex.disposables.CompositeDisposable
 
-open class TikalFragment() : AppCompatDialogFragment() {
+fun Fragment.runOnUiThread(action: Runnable) {
+    activity!!.runOnUiThread(action)
+}
 
-    constructor(args: Bundle) : this() {
-        arguments = args
+fun Fragment.runOnUiThread(action: () -> Unit) {
+    activity!!.runOnUiThread(action)
+}
+
+fun Fragment.topLevel(): Fragment {
+    return parentFragment?.topLevel() ?: this
+}
+
+fun DialogFragment.isShowing(): Boolean {
+    val d: Dialog? = dialog
+    if (d != null) {
+        return (d.isShowing) and !isRemoving
     }
+    return isVisible
+}
 
-    protected val disposables = CompositeDisposable()
+fun <F : Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
+    @Suppress("UNCHECKED_CAST")
+    return fragments.find { clazz.isAssignableFrom(it.javaClass) } as F?
+}
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        showsDialog = false
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        disposables.clear()
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        if (savedInstanceState != null) {
-            onRestoreInstanceState(savedInstanceState)
+fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {
+    var parent = parentFragment
+    while (parent != null) {
+        val parentClass = parent.javaClass
+        if (clazz.isAssignableFrom(parentClass)) {
+            @Suppress("UNCHECKED_CAST")
+            return parent as F?
         }
+        parent = parent.parentFragment
     }
+    return null
+}
 
-    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) {
-    }
-
-    open fun onBackPressed(): Boolean = false
+fun Fragment.isNavDestination(@IdRes resId: Int): Boolean {
+    val navController = findNavController()
+    val destination = navController.currentDestination ?: return false
+    return (destination.id == resId)
 }

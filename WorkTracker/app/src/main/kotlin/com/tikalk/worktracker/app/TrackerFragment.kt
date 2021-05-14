@@ -32,19 +32,23 @@
 
 package com.tikalk.worktracker.app
 
+import android.app.AlertDialog
 import android.os.Bundle
+import androidx.annotation.StringRes
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.net.InternetHelper
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 
-abstract class TrackerFragment : TikalFragment {
+abstract class TrackerFragment : TikalFragment, InternetHelper.InternetCallback {
 
     constructor() : super()
 
@@ -57,6 +61,7 @@ abstract class TrackerFragment : TikalFragment {
     protected var firstRun = true
         private set
     protected lateinit var authenticationViewModel: AuthenticationViewModel
+    protected val internet = InternetHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,13 +70,38 @@ abstract class TrackerFragment : TikalFragment {
         firstRun = (savedInstanceState == null)
     }
 
-    protected abstract fun authenticate(submit: Boolean = true)
-
     protected fun authenticateMain(submit: Boolean = true) {
         Timber.i("authenticateMain submit=$submit")
         runOnUiThread {
             authenticate(submit)
         }
+    }
+
+    /**
+     * Handle an error.
+     * @param error the error.
+     */
+    protected fun handleError(error: Throwable) {
+        internet.handleError(error)
+    }
+
+    /**
+     * Handle an error, on the main thread.
+     * @param error the error.
+     */
+    protected open fun handleErrorMain(error: Throwable) {
+        runOnUiThread {
+            handleError(error)
+        }
+    }
+
+    override fun showError(@StringRes messageId: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.error_title)
+            .setMessage(messageId)
+            .setIcon(R.drawable.ic_report_problem)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     companion object {

@@ -298,7 +298,7 @@ class ReportFragment : InternetFragment() {
             }, { err ->
                 Timber.e(err, "Error exporting ODF: ${err.message}")
                 showProgress(false)
-                alert(err)
+                showError(err)
                 item?.isEnabled = true
             })
             .addTo(disposables)
@@ -346,15 +346,13 @@ class ReportFragment : InternetFragment() {
         }
     }
 
-    private fun alert(error: Throwable?) {
-        if (error != null) {
-            AlertDialog.Builder(requireContext())
-                .setTitle(R.string.error_title)
-                .setIcon(R.drawable.ic_dialog)
-                .setMessage(R.string.error_export)
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
-        }
+    private fun showError(error: Throwable) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.error_title)
+            .setIcon(R.drawable.ic_dialog)
+            .setMessage(R.string.error_export)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     companion object {

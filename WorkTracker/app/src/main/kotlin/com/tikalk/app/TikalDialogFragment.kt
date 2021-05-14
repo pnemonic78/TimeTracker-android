@@ -36,7 +36,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
 import io.reactivex.disposables.CompositeDisposable
 
-open class TikalFragment() : AppCompatDialogFragment() {
+open class TikalDialogFragment() : AppCompatDialogFragment() {
 
     constructor(args: Bundle) : this() {
         arguments = args
