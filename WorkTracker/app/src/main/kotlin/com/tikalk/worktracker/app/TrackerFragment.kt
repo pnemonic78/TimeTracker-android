@@ -37,7 +37,6 @@ import android.os.Bundle
 import androidx.annotation.StringRes
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
@@ -62,6 +61,7 @@ abstract class TrackerFragment : TikalFragment, InternetHelper.InternetCallback 
         private set
     protected lateinit var authenticationViewModel: AuthenticationViewModel
     protected val internet = InternetHelper(this)
+    protected val helper = TrackerFragmentHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,9 +72,7 @@ abstract class TrackerFragment : TikalFragment, InternetHelper.InternetCallback 
 
     protected fun authenticateMain(submit: Boolean = true) {
         Timber.i("authenticateMain submit=$submit")
-        runOnUiThread {
-            authenticate(submit)
-        }
+        runOnUiThread { authenticate(submit) }
     }
 
     /**
@@ -90,9 +88,7 @@ abstract class TrackerFragment : TikalFragment, InternetHelper.InternetCallback 
      * @param error the error.
      */
     protected open fun handleErrorMain(error: Throwable) {
-        runOnUiThread {
-            handleError(error)
-        }
+        runOnUiThread { handleError(error) }
     }
 
     override fun showError(@StringRes messageId: Int) {
@@ -102,11 +98,5 @@ abstract class TrackerFragment : TikalFragment, InternetHelper.InternetCallback 
             .setIcon(R.drawable.ic_report_problem)
             .setPositiveButton(android.R.string.ok, null)
             .show()
-    }
-
-    companion object {
-        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
-
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
     }
 }

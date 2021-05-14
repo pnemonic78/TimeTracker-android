@@ -125,5 +125,11 @@ class InternetHelper(private val callback: InternetCallback) {
     interface InternetCallback {
         fun authenticate(submit: Boolean = true)
         fun showError(@StringRes messageId: Int)
+
+        /**
+         * Shows the progress UI and hides the login form.
+         * @param show is visible?
+         */
+        fun showProgress(show: Boolean)
     }
 }

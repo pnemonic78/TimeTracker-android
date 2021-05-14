@@ -37,7 +37,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
@@ -45,12 +50,18 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.app.TrackerFragmentHelper
 import com.tikalk.worktracker.databinding.FragmentTimerBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
-import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.Location
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.findProject
+import com.tikalk.worktracker.model.findTask
+import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.report.LocationItem
@@ -484,14 +495,14 @@ class TimerFragment : TimeFormFragment() {
     }
 
     companion object {
-        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+        const val EXTRA_ACTION = TrackerFragmentHelper.EXTRA_ACTION
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_COMMIT = BuildConfig.APPLICATION_ID + ".COMMIT"
 
-        const val ACTION_STOP = TrackerFragment.ACTION_STOP
+        const val ACTION_STOP = TrackerFragmentHelper.ACTION_STOP
 
         private const val REQUEST_EDIT = 0xED17
 

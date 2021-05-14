@@ -36,7 +36,14 @@ import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.*
+import android.view.GestureDetector
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
@@ -45,7 +52,7 @@ import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.app.TrackerFragmentHelper
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.data.remote.TimeListPageParser
 import com.tikalk.worktracker.databinding.FragmentTimeListBinding
@@ -638,8 +645,8 @@ class TimeListFragment : TimeFormFragment(),
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
 
-        const val ACTION_STOP = TrackerFragment.ACTION_STOP
+        const val ACTION_STOP = TrackerFragmentHelper.ACTION_STOP
 
-        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+        const val EXTRA_ACTION = TrackerFragmentHelper.EXTRA_ACTION
     }
 }
