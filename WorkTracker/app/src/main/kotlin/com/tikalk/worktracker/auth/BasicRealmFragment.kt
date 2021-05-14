@@ -44,13 +44,13 @@ import androidx.annotation.MainThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.databinding.FragmentBasicRealmBinding
-import com.tikalk.worktracker.net.InternetFragment
+import com.tikalk.worktracker.net.InternetDialogFragment
 import timber.log.Timber
 
 /**
  * An authentication screen for Basic Realm via email/password.
  */
-class BasicRealmFragment : InternetFragment() {
+class BasicRealmFragment : InternetDialogFragment() {
 
     private var _binding: FragmentBasicRealmBinding? = null
     private val binding get() = _binding!!

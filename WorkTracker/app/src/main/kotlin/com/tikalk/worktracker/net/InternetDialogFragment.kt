@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2021, Tikal Knowledge, Ltd.
+ * Copyright (c) 2019, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,18 +30,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.app
+package com.tikalk.worktracker.net
 
-import com.tikalk.worktracker.BuildConfig
+import android.os.Bundle
+import com.tikalk.app.runOnUiThread
+import com.tikalk.worktracker.app.TrackerDialogFragment
+import com.tikalk.worktracker.app.TrackerFragment
+import retrofit2.Response
 
-class TrackerFragmentHelper(private val callback: TrackerFragmentHelperCallback) {
+/**
+ * Fragment that is Internet-aware.
+ */
+abstract class InternetDialogFragment : TrackerDialogFragment {
 
-    interface TrackerFragmentHelperCallback {
+    constructor() : super()
+
+    constructor(args: Bundle) : super(args)
+
+    protected fun isValidResponse(response: Response<String>): Boolean {
+        return internet.isValidResponse(response)
     }
 
-    companion object {
-        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+    protected fun getResponseError(html: String?): String? {
+        return internet.getResponseError(html)
+    }
 
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
+    override fun showProgress(show: Boolean) {
+        (activity as InternetActivity?)?.showProgress(show)
+    }
+
+    /**
+     * Shows the progress UI and hides the login form, on the main thread.
+     * @param show visible?
+     */
+    protected fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
     }
 }

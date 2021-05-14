@@ -35,7 +35,7 @@ package com.tikalk.worktracker.app
 import android.app.AlertDialog
 import android.os.Bundle
 import androidx.annotation.StringRes
-import com.tikalk.app.TikalFragment
+import com.tikalk.app.TikalDialogFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AuthenticationViewModel
@@ -47,7 +47,7 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 
-abstract class TrackerFragment : TikalFragment,
+abstract class TrackerDialogFragment : TikalDialogFragment,
     InternetHelper.InternetCallback,
     TrackerFragmentHelper.TrackerFragmentHelperCallback {
 

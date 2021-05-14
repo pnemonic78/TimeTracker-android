@@ -53,7 +53,7 @@ import com.tikalk.worktracker.databinding.FragmentProfileBinding
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.set
-import com.tikalk.worktracker.net.InternetFragment
+import com.tikalk.worktracker.net.InternetDialogFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
@@ -62,7 +62,7 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment() {
+class ProfileFragment : InternetDialogFragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!

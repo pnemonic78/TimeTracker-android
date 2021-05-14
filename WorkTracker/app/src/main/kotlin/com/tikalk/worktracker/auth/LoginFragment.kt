@@ -48,7 +48,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.databinding.FragmentLoginBinding
-import com.tikalk.worktracker.net.InternetFragment
+import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
@@ -59,7 +59,7 @@ import timber.log.Timber
 /**
  * A login screen that offers login via login/password.
  */
-class LoginFragment : InternetFragment {
+class LoginFragment : InternetDialogFragment {
 
     constructor() : super()
 
