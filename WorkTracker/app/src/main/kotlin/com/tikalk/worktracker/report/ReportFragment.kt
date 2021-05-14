@@ -36,7 +36,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
@@ -84,7 +89,7 @@ class ReportFragment : InternetFragment() {
             this.listAdapter = ReportAdapter(filter)
             binding.list.adapter = listAdapter
         })
-        authenticationViewModel.login.observe(this, { (_, reason) ->
+        helper.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -94,7 +99,11 @@ class ReportFragment : InternetFragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentReportListBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -135,7 +144,8 @@ class ReportFragment : InternetFragment() {
         if (filter?.showDurationField == true) {
             timeBuffer.setLength(0)
             bindingTotals.durationTotalLabel.visibility = View.VISIBLE
-            bindingTotals.durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
+            bindingTotals.durationTotal.text =
+                formatElapsedTime(context, timeFormatter, totals.duration).toString()
         } else {
             bindingTotals.durationTotalLabel.visibility = View.INVISIBLE
             bindingTotals.durationTotal.text = null
@@ -178,7 +188,7 @@ class ReportFragment : InternetFragment() {
             filter = filterData.value ?: ReportFilter()
         }
 
-        dataSource.reportPage(filter, firstRun)
+        helper.dataSource.reportPage(filter, firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

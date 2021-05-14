@@ -63,7 +63,7 @@ abstract class TimeFormFragment : InternetFragment() {
         timeViewModel.projectsData.observe(this, { projects ->
             onProjectsUpdated(projects)
         })
-        authenticationViewModel.login.observe(this, { (login, reason) ->
+        helper.login.observe(this, { (login, reason) ->
             if (reason == null) {
                 onLoginSuccess(login)
             } else {

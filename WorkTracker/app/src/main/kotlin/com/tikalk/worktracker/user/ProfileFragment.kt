@@ -91,7 +91,7 @@ class ProfileFragment : InternetDialogFragment() {
         userCredentialsData.observe(this, { userCredentials ->
             bindForm(userData.value, userCredentials)
         })
-        authenticationViewModel.login.observe(this, { (_, reason) ->
+        helper.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -132,7 +132,7 @@ class ProfileFragment : InternetDialogFragment() {
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        dataSource.profilePage(firstRun)
+        helper.dataSource.profilePage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
@@ -269,7 +269,7 @@ class ProfileFragment : InternetDialogFragment() {
         } else {
             binding.actionSave.isEnabled = false
 
-            service.editProfile(
+            helper.service.editProfile(
                 nameValue,
                 loginValue,
                 passwordValue,

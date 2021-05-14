@@ -73,7 +73,7 @@ class LoginFragment : InternetDialogFragment {
         showsDialog = true
         isCancelable = false
 
-        authenticationViewModel.basicRealm.observe(this, { (realm, _, reason) ->
+        helper.authenticationViewModel.basicRealm.observe(this, { (realm, _, reason) ->
             if (reason == null) {
                 Timber.i("basic realm success for \"$realm\"")
                 attemptLogin()
@@ -197,7 +197,7 @@ class LoginFragment : InternetDialogFragment {
             preferences.userCredentials = UserCredentials(loginValue, passwordValue)
 
             val today = formatSystemDate()
-            service.login(loginValue, passwordValue, today)
+            helper.service.login(loginValue, passwordValue, today)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { showProgressMain(true) }
                 .observeOn(AndroidSchedulers.mainThread())
@@ -266,11 +266,11 @@ class LoginFragment : InternetDialogFragment {
 
     private fun notifyLoginSuccess(login: String) {
         dismissAllowingStateLoss()
-        authenticationViewModel.onLoginSuccess(login)
+        helper.onLoginSuccess(login)
     }
 
     private fun notifyLoginFailure(login: String, reason: String) {
-        authenticationViewModel.onLoginFailure(login, reason)
+        helper.onLoginFailure(login, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {

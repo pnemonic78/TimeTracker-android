@@ -48,11 +48,11 @@ abstract class InternetDialogFragment : TrackerDialogFragment {
     constructor(args: Bundle) : super(args)
 
     protected fun isValidResponse(response: Response<String>): Boolean {
-        return internet.isValidResponse(response)
+        return helper.isValidResponse(response)
     }
 
     protected fun getResponseError(html: String?): String? {
-        return internet.getResponseError(html)
+        return helper.getResponseError(html)
     }
 
     override fun showProgress(show: Boolean) {

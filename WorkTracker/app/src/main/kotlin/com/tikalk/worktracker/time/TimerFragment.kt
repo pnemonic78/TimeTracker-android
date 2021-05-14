@@ -391,7 +391,7 @@ class TimerFragment : TimeFormFragment() {
 
     fun run() {
         Timber.i("run first=$firstRun")
-        dataSource.timerPage(firstRun)
+        helper.dataSource.timerPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

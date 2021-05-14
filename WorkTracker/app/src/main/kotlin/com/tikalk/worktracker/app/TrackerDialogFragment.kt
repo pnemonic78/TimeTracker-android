@@ -32,73 +32,40 @@
 
 package com.tikalk.worktracker.app
 
-import android.app.AlertDialog
 import android.os.Bundle
 import androidx.annotation.StringRes
 import com.tikalk.app.TikalDialogFragment
-import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.AuthenticationViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.InternetHelper
-import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import org.koin.android.ext.android.inject
-import timber.log.Timber
 
 abstract class TrackerDialogFragment : TikalDialogFragment,
-    InternetHelper.InternetCallback,
     TrackerFragmentHelper.TrackerFragmentHelperCallback {
 
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
 
-    protected val preferences by inject<TimeTrackerPrefs>()
-    protected val db by inject<TrackerDatabase>()
-    protected val service by inject<TimeTrackerService>()
-    protected val dataSource by inject<TimeTrackerRepository>()
-    protected var firstRun = true
-        private set
-    protected lateinit var authenticationViewModel: AuthenticationViewModel
-    protected val internet = InternetHelper(this)
-    protected val helper = TrackerFragmentHelper(this)
+    protected val helper = TrackerFragmentHelper(this, this)
+    protected val preferences: TimeTrackerPrefs get() = helper.preferences
+    protected val firstRun: Boolean get() = helper.firstRun
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        authenticationViewModel = AuthenticationViewModel.get(this)
-
-        firstRun = (savedInstanceState == null)
+        helper.onCreate(savedInstanceState)
     }
 
     protected fun authenticateMain(submit: Boolean = true) {
-        Timber.i("authenticateMain submit=$submit")
-        runOnUiThread { authenticate(submit) }
+        helper.authenticateMain(submit)
     }
 
-    /**
-     * Handle an error.
-     * @param error the error.
-     */
     protected fun handleError(error: Throwable) {
-        internet.handleError(error)
+        helper.handleError(error)
     }
 
-    /**
-     * Handle an error, on the main thread.
-     * @param error the error.
-     */
     protected open fun handleErrorMain(error: Throwable) {
-        runOnUiThread { handleError(error) }
+        helper.handleErrorMain(error)
     }
 
     override fun showError(@StringRes messageId: Int) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.error_title)
-            .setMessage(messageId)
-            .setIcon(R.drawable.ic_report_problem)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
+        helper.showError(messageId)
     }
 }
