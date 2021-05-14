@@ -44,7 +44,7 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-class InternetHelper(private val callback: InternetCallback) {
+class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
 
     fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
@@ -122,7 +122,7 @@ class InternetHelper(private val callback: InternetCallback) {
         callback.showError(R.string.error_connection)
     }
 
-    interface InternetCallback {
+    interface InternetFragmentCallback {
         fun authenticate(submit: Boolean = true)
         fun showError(@StringRes messageId: Int)
 

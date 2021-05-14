@@ -52,7 +52,7 @@ import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragmentHelper
+import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.data.remote.TimeListPageParser
 import com.tikalk.worktracker.databinding.FragmentTimeListBinding
@@ -645,8 +645,8 @@ class TimeListFragment : TimeFormFragment(),
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
 
-        const val ACTION_STOP = TrackerFragmentHelper.ACTION_STOP
+        const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
 
-        const val EXTRA_ACTION = TrackerFragmentHelper.EXTRA_ACTION
+        const val EXTRA_ACTION = TrackerFragmentDelegate.EXTRA_ACTION
     }
 }

@@ -50,7 +50,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragmentHelper
+import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.databinding.FragmentTimerBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
@@ -495,14 +495,14 @@ class TimerFragment : TimeFormFragment() {
     }
 
     companion object {
-        const val EXTRA_ACTION = TrackerFragmentHelper.EXTRA_ACTION
+        const val EXTRA_ACTION = TrackerFragmentDelegate.EXTRA_ACTION
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_COMMIT = BuildConfig.APPLICATION_ID + ".COMMIT"
 
-        const val ACTION_STOP = TrackerFragmentHelper.ACTION_STOP
+        const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
 
         private const val REQUEST_EDIT = 0xED17
 

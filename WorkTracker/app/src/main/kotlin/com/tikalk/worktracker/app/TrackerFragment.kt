@@ -38,13 +38,13 @@ import com.tikalk.app.TikalFragment
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
 abstract class TrackerFragment : TikalFragment,
-    TrackerFragmentHelper.TrackerFragmentHelperCallback {
+    TrackerFragmentDelegate.TrackerFragmentDelegateCallback {
 
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
 
-    protected val helper = TrackerFragmentHelper(this, this)
+    protected val helper = TrackerFragmentDelegate(this, this)
     protected val preferences: TimeTrackerPrefs get() = helper.preferences
     protected val firstRun: Boolean get() = helper.firstRun
 

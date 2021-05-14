@@ -43,16 +43,16 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.InternetHelper
+import com.tikalk.worktracker.net.InternetFragmentDelegate
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import org.koin.android.ext.android.inject
 import retrofit2.Response
 import timber.log.Timber
 
-class TrackerFragmentHelper(
+class TrackerFragmentDelegate(
     private val fragment: Fragment,
-    private val callback: TrackerFragmentHelperCallback
+    private val callback: TrackerFragmentDelegateCallback
 ) {
 
     lateinit var authenticationViewModel: AuthenticationViewModel
@@ -65,7 +65,7 @@ class TrackerFragmentHelper(
     val dataSource by fragment.inject<TimeTrackerRepository>()
     var firstRun = true
         private set
-    val internet = InternetHelper(callback)
+    val internet = InternetFragmentDelegate(callback)
 
     fun onCreate(savedInstanceState: Bundle?) {
         authenticationViewModel = AuthenticationViewModel.get(fragment)
@@ -128,7 +128,7 @@ class TrackerFragmentHelper(
         authenticationViewModel.onBasicRealmFailure(realmName, username, reason)
     }
 
-    interface TrackerFragmentHelperCallback : InternetHelper.InternetCallback {
+    interface TrackerFragmentDelegateCallback : InternetFragmentDelegate.InternetFragmentCallback {
     }
 
     companion object {
