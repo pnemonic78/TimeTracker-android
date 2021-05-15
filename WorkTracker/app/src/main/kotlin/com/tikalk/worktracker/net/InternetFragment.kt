@@ -47,11 +47,11 @@ abstract class InternetFragment : TrackerFragment {
     constructor(args: Bundle) : super(args)
 
     protected fun isValidResponse(response: Response<String>): Boolean {
-        return helper.isValidResponse(response)
+        return delegate.isValidResponse(response)
     }
 
     protected fun getResponseError(html: String?): String? {
-        return helper.getResponseError(html)
+        return delegate.getResponseError(html)
     }
 
     override fun showProgress(show: Boolean) {

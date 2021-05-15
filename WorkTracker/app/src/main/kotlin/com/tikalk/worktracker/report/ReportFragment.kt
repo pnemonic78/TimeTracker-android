@@ -89,7 +89,7 @@ class ReportFragment : InternetFragment() {
             this.listAdapter = ReportAdapter(filter)
             binding.list.adapter = listAdapter
         })
-        helper.login.observe(this, { (_, reason) ->
+        delegate.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -188,7 +188,7 @@ class ReportFragment : InternetFragment() {
             filter = filterData.value ?: ReportFilter()
         }
 
-        helper.dataSource.reportPage(filter, firstRun)
+        delegate.dataSource.reportPage(filter, firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

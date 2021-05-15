@@ -187,7 +187,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("loadAndFetchPage $dateFormatted refresh=$refresh")
         this.date = date
 
-        helper.dataSource.timeListPage(date, refresh)
+        delegate.dataSource.timeListPage(date, refresh)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .observeOn(AndroidSchedulers.mainThread())
@@ -214,7 +214,7 @@ class TimeListFragment : TimeFormFragment(),
         if (fetchingPage) return
         fetchingPage = true
 
-        helper.service.fetchTimes(dateFormatted)
+        delegate.service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
             .subscribe({ response ->
                 if (isValidResponse(response)) {
@@ -237,7 +237,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
-        helper.dataSource.savePage(page)
+        delegate.dataSource.savePage(page)
     }
 
     private fun processPageMain(page: TimeListPage) {
@@ -401,7 +401,7 @@ class TimeListFragment : TimeFormFragment(),
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord record=$record")
 
-        helper.service.deleteTime(record.id)
+        delegate.service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .doAfterTerminate { showProgressMain(false) }

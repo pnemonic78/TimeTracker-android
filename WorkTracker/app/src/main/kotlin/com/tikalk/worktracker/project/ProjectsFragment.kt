@@ -63,7 +63,7 @@ class ProjectsFragment : InternetFragment() {
         projectsData.observe(this, { projects ->
             bindList(projects)
         })
-        helper.login.observe(this, { (_, reason) ->
+        delegate.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -100,7 +100,7 @@ class ProjectsFragment : InternetFragment() {
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        helper.dataSource.projectsPage(firstRun)
+        delegate.dataSource.projectsPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ projects ->

@@ -44,28 +44,28 @@ abstract class TrackerDialogFragment : TikalDialogFragment,
 
     constructor(args: Bundle) : super(args)
 
-    protected val helper = TrackerFragmentDelegate(this, this)
-    protected val preferences: TimeTrackerPrefs get() = helper.preferences
-    protected val firstRun: Boolean get() = helper.firstRun
+    protected val delegate = TrackerFragmentDelegate(this, this)
+    protected val preferences: TimeTrackerPrefs get() = delegate.preferences
+    protected val firstRun: Boolean get() = delegate.firstRun
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        helper.onCreate(savedInstanceState)
+        delegate.onCreate(savedInstanceState)
     }
 
     protected fun authenticateMain(submit: Boolean = true) {
-        helper.authenticateMain(submit)
+        delegate.authenticateMain(submit)
     }
 
     protected fun handleError(error: Throwable) {
-        helper.handleError(error)
+        delegate.handleError(error)
     }
 
     protected open fun handleErrorMain(error: Throwable) {
-        helper.handleErrorMain(error)
+        delegate.handleErrorMain(error)
     }
 
     override fun showError(@StringRes messageId: Int) {
-        helper.showError(messageId)
+        delegate.showError(messageId)
     }
 }

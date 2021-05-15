@@ -464,7 +464,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
-        helper.dataSource.editPage(recordId, firstRun)
+        delegate.dataSource.editPage(recordId, firstRun)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .observeOn(AndroidSchedulers.mainThread())
@@ -502,7 +502,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun saveRecord(record: TimeRecord) {
-        val recordDao = helper.db.timeRecordDao()
+        val recordDao = delegate.db.timeRecordDao()
         if (record.id == TikalEntity.ID_NONE) {
             recordDao.insert(record.toTimeRecordEntity())
         } else {
@@ -552,7 +552,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
 
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
-            helper.service.addTime(
+            delegate.service.addTime(
                 record.project.id,
                 record.task.id,
                 formatSystemDate(record.start),
@@ -562,7 +562,7 @@ class TimeEditFragment : TimeFormFragment() {
                 record.location.id
             )
         } else {
-            helper.service.editTime(
+            delegate.service.editTime(
                 record.id,
                 record.project.id,
                 record.task.id,
@@ -624,7 +624,7 @@ class TimeEditFragment : TimeFormFragment() {
         showProgress(true)
 
         // Fetch from remote server.
-        helper.service.deleteTime(record.id)
+        delegate.service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ response ->

@@ -64,7 +64,7 @@ class ProjectTasksFragment : InternetFragment() {
         tasksData.observe(this, { tasks ->
             bindList(tasks)
         })
-        helper.login.observe(this, { (_, reason) ->
+        delegate.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -101,7 +101,7 @@ class ProjectTasksFragment : InternetFragment() {
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        helper.dataSource.tasksPage(firstRun)
+        delegate.dataSource.tasksPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ tasks ->

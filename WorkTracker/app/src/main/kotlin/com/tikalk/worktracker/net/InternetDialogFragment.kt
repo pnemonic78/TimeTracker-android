@@ -35,7 +35,6 @@ package com.tikalk.worktracker.net
 import android.os.Bundle
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.app.TrackerDialogFragment
-import com.tikalk.worktracker.app.TrackerFragment
 import retrofit2.Response
 
 /**
@@ -48,11 +47,11 @@ abstract class InternetDialogFragment : TrackerDialogFragment {
     constructor(args: Bundle) : super(args)
 
     protected fun isValidResponse(response: Response<String>): Boolean {
-        return helper.isValidResponse(response)
+        return delegate.isValidResponse(response)
     }
 
     protected fun getResponseError(html: String?): String? {
-        return helper.getResponseError(html)
+        return delegate.getResponseError(html)
     }
 
     override fun showProgress(show: Boolean) {
