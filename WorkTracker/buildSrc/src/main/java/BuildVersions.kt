@@ -43,7 +43,7 @@ object BuildVersions {
     const val okhttpVersion = "4.8.0"
     const val retrofit2Version = "2.9.0"
     const val roomVersion = "2.3.0"
-    const val rxAndroidVersion = "2.1.1"
-    const val rxKotlinVersion = "2.4.0"
+    const val rxAndroidVersion = "3.0.0"
+    const val rxKotlinVersion = "3.0.1"
     const val timberVersion = "4.7.1"
 }

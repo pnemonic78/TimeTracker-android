@@ -34,7 +34,7 @@ package com.tikalk.app
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 open class TikalDialogFragment() : AppCompatDialogFragment() {
 
@@ -52,11 +52,6 @@ open class TikalDialogFragment() : AppCompatDialogFragment() {
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        disposables.clear()
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

@@ -46,9 +46,9 @@ import com.tikalk.worktracker.databinding.FragmentTasksBinding
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.project.ProjectTasksAdapter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment() {

@@ -96,16 +96,16 @@ dependencies {
     // Database
     implementation("androidx.room:room-common:${BuildVersions.roomVersion}")
     implementation("androidx.room:room-runtime:${BuildVersions.roomVersion}")
-    implementation("androidx.room:room-rxjava2:${BuildVersions.roomVersion}")
+    implementation("androidx.room:room-rxjava3:${BuildVersions.roomVersion}")
     kapt("androidx.room:room-compiler:${BuildVersions.roomVersion}")
 
     // Rx
-    implementation("io.reactivex.rxjava2:rxandroid:${BuildVersions.rxAndroidVersion}")
-    implementation("io.reactivex.rxjava2:rxkotlin:${BuildVersions.rxKotlinVersion}")
+    implementation("io.reactivex.rxjava3:rxandroid:${BuildVersions.rxAndroidVersion}")
+    implementation("io.reactivex.rxjava3:rxkotlin:${BuildVersions.rxKotlinVersion}")
 
     // Web
     implementation("com.squareup.retrofit2:retrofit:${BuildVersions.retrofit2Version}")
-    implementation("com.squareup.retrofit2:adapter-rxjava2:${BuildVersions.retrofit2Version}")
+    implementation("com.squareup.retrofit2:adapter-rxjava3:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.retrofit2:converter-scalars:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.okhttp3:logging-interceptor:${BuildVersions.okhttpVersion}")
     implementation("com.squareup.okhttp3:okhttp:${BuildVersions.okhttpVersion}")

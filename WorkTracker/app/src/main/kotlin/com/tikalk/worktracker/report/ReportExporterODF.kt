@@ -42,7 +42,7 @@ import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.SYSTEM_DATE_PATTERN
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.SingleObserver
+import io.reactivex.rxjava3.core.SingleObserver
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument
 import org.odftoolkit.odfdom.doc.table.OdfTableCell
 import org.odftoolkit.odfdom.dom.attribute.style.StyleDataStyleNameAttribute
@@ -59,14 +59,38 @@ import java.util.*
 /**
  * Write the list of records as an OpenDocument Format (ODF) spreadsheet file.
  */
-class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals) : ReportExporter(context, records, filter, totals) {
+class ReportExporterODF(
+    context: Context,
+    records: List<TimeRecord>,
+    filter: ReportFilter,
+    totals: ReportTotals
+) : ReportExporter(context, records, filter, totals) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>): ReportExporterRunner {
+    override fun createRunner(
+        context: Context,
+        records: List<TimeRecord>,
+        filter: ReportFilter,
+        totals: ReportTotals,
+        observer: SingleObserver<in Uri>
+    ): ReportExporterRunner {
         return ReportExporterODFRunner(context, records, filter, totals, observer)
     }
 
-    private class ReportExporterODFRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, totals, observer) {
-        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, folder: File, filenamePrefix: String): File {
+    private class ReportExporterODFRunner(
+        context: Context,
+        records: List<TimeRecord>,
+        filter: ReportFilter,
+        totals: ReportTotals,
+        observer: SingleObserver<in Uri>
+    ) : ReportExporterRunner(context, records, filter, totals, observer) {
+        override fun writeContents(
+            context: Context,
+            records: List<TimeRecord>,
+            filter: ReportFilter,
+            totals: ReportTotals,
+            folder: File,
+            filenamePrefix: String
+        ): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
             val showStartField = filter.showStartField
@@ -90,7 +114,11 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             var columnIndex = 0
             var cell: OdfTableCell
 
-            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
+            val titleText = context.getString(
+                R.string.reports_header,
+                formatSystemDate(filter.start),
+                formatSystemDate(filter.finish)
+            )
             cell = table.getCellByPosition(columnIndex, rowIndex)
             cell.stringValue = titleText
             val cellTitle = cell
@@ -224,23 +252,30 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             val documentStyles = doc.documentStyles
 
             val sectionHeaderStyleName = "sectionHeader"
-            val sectionHeaderStyle = documentStyles.newStyle(sectionHeaderStyleName, OdfStyleFamily.TableCell)
+            val sectionHeaderStyle =
+                documentStyles.newStyle(sectionHeaderStyleName, OdfStyleFamily.TableCell)
             sectionHeaderStyle.setProperty(OdfTextProperties.FontWeight, "bold")
             sectionHeaderStyle.setProperty(OdfTextProperties.Color, Color.SILVER.toString())
             sectionHeaderStyle.setProperty(OdfTextProperties.FontSize, "12pt")
-            sectionHeaderStyle.setProperty(OdfTableCellProperties.BorderBottom, "1pt solid ${Color.SILVER}")
+            sectionHeaderStyle.setProperty(
+                OdfTableCellProperties.BorderBottom,
+                "1pt solid ${Color.SILVER}"
+            )
 
             val tableHeaderStyleName = "tableHeader"
-            val tableHeaderStyle = documentStyles.newStyle(tableHeaderStyleName, OdfStyleFamily.TableCell)
+            val tableHeaderStyle =
+                documentStyles.newStyle(tableHeaderStyleName, OdfStyleFamily.TableCell)
             tableHeaderStyle.setProperty(OdfTextProperties.FontWeight, "bold")
 
             val tableHeaderCenteredStyleName = "tableHeaderCentered"
-            val tableHeaderCenteredStyle = documentStyles.newStyle(tableHeaderCenteredStyleName, OdfStyleFamily.TableCell)
+            val tableHeaderCenteredStyle =
+                documentStyles.newStyle(tableHeaderCenteredStyleName, OdfStyleFamily.TableCell)
             tableHeaderCenteredStyle.setProperty(OdfTextProperties.FontWeight, "bold")
             tableHeaderCenteredStyle.setProperty(OdfParagraphProperties.TextAlign, "center")
 
             val rowReportItemStyleName = "rowReportItem"
-            val rowReportItemStyle = documentStyles.newStyle(rowReportItemStyleName, OdfStyleFamily.TableCell)
+            val rowReportItemStyle =
+                documentStyles.newStyle(rowReportItemStyleName, OdfStyleFamily.TableCell)
             rowReportItemStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#f5f5f5")
 
             val dateStyleName = "reportItemDate"
@@ -248,21 +283,31 @@ class ReportExporterODF(context: Context, records: List<TimeRecord>, filter: Rep
             documentStyles.appendChild(dateStyle)
 
             val rowReportItemDateStyleName = "rowReportItemDate"
-            val rowReportItemDateStyle = documentStyles.newStyle(rowReportItemDateStyleName, OdfStyleFamily.TableCell)
+            val rowReportItemDateStyle =
+                documentStyles.newStyle(rowReportItemDateStyleName, OdfStyleFamily.TableCell)
             rowReportItemDateStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#f5f5f5")
-            rowReportItemDateStyle.setOdfAttributeValue(StyleDataStyleNameAttribute.ATTRIBUTE_NAME, dateStyleName)
+            rowReportItemDateStyle.setOdfAttributeValue(
+                StyleDataStyleNameAttribute.ATTRIBUTE_NAME,
+                dateStyleName
+            )
 
             val rowReportItemAltStyleName = "rowReportItemAlt"
-            val rowReportItemAltStyle = documentStyles.newStyle(rowReportItemAltStyleName, OdfStyleFamily.TableCell)
+            val rowReportItemAltStyle =
+                documentStyles.newStyle(rowReportItemAltStyleName, OdfStyleFamily.TableCell)
             rowReportItemAltStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#ffffff")
 
             val rowReportItemDateAltStyleName = "rowReportItemDateAlt"
-            val rowReportItemDateAltStyle = documentStyles.newStyle(rowReportItemDateAltStyleName, OdfStyleFamily.TableCell)
+            val rowReportItemDateAltStyle =
+                documentStyles.newStyle(rowReportItemDateAltStyleName, OdfStyleFamily.TableCell)
             rowReportItemDateAltStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#ffffff")
-            rowReportItemDateAltStyle.setOdfAttributeValue(StyleDataStyleNameAttribute.ATTRIBUTE_NAME, dateStyleName)
+            rowReportItemDateAltStyle.setOdfAttributeValue(
+                StyleDataStyleNameAttribute.ATTRIBUTE_NAME,
+                dateStyleName
+            )
 
             val rowReportSubtotalStyleName = "rowReportSubtotal"
-            val rowReportSubtotalStyle = documentStyles.newStyle(rowReportSubtotalStyleName, OdfStyleFamily.TableCell)
+            val rowReportSubtotalStyle =
+                documentStyles.newStyle(rowReportSubtotalStyleName, OdfStyleFamily.TableCell)
             rowReportSubtotalStyle.setProperty(OdfTextProperties.FontWeight, "bold")
             rowReportSubtotalStyle.setProperty(OdfTableCellProperties.BackgroundColor, "#e0e0e0")
 

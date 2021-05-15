@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* rx3
 * rx3 to Flow
 
 * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)

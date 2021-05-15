@@ -41,9 +41,9 @@ import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.Response
-import java.util.*
+import java.util.Calendar
 
 class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
                                   private val db: TrackerDatabase,

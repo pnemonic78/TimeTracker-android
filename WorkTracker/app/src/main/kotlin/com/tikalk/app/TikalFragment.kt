@@ -34,7 +34,7 @@ package com.tikalk.app
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 open class TikalFragment() : Fragment() {
 
@@ -47,11 +47,6 @@ open class TikalFragment() : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         disposables.dispose()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        disposables.clear()
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

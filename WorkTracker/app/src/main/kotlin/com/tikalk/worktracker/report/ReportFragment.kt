@@ -59,9 +59,9 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 import java.util.*
 
@@ -341,7 +341,7 @@ class ReportFragment : InternetFragment() {
 
     private fun shareFile(context: Context, fileUri: Uri, mimeType: String? = null) {
         val activity = this.activity ?: return
-        val intent = ShareCompat.IntentBuilder.from(activity)
+        val intent = ShareCompat.IntentBuilder(activity)
             .addStream(fileUri)
             .setType(mimeType ?: context.contentResolver.getType(fileUri))
             .intent

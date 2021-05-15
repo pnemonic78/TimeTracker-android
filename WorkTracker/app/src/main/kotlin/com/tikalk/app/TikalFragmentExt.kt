@@ -33,14 +33,11 @@
 package com.tikalk.app
 
 import android.app.Dialog
-import android.os.Bundle
 import androidx.annotation.IdRes
-import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.fragment.findNavController
-import io.reactivex.disposables.CompositeDisposable
 
 fun Fragment.runOnUiThread(action: Runnable) {
     activity!!.runOnUiThread(action)
