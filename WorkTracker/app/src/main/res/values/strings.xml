@@ -66,6 +66,8 @@
     <string name="pick_date">Go to date</string>
     <string name="today">Today</string>
     <string name="menu_today" translatable="false">@string/today</string>
+    <string name="add">Add</string>
+    <string name="action_add" translatable="false">@string/add</string>
 
     <!-- Settings -->
     <string name="settings_label">Settings</string>
