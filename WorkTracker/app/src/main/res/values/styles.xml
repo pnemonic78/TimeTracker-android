@@ -27,12 +27,12 @@
     <style name="Widget.Button" parent="Widget.AppCompat.Button" />
 
     <style name="Widget.Button.Start">
-        <item name="colorButtonNormal">@color/lime</item>
+        <item name="colorButtonNormal">@color/button_start</item>
         <item name="drawableEndCompat">@drawable/ic_play_arrow</item>
     </style>
 
     <style name="Widget.Button.Stop">
-        <item name="colorButtonNormal">@color/red</item>
+        <item name="colorButtonNormal">@color/button_stop</item>
         <item name="drawableEndCompat">@drawable/ic_stop</item>
     </style>
 

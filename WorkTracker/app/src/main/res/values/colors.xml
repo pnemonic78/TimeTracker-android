@@ -17,4 +17,7 @@
     <color name="uncompleted_entry_normal_border">@color/black_x40</color>
     <color name="uncompleted_entry_active">@color/red</color>
     <color name="uncompleted_entry_active_border">@color/black_x40</color>
+
+    <color name="button_start">#FF00CC00</color>
+    <color name="button_stop">@color/red</color>
 </resources>
