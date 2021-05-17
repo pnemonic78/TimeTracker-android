@@ -153,10 +153,8 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexNote,
                             columnIndexCost,
                             columnIndexLocation,
-                            projects)
-                        if (record != null) {
-                            records.add(record)
-                        }
+                            projects) ?: continue
+                        records.add(record)
                     }
                 }
             }

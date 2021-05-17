@@ -88,10 +88,8 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
             // loop through all the rows and parse each record
             val rows = table.getElementsByTag("tr")
             for (tr in rows) {
-                val record = parseRecord(date, projects, tr)
-                if (record != null) {
-                    records.add(record)
-                }
+                val record = parseRecord(date, projects, tr) ?: continue
+                records.add(record)
             }
         }
 

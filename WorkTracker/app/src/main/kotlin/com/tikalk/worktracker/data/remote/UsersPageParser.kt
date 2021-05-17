@@ -56,12 +56,10 @@ class UsersPageParser {
             val rows = table.getElementsByTag("tr").drop(1)
             var id = 0L
             for (tr in rows) {
-                val user = parseUser(tr)
-                if (user != null) {
-                    id++
-                    user.id = id
-                    users.add(user)
-                }
+                val user = parseUser(tr) ?: continue
+                id++
+                user.id = id
+                users.add(user)
             }
         }
 
