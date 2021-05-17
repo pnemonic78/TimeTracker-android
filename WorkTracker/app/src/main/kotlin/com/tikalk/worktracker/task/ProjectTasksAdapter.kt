@@ -37,15 +37,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import com.tikalk.worktracker.R
+import com.tikalk.worktracker.databinding.TaskItemBinding
 import com.tikalk.worktracker.model.ProjectTask
 
 class ProjectTasksAdapter : ListAdapter<ProjectTask, ProjectTaskViewHolder>(TaskDiffer()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectTaskViewHolder {
         val context: Context = parent.context
-        val view = LayoutInflater.from(context).inflate(R.layout.task_item, parent, false)
-        return ProjectTaskViewHolder(view)
+        val binding = TaskItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        return ProjectTaskViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ProjectTaskViewHolder, position: Int) {

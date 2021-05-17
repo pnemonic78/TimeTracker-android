@@ -41,11 +41,11 @@ import com.tikalk.worktracker.app.TrackerViewModel
 
 class AuthenticationViewModel : TrackerViewModel() {
 
-    private val loginData = MutableLiveData<LoginData>()
-    val login: LiveData<LoginData> = loginData
+    private val _login = MutableLiveData<LoginData>()
+    val login: LiveData<LoginData> = _login
 
-    private val basicRealmData = MutableLiveData<BasicRealmData>()
-    val basicRealm: LiveData<BasicRealmData> = basicRealmData
+    private val _basicRealm = MutableLiveData<BasicRealmData>()
+    val basicRealm: LiveData<BasicRealmData> = _basicRealm
 
     /**
      * Data for login callbacks.
@@ -70,11 +70,11 @@ class AuthenticationViewModel : TrackerViewModel() {
     }
 
     private fun notifyLoginSuccess(login: String) {
-        loginData.postValue(LoginData(login))
+        _login.postValue(LoginData(login))
     }
 
     private fun notifyLoginFailure(login: String, reason: String) {
-        loginData.postValue(LoginData(login, reason))
+        _login.postValue(LoginData(login, reason))
     }
 
     /**
@@ -102,11 +102,11 @@ class AuthenticationViewModel : TrackerViewModel() {
     }
 
     private fun notifyLoginSuccess(realmName: String, username: String) {
-        basicRealmData.postValue(BasicRealmData(realmName, username))
+        _basicRealm.postValue(BasicRealmData(realmName, username))
     }
 
     private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
-        basicRealmData.postValue(BasicRealmData(realmName, username, reason))
+        _basicRealm.postValue(BasicRealmData(realmName, username, reason))
     }
 
     companion object {

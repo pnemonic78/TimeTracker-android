@@ -32,14 +32,13 @@
 
 package com.tikalk.worktracker.user
 
-import android.view.View
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.databinding.UserItemBinding
 import com.tikalk.worktracker.model.User
-import kotlinx.android.synthetic.main.user_item.view.*
 
-class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class UserViewHolder(val binding: UserItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
     var user: User? = null
         set(value) {
@@ -53,20 +52,20 @@ class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     @MainThread
     private fun bind(user: User) {
-        itemView.name.text = user.displayName
-        itemView.login.text = user.username
-        itemView.role.text = user.roles?.joinToString(", ") ?: ""
-        itemView.uncompletedEntry.setImageLevel(if (user.isUncompletedEntry) LEVEL_ACTIVE else LEVEL_NORMAL)
-        itemView.uncompletedEntry.contentDescription = itemView.context.getString(R.string.uncompleted_entry)
+        binding.name.text = user.displayName
+        binding.login.text = user.username
+        binding.role.text = user.roles?.joinToString(", ") ?: ""
+        binding.uncompletedEntry.setImageLevel(if (user.isUncompletedEntry) LEVEL_ACTIVE else LEVEL_NORMAL)
+        binding.uncompletedEntry.contentDescription = itemView.context.getString(R.string.uncompleted_entry)
     }
 
     @MainThread
     private fun clear() {
-        itemView.name.text = ""
-        itemView.login.text = ""
-        itemView.role.text = ""
-        itemView.uncompletedEntry.setImageLevel(LEVEL_NORMAL)
-        itemView.uncompletedEntry.contentDescription = ""
+        binding.name.text = ""
+        binding.login.text = ""
+        binding.role.text = ""
+        binding.uncompletedEntry.setImageLevel(LEVEL_NORMAL)
+        binding.uncompletedEntry.contentDescription = ""
     }
 
     companion object {

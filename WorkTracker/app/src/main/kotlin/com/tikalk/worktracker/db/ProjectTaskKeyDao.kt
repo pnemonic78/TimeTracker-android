@@ -33,8 +33,8 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
-import io.reactivex.Maybe
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Maybe
+import io.reactivex.rxjava3.core.Single
 
 /**
  * DAO for joining Project and Task entities.

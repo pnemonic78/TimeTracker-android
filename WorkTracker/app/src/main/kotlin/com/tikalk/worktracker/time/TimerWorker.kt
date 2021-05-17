@@ -148,29 +148,34 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         fun restartApp(context: Context) {
             val intent = Intent(context, TimeReceiver::class.java)
             intent.action = ACTION_LAUNCH
-            val operation = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            val operation =
+                PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + (2 * DateUtils.SECOND_IN_MILLIS), operation)
+            alarmManager.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + (2 * DateUtils.SECOND_IN_MILLIS),
+                operation
+            )
         }
     }
 
     private val prefs: TimeTrackerPrefs = TimeTrackerPrefs(context)
-    private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val notificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    fun doWork(): Result<Any> {
+    fun doWork() {
         val data = workerParams
-        return when (data.getString(EXTRA_ACTION)) {
+        when (data.getString(EXTRA_ACTION)) {
             ACTION_START -> startTimerAction(data)
             ACTION_STOP -> stopTimerAction(data)
             ACTION_NOTIFY -> showNotification(data)
-            else -> Result.failure(IllegalArgumentException("invalid action"))
+            else -> throw IllegalArgumentException("invalid action")
         }
     }
 
-    private fun startTimerAction(extras: Bundle): Result<Any> {
+    private fun startTimerAction(extras: Bundle) {
         Timber.i("startTimerAction")
-        val record = createRecord(extras)
-            ?: return Result.failure(IllegalArgumentException("missing record"))
+        val record = createRecord(extras) ?: throw IllegalArgumentException("missing record")
 
         prefs.startRecord(record)
 
@@ -178,29 +183,25 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             val nm = NotificationManagerCompat.from(context)
             nm.notify(ID_NOTIFY, createNotification(record))
         }
-
-        return Result.success(true)
     }
 
-    private fun stopTimerAction(extras: Bundle): Result<Any> {
+    private fun stopTimerAction(extras: Bundle) {
         Timber.i("stopTimerAction")
         if (extras.getBoolean(EXTRA_EDIT, false)) {
-            val record = prefs.getStartedRecord()
-                ?: return Result.failure(IllegalArgumentException("missing record"))
+            val record =
+                prefs.getStartedRecord() ?: throw IllegalArgumentException("missing record")
             val projectId = record.project.id
             val taskId = record.task.id
             val startTime = record.startTime
 
-            if (projectId <= 0L) return Result.failure(IllegalArgumentException("invalid project id"))
-            if (taskId <= 0L) return Result.failure(IllegalArgumentException("invalid task id"))
-            if (startTime <= TimeRecord.NEVER) return Result.failure(IllegalArgumentException("invalid start time"))
+            if (projectId <= 0L) throw IllegalArgumentException("invalid project id")
+            if (taskId <= 0L) throw IllegalArgumentException("invalid task id")
+            if (startTime <= TimeRecord.NEVER) throw IllegalArgumentException("invalid start time")
 
             editStartedRecord(record)
         }
 
         dismissNotification()
-
-        return Result.success(true)
     }
 
     private fun editStartedRecord(record: TimeRecord) {
@@ -223,12 +224,14 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val res = context.resources
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var channel: NotificationChannel? = notificationManager.getNotificationChannel(CHANNEL_ID)
+            var channel: NotificationChannel? =
+                notificationManager.getNotificationChannel(CHANNEL_ID)
             if (channel == null) {
                 channel = NotificationChannel(
                     CHANNEL_ID,
                     context.getText(R.string.app_name),
-                    NotificationManager.IMPORTANCE_DEFAULT)
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
                 notificationManager.createNotificationChannel(channel)
             }
             Timber.i("createNotification channel=$channel")
@@ -239,8 +242,19 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         // The PendingIntent to launch our activity if the user selects this notification.
         val contentIntent = createActivityIntent(context)
 
-        val stopActionIntent = createActionIntent(context, ACTION_STOP, record.project.id, record.task.id, record.startTime, record.location.id)
-        val stopAction = NotificationCompat.Action(R.drawable.ic_notification_stop, res.getText(R.string.action_stop), stopActionIntent)
+        val stopActionIntent = createActionIntent(
+            context,
+            ACTION_STOP,
+            record.project.id,
+            record.task.id,
+            record.startTime,
+            record.location.id
+        )
+        val stopAction = NotificationCompat.Action(
+            R.drawable.ic_notification_stop,
+            res.getText(R.string.action_stop),
+            stopActionIntent
+        )
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setOngoing(true)
@@ -262,10 +276,22 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val pm = context.packageManager
         val intent = pm.getLaunchIntentForPackage(context.packageName)
         intent?.addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
-        return PendingIntent.getActivity(context, ID_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getActivity(
+            context,
+            ID_ACTIVITY,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
-    private fun createActionIntent(context: Context, action: String, projectId: Long, taskId: Long, startTime: Long, remoteId: Long): PendingIntent {
+    private fun createActionIntent(
+        context: Context,
+        action: String,
+        projectId: Long,
+        taskId: Long,
+        startTime: Long,
+        remoteId: Long
+    ): PendingIntent {
         val intent = Intent(context, TimeReceiver::class.java).apply {
             this.action = action
             putExtra(EXTRA_PROJECT_ID, projectId)
@@ -274,23 +300,26 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             putExtra(EXTRA_LOCATION, remoteId)
             putExtra(EXTRA_EDIT, true)
         }
-        return PendingIntent.getBroadcast(context, ID_ACTION_STOP, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getBroadcast(
+            context,
+            ID_ACTION_STOP,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
-    private fun showNotification(extras: Bundle): Result<Any> {
+    private fun showNotification(extras: Bundle) {
         val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
         Timber.i("showNotification visible=$visible")
         if (visible) {
             val record = createRecord(extras) ?: prefs.getStartedRecord()
-            ?: return Result.failure(IllegalArgumentException("missing record"))
+            ?: throw IllegalArgumentException("missing record")
             Timber.i("showNotification record=$record")
             val nm = NotificationManagerCompat.from(context)
             nm.notify(ID_NOTIFY, createNotification(record))
         } else {
             dismissNotification()
         }
-
-        return Result.success(true)
     }
 
     private fun dismissNotification() {

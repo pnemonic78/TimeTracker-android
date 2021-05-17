@@ -32,13 +32,12 @@
 
 package com.tikalk.worktracker.project
 
-import android.view.View
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
+import com.tikalk.worktracker.databinding.ProjectItemBinding
 import com.tikalk.worktracker.model.Project
-import kotlinx.android.synthetic.main.project_item.view.*
 
-class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class ProjectViewHolder(val binding: ProjectItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
     var project: Project? = null
         set(value) {
@@ -52,13 +51,13 @@ class ProjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     @MainThread
     private fun bind(project: Project) {
-        itemView.name.text = project.name
-        itemView.description.text = project.description
+        binding.name.text = project.name
+        binding.description.text = project.description
     }
 
     @MainThread
     private fun clear() {
-        itemView.name.text = ""
-        itemView.description.text = ""
+        binding.name.text = ""
+        binding.description.text = ""
     }
 }

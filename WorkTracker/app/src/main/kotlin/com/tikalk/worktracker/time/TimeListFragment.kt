@@ -36,7 +36,14 @@ import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.*
+import android.view.GestureDetector
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
@@ -45,20 +52,19 @@ import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.data.remote.TimeListPageParser
+import com.tikalk.worktracker.databinding.FragmentTimeListBinding
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_time_list.*
-import kotlinx.android.synthetic.main.time_totals.*
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
@@ -66,6 +72,10 @@ import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener {
+
+    private var _binding: FragmentTimeListBinding? = null
+    private val binding get() = _binding!!
+    private val bindingTotals get() = binding.totals
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -104,43 +114,61 @@ class TimeListFragment : TimeFormFragment(),
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_time_list, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentTimeListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        formNavHostFragment = childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
+        formNavHostFragment =
+            childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
 
-        dateInput.setOnClickListener { pickDate() }
-        recordAdd.setOnClickListener { addTime() }
+        binding.dateInput.setOnClickListener { pickDate() }
+        binding.recordAdd.setOnClickListener { addTime() }
 
-        list.adapter = listAdapter
-        gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                val vx = abs(velocityX)
-                val vy = abs(velocityY)
-                if ((vx > vy) && (vx > 500)) {
-                    if (velocityX < 0) {    // Fling from right to left.
-                        if (isLocaleRTL()) {
-                            navigateYesterday()
+        binding.list.adapter = listAdapter
+        gestureDetector = GestureDetector(
+            context,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(
+                    e1: MotionEvent?,
+                    e2: MotionEvent?,
+                    velocityX: Float,
+                    velocityY: Float
+                ): Boolean {
+                    val vx = abs(velocityX)
+                    val vy = abs(velocityY)
+                    if ((vx > vy) && (vx > 500)) {
+                        if (velocityX < 0) {    // Fling from right to left.
+                            if (isLocaleRTL()) {
+                                navigateYesterday()
+                            } else {
+                                navigateTomorrow()
+                            }
                         } else {
-                            navigateTomorrow()
+                            if (isLocaleRTL()) {
+                                navigateTomorrow()
+                            } else {
+                                navigateYesterday()
+                            }
                         }
-                    } else {
-                        if (isLocaleRTL()) {
-                            navigateTomorrow()
-                        } else {
-                            navigateYesterday()
-                        }
+                        return true
                     }
-                    return true
+                    return super.onFling(e1, e2, velocityX, velocityY)
                 }
-                return super.onFling(e1, e2, velocityX, velocityY)
-            }
-        })
-        list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+            })
+        binding.list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onRecordClick(record: TimeRecord) {
@@ -159,7 +187,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("loadAndFetchPage $dateFormatted refresh=$refresh")
         this.date = date
 
-        dataSource.timeListPage(date, refresh)
+        delegate.dataSource.timeListPage(date, refresh)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .observeOn(AndroidSchedulers.mainThread())
@@ -186,7 +214,7 @@ class TimeListFragment : TimeFormFragment(),
         if (fetchingPage) return
         fetchingPage = true
 
-        service.fetchTimes(dateFormatted)
+        delegate.service.fetchTimes(dateFormatted)
             .subscribeOn(Schedulers.io())
             .subscribe({ response ->
                 if (isValidResponse(response)) {
@@ -209,7 +237,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
-        dataSource.savePage(page)
+        delegate.dataSource.savePage(page)
     }
 
     private fun processPageMain(page: TimeListPage) {
@@ -219,7 +247,7 @@ class TimeListFragment : TimeFormFragment(),
         if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.value = totals
+        totalsData.value = totals!!
         setRecordValue(page.record)
     }
 
@@ -230,13 +258,13 @@ class TimeListFragment : TimeFormFragment(),
         if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.postValue(totals)
+        totalsData.postValue(totals!!)
         setRecordValue(page.record)
     }
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
-        dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
+        binding.dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
         if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
@@ -250,35 +278,39 @@ class TimeListFragment : TimeFormFragment(),
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
         if (totals.daily == TimeTotals.UNKNOWN) {
-            dayTotalLabel.visibility = View.INVISIBLE
-            dayTotal.text = null
+            bindingTotals.dayTotalLabel.visibility = View.INVISIBLE
+            bindingTotals.dayTotal.text = null
         } else {
-            dayTotalLabel.visibility = View.VISIBLE
-            dayTotal.text = formatElapsedTime(context, timeFormatter, totals.daily).toString()
+            bindingTotals.dayTotalLabel.visibility = View.VISIBLE
+            bindingTotals.dayTotal.text =
+                formatElapsedTime(context, timeFormatter, totals.daily).toString()
         }
         if (totals.weekly == TimeTotals.UNKNOWN) {
-            weekTotalLabel.visibility = View.INVISIBLE
-            weekTotal.text = null
+            bindingTotals.weekTotalLabel.visibility = View.INVISIBLE
+            bindingTotals.weekTotal.text = null
         } else {
             timeBuffer.setLength(0)
-            weekTotalLabel.visibility = View.VISIBLE
-            weekTotal.text = formatElapsedTime(context, timeFormatter, totals.weekly).toString()
+            bindingTotals.weekTotalLabel.visibility = View.VISIBLE
+            bindingTotals.weekTotal.text =
+                formatElapsedTime(context, timeFormatter, totals.weekly).toString()
         }
         if (totals.monthly == TimeTotals.UNKNOWN) {
-            monthTotalLabel.visibility = View.INVISIBLE
-            monthTotal.text = null
+            bindingTotals.monthTotalLabel.visibility = View.INVISIBLE
+            bindingTotals.monthTotal.text = null
         } else {
             timeBuffer.setLength(0)
-            monthTotalLabel.visibility = View.VISIBLE
-            monthTotal.text = formatElapsedTime(context, timeFormatter, totals.monthly).toString()
+            bindingTotals.monthTotalLabel.visibility = View.VISIBLE
+            bindingTotals.monthTotal.text =
+                formatElapsedTime(context, timeFormatter, totals.monthly).toString()
         }
         if (totals.remaining == TimeTotals.UNKNOWN) {
-            remainingQuotaLabel.visibility = View.INVISIBLE
-            remainingQuota.text = null
+            bindingTotals.remainingQuotaLabel.visibility = View.INVISIBLE
+            bindingTotals.remainingQuota.text = null
         } else {
             timeBuffer.setLength(0)
-            remainingQuotaLabel.visibility = View.VISIBLE
-            remainingQuota.text = formatElapsedTime(context, timeFormatter, totals.remaining).toString()
+            bindingTotals.remainingQuotaLabel.visibility = View.VISIBLE
+            bindingTotals.remainingQuota.text =
+                formatElapsedTime(context, timeFormatter, totals.remaining).toString()
         }
     }
 
@@ -310,20 +342,25 @@ class TimeListFragment : TimeFormFragment(),
         val dayOfMonth = cal.dayOfMonth
         var picker = datePickerDialog
         if (picker == null) {
-            val listener = DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
-                val oldYear = date.year
-                val oldMonth = date.month
-                val oldDayOfMonth = date.dayOfMonth
-                val refresh = (pickedYear != oldYear) or (pickedMonth != oldMonth) or (pickedDayOfMonth != oldDayOfMonth)
-                cal.year = pickedYear
-                cal.month = pickedMonth
-                cal.dayOfMonth = pickedDayOfMonth
-                loadAndFetchPage(cal, refresh)
-                hideEditor()
-            }
+            val listener =
+                DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
+                    val oldYear = date.year
+                    val oldMonth = date.month
+                    val oldDayOfMonth = date.dayOfMonth
+                    val refresh =
+                        (pickedYear != oldYear) or (pickedMonth != oldMonth) or (pickedDayOfMonth != oldDayOfMonth)
+                    cal.year = pickedYear
+                    cal.month = pickedMonth
+                    cal.dayOfMonth = pickedDayOfMonth
+                    loadAndFetchPage(cal, refresh)
+                    hideEditor()
+                }
             val context = requireContext()
             picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
-            picker.setButton(DialogInterface.BUTTON_NEUTRAL, context.getText(R.string.today)) { dialog: DialogInterface, which: Int ->
+            picker.setButton(
+                DialogInterface.BUTTON_NEUTRAL,
+                context.getText(R.string.today)
+            ) { dialog: DialogInterface, which: Int ->
                 if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
                     val today = Calendar.getInstance()
                     listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
@@ -364,7 +401,7 @@ class TimeListFragment : TimeFormFragment(),
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord record=$record")
 
-        service.deleteTime(record.id)
+        delegate.service.deleteTime(record.id)
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { showProgressMain(true) }
             .doAfterTerminate { showProgressMain(false) }
@@ -608,8 +645,8 @@ class TimeListFragment : TimeFormFragment(),
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
 
-        const val ACTION_STOP = TrackerFragment.ACTION_STOP
+        const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
 
-        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+        const val EXTRA_ACTION = TrackerFragmentDelegate.EXTRA_ACTION
     }
 }

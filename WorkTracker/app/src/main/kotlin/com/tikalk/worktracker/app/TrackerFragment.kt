@@ -33,50 +33,39 @@
 package com.tikalk.worktracker.app
 
 import android.os.Bundle
+import androidx.annotation.StringRes
 import com.tikalk.app.TikalFragment
-import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.BuildConfig
-import com.tikalk.worktracker.auth.AuthenticationViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import org.koin.android.ext.android.inject
-import timber.log.Timber
 
-abstract class TrackerFragment : TikalFragment {
+abstract class TrackerFragment : TikalFragment,
+    TrackerFragmentDelegate.TrackerFragmentDelegateCallback {
 
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
 
-    protected val preferences by inject<TimeTrackerPrefs>()
-    protected val db by inject<TrackerDatabase>()
-    protected val service by inject<TimeTrackerService>()
-    protected val dataSource by inject<TimeTrackerRepository>()
-    protected var firstRun = true
-        private set
-    protected lateinit var authenticationViewModel: AuthenticationViewModel
+    protected val delegate = TrackerFragmentDelegate(this, this)
+    protected val preferences: TimeTrackerPrefs get() = delegate.preferences
+    protected val firstRun: Boolean get() = delegate.firstRun
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        authenticationViewModel = AuthenticationViewModel.get(this)
-
-        firstRun = (savedInstanceState == null)
+        delegate.onCreate(savedInstanceState)
     }
-
-    protected abstract fun authenticate(submit: Boolean = true)
 
     protected fun authenticateMain(submit: Boolean = true) {
-        Timber.i("authenticateMain submit=$submit")
-        runOnUiThread {
-            authenticate(submit)
-        }
+        delegate.authenticateMain(submit)
     }
 
-    companion object {
-        const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+    protected fun handleError(error: Throwable) {
+        delegate.handleError(error)
+    }
 
-        const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
+    protected open fun handleErrorMain(error: Throwable) {
+        delegate.handleErrorMain(error)
+    }
+
+    override fun showError(@StringRes messageId: Int) {
+        delegate.showError(messageId)
     }
 }

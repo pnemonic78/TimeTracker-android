@@ -35,6 +35,7 @@ import android.net.Uri
 import android.os.Parcel
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.tikalk.net.createUriFromParcel
 
@@ -44,7 +45,7 @@ import com.tikalk.net.createUriFromParcel
  * @author Moshe Waisberg.
  */
 @Entity(tableName = "user")
-@TypeConverters(Converters::class)
+@TypeConverters(UserConverters::class)
 data class User(
     /**
      * Unique username.
@@ -106,4 +107,16 @@ fun User.set(that: User) {
     this.photograph = that.photograph
     this.roles = that.roles
     this.isUncompletedEntry = that.isUncompletedEntry
+}
+
+class UserConverters : Converters() {
+    @TypeConverter
+    fun fromStringList(value: List<String>?): String? {
+        return value?.joinToString(", ")
+    }
+
+    @TypeConverter
+    fun toStringList(value: String?): List<String>? {
+        return value?.split(", ")
+    }
 }

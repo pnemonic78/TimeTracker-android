@@ -31,13 +31,13 @@
  */
 package com.tikalk.worktracker.auth.model
 
-import com.google.gson.annotations.SerializedName
-
 /**
  * Login request.
  *
  * @author Moshe Waisberg.
  */
-data class LoginRequest(@SerializedName("login") val email: String,
-                        @SerializedName("password") val password: String,
-                        @SerializedName("browser_today") val today: String)
+data class LoginRequest(
+    val email: String,
+    val password: String,
+    val today: String
+)

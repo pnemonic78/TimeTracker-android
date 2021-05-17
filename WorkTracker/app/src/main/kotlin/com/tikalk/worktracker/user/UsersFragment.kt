@@ -42,15 +42,18 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.databinding.FragmentUsersBinding
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.InternetFragment
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_users.*
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 
 class UsersFragment : InternetFragment() {
+
+    private var _binding: FragmentUsersBinding? = null
+    private val binding get() = _binding!!
 
     private val usersData = MutableLiveData<List<User>>()
     private val listAdapter = UsersAdapter()
@@ -60,7 +63,7 @@ class UsersFragment : InternetFragment() {
         usersData.observe(this, { users ->
             bindList(users)
         })
-        authenticationViewModel.login.observe(this, { (_, reason) ->
+        delegate.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -70,13 +73,23 @@ class UsersFragment : InternetFragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_users, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentUsersBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        list.adapter = listAdapter
+        binding.list.adapter = listAdapter
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onStart() {
@@ -87,7 +100,7 @@ class UsersFragment : InternetFragment() {
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        dataSource.usersPage(firstRun)
+        delegate.dataSource.usersPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->

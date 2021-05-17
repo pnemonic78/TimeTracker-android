@@ -35,7 +35,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.User
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Single
 
 /**
  * User entity DAO.

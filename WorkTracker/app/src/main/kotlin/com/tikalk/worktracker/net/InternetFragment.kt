@@ -32,21 +32,10 @@
 
 package com.tikalk.worktracker.net
 
-import android.app.AlertDialog
 import android.os.Bundle
-import androidx.annotation.StringRes
 import com.tikalk.app.runOnUiThread
-import com.tikalk.html.textBr
-import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragment
-import com.tikalk.worktracker.auth.AccessDeniedException
-import com.tikalk.worktracker.auth.AuthenticationException
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import retrofit2.Response
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 
 /**
  * Fragment that is Internet-aware.
@@ -58,55 +47,14 @@ abstract class InternetFragment : TrackerFragment {
     constructor(args: Bundle) : super(args)
 
     protected fun isValidResponse(response: Response<String>): Boolean {
-        val html = response.body()
-        if (response.isSuccessful && (html != null)) {
-            val networkResponse = response.raw().networkResponse
-            val priorResponse = response.raw().priorResponse
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request.url
-                val priorUrl = priorResponse.request.url
-                if (networkUrl == priorUrl) {
-                    return true
-                }
-                when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
-                    TimeTrackerService.PHP_TIME,
-                    TimeTrackerService.PHP_REPORT ->
-                        return true
-                    TimeTrackerService.PHP_ACCESS_DENIED ->
-                        throw AccessDeniedException()
-                }
-                return false
-            }
-            return true
-        }
-        return false
+        return delegate.isValidResponse(response)
     }
 
     protected fun getResponseError(html: String?): String? {
-        if (html == null) return null
-        val doc: Document = Jsoup.parse(html)
-        return findError(doc)
+        return delegate.getResponseError(html)
     }
 
-    /**
-     * Find the first error table element.
-     */
-    protected fun findError(doc: Document): String? {
-        val body = doc.body()
-
-        val errorNode = body.selectFirst("td[class='error']")
-        if (errorNode != null) {
-            return errorNode.textBr()
-        }
-
-        return null
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     * @param show visible?
-     */
-    protected fun showProgress(show: Boolean) {
+    override fun showProgress(show: Boolean) {
         (activity as InternetActivity?)?.showProgress(show)
     }
 
@@ -116,55 +64,5 @@ abstract class InternetFragment : TrackerFragment {
      */
     protected fun showProgressMain(show: Boolean) {
         runOnUiThread { showProgress(show) }
-    }
-
-    /**
-     * Handle an error.
-     * @param error the error.
-     */
-    protected fun handleError(error: Throwable) {
-        when (error) {
-            is AccessDeniedException -> showAccessDeniedError()
-            is AuthenticationException -> authenticate()
-            is ConnectException -> showConnectionError()
-            is SocketTimeoutException -> showConnectionError()
-            is UnknownHostException -> showUnknownHostError()
-            else -> showUnknownError()
-        }
-    }
-
-    /**
-     * Handle an error, on the main thread.
-     * @param error the error.
-     */
-    protected fun handleErrorMain(error: Throwable) {
-        runOnUiThread {
-            handleError(error)
-        }
-    }
-
-    private fun showError(@StringRes messageId: Int) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.error_title)
-            .setMessage(messageId)
-            .setIcon(R.drawable.ic_report_problem)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun showUnknownHostError() {
-        showError(R.string.error_unknownHost)
-    }
-
-    private fun showAccessDeniedError() {
-        showError(R.string.error_accessDenied)
-    }
-
-    private fun showUnknownError() {
-        showError(R.string.error_unknown)
-    }
-
-    private fun showConnectionError() {
-        showError(R.string.error_connection)
     }
 }

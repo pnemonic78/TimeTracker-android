@@ -36,7 +36,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
@@ -46,6 +51,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.databinding.FragmentReportListBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
@@ -53,15 +59,17 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_report_list.*
-import kotlinx.android.synthetic.main.report_totals.*
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 import java.util.*
 
 class ReportFragment : InternetFragment() {
+
+    private var _binding: FragmentReportListBinding? = null
+    private val binding get() = _binding!!
+    private val bindingTotals get() = binding.totals
 
     private val recordsData = MutableLiveData<List<TimeRecord>>()
     private val totalsData = MutableLiveData<ReportTotals>()
@@ -79,9 +87,9 @@ class ReportFragment : InternetFragment() {
         })
         filterData.observe(this, { filter ->
             this.listAdapter = ReportAdapter(filter)
-            list.adapter = listAdapter
+            binding.list.adapter = listAdapter
         })
-        authenticationViewModel.login.observe(this, { (_, reason) ->
+        delegate.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -91,14 +99,23 @@ class ReportFragment : InternetFragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_report_list, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentReportListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.list.adapter = listAdapter
+    }
 
-        list.adapter = listAdapter
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @MainThread
@@ -109,9 +126,9 @@ class ReportFragment : InternetFragment() {
             listAdapter.notifyDataSetChanged()
         }
         if (records.isNotEmpty()) {
-            listSwitcher.displayedChild = CHILD_LIST
+            binding.listSwitcher.displayedChild = CHILD_LIST
         } else {
-            listSwitcher.displayedChild = CHILD_EMPTY
+            binding.listSwitcher.displayedChild = CHILD_EMPTY
         }
     }
 
@@ -126,19 +143,20 @@ class ReportFragment : InternetFragment() {
 
         if (filter?.showDurationField == true) {
             timeBuffer.setLength(0)
-            durationTotalLabel.visibility = View.VISIBLE
-            durationTotal.text = formatElapsedTime(context, timeFormatter, totals.duration).toString()
+            bindingTotals.durationTotalLabel.visibility = View.VISIBLE
+            bindingTotals.durationTotal.text =
+                formatElapsedTime(context, timeFormatter, totals.duration).toString()
         } else {
-            durationTotalLabel.visibility = View.INVISIBLE
-            durationTotal.text = null
+            bindingTotals.durationTotalLabel.visibility = View.INVISIBLE
+            bindingTotals.durationTotal.text = null
         }
         if (filter?.showCostField == true) {
             timeBuffer.setLength(0)
-            costTotalLabel.visibility = View.VISIBLE
-            costTotal.text = formatCurrency(currencyFormatter, totals.cost).toString()
+            bindingTotals.costTotalLabel.visibility = View.VISIBLE
+            bindingTotals.costTotal.text = formatCurrency(currencyFormatter, totals.cost).toString()
         } else {
-            costTotalLabel.visibility = View.INVISIBLE
-            costTotal.text = null
+            bindingTotals.costTotalLabel.visibility = View.INVISIBLE
+            bindingTotals.costTotal.text = null
         }
     }
 
@@ -170,7 +188,7 @@ class ReportFragment : InternetFragment() {
             filter = filterData.value ?: ReportFilter()
         }
 
-        dataSource.reportPage(filter, firstRun)
+        delegate.dataSource.reportPage(filter, firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
@@ -290,7 +308,7 @@ class ReportFragment : InternetFragment() {
             }, { err ->
                 Timber.e(err, "Error exporting ODF: ${err.message}")
                 showProgress(false)
-                alert(err)
+                showError(err)
                 item?.isEnabled = true
             })
             .addTo(disposables)
@@ -323,7 +341,7 @@ class ReportFragment : InternetFragment() {
 
     private fun shareFile(context: Context, fileUri: Uri, mimeType: String? = null) {
         val activity = this.activity ?: return
-        val intent = ShareCompat.IntentBuilder.from(activity)
+        val intent = ShareCompat.IntentBuilder(activity)
             .addStream(fileUri)
             .setType(mimeType ?: context.contentResolver.getType(fileUri))
             .intent
@@ -338,15 +356,13 @@ class ReportFragment : InternetFragment() {
         }
     }
 
-    private fun alert(error: Throwable?) {
-        if (error != null) {
-            AlertDialog.Builder(requireContext())
-                .setTitle(R.string.error_title)
-                .setIcon(R.drawable.ic_dialog)
-                .setMessage(R.string.error_export)
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
-        }
+    private fun showError(error: Throwable) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.error_title)
+            .setIcon(R.drawable.ic_dialog)
+            .setMessage(R.string.error_export)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     companion object {

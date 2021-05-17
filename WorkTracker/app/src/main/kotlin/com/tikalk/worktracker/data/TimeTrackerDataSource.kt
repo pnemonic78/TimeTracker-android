@@ -37,7 +37,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.*
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import java.util.*
 
 interface TimeTrackerDataSource {

@@ -43,10 +43,21 @@ import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
-import io.reactivex.SingleObserver
-import kotlinx.html.*
+import io.reactivex.rxjava3.core.SingleObserver
+import kotlinx.html.Entities
+import kotlinx.html.body
+import kotlinx.html.br
 import kotlinx.html.consumers.DelayedConsumer
+import kotlinx.html.div
+import kotlinx.html.head
+import kotlinx.html.html
 import kotlinx.html.stream.HTMLStreamBuilder
+import kotlinx.html.style
+import kotlinx.html.table
+import kotlinx.html.td
+import kotlinx.html.title
+import kotlinx.html.tr
+import kotlinx.html.unsafe
 import java.io.File
 import java.io.FileWriter
 import java.io.InputStreamReader
@@ -56,14 +67,38 @@ import java.util.*
 /**
  * Write the list of records as an Hypertext Markup Language (HTML) file.
  */
-class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals) : ReportExporter(context, records, filter, totals) {
+class ReportExporterHTML(
+    context: Context,
+    records: List<TimeRecord>,
+    filter: ReportFilter,
+    totals: ReportTotals
+) : ReportExporter(context, records, filter, totals) {
 
-    override fun createRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>): ReportExporterRunner {
+    override fun createRunner(
+        context: Context,
+        records: List<TimeRecord>,
+        filter: ReportFilter,
+        totals: ReportTotals,
+        observer: SingleObserver<in Uri>
+    ): ReportExporterRunner {
         return ReportExporterHTMLRunner(context, records, filter, totals, observer)
     }
 
-    private class ReportExporterHTMLRunner(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, observer: SingleObserver<in Uri>) : ReportExporterRunner(context, records, filter, totals, observer) {
-        override fun writeContents(context: Context, records: List<TimeRecord>, filter: ReportFilter, totals: ReportTotals, folder: File, filenamePrefix: String): File {
+    private class ReportExporterHTMLRunner(
+        context: Context,
+        records: List<TimeRecord>,
+        filter: ReportFilter,
+        totals: ReportTotals,
+        observer: SingleObserver<in Uri>
+    ) : ReportExporterRunner(context, records, filter, totals, observer) {
+        override fun writeContents(
+            context: Context,
+            records: List<TimeRecord>,
+            filter: ReportFilter,
+            totals: ReportTotals,
+            folder: File,
+            filenamePrefix: String
+        ): File {
             val showProjectField = filter.showProjectField
             val showTaskField = filter.showTaskField
             val showStartField = filter.showStartField
@@ -77,7 +112,11 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val writer: Writer = FileWriter(file)
             out = writer
 
-            val titleText = context.getString(R.string.reports_header, formatSystemDate(filter.start), formatSystemDate(filter.finish))
+            val titleText = context.getString(
+                R.string.reports_header,
+                formatSystemDate(filter.start),
+                formatSystemDate(filter.finish)
+            )
 
             val cssStream = context.assets.open("default.css")
             val cssReader = InputStreamReader(cssStream)
@@ -88,7 +127,13 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
             val currencyBuffer = StringBuilder(20)
             val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
 
-            val consumer = DelayedConsumer(HTMLStreamBuilder(writer, prettyPrint = true, xhtmlCompatible = true)).html {
+            val consumer = DelayedConsumer(
+                HTMLStreamBuilder(
+                    writer,
+                    prettyPrint = true,
+                    xhtmlCompatible = true
+                )
+            ).html {
                 head {
                     title(titleText)
                     style(MIME_TYPE_CSS) {
@@ -246,7 +291,11 @@ class ReportExporterHTML(context: Context, records: List<TimeRecord>, filter: Re
                             if (showDurationField) {
                                 td("cellRightAlignedSubtotal") {
                                     timeBuffer.setLength(0)
-                                    +formatElapsedTime(context, timeFormatter, totals.duration).toString()
+                                    +formatElapsedTime(
+                                        context,
+                                        timeFormatter,
+                                        totals.duration
+                                    ).toString()
                                 }
                             }
                             if (showNoteField) {

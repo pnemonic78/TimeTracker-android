@@ -37,7 +37,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
@@ -45,26 +50,35 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.app.TrackerFragment
+import com.tikalk.worktracker.app.TrackerFragmentDelegate
+import com.tikalk.worktracker.databinding.FragmentTimerBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
-import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.Location
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.findProject
+import com.tikalk.worktracker.model.findTask
+import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_timer.*
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 class TimerFragment : TimeFormFragment() {
+
+    private var _binding: FragmentTimerBinding? = null
+    private val binding get() = _binding!!
 
     private var timer: Disposable? = null
 
@@ -73,46 +87,72 @@ class TimerFragment : TimeFormFragment() {
         setHasOptionsMenu(true)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_timer, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentTimerBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 //projectItemSelected(projectEmpty)
             }
 
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                adapterView: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 val project = adapterView.adapter.getItem(position) as Project
                 projectItemSelected(project)
             }
         }
-        taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 //taskItemSelected(taskEmpty)
             }
 
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                adapterView: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 val task = adapterView.adapter.getItem(position) as ProjectTask
                 taskItemSelected(task)
             }
         }
-        locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 //locationItemSelected(locationEmpty)
             }
 
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                adapterView: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 val task = adapterView.adapter.getItem(position) as LocationItem
                 locationItemSelected(task)
             }
         }
 
-        actionStart.setOnClickListener { startTimer() }
-        actionStop.setOnClickListener { stopTimer() }
+        binding.actionStart.setOnClickListener { startTimer() }
+        binding.actionStop.setOnClickListener { stopTimer() }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposables.clear()
+        _binding = null
     }
 
     @MainThread
@@ -123,7 +163,8 @@ class TimerFragment : TimeFormFragment() {
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(timeViewModel.taskEmpty)
-        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
+        binding.taskInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
         val projects = timeViewModel.projectsData.value
         bindProjects(context, record, projects)
@@ -132,16 +173,16 @@ class TimerFragment : TimeFormFragment() {
 
         val startTime = record.startTime
         if (startTime <= TimeRecord.NEVER) {
-            projectInput.isEnabled = true
-            taskInput.isEnabled = true
-            locationInput.isEnabled = true
-            actionSwitcher.displayedChild = CHILD_START
+            binding.projectInput.isEnabled = true
+            binding.taskInput.isEnabled = true
+            binding.locationInput.isEnabled = true
+            binding.actionSwitcher.displayedChild = CHILD_START
             activity?.invalidateOptionsMenu()
         } else {
-            projectInput.isEnabled = false
-            taskInput.isEnabled = false
-            locationInput.isEnabled = false
-            actionSwitcher.displayedChild = CHILD_STOP
+            binding.projectInput.isEnabled = false
+            binding.taskInput.isEnabled = false
+            binding.locationInput.isEnabled = false
+            binding.actionSwitcher.displayedChild = CHILD_STOP
             activity?.invalidateOptionsMenu()
 
             maybeStartTimer()
@@ -151,23 +192,23 @@ class TimerFragment : TimeFormFragment() {
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
         val projectItems = projects?.toTypedArray() ?: emptyArray()
-        if (projectInput == null) return
-        projectInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
+        binding.projectInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {
-            projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            binding.projectInput.setSelection(max(0, findProject(projectItems, record.project)))
             projectItemSelected(record.project)
         }
-        projectInput.requestFocus()
+        binding.projectInput.requestFocus()
     }
 
     private fun bindLocation(context: Context, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
-        if (locationInput == null) return
         val locations = buildLocations(context)
-        locationInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
+        binding.locationInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
-            locationInput.setSelection(max(0, index))
+            binding.locationInput.setSelection(max(0, index))
             val selectedItem = if (index >= 0) locations[index] else timeViewModel.locationEmpty
             locationItemSelected(selectedItem)
         }
@@ -231,9 +272,9 @@ class TimerFragment : TimeFormFragment() {
         Timber.d("filterTasks project=$project")
         val context = this.context ?: return
         val options = addEmpty(project.tasks)
-        if (taskInput == null) return
-        taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
-        taskInput.setSelection(findTask(options, record.task))
+        binding.taskInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        binding.taskInput.setSelection(findTask(options, record.task))
     }
 
     private fun maybeStartTimer() {
@@ -250,7 +291,7 @@ class TimerFragment : TimeFormFragment() {
     private fun updateTimer() {
         val now = System.currentTimeMillis()
         val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
-        timerText?.text = DateUtils.formatElapsedTime(elapsedSeconds)
+        binding.timerText.text = DateUtils.formatElapsedTime(elapsedSeconds)
     }
 
     private fun projectItemSelected(project: Project) {
@@ -258,21 +299,24 @@ class TimerFragment : TimeFormFragment() {
         setRecordProject(project)
         if (!isVisible) return
         filterTasks(project)
-        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
+        binding.actionStart.isEnabled =
+            (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.d("taskItemSelected task=$task")
         setRecordTask(task)
         if (!isVisible) return
-        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
+        binding.actionStart.isEnabled =
+            (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
 
     private fun locationItemSelected(location: LocationItem) {
         Timber.d("locationItemSelected location=$location")
         setRecordLocation(location.location)
         if (!isVisible) return
-        actionStart.isEnabled = (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
+        binding.actionStart.isEnabled =
+            (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
@@ -348,7 +392,7 @@ class TimerFragment : TimeFormFragment() {
 
     fun run() {
         Timber.i("run first=$firstRun")
-        dataSource.timerPage(firstRun)
+        delegate.dataSource.timerPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
@@ -452,14 +496,14 @@ class TimerFragment : TimeFormFragment() {
     }
 
     companion object {
-        const val EXTRA_ACTION = TrackerFragment.EXTRA_ACTION
+        const val EXTRA_ACTION = TrackerFragmentDelegate.EXTRA_ACTION
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_COMMIT = BuildConfig.APPLICATION_ID + ".COMMIT"
 
-        const val ACTION_STOP = TrackerFragment.ACTION_STOP
+        const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
 
         private const val REQUEST_EDIT = 0xED17
 

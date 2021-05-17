@@ -43,7 +43,7 @@ import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.*
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.*
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 import java.util.*
 import kotlin.collections.ArrayList
 

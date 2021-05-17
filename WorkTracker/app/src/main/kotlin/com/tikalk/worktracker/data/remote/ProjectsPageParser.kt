@@ -54,10 +54,8 @@ class ProjectsPageParser {
             // First row is the header, so drop it.
             val rows = table.getElementsByTag("tr").drop(1)
             for (tr in rows) {
-                val project = parseProject(tr)
-                if (project != null) {
-                    projects.add(project)
-                }
+                val project = parseProject(tr) ?: continue
+                projects.add(project)
             }
         }
 

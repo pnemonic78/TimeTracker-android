@@ -54,10 +54,8 @@ class ProjectTasksPageParser {
             // First row is the header, so drop it.
             val rows = table.getElementsByTag("tr").drop(1)
             for (tr in rows) {
-                val task = parseTask(tr)
-                if (task != null) {
-                    tasks.add(task)
-                }
+                val task = parseTask(tr) ?: continue
+                tasks.add(task)
             }
         }
 

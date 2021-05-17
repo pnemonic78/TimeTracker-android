@@ -49,20 +49,23 @@ import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.auth.model.set
 import com.tikalk.worktracker.data.remote.ProfilePageParser
 import com.tikalk.worktracker.data.remote.ProfilePageSaver
+import com.tikalk.worktracker.databinding.FragmentProfileBinding
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.set
-import com.tikalk.worktracker.net.InternetFragment
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_profile.*
+import com.tikalk.worktracker.net.InternetDialogFragment
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetFragment() {
+class ProfileFragment : InternetDialogFragment() {
+
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var profileViewModule: ProfileViewModel
     private var userData = MutableLiveData<User>()
@@ -88,7 +91,7 @@ class ProfileFragment : InternetFragment() {
         userCredentialsData.observe(this, { userCredentials ->
             bindForm(userData.value, userCredentials)
         })
-        authenticationViewModel.login.observe(this, { (_, reason) ->
+        delegate.login.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
@@ -106,20 +109,30 @@ class ProfileFragment : InternetFragment() {
         return dialog
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        actionSave.setOnClickListener { attemptSave() }
+        binding.actionSave.setOnClickListener { attemptSave() }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        dataSource.profilePage(firstRun)
+        delegate.dataSource.profilePage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ page ->
@@ -148,101 +161,104 @@ class ProfileFragment : InternetFragment() {
     }
 
     @MainThread
-    private fun bindForm(user: User? = User.EMPTY, credentials: UserCredentials? = UserCredentials.EMPTY) {
+    private fun bindForm(
+        user: User? = User.EMPTY,
+        credentials: UserCredentials? = UserCredentials.EMPTY
+    ) {
         var emailValue = user?.email
         if (emailValue.isNullOrBlank()) {
             emailValue = credentials?.login
         }
 
-        nameInput.setText(user?.displayName)
-        emailInput.setText(emailValue)
-        loginInput.setText(credentials?.login)
-        passwordInput.setText(credentials?.password)
-        confirmPasswordInput.setText(password2)
+        binding.nameInput.setText(user?.displayName)
+        binding.emailInput.setText(emailValue)
+        binding.loginInput.setText(credentials?.login)
+        binding.passwordInput.setText(credentials?.password)
+        binding.confirmPasswordInput.setText(password2)
         setErrorLabel(errorMessage)
 
-        nameInput.isEnabled = nameInputEditable
-        emailInput.isEnabled = emailInputEditable
-        loginInput.isEnabled = loginInputEditable
+        binding.nameInput.isEnabled = nameInputEditable
+        binding.emailInput.isEnabled = emailInputEditable
+        binding.loginInput.isEnabled = loginInputEditable
     }
 
     /**
      * Attempts to save any changes.
      */
     private fun attemptSave() {
-        if (!actionSave.isEnabled) {
+        if (!binding.actionSave.isEnabled) {
             return
         }
 
         // Reset errors.
-        nameInput.error = null
-        emailInput.error = null
-        loginInput.error = null
-        passwordInput.error = null
-        confirmPasswordInput.error = null
-        errorLabel.text = ""
+        binding.nameInput.error = null
+        binding.emailInput.error = null
+        binding.loginInput.error = null
+        binding.passwordInput.error = null
+        binding.confirmPasswordInput.error = null
+        binding.errorLabel.text = ""
 
         // Store values at the time of the submission attempt.
-        val nameValue = nameInput.text.toString()
-        val emailValue = emailInput.text.toString()
-        val loginValue = loginInput.text.toString()
-        val passwordValue = passwordInput.text.toString()
-        val confirmPasswordValue = confirmPasswordInput.text.toString()
+        val nameValue = binding.nameInput.text.toString()
+        val emailValue = binding.emailInput.text.toString()
+        val loginValue = binding.loginInput.text.toString()
+        val passwordValue = binding.passwordInput.text.toString()
+        val confirmPasswordValue = binding.confirmPasswordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid name, if the user entered one.
         if (nameValue.isEmpty()) {
-            nameInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = nameInput
+            binding.nameInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.nameInput
             cancel = true
         }
 
         // Check for a valid email address.
         if (emailValue.isEmpty()) {
-            emailInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = emailInput
+            binding.emailInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.emailInput
             cancel = true
         } else if (!isEmailValid(emailValue)) {
-            emailInput.error = getString(R.string.error_invalid_email)
-            if (focusView == null) focusView = emailInput
+            binding.emailInput.error = getString(R.string.error_invalid_email)
+            if (focusView == null) focusView = binding.emailInput
             cancel = true
         }
 
         // Check for a valid login name.
         if (loginValue.isEmpty()) {
-            loginInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = loginInput
+            binding.loginInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.loginInput
             cancel = true
         } else if (!isLoginValid(loginValue)) {
-            loginInput.error = getString(R.string.error_invalid_login)
-            if (focusView == null) focusView = loginInput
+            binding.loginInput.error = getString(R.string.error_invalid_login)
+            if (focusView == null) focusView = binding.loginInput
             cancel = true
         }
 
         // Check for a valid password, if the user entered one.
         if (passwordValue.isEmpty()) {
-            passwordInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = passwordInput
+            binding.passwordInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.passwordInput
             cancel = true
         } else if (!isPasswordValid(passwordValue)) {
-            passwordInput.error = getString(R.string.error_invalid_password)
-            if (focusView == null) focusView = passwordInput
+            binding.passwordInput.error = getString(R.string.error_invalid_password)
+            if (focusView == null) focusView = binding.passwordInput
             cancel = true
         }
 
         if (confirmPasswordValue.isEmpty()) {
-            confirmPasswordInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = confirmPasswordInput
+            binding.confirmPasswordInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.confirmPasswordInput
             cancel = true
         } else if (!isPasswordValid(confirmPasswordValue)) {
-            confirmPasswordInput.error = getString(R.string.error_invalid_password)
-            if (focusView == null) focusView = confirmPasswordInput
+            binding.confirmPasswordInput.error = getString(R.string.error_invalid_password)
+            if (focusView == null) focusView = binding.confirmPasswordInput
             cancel = true
         } else if (passwordValue != confirmPasswordValue) {
-            confirmPasswordInput.error = getString(R.string.error_match_password)
-            if (focusView == null) focusView = confirmPasswordInput
+            binding.confirmPasswordInput.error = getString(R.string.error_match_password)
+            if (focusView == null) focusView = binding.confirmPasswordInput
             cancel = true
         }
 
@@ -251,26 +267,39 @@ class ProfileFragment : InternetFragment() {
             // form field with an error.
             focusView?.requestFocus()
         } else {
-            actionSave.isEnabled = false
+            binding.actionSave.isEnabled = false
 
-            service.editProfile(nameValue, loginValue, passwordValue, confirmPasswordValue, emailValue)
+            delegate.service.editProfile(
+                nameValue,
+                loginValue,
+                passwordValue,
+                confirmPasswordValue,
+                emailValue
+            )
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { showProgressMain(true) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doAfterTerminate { showProgress(false) }
                 .subscribe({ response ->
-                    actionSave.isEnabled = true
+                    binding.actionSave.isEnabled = true
 
                     if (isValidResponse(response)) {
                         val html = response.body()!!
-                        processEdit(html, loginValue, emailValue, nameValue, passwordValue, confirmPasswordValue)
+                        processEdit(
+                            html,
+                            loginValue,
+                            emailValue,
+                            nameValue,
+                            passwordValue,
+                            confirmPasswordValue
+                        )
                     } else {
                         authenticate(true)
                     }
                 }, { err ->
                     Timber.e(err, "Error updating profile: ${err.message}")
                     handleError(err)
-                    actionSave.isEnabled = true
+                    binding.actionSave.isEnabled = true
                 })
                 .addTo(disposables)
         }
@@ -312,7 +341,14 @@ class ProfileFragment : InternetFragment() {
         profileViewModule.onProfileFailure(user, reason)
     }
 
-    private fun processEdit(html: String, loginValue: String, emailValue: String, nameValue: String, passwordValue: String, confirmPasswordValue: String) {
+    private fun processEdit(
+        html: String,
+        loginValue: String,
+        emailValue: String,
+        nameValue: String,
+        passwordValue: String,
+        confirmPasswordValue: String
+    ) {
         val user = userData.value ?: User(loginValue, emailValue, nameValue)
         val userCredentials = userCredentialsData.value
             ?: UserCredentials(loginValue, passwordValue)
@@ -343,7 +379,7 @@ class ProfileFragment : InternetFragment() {
     }
 
     private fun setErrorLabel(text: CharSequence) {
-        errorLabel.text = text
-        errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+        binding.errorLabel.text = text
+        binding.errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
     }
 }

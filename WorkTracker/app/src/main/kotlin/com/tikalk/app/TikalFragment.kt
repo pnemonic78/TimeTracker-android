@@ -32,28 +32,17 @@
 
 package com.tikalk.app
 
-import android.app.Dialog
 import android.os.Bundle
-import androidx.annotation.IdRes
-import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.navigation.fragment.findNavController
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
-open class TikalFragment() : AppCompatDialogFragment() {
+open class TikalFragment() : Fragment() {
 
     constructor(args: Bundle) : this() {
         arguments = args
     }
 
     protected val disposables = CompositeDisposable()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        showsDialog = false
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -71,48 +60,4 @@ open class TikalFragment() : AppCompatDialogFragment() {
     }
 
     open fun onBackPressed(): Boolean = false
-}
-
-fun Fragment.runOnUiThread(action: Runnable) {
-    activity!!.runOnUiThread(action)
-}
-
-fun Fragment.runOnUiThread(action: () -> Unit) {
-    activity!!.runOnUiThread(action)
-}
-
-fun Fragment.topLevel(): Fragment {
-    return parentFragment?.topLevel() ?: this
-}
-
-fun DialogFragment.isShowing(): Boolean {
-    val d: Dialog? = dialog
-    if (d != null) {
-        return (d.isShowing) and !isRemoving
-    }
-    return isVisible
-}
-
-fun <F : Fragment> FragmentManager.findFragmentByClass(clazz: Class<F>): F? {
-    @Suppress("UNCHECKED_CAST")
-    return fragments.find { clazz.isAssignableFrom(it.javaClass) } as F?
-}
-
-fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {
-    var parent = parentFragment
-    while (parent != null) {
-        val parentClass = parent.javaClass
-        if (clazz.isAssignableFrom(parentClass)) {
-            @Suppress("UNCHECKED_CAST")
-            return parent as F?
-        }
-        parent = parent.parentFragment
-    }
-    return null
-}
-
-fun Fragment.isNavDestination(@IdRes resId: Int): Boolean {
-    val navController = findNavController()
-    val destination = navController.currentDestination ?: return false
-    return (destination.id == resId)
 }

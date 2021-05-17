@@ -38,14 +38,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.databinding.UserItemBinding
 import com.tikalk.worktracker.model.User
 
 class UsersAdapter : ListAdapter<User, UserViewHolder>(UserDiffer()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
         val context: Context = parent.context
-        val view = LayoutInflater.from(context).inflate(R.layout.user_item, parent, false)
-        return UserViewHolder(view)
+        val binding = UserItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        return UserViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {

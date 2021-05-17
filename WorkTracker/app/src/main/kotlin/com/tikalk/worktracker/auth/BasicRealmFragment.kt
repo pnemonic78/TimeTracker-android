@@ -43,24 +43,28 @@ import android.widget.TextView
 import androidx.annotation.MainThread
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
-import com.tikalk.worktracker.net.InternetFragment
-import kotlinx.android.synthetic.main.fragment_basic_realm.*
+import com.tikalk.worktracker.databinding.FragmentBasicRealmBinding
+import com.tikalk.worktracker.net.InternetDialogFragment
 import timber.log.Timber
 
 /**
  * An authentication screen for Basic Realm via email/password.
  */
-class BasicRealmFragment : InternetFragment() {
+class BasicRealmFragment : InternetDialogFragment() {
+
+    private var _binding: FragmentBasicRealmBinding? = null
+    private val binding get() = _binding!!
 
     var realmName = "(realm)"
         set(value) {
             field = value
-            realmTitle?.text = getString(R.string.authentication_basic_realm, value)
+            _binding?.realmTitle?.text = getString(R.string.authentication_basic_realm, value)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
+        isCancelable = false
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -69,8 +73,13 @@ class BasicRealmFragment : InternetFragment() {
         return dialog
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_basic_realm, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentBasicRealmBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -81,19 +90,24 @@ class BasicRealmFragment : InternetFragment() {
         val username = credentials.username
         val password = credentials.password
 
-        usernameInput.setText(username)
+        binding.usernameInput.setText(username)
 
         val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
+        binding.passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
             if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true
             }
             false
         })
-        passwordInput.setText(password)
+        binding.passwordInput.setText(password)
 
-        actionAuthenticate.setOnClickListener { attemptLogin() }
+        binding.actionAuthenticate.setOnClickListener { attemptLogin() }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @MainThread
@@ -103,18 +117,20 @@ class BasicRealmFragment : InternetFragment() {
 
         if (args.containsKey(EXTRA_REALM)) {
             realmName = args.getString(EXTRA_REALM) ?: "?"
-            realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
+            binding.realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
         }
         if (args.containsKey(EXTRA_USER)) {
             val username = args.getString(EXTRA_USER)
-            usernameInput.setText(username)
+            binding.usernameInput.setText(username)
 
             val credentials = preferences.basicCredentials
 
             when {
-                args.containsKey(EXTRA_PASSWORD) -> passwordInput.setText(args.getString(EXTRA_PASSWORD))
-                username == credentials.username -> passwordInput.setText(credentials.password)
-                else -> passwordInput.text = null
+                args.containsKey(EXTRA_PASSWORD) -> binding.passwordInput.setText(
+                    args.getString(EXTRA_PASSWORD)
+                )
+                username == credentials.username -> binding.passwordInput.setText(credentials.password)
+                else -> binding.passwordInput.text = null
             }
         }
         if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
@@ -133,40 +149,40 @@ class BasicRealmFragment : InternetFragment() {
      * errors are presented and no actual login attempt is made.
      */
     fun attemptLogin() {
-        if (!actionAuthenticate.isEnabled) {
+        if (!binding.actionAuthenticate.isEnabled) {
             return
         }
 
         // Reset errors.
-        usernameInput.error = null
-        passwordInput.error = null
+        binding.usernameInput.error = null
+        binding.passwordInput.error = null
 
         // Store values at the time of the login attempt.
-        val username = usernameInput.text.toString()
-        val password = passwordInput.text.toString()
+        val username = binding.usernameInput.text.toString()
+        val password = binding.passwordInput.text.toString()
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid name.
         if (username.isEmpty()) {
-            usernameInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = usernameInput
+            binding.usernameInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.usernameInput
             cancel = true
         } else if (!isUsernameValid(username)) {
-            usernameInput.error = getString(R.string.error_invalid_email)
-            if (focusView == null) focusView = usernameInput
+            binding.usernameInput.error = getString(R.string.error_invalid_email)
+            if (focusView == null) focusView = binding.usernameInput
             cancel = true
         }
 
         // Check for a valid password, if the user entered one.
         if (password.isEmpty()) {
-            passwordInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = passwordInput
+            binding.passwordInput.error = getString(R.string.error_field_required)
+            if (focusView == null) focusView = binding.passwordInput
             cancel = true
         } else if (!isPasswordValid(password)) {
-            passwordInput.error = getString(R.string.error_invalid_password)
-            if (focusView == null) focusView = passwordInput
+            binding.passwordInput.error = getString(R.string.error_invalid_password)
+            if (focusView == null) focusView = binding.passwordInput
             cancel = true
         }
 
@@ -177,7 +193,7 @@ class BasicRealmFragment : InternetFragment() {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            actionAuthenticate.isEnabled = false
+            binding.actionAuthenticate.isEnabled = false
 
             preferences.basicCredentials = BasicCredentials(realmName, username, password)
             notifyLoginSuccess(realmName, username)
@@ -194,11 +210,11 @@ class BasicRealmFragment : InternetFragment() {
 
     private fun notifyLoginSuccess(realmName: String, username: String) {
         dismissAllowingStateLoss()
-        authenticationViewModel.onBasicRealmSuccess(realmName, username)
+        delegate.onBasicRealmSuccess(realmName, username)
     }
 
     private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
-        authenticationViewModel.onBasicRealmFailure(realmName, username, reason)
+        delegate.onBasicRealmFailure(realmName, username, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {

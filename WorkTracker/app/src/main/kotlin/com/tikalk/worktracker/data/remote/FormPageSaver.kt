@@ -59,44 +59,34 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
     protected open fun saveProjects(db: TrackerDatabase, projects: List<Project>) {
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
-        val projectsDbById: MutableMap<Long, Project> = HashMap()
-        for (project in projectsDb) {
-            val projectId = project.id
-            projectsDbById[projectId] = project
-        }
+        val projectsDbById = projectsDb.associateBy { it.id }
 
         val projectsToInsert = ArrayList<Project>()
         val projectsToUpdate = ArrayList<Project>()
-        //var projectDb: Project
+        val projectsToDelete = ArrayList<Project>(projectsDb)
         for (project in projects) {
             val projectId = project.id
             if (projectsDbById.containsKey(projectId)) {
-                //projectDb = projectsDbById[projectId]!!
-                //project.dbId = projectDb.dbId
                 projectsToUpdate.add(project)
+                projectsToDelete.remove(project)
             } else {
                 projectsToInsert.add(project)
             }
-            projectsDbById.remove(projectId)
         }
 
-        val projectsToDelete = projectsDbById.values
         if (projectsToDelete.isNotEmpty()) {
             deleteProjectDependencies(db, projectsToDelete)
             projectsDao.delete(projectsToDelete)
         }
 
-        if (projectsToInsert.isNotEmpty()) {
-            /*val projectIds =*/ projectsDao.insert(projectsToInsert)
-            //for (i in projectIds.indices) {
-            //    projectsToInsert[i].dbId = projectIds[i]
-            //}
-        }
-
+        projectsDao.insert(projectsToInsert)
         projectsDao.update(projectsToUpdate)
     }
 
-    private fun deleteProjectDependencies(db: TrackerDatabase, projectsToDelete: Collection<Project>) {
+    private fun deleteProjectDependencies(
+        db: TrackerDatabase,
+        projectsToDelete: Collection<Project>
+    ) {
         val projectIds = projectsToDelete.map { it.id }
 
         val projectTasksDao = db.projectTaskKeyDao()
@@ -111,43 +101,33 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
     protected open fun saveTasks(db: TrackerDatabase, tasks: List<ProjectTask>) {
         val tasksDao = db.taskDao()
         val tasksDb = tasksDao.queryAll()
-        val tasksDbById: MutableMap<Long, ProjectTask> = HashMap()
-        for (task in tasksDb) {
-            tasksDbById[task.id] = task
-        }
+        val tasksDbById = tasksDb.associateBy { it.id }
 
         val tasksToInsert = ArrayList<ProjectTask>()
         val tasksToUpdate = ArrayList<ProjectTask>()
-        //var taskDb: ProjectTask
+        val tasksToDelete = ArrayList<ProjectTask>(tasksDb)
         for (task in tasks) {
             val taskId = task.id
             if (tasksDbById.containsKey(taskId)) {
-                //taskDb = tasksDbById[taskId]!!
-                //task.dbId = taskDb.dbId
                 tasksToUpdate.add(task)
+                tasksToDelete.remove(task)
             } else {
                 tasksToInsert.add(task)
             }
-            tasksDbById.remove(taskId)
         }
-
-        val tasksToDelete = tasksDbById.values
         if (tasksToDelete.isNotEmpty()) {
             deleteProjectTaskDependencies(db, tasksToDelete)
             tasksDao.delete(tasksToDelete)
         }
 
-        if (tasksToInsert.isNotEmpty()) {
-            /*val taskIds =*/ tasksDao.insert(tasksToInsert)
-            //for (i in taskIds.indices) {
-            //    tasksToInsert[i].dbId = taskIds[i]
-            //}
-        }
-
+        tasksDao.insert(tasksToInsert)
         tasksDao.update(tasksToUpdate)
     }
 
-    private fun deleteProjectTaskDependencies(db: TrackerDatabase, tasksToDelete: Collection<ProjectTask>) {
+    private fun deleteProjectTaskDependencies(
+        db: TrackerDatabase,
+        tasksToDelete: Collection<ProjectTask>
+    ) {
         val taskIds = tasksToDelete.map { it.id }
 
         val projectTasksDao = db.projectTaskKeyDao()
@@ -166,39 +146,21 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
 
         val projectTasksDao = db.projectTaskKeyDao()
         val keysDb = projectTasksDao.queryAll()
-        val keysDbMutable = keysDb.toMutableList()
+        val keysDbById = keysDb.associateBy { it.id }
         val keysToInsert = ArrayList<ProjectTaskKey>()
         val keysToUpdate = ArrayList<ProjectTaskKey>()
-        var keyDbFound: ProjectTaskKey?
+        val keysToDelete = ArrayList<ProjectTaskKey>(keysDb)
         for (key in keys) {
-            keyDbFound = null
-            for (keyDb in keysDbMutable) {
-                if (key == keyDb) {
-                    keyDbFound = keyDb
-                    break
-                }
-            }
-            if (keyDbFound != null) {
-                //key.dbId = keyDbFound.dbId
+            if (keysDbById.containsKey(key.id)) {
                 keysToUpdate.add(key)
-                keysDbMutable.remove(keyDbFound)
+                keysToDelete.remove(key)
             } else {
                 keysToInsert.add(key)
             }
         }
 
-        val keysToDelete = keysDbMutable
-        if (keysToDelete.isNotEmpty()) {
-            projectTasksDao.delete(keysToDelete)
-        }
-
-        if (keysToInsert.isNotEmpty()) {
-            /*val keyIds =*/ projectTasksDao.insert(keysToInsert)
-            //for (i in keyIds.indices) {
-            //    keysToInsert[i].dbId = keyIds[i]
-            //}
-        }
-
+        projectTasksDao.delete(keysToDelete)
+        projectTasksDao.insert(keysToInsert)
         projectTasksDao.update(keysToUpdate)
     }
 }
