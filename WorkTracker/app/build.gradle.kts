@@ -3,6 +3,8 @@ plugins {
     id("kotlin-android")
     id("kotlin-kapt")
     id("kotlin-parcelize")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
@@ -114,6 +116,7 @@ dependencies {
 
     // Logging
     implementation("com.jakewharton.timber:timber:${BuildVersions.timberVersion}")
+    implementation("com.google.firebase:firebase-crashlytics:18.0.0")
 
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:${BuildVersions.nav_version}")
