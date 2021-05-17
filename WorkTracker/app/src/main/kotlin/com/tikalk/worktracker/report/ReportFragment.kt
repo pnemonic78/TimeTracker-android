@@ -178,7 +178,7 @@ class ReportFragment : InternetFragment() {
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
-                val filterExtra = args.getParcelable<ReportFilter>(EXTRA_FILTER)
+                val filterExtra = args.getParcelable<ReportFilter?>(EXTRA_FILTER)
                 if (filterExtra != null) {
                     filter = filterExtra
                 }
