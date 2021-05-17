@@ -57,38 +57,32 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
         Timber.i("saveRecords ${formatSystemDate(day)}")
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, day)
-        val recordsDbById: MutableMap<Long, TimeRecordEntity> = HashMap()
-        for (entity in recordsDb) {
-            recordsDbById[entity.record.id] = entity.record
-        }
+        val recordsDbById = recordsDb.associate { it.record.id to it.record }
 
-        val recordsToInsert = ArrayList<TimeRecord>()
-        val recordsToUpdate = ArrayList<TimeRecord>()
-        //var recordDb: TimeRecordEntity
+        val recordsToInsert = ArrayList<TimeRecordEntity>()
+        val recordsToUpdate = ArrayList<TimeRecordEntity>()
+        val recordsToDelete = ArrayList<TimeRecordEntity>(recordsDbById.values)
         for (record in records) {
             val recordId = record.id
             if (recordsDbById.containsKey(recordId)) {
-                //recordDb = recordsDbById[recordId]!!
-                //record.dbId = recordDb.dbId
-                recordsToUpdate.add(record)
+                val recordDb = recordsDbById[recordId]!!
+                mergeRecord(recordDb, record)
+                recordsToUpdate.add(recordDb)
+                recordsToDelete.remove(recordDb)
             } else if (!record.isEmpty()) {
-                recordsToInsert.add(record)
+                recordsToInsert.add(record.toTimeRecordEntity())
             }
-            recordsDbById.remove(recordId)
         }
 
-        val recordsToDelete = recordsDbById.values
         recordsDao.delete(recordsToDelete)
-
-        /*val recordIds =*/ recordsDao.insert(recordsToInsert.map { it.toTimeRecordEntity() })
-        //for (i in recordIds.indices) {
-        //    recordsToInsert[i].dbId = recordIds[i]
-        //}
-
-        recordsDao.update(recordsToUpdate.map { it.toTimeRecordEntity() })
+        recordsDao.insert(recordsToInsert)
+        recordsDao.update(recordsToUpdate)
     }
 
-    private fun queryRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
+    private fun queryRecords(
+        db: TrackerDatabase,
+        day: Calendar? = null
+    ): List<WholeTimeRecordEntity> {
         val recordsDao = db.timeRecordDao()
         return if (day == null) {
             recordsDao.queryAll()
@@ -99,5 +93,19 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
             finish.setToEndOfDay()
             recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
         }
+    }
+
+    /**
+     * Merge known fields to the latest page record that are missing.
+     * @param recordDb The cached record from the local database.
+     * @param recordPage The parsed record from the page.
+     */
+    private fun mergeRecord(recordDb: TimeRecordEntity, recordPage: TimeRecord) {
+        recordDb.finish = recordPage.finish
+        recordDb.note = recordPage.note
+        recordDb.projectId = recordPage.project.id
+        recordDb.start = recordPage.start
+        recordDb.status = recordPage.status
+        recordDb.taskId = recordPage.task.id
     }
 }

@@ -44,16 +44,21 @@ import com.tikalk.worktracker.model.TikalEntity
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "project_task_key",
+@Entity(
+    tableName = "project_task_key",
     foreignKeys = [
-        ForeignKey(entity = Project::class,
+        ForeignKey(
+            entity = Project::class,
             parentColumns = ["id"],
             childColumns = ["project_id"],
-            onDelete = ForeignKey.CASCADE),
-        ForeignKey(entity = ProjectTask::class,
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = ProjectTask::class,
             parentColumns = ["id"],
             childColumns = ["task_id"],
-            onDelete = ForeignKey.CASCADE)
+            onDelete = ForeignKey.CASCADE
+        )
     ],
     indices = [Index("project_id"), Index("task_id")]
 )
@@ -88,13 +93,13 @@ data class ProjectTaskKey(
 
     override fun equals(other: Any?): Boolean {
         if (other is ProjectTaskKey) {
-            return (this.projectId == other.projectId) and (this.taskId == other.taskId)
+            return (this._projectId == other._projectId) and (this._taskId == other._taskId)
         }
         return super.equals(other)
     }
 
     private fun updateId() {
-        id = ((projectId and 0xFFFFFFFF) shl 32) + (taskId and 0xFFFFFFFF)
+        id = ((projectId and 0xFFFFFFFFL) shl 32) or (taskId and 0xFFFFFFFFL)
     }
 }
 
