@@ -510,9 +510,9 @@ class ReportFormFragment : TimeFormFragment() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         Timber.i("onRestoreInstanceState")
         super.onRestoreInstanceState(savedInstanceState)
-        val filter = savedInstanceState.getParcelable<ReportFilter>(STATE_FILTER)
+        val filter = savedInstanceState.getParcelable<ReportFilter?>(STATE_FILTER)
         if (filter != null) {
-            filterData.value = filter
+            filterData.value = filter!!
         }
     }
 

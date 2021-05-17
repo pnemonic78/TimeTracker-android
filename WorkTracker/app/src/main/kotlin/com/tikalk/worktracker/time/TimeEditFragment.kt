@@ -656,8 +656,7 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity>(STATE_RECORD)
-
+        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity?>(STATE_RECORD)
         if (recordParcel != null) {
             val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)

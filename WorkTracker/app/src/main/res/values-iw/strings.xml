@@ -57,6 +57,7 @@
     <string name="week_total">סה\"כ שבוע</string>
     <string name="pick_date">מעבר לתאריך</string>
     <string name="today">היום</string>
+    <string name="add">הוסף</string>
 
     <!-- Settings -->
     <string name="settings_label" msgid="1626402585530130914">הגדרות</string>

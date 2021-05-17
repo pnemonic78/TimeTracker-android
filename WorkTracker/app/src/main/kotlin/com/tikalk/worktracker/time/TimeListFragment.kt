@@ -578,7 +578,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun onRecordEditFailure(record: TimeRecord, reason: String) {
-        Timber.e("record failure: $reason")
+        Timber.e("record failure: $record $reason")
     }
 
     override fun onBackPressed(): Boolean {
