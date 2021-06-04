@@ -46,14 +46,19 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "record",
+@Entity(
+    tableName = "record",
     foreignKeys = [
-        ForeignKey(entity = Project::class,
+        ForeignKey(
+            entity = Project::class,
             parentColumns = ["id"],
-            childColumns = ["project_id"]),
-        ForeignKey(entity = ProjectTask::class,
+            childColumns = ["project_id"]
+        ),
+        ForeignKey(
+            entity = ProjectTask::class,
             parentColumns = ["id"],
-            childColumns = ["task_id"])
+            childColumns = ["task_id"]
+        )
     ],
     indices = [Index("project_id"), Index("task_id")]
 )
@@ -153,7 +158,10 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         this.location.id
     )
 
-fun TimeRecordEntity.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+fun TimeRecordEntity.toTimeRecord(
+    projects: Collection<Project>? = null,
+    tasks: Collection<ProjectTask>? = null
+): TimeRecord {
     val value: TimeRecordEntity = this
     val project = projects?.find { it.id == value.projectId }
         ?: Project.EMPTY.copy().apply { id = value.projectId }

@@ -34,9 +34,11 @@ package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
 
-class ReportPage(val filter: ReportFilter,
-                 val records: List<TimeRecord>,
-                 val totals: ReportTotals)
+class ReportPage(
+    val filter: ReportFilter,
+    val records: List<TimeRecord>,
+    val totals: ReportTotals
+)
 
 class MutableReportPage(val filter: ReportFilter) {
     var records: List<TimeRecord> = emptyList()

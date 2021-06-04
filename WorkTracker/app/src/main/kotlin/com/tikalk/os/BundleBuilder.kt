@@ -106,8 +106,10 @@ class BundleBuilder {
         return this
     }
 
-    fun putCharSequenceArrayList(key: String?,
-                                 value: ArrayList<CharSequence?>?): BundleBuilder {
+    fun putCharSequenceArrayList(
+        key: String?,
+        value: ArrayList<CharSequence?>?
+    ): BundleBuilder {
         bundle.putCharSequenceArrayList(key, value)
         return this
     }
@@ -167,8 +169,10 @@ class BundleBuilder {
         return this
     }
 
-    fun putParcelableArrayList(key: String?,
-                               value: ArrayList<out Parcelable?>?): BundleBuilder {
+    fun putParcelableArrayList(
+        key: String?,
+        value: ArrayList<out Parcelable?>?
+    ): BundleBuilder {
         bundle.putParcelableArrayList(key, value)
         return this
     }
@@ -198,8 +202,10 @@ class BundleBuilder {
         return this
     }
 
-    fun putSparseParcelableArray(key: String?,
-                                 value: SparseArray<out Parcelable?>?): BundleBuilder {
+    fun putSparseParcelableArray(
+        key: String?,
+        value: SparseArray<out Parcelable?>?
+    ): BundleBuilder {
         bundle.putSparseParcelableArray(key, value)
         return this
     }

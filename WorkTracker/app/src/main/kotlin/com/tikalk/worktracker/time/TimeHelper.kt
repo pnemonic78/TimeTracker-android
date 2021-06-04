@@ -42,20 +42,28 @@ const val SYSTEM_DATE_PATTERN = "yyyy-MM-dd"
 const val SYSTEM_TIME_PATTERN = "HH:mm"
 const val SYSTEM_HOURS_PATTERN = "HH:mm"
 
-const val FORMAT_TIME_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
-const val FORMAT_DATE_BUTTON = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_WEEKDAY
+const val FORMAT_TIME_BUTTON =
+    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
+const val FORMAT_DATE_BUTTON =
+    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_WEEKDAY
 
-fun formatSystemDate(date: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
+fun formatSystemDate(date: Long = System.currentTimeMillis()): String =
+    DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemDate(date: Date?): String = if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
+fun formatSystemDate(date: Date?): String =
+    if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemDate(date: Calendar?): String = if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
+fun formatSystemDate(date: Calendar?): String =
+    if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemTime(time: Long = System.currentTimeMillis()): String = DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
+fun formatSystemTime(time: Long = System.currentTimeMillis()): String =
+    DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Date?): String = if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
+fun formatSystemTime(time: Date?): String =
+    if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Calendar?): String = if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
+fun formatSystemTime(time: Calendar?): String =
+    if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
 fun parseSystemTime(date: Long, time: String?): Calendar? {
     if (time.isNullOrEmpty()) {

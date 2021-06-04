@@ -49,7 +49,8 @@ data class ProjectWithTasks(
         parentColumn = "id",// Project
         entity = ProjectTask::class,
         entityColumn = "id",// ProjectTask
-        associateBy = Junction(ProjectTaskKey::class,
+        associateBy = Junction(
+            ProjectTaskKey::class,
             parentColumn = "project_id",
             entityColumn = "task_id"
         )

@@ -44,7 +44,8 @@ import com.tikalk.worktracker.R
 /**
  * Provides a widget for selecting a date and time.
  */
-class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : FrameLayout(context, attrs, defStyleAttr),
+class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
+    FrameLayout(context, attrs, defStyleAttr),
     DatePicker.OnDateChangedListener,
     TimePicker.OnTimeChangedListener {
 
@@ -79,7 +80,14 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
      * @param minute The current minute.
      * @param listener How user is notified date is changed by user, can be null.
      */
-    fun init(year: Int, monthOfYear: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int, listener: OnDateTimeChangedListener?) {
+    fun init(
+        year: Int,
+        monthOfYear: Int,
+        dayOfMonth: Int,
+        hourOfDay: Int,
+        minute: Int,
+        listener: OnDateTimeChangedListener?
+    ) {
         this.listener = listener
         datePicker.init(year, monthOfYear, dayOfMonth, this)
         timePicker.setOnTimeChangedListener(null)
@@ -163,6 +171,13 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
          * @param hourOfDay the hour that was set
          * @param minute the minute that was set
          */
-        fun onDateTimeChanged(view: DateTimePicker, year: Int, monthOfYear: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int)
+        fun onDateTimeChanged(
+            view: DateTimePicker,
+            year: Int,
+            monthOfYear: Int,
+            dayOfMonth: Int,
+            hourOfDay: Int,
+            minute: Int
+        )
     }
 }

@@ -102,21 +102,22 @@ class ReportFormFragment : TimeFormFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        bindingForm.projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //projectItemSelected(projectEmpty)
-            }
+        bindingForm.projectInput.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(adapterView: AdapterView<*>) {
+                    //projectItemSelected(projectEmpty)
+                }
 
-            override fun onItemSelected(
-                adapterView: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val project = adapterView.adapter.getItem(position) as Project
-                projectItemSelected(project)
+                override fun onItemSelected(
+                    adapterView: AdapterView<*>,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val project = adapterView.adapter.getItem(position) as Project
+                    projectItemSelected(project)
+                }
             }
-        }
         bindingForm.taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 //taskItemSelected(taskEmpty)
@@ -132,36 +133,38 @@ class ReportFormFragment : TimeFormFragment() {
                 taskItemSelected(task)
             }
         }
-        bindingForm.locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //locationItemSelected(locationEmpty)
-            }
+        bindingForm.locationInput.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(adapterView: AdapterView<*>) {
+                    //locationItemSelected(locationEmpty)
+                }
 
-            override fun onItemSelected(
-                adapterView: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val location = adapterView.adapter.getItem(position) as LocationItem
-                locationItemSelected(location)
+                override fun onItemSelected(
+                    adapterView: AdapterView<*>,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val location = adapterView.adapter.getItem(position) as LocationItem
+                    locationItemSelected(location)
+                }
             }
-        }
-        bindingForm.periodInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //periodItemSelected(ReportTimePeriod.CUSTOM)
-            }
+        bindingForm.periodInput.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(adapterView: AdapterView<*>) {
+                    //periodItemSelected(ReportTimePeriod.CUSTOM)
+                }
 
-            override fun onItemSelected(
-                adapterView: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val period = periods[position]
-                periodItemSelected(period)
+                override fun onItemSelected(
+                    adapterView: AdapterView<*>,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val period = periods[position]
+                    periodItemSelected(period)
+                }
             }
-        }
         bindingForm.startInput.setOnClickListener { pickStartDate() }
         bindingForm.finishInput.setOnClickListener { pickFinishDate() }
 
@@ -219,7 +222,8 @@ class ReportFormFragment : TimeFormFragment() {
         val context = this.context ?: return
         if (!isVisible) return
         val options = addEmpty(project.tasks)
-        bindingForm.taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        bindingForm.taskInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
 
         val filter = filterData.value
         if (filter != null) {
@@ -311,7 +315,8 @@ class ReportFormFragment : TimeFormFragment() {
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(timeViewModel.taskEmpty)
-        bindingForm.taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
+        bindingForm.taskInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
         val projects = timeViewModel.projectsData.value
         bindProjects(context, filter, projects)

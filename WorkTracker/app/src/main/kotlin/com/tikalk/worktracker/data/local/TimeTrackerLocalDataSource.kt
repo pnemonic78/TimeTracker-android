@@ -47,8 +47,10 @@ import io.reactivex.rxjava3.core.Observable
 import java.util.*
 import kotlin.collections.ArrayList
 
-class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
-                                 private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
+class TimeTrackerLocalDataSource(
+    private val db: TrackerDatabase,
+    private val preferences: TimeTrackerPrefs
+) : TimeTrackerDataSource {
 
     override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
         val projects = ArrayList<Project>()
@@ -157,7 +159,10 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             }
     }
 
-    private fun populateProjects(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>) {
+    private fun populateProjects(
+        projectsWithTasks: List<ProjectWithTasks>,
+        projects: MutableCollection<Project>
+    ) {
         projects.clear()
 
         for (projectWithTasks in projectsWithTasks) {
@@ -186,7 +191,11 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             }
     }
 
-    private fun loadReportRecords(db: TrackerDatabase, filter: ReportFilter, projects: Collection<Project>?): List<TimeRecord> {
+    private fun loadReportRecords(
+        db: TrackerDatabase,
+        filter: ReportFilter,
+        projects: Collection<Project>?
+    ): List<TimeRecord> {
         val start = filter.startTime
         val finish = filter.finishTime
         val reportRecordsDao = db.reportRecordDao()
@@ -244,7 +253,10 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
             }
     }
 
-    private fun loadRecords(db: TrackerDatabase, day: Calendar? = null): List<WholeTimeRecordEntity> {
+    private fun loadRecords(
+        db: TrackerDatabase,
+        day: Calendar? = null
+    ): List<WholeTimeRecordEntity> {
         val recordsDao = db.timeRecordDao()
         return if (day == null) {
             recordsDao.queryAll()
@@ -275,7 +287,14 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
         val finishMonth = cal.setToEndOfDay().timeInMillis
 
         val recordsDao = db.timeRecordDao()
-        val totalsAll = recordsDao.queryTotals(startDay, finishDay, startWeek, finishWeek, startMonth, finishMonth)
+        val totalsAll = recordsDao.queryTotals(
+            startDay,
+            finishDay,
+            startWeek,
+            finishWeek,
+            startMonth,
+            finishMonth
+        )
         if (totalsAll.size >= 3) {
             totals.daily = totalsAll[0].daily
             totals.weekly = totalsAll[1].weekly
@@ -333,7 +352,13 @@ class TimeTrackerLocalDataSource(private val db: TrackerDatabase,
     }
 
     companion object {
-        private val WORK_DAYS = intArrayOf(Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY)
+        private val WORK_DAYS = intArrayOf(
+            Calendar.SUNDAY,
+            Calendar.MONDAY,
+            Calendar.TUESDAY,
+            Calendar.WEDNESDAY,
+            Calendar.THURSDAY
+        )
         private const val WORK_HOURS = 9L
     }
 }

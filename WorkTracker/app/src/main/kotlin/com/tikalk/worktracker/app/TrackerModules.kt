@@ -77,7 +77,10 @@ val retrofitModule = module {
         return createCookieHandler(context)
     }
 
-    fun provideHttpClient(preferences: TimeTrackerPrefs? = null, cookieHandler: CookieHandler): OkHttpClient {
+    fun provideHttpClient(
+        preferences: TimeTrackerPrefs? = null,
+        cookieHandler: CookieHandler
+    ): OkHttpClient {
         return createHttpClient(preferences, cookieHandler)
     }
 
@@ -91,15 +94,25 @@ val retrofitModule = module {
 }
 
 val dataModule = module {
-    fun provideLocalDataSource(db: TrackerDatabase, preferences: TimeTrackerPrefs): TimeTrackerLocalDataSource {
+    fun provideLocalDataSource(
+        db: TrackerDatabase,
+        preferences: TimeTrackerPrefs
+    ): TimeTrackerLocalDataSource {
         return TimeTrackerLocalDataSource(db, preferences)
     }
 
-    fun provideRemoteDataSource(service: TimeTrackerService, db: TrackerDatabase, preferences: TimeTrackerPrefs): TimeTrackerRemoteDataSource {
+    fun provideRemoteDataSource(
+        service: TimeTrackerService,
+        db: TrackerDatabase,
+        preferences: TimeTrackerPrefs
+    ): TimeTrackerRemoteDataSource {
         return TimeTrackerRemoteDataSource(service, db, preferences)
     }
 
-    fun provideRepository(local: TimeTrackerLocalDataSource, remote: TimeTrackerRemoteDataSource): TimeTrackerRepository {
+    fun provideRepository(
+        local: TimeTrackerLocalDataSource,
+        remote: TimeTrackerRemoteDataSource
+    ): TimeTrackerRepository {
         return TimeTrackerRepository(local, remote)
     }
 

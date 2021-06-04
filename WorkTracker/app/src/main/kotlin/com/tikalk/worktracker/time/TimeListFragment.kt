@@ -264,7 +264,8 @@ class TimeListFragment : TimeFormFragment(),
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
-        binding.dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
+        binding.dateInput.text =
+            DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
         if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()

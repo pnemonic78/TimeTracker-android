@@ -211,7 +211,13 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         populateForm(doc, page, form, inputProjects, inputTasks)
     }
 
-    open fun populateForm(doc: Document, page: MP, form: FormElement, inputProjects: Element, inputTasks: Element) {
+    open fun populateForm(
+        doc: Document,
+        page: MP,
+        form: FormElement,
+        inputProjects: Element,
+        inputTasks: Element
+    ) {
         val projects = parseProjects(inputProjects)
         val tasks = parseTasks(inputTasks)
         populateTaskIds(doc, projects, tasks)

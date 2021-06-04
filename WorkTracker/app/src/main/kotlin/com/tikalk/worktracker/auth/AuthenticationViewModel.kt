@@ -112,6 +112,7 @@ class AuthenticationViewModel : TrackerViewModel() {
     companion object {
         fun get(fragment: Fragment) = get(fragment.requireActivity())
 
-        fun get(owner: ViewModelStoreOwner) = ViewModelProvider(owner).get(AuthenticationViewModel::class.java)
+        fun get(owner: ViewModelStoreOwner) =
+            ViewModelProvider(owner).get(AuthenticationViewModel::class.java)
     }
 }

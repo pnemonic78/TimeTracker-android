@@ -100,7 +100,14 @@ class TimeTrackerPrefs(context: Context) {
                 .apply()
         }
 
-    fun startRecord(projectId: Long, projectName: String, taskId: Long, taskName: String, startTime: Long, remoteId: Long) {
+    fun startRecord(
+        projectId: Long,
+        projectName: String,
+        taskId: Long,
+        taskName: String,
+        startTime: Long,
+        remoteId: Long
+    ) {
         prefs.edit()
             .putLong(PROJECT_ID, projectId)
             .putString(PROJECT_NAME, projectName)
@@ -112,12 +119,14 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun startRecord(record: TimeRecord) {
-        startRecord(record.project.id,
+        startRecord(
+            record.project.id,
             record.project.name,
             record.task.id,
             record.task.name,
             record.startTime,
-            record.location.id)
+            record.location.id
+        )
     }
 
     fun getStartedRecord(): TimeRecord? {

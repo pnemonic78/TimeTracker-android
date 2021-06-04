@@ -64,59 +64,69 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_LOGIN)
-    fun login(@Field("login") email: String,
-              @Field("password") password: String,
-              @Field("browser_today") date: String,
-              @Field("btn_login") button: String = "Login"): Single<Response<String>>
+    fun login(
+        @Field("login") email: String,
+        @Field("password") password: String,
+        @Field("browser_today") date: String,
+        @Field("btn_login") button: String = "Login"
+    ): Single<Response<String>>
 
     @GET(PHP_TIME)
     fun fetchTimes(@Query("date") date: String): Single<Response<String>>
 
     @FormUrlEncoded
     @POST(PHP_TIME)
-    fun addTime(@Field("project") projectId: Long,
-                @Field("task") taskId: Long,
-                @Field("date") date: String,
-                @Field("start") start: String,
-                @Field("finish") finish: String,
-                @Field("note") note: String,
-                @Field("time_field_5") locationId: Long,
-                @Field("btn_submit") submit: String = "Submit",
-                @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
+    fun addTime(
+        @Field("project") projectId: Long,
+        @Field("task") taskId: Long,
+        @Field("date") date: String,
+        @Field("start") start: String,
+        @Field("finish") finish: String,
+        @Field("note") note: String,
+        @Field("time_field_5") locationId: Long,
+        @Field("btn_submit") submit: String = "Submit",
+        @Field("browser_today") browserToday: String = formatSystemDate()
+    ): Single<Response<String>>
 
     @GET(PHP_EDIT)
     fun fetchTime(@Query("id") id: Long): Single<Response<String>>
 
     @FormUrlEncoded
     @POST(PHP_EDIT)
-    fun editTime(@Field("id") id: Long,
-                 @Field("project") projectId: Long,
-                 @Field("task") taskId: Long,
-                 @Field("date") date: String,
-                 @Field("start") start: String,
-                 @Field("finish") finish: String,
-                 @Field("note") note: String,
-                 @Field("time_field_5") locationId: Long,
-                 @Field("btn_save") submit: String = "Save",
-                 @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
+    fun editTime(
+        @Field("id") id: Long,
+        @Field("project") projectId: Long,
+        @Field("task") taskId: Long,
+        @Field("date") date: String,
+        @Field("start") start: String,
+        @Field("finish") finish: String,
+        @Field("note") note: String,
+        @Field("time_field_5") locationId: Long,
+        @Field("btn_save") submit: String = "Save",
+        @Field("browser_today") browserToday: String = formatSystemDate()
+    ): Single<Response<String>>
 
     @FormUrlEncoded
     @POST(PHP_DELETE)
-    fun deleteTime(@Field("id") id: Long,
-                   @Field("delete_button") submit: String = "Delete",
-                   @Field("browser_today") browserToday: String = formatSystemDate()): Single<Response<String>>
+    fun deleteTime(
+        @Field("id") id: Long,
+        @Field("delete_button") submit: String = "Delete",
+        @Field("browser_today") browserToday: String = formatSystemDate()
+    ): Single<Response<String>>
 
     @GET(PHP_PROFILE)
     fun fetchProfile(): Single<Response<String>>
 
     @FormUrlEncoded
     @POST(PHP_PROFILE)
-    fun editProfile(@Field("name") name: String,
-                    @Field("login") login: String,
-                    @Field("password1") password1: String,
-                    @Field("password2") password2: String,
-                    @Field("email") email: String,
-                    @Field("btn_save") submit: String = "Save"): Single<Response<String>>
+    fun editProfile(
+        @Field("name") name: String,
+        @Field("login") login: String,
+        @Field("password1") password1: String,
+        @Field("password2") password2: String,
+        @Field("email") email: String,
+        @Field("btn_save") submit: String = "Save"
+    ): Single<Response<String>>
 
     @GET(PHP_PROJECTS)
     fun fetchProjects(): Single<Response<String>>
@@ -132,6 +142,8 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_REPORTS)
-    fun generateReport(@FieldMap filter: Map<String, String>,
-                       @Field("btn_generate") submit: String = "Generate"): Single<Response<String>>
+    fun generateReport(
+        @FieldMap filter: Map<String, String>,
+        @Field("btn_generate") submit: String = "Generate"
+    ): Single<Response<String>>
 }

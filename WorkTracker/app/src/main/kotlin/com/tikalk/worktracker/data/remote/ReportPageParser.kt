@@ -82,7 +82,11 @@ class ReportPageParser(private val filter: ReportFilter) {
         return projectsDao.queryAllWithTasks()
     }
 
-    private fun populateProjectsWithTasks(projectsWithTasks: List<ProjectWithTasks>, projects: MutableCollection<Project>, tasks: MutableCollection<ProjectTask>) {
+    private fun populateProjectsWithTasks(
+        projectsWithTasks: List<ProjectWithTasks>,
+        projects: MutableCollection<Project>,
+        tasks: MutableCollection<ProjectTask>
+    ) {
         projects.clear()
         tasks.clear()
 
@@ -143,7 +147,8 @@ class ReportPageParser(private val filter: ReportFilter) {
                     val totalsBlankRowIndex = totalsRowIndex - 1
                     for (i in 1 until totalsBlankRowIndex) {
                         val tr = rows[i]
-                        val record = parseRecord(tr,
+                        val record = parseRecord(
+                            tr,
                             i,
                             columnIndexDate,
                             columnIndexProject,
@@ -153,7 +158,8 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexNote,
                             columnIndexCost,
                             columnIndexLocation,
-                            projects) ?: continue
+                            projects
+                        ) ?: continue
                         records.add(record)
                     }
                 }
@@ -179,17 +185,19 @@ class ReportPageParser(private val filter: ReportFilter) {
         return null
     }
 
-    private fun parseRecord(row: Element,
-                            index: Int,
-                            columnIndexDate: Int,
-                            columnIndexProject: Int,
-                            columnIndexTask: Int,
-                            columnIndexStart: Int,
-                            columnIndexFinish: Int,
-                            columnIndexNote: Int,
-                            columnIndexCost: Int,
-                            columnIndexLocation: Int,
-                            projects: MutableCollection<Project>): TimeRecord? {
+    private fun parseRecord(
+        row: Element,
+        index: Int,
+        columnIndexDate: Int,
+        columnIndexProject: Int,
+        columnIndexTask: Int,
+        columnIndexStart: Int,
+        columnIndexFinish: Int,
+        columnIndexNote: Int,
+        columnIndexCost: Int,
+        columnIndexLocation: Int,
+        projects: MutableCollection<Project>
+    ): TimeRecord? {
         val cols = row.getElementsByTag("td")
         val record = TimeRecord.EMPTY.copy()
         record.id = index + 1L

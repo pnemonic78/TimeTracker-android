@@ -44,14 +44,18 @@ import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
  *
  * @author Moshe Waisberg
  */
-internal class TimeListSwipeHandler(private val itemListener: TimeListAdapter.OnTimeListListener) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START) {
+internal class TimeListSwipeHandler(private val itemListener: TimeListAdapter.OnTimeListListener) :
+    ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START) {
     private var deleteBg: Drawable? = null
 
     override fun isLongPressDragEnabled(): Boolean {
         return false
     }
 
-    override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+    override fun getSwipeDirs(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
         if (viewHolder is TimeListViewHolder) {
             val item = viewHolder.record!!
             val id = item.id
@@ -63,7 +67,11 @@ internal class TimeListSwipeHandler(private val itemListener: TimeListAdapter.On
         return super.getSwipeDirs(recyclerView, viewHolder)
     }
 
-    override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+    override fun onMove(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        target: RecyclerView.ViewHolder
+    ): Boolean {
         // We don't want support moving items up/down
         return false
     }
@@ -75,7 +83,15 @@ internal class TimeListSwipeHandler(private val itemListener: TimeListAdapter.On
         }
     }
 
-    override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+    override fun onChildDraw(
+        c: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        dX: Float,
+        dY: Float,
+        actionState: Int,
+        isCurrentlyActive: Boolean
+    ) {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
 
         val itemView = viewHolder.itemView

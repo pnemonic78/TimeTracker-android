@@ -73,7 +73,8 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
         val version = findPreference<Preference>("about.version")
         if (version != null) {
             try {
-                version.summary = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                version.summary =
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
             } catch (e: PackageManager.NameNotFoundException) {
                 // Never should happen with our own package!
             }

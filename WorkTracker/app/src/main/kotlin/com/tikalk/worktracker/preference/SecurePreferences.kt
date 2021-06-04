@@ -145,7 +145,11 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
         return if (cryptic == null) defValue else decrypt(key, cryptic)
     }
 
-    private fun decryptStringSet(key: String, cryptics: Set<String>?, defValue: Set<String>?): Set<String>? {
+    private fun decryptStringSet(
+        key: String,
+        cryptics: Set<String>?,
+        defValue: Set<String>?
+    ): Set<String>? {
         return if (cryptics == null) {
             defValue
         } else {
@@ -172,8 +176,10 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
          * to values of the preferences.
          */
         fun getDefaultSharedPreferences(context: Context): SharedPreferences {
-            return getSharedPreferences(context, getDefaultSharedPreferencesName(context),
-                getDefaultSharedPreferencesMode())
+            return getSharedPreferences(
+                context, getDefaultSharedPreferencesName(context),
+                getDefaultSharedPreferencesMode()
+            )
         }
 
         fun getSharedPreferences(context: Context, name: String, mode: Int): SharedPreferences {
@@ -184,11 +190,13 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
                     .build()
                 masterKeyAES256 = masterKey
             }
-            return EncryptedSharedPreferences.create(context,
+            return EncryptedSharedPreferences.create(
+                context,
                 name,
                 masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
         }
 
         /**

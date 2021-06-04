@@ -56,7 +56,8 @@ class UserViewHolder(val binding: UserItemBinding) : RecyclerView.ViewHolder(bin
         binding.login.text = user.username
         binding.role.text = user.roles?.joinToString(", ") ?: ""
         binding.uncompletedEntry.setImageLevel(if (user.isUncompletedEntry) LEVEL_ACTIVE else LEVEL_NORMAL)
-        binding.uncompletedEntry.contentDescription = itemView.context.getString(R.string.uncompleted_entry)
+        binding.uncompletedEntry.contentDescription =
+            itemView.context.getString(R.string.uncompleted_entry)
     }
 
     @MainThread

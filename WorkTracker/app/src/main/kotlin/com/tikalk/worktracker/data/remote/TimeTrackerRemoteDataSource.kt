@@ -45,9 +45,11 @@ import io.reactivex.rxjava3.core.Observable
 import retrofit2.Response
 import java.util.Calendar
 
-class TimeTrackerRemoteDataSource(private val service: TimeTrackerService,
-                                  private val db: TrackerDatabase,
-                                  private val preferences: TimeTrackerPrefs) : TimeTrackerDataSource {
+class TimeTrackerRemoteDataSource(
+    private val service: TimeTrackerService,
+    private val db: TrackerDatabase,
+    private val preferences: TimeTrackerPrefs
+) : TimeTrackerDataSource {
 
     @Throws(Exception::class)
     private fun validateResponse(response: Response<String>) {

@@ -49,7 +49,8 @@ import kotlin.collections.HashMap
  */
 class PersistentCookieStore(context: Context) : CookieStore {
 
-    private val prefs: SharedPreferences = context.getSharedPreferences("cookies", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("cookies", Context.MODE_PRIVATE)
     private val uriIndex: MutableMap<URI, MutableList<HttpCookie>> = HashMap()
     private val lock: ReentrantLock = ReentrantLock(false)
 
@@ -152,9 +153,11 @@ class PersistentCookieStore(context: Context) : CookieStore {
     }
 
     // add 'cookie' indexed by 'index' into 'indexStore'
-    private fun <T> addIndex(indexStore: MutableMap<T, MutableList<HttpCookie>>,
-                             index: T,
-                             cookie: HttpCookie) {
+    private fun <T> addIndex(
+        indexStore: MutableMap<T, MutableList<HttpCookie>>,
+        index: T,
+        cookie: HttpCookie
+    ) {
         // Android-changed: "index" can be null. We only use the URI based
         // index on Android and we want to support null URIs. The underlying
         // store is a HashMap which will support null keys anyway.
@@ -191,15 +194,21 @@ class PersistentCookieStore(context: Context) : CookieStore {
         }
     }
 
-    private fun getInternal1(cookies: MutableList<HttpCookie>, cookieIndex: Map<URI, MutableList<HttpCookie>>,
-                             host: String) {
+    private fun getInternal1(
+        cookies: MutableList<HttpCookie>, cookieIndex: Map<URI, MutableList<HttpCookie>>,
+        host: String
+    ) {
         // Use a separate list to handle cookies that need to be removed so
         // that there is no conflict with iterators.
         val toRemove = ArrayList<HttpCookie>()
         for ((_, lst) in cookieIndex) {
             for (c in lst) {
                 val domain = c.domain
-                if (c.version == 0 && netscapeDomainMatches(domain, host) || c.version == 1 && HttpCookie.domainMatches(domain, host)) {
+                if (c.version == 0 && netscapeDomainMatches(
+                        domain,
+                        host
+                    ) || c.version == 1 && HttpCookie.domainMatches(domain, host)
+                ) {
                     // the cookie still in main cookie store
                     if (!c.hasExpired()) {
                         // don't add twice
@@ -223,8 +232,10 @@ class PersistentCookieStore(context: Context) : CookieStore {
     // @param cookieIndex       the index
     // @param comparator        the prediction to decide whether or not
     //                          a cookie in index should be returned
-    private fun <T : Comparable<T>> getInternal2(cookies: MutableList<HttpCookie>, cookieIndex: Map<T, List<HttpCookie>>,
-                                                 comparator: T) {
+    private fun <T : Comparable<T>> getInternal2(
+        cookies: MutableList<HttpCookie>, cookieIndex: Map<T, List<HttpCookie>>,
+        comparator: T
+    ) {
         // Removed cookieJar
         for (index in cookieIndex.keys) {
             if (index === comparator || comparator.compareTo(index) == 0) {
