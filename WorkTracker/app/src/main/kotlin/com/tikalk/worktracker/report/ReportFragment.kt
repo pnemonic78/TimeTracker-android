@@ -161,11 +161,12 @@ class ReportFragment : InternetFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            findNavController().navigate(R.id.action_reportList_to_login, args)
+            navController.navigate(R.id.action_reportList_to_login, args)
         }
     }
 

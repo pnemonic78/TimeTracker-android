@@ -298,11 +298,12 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            findNavController().navigate(R.id.action_reportForm_to_login, args)
+            navController.navigate(R.id.action_reportForm_to_login, args)
         }
     }
 
@@ -479,7 +480,8 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun generateReport() {
-        Timber.i("generateReport currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("generateReport currentDestination=${navController.currentDestination?.label}")
 
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()
@@ -499,7 +501,7 @@ class ReportFormFragment : TimeFormFragment() {
             if (reportFragmentController != null) {
                 reportFragmentController.navigate(R.id.reportFragment, args)
             } else {
-                findNavController().navigate(R.id.action_reportForm_to_reportList, args)
+                navController.navigate(R.id.action_reportForm_to_reportList, args)
             }
         }
     }

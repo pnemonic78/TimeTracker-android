@@ -251,7 +251,8 @@ class LoginFragment : InternetDialogFragment {
     }
 
     private fun authenticateBasicRealm(username: String, realm: String) {
-        Timber.i("authenticateBasicRealm realm=$realm currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("authenticateBasicRealm realm=$realm currentDestination=${navController.currentDestination?.label}")
         val indexAt = username.indexOf('@')
         val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
@@ -260,7 +261,7 @@ class LoginFragment : InternetDialogFragment {
                 putString(BasicRealmFragment.EXTRA_REALM, realm)
                 putString(BasicRealmFragment.EXTRA_USER, userClean)
             }
-            findNavController().navigate(R.id.action_basicRealmLogin, args)
+            navController.navigate(R.id.action_basicRealmLogin, args)
         }
     }
 
