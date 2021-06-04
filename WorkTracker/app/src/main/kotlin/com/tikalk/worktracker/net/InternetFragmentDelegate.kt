@@ -46,6 +46,8 @@ import java.net.UnknownHostException
 
 class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
 
+    private var authenticationCounter = 0
+
     fun isValidResponse(response: Response<String>): Boolean {
         val html = response.body()
         if (response.isSuccessful && (html != null)) {
@@ -98,7 +100,10 @@ class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
     fun handleError(error: Throwable) {
         when (error) {
             is AccessDeniedException -> showAccessDeniedError()
-            is AuthenticationException -> callback.authenticate()
+            is AuthenticationException -> {
+                authenticationCounter++
+                callback.authenticate(authenticationCounter <= 1)
+            }
             is ConnectException -> showConnectionError()
             is SocketTimeoutException -> showConnectionError()
             is UnknownHostException -> showUnknownHostError()

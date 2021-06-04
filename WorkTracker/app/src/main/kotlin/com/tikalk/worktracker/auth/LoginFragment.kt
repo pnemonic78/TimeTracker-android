@@ -71,7 +71,7 @@ class LoginFragment : InternetDialogFragment {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
-        isCancelable = false
+        isCancelable = true
 
         delegate.authenticationViewModel.basicRealm.observe(this, { (realm, _, reason) ->
             if (reason == null) {
