@@ -59,13 +59,6 @@ class TimeListActivity : InternetActivity() {
         binding = ActivityTimeListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set up navigation - action bar and sidebar.
-        /// Let the navigation view check/uncheck the menu items.
-        binding.navView.post { // wait for NavHostFragment to inflate
-            val navController = findNavController()
-            binding.navView.setupWithNavController(navController)
-        }
-
         /// Show the hamburger and back icons
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         drawerToggle = ActionBarDrawerToggle(
@@ -75,6 +68,16 @@ class TimeListActivity : InternetActivity() {
             R.string.drawer_close
         )
         binding.drawerLayout.addDrawerListener(drawerToggle)
+
+        // Set up navigation - action bar and sidebar.
+        /// Let the navigation view check/uncheck the menu items.
+        binding.navView.post { // wait for NavHostFragment to inflate
+            val navController = findNavController()
+            binding.navView.setupWithNavController(navController)
+            navController.addOnDestinationChangedListener { controller, destination, arguments ->
+                supportActionBar?.title = destination.label
+            }
+        }
 
         profileViewModule = ProfileViewModel.get(this)
         profileViewModule.profileUpdate.observe(this, { (_, reason) ->
