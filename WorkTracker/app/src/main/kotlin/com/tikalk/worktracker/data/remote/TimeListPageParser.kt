@@ -56,7 +56,14 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
     }
 
     override fun createPage(page: MutableTimeListPage): TimeListPage {
-        return TimeListPage(page.record, page.projects, page.errorMessage, page.date, page.records, page.totals)
+        return TimeListPage(
+            page.record,
+            page.projects,
+            page.errorMessage,
+            page.date,
+            page.records,
+            page.totals
+        )
     }
 
     override fun createMutablePage(record: TimeRecord): MutableTimeListPage {
@@ -68,7 +75,13 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         populateList(doc, page, form)
     }
 
-    override fun populateForm(doc: Document, page: MutableTimeListPage, form: FormElement, inputProjects: Element, inputTasks: Element) {
+    override fun populateForm(
+        doc: Document,
+        page: MutableTimeListPage,
+        form: FormElement,
+        inputProjects: Element,
+        inputTasks: Element
+    ) {
         super.populateForm(doc, page, form, inputProjects, inputTasks)
 
         val inputDate = form.selectByName("date") ?: return

@@ -46,29 +46,65 @@ import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
 import java.util.*
 
-class DateTimePickerDialog private constructor(context: Context,
-                                               @StyleRes themeResId: Int,
-                                               listener: OnDateTimeSetListener?,
-                                               calendar: Calendar?,
-                                               year: Int, monthOfYear: Int, dayOfMonth: Int,
-                                               hourOfDay: Int, minute: Int, is24HourView: Boolean
-) : AlertDialog(context, themeResId), DialogInterface.OnClickListener, DateTimePicker.OnDateTimeChangedListener {
+class DateTimePickerDialog private constructor(
+    context: Context,
+    @StyleRes themeResId: Int,
+    listener: OnDateTimeSetListener?,
+    calendar: Calendar?,
+    year: Int, monthOfYear: Int, dayOfMonth: Int,
+    hourOfDay: Int, minute: Int, is24HourView: Boolean
+) : AlertDialog(context, themeResId), DialogInterface.OnClickListener,
+    DateTimePicker.OnDateTimeChangedListener {
 
     var dateTimePicker: DateTimePicker
 
     var dateTimeSetListener: OnDateTimeSetListener? = listener
 
     constructor(context: Context) :
-        this(context, 0, null, Calendar.getInstance(), 0, 0, 0, 0, 0, DateFormat.is24HourFormat(context))
+        this(
+            context,
+            0,
+            null,
+            Calendar.getInstance(),
+            0,
+            0,
+            0,
+            0,
+            0,
+            DateFormat.is24HourFormat(context)
+        )
 
     constructor(context: Context, listener: OnDateTimeSetListener?) :
-        this(context, 0, listener, Calendar.getInstance(), 0, 0, 0, 0, 0, DateFormat.is24HourFormat(context))
+        this(
+            context,
+            0,
+            listener,
+            Calendar.getInstance(),
+            0,
+            0,
+            0,
+            0,
+            0,
+            DateFormat.is24HourFormat(context)
+        )
 
-    constructor(context: Context,
-                listener: OnDateTimeSetListener?,
-                year: Int, monthOfYear: Int, dayOfMonth: Int,
-                hourOfDay: Int, minute: Int, is24HourView: Boolean
-    ) : this(context, 0, listener, null, year, monthOfYear, dayOfMonth, hourOfDay, minute, is24HourView)
+    constructor(
+        context: Context,
+        listener: OnDateTimeSetListener?,
+        year: Int, monthOfYear: Int, dayOfMonth: Int,
+        hourOfDay: Int, minute: Int, is24HourView: Boolean
+    ) : this(
+        context,
+        0,
+        listener,
+        null,
+        year,
+        monthOfYear,
+        dayOfMonth,
+        hourOfDay,
+        minute,
+        is24HourView
+    )
 
     init {
         val themeContext = getContext()
@@ -103,8 +139,16 @@ class DateTimePickerDialog private constructor(context: Context,
         tabDate.setContent(R.id.datePicker)
         tabs.addTab(tabDate)
 
-        setButton(DialogInterface.BUTTON_POSITIVE, themeContext.getString(android.R.string.ok), this)
-        setButton(DialogInterface.BUTTON_NEGATIVE, themeContext.getString(android.R.string.cancel), this)
+        setButton(
+            DialogInterface.BUTTON_POSITIVE,
+            themeContext.getString(android.R.string.ok),
+            this
+        )
+        setButton(
+            DialogInterface.BUTTON_NEGATIVE,
+            themeContext.getString(android.R.string.cancel),
+            this
+        )
     }
 
     override fun onClick(dialog: DialogInterface, which: Int) {
@@ -114,15 +158,24 @@ class DateTimePickerDialog private constructor(context: Context,
                 // Clearing focus forces the dialog to commit any pending
                 // changes, e.g. typed text in a NumberPicker.
                 dateTimePicker.clearFocus()
-                listener.onDateTimeSet(dateTimePicker, dateTimePicker.getYear(),
+                listener.onDateTimeSet(
+                    dateTimePicker, dateTimePicker.getYear(),
                     dateTimePicker.getMonth(), dateTimePicker.getDayOfMonth(),
-                    dateTimePicker.getHour(), dateTimePicker.getMinute())
+                    dateTimePicker.getHour(), dateTimePicker.getMinute()
+                )
             }
             DialogInterface.BUTTON_NEGATIVE -> cancel()
         }
     }
 
-    override fun onDateTimeChanged(view: DateTimePicker, year: Int, monthOfYear: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
+    override fun onDateTimeChanged(
+        view: DateTimePicker,
+        year: Int,
+        monthOfYear: Int,
+        dayOfMonth: Int,
+        hourOfDay: Int,
+        minute: Int
+    ) {
         dateTimePicker.init(year, monthOfYear, dayOfMonth, hourOfDay, minute, this)
     }
 
@@ -189,7 +242,14 @@ class DateTimePickerDialog private constructor(context: Context,
          * @param hourOfDay the hour that was set
          * @param minute the minute that was set
          */
-        fun onDateTimeSet(view: DateTimePicker, year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int)
+        fun onDateTimeSet(
+            view: DateTimePicker,
+            year: Int,
+            month: Int,
+            dayOfMonth: Int,
+            hourOfDay: Int,
+            minute: Int
+        )
     }
 
     companion object {

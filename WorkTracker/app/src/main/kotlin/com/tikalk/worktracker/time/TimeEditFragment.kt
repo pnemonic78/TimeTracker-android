@@ -209,7 +209,8 @@ class TimeEditFragment : TimeFormFragment() {
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(timeViewModel.taskEmpty)
-        binding.taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
+        binding.taskInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
         val projects = timeViewModel.projectsData.value
         bindProjects(context, record, projects)
@@ -422,7 +423,8 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("filterTasks $project")
         val context = this.context ?: return
         val options = addEmpty(project.tasks)
-        binding.taskInput.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        binding.taskInput.adapter =
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
         binding.taskInput.setSelection(findTask(options, record.task))
     }
 
@@ -511,11 +513,12 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            findNavController().navigate(R.id.action_timeEdit_to_login, args)
+            navController.navigate(R.id.action_timeEdit_to_login, args)
         }
     }
 

@@ -264,7 +264,8 @@ class TimeListFragment : TimeFormFragment(),
 
     @MainThread
     private fun bindList(date: Calendar, records: List<TimeRecord>) {
-        binding.dateInput.text = DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
+        binding.dateInput.text =
+            DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
         if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
@@ -315,11 +316,12 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     override fun authenticate(submit: Boolean) {
-        Timber.i("authenticate submit=$submit currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
             val args = Bundle()
             args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            findNavController().navigate(R.id.action_timeList_to_login, args)
+            navController.navigate(R.id.action_timeList_to_login, args)
         }
     }
 

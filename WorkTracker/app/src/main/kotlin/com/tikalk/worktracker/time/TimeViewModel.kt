@@ -53,7 +53,11 @@ class TimeViewModel : TrackerViewModel() {
         ?: ProjectTask.EMPTY.copy()
     var locationEmpty: LocationItem = LocationItem(Location.EMPTY, "")
 
-    data class RecordEditData(val record: TimeRecord, val last: Boolean = true, val responseHtml: String = "")
+    data class RecordEditData(
+        val record: TimeRecord,
+        val last: Boolean = true,
+        val responseHtml: String = ""
+    )
 
     private val editData = MutableLiveData<RecordEditData>()
     val edit: LiveData<RecordEditData> = editData
@@ -110,6 +114,7 @@ class TimeViewModel : TrackerViewModel() {
     companion object {
         fun get(fragment: Fragment) = get(fragment.requireActivity())
 
-        fun get(owner: ViewModelStoreOwner) = ViewModelProvider(owner).get(TimeViewModel::class.java)
+        fun get(owner: ViewModelStoreOwner) =
+            ViewModelProvider(owner).get(TimeViewModel::class.java)
     }
 }

@@ -60,7 +60,13 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         return MutableTimeEditPage(record)
     }
 
-    override fun populateForm(doc: Document, page: MutableTimeEditPage, form: FormElement, inputProjects: Element, inputTasks: Element) {
+    override fun populateForm(
+        doc: Document,
+        page: MutableTimeEditPage,
+        form: FormElement,
+        inputProjects: Element,
+        inputTasks: Element
+    ) {
         super.populateForm(doc, page, form, inputProjects, inputTasks)
         val record = page.record
 
@@ -84,7 +90,8 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         val noteValue = inputNote?.value() ?: ""
         record.note = noteValue
 
-        record.status = if (record.id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
+        record.status =
+            if (record.id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
 
         val inputLocation = form.selectByName("time_field_5")
         if (inputLocation != null) {

@@ -41,7 +41,8 @@ import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.TimeListViewHolder
 
-class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) : TimeListViewHolder(binding) {
+class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
+    TimeListViewHolder(binding) {
 
     @MainThread
     override fun bind(record: TimeRecord) {
@@ -52,10 +53,17 @@ class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
         if (filter.showStartField) {
             if (filter.showFinishField) {
                 timeBuffer.setLength(0)
-                val formatterRange = DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
+                val formatterRange = DateUtils.formatDateRange(
+                    context,
+                    timeFormatter,
+                    startTime,
+                    endTime,
+                    FORMAT_DURATION
+                )
                 binding.timeRange.text = formatterRange.out() as CharSequence
             } else {
-                binding.timeRange.text = DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)
+                binding.timeRange.text =
+                    DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)
             }
         } else if (filter.showFinishField) {
             binding.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
@@ -76,7 +84,8 @@ class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
         binding.projectIcon.visibility = binding.project.visibility
         binding.task.visibility = if (filter.showTaskField) View.VISIBLE else View.GONE
         binding.taskIcon.visibility = binding.task.visibility
-        binding.timeRange.visibility = if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
+        binding.timeRange.visibility =
+            if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
         binding.timeRangeIcon.visibility = binding.timeRange.visibility
         binding.timeDuration.visibility = if (filter.showDurationField) View.VISIBLE else View.GONE
         binding.note.visibility = if (filter.showNoteField) View.VISIBLE else View.GONE

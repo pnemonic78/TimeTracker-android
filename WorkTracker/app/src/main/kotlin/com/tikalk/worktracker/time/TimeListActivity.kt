@@ -38,18 +38,15 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.navigation.NavigationView
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.databinding.ActivityTimeListBinding
-import com.tikalk.worktracker.databinding.ProgressBinding
 import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.user.ProfileViewModel
 import timber.log.Timber
 
-class TimeListActivity : InternetActivity(),
-    NavigationView.OnNavigationItemSelectedListener {
+class TimeListActivity : InternetActivity() {
 
     private lateinit var binding: ActivityTimeListBinding
     private lateinit var profileViewModule: ProfileViewModel
@@ -62,14 +59,6 @@ class TimeListActivity : InternetActivity(),
         binding = ActivityTimeListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set up navigation - action bar and sidebar.
-        /// Let the navigation view check/uncheck the menu items.
-        binding.navView.post { // wait for NavHostFragment to inflate
-            val navController = findNavController()
-            binding.navView.setupWithNavController(navController)
-            binding.navView.setNavigationItemSelectedListener(this)
-        }
-
         /// Show the hamburger and back icons
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         drawerToggle = ActionBarDrawerToggle(
@@ -79,6 +68,16 @@ class TimeListActivity : InternetActivity(),
             R.string.drawer_close
         )
         binding.drawerLayout.addDrawerListener(drawerToggle)
+
+        // Set up navigation - action bar and sidebar.
+        /// Let the navigation view check/uncheck the menu items.
+        binding.navView.post { // wait for NavHostFragment to inflate
+            val navController = findNavController()
+            binding.navView.setupWithNavController(navController)
+            navController.addOnDestinationChangedListener { controller, destination, arguments ->
+                supportActionBar?.title = destination.label
+            }
+        }
 
         profileViewModule = ProfileViewModel.get(this)
         profileViewModule.profileUpdate.observe(this, { (_, reason) ->
@@ -113,49 +112,8 @@ class TimeListActivity : InternetActivity(),
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.profileFragment -> {
-                showProfile()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-            R.id.projectsFragment -> {
-                showProjects()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-            R.id.reportFormFragment -> {
-                showReports()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-            R.id.tasksFragment -> {
-                showTasks()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-            R.id.timeListFragment -> {
-                showMainFragment()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-            R.id.timeSettingsFragment -> {
-                showSettings()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-            R.id.usersFragment -> {
-                showUsers()
-                binding.drawerLayout.closeDrawers()
-                return true
-            }
-        }
-        return false
-    }
-
     override fun showProgress(show: Boolean) {
-        binding.progress.progress.showAnimated(show)
+        binding.progress.progressContainer.showAnimated(show)
     }
 
     private fun handleIntent(intent: Intent) {

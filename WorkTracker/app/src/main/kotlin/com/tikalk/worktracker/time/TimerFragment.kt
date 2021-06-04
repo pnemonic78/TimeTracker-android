@@ -374,7 +374,8 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun editRecord(record: TimeRecord) {
-        Timber.i("editRecord record=$record currentDestination=${findNavController().currentDestination?.label}")
+        val navController = findNavController()
+        Timber.i("editRecord record=$record currentDestination=${navController.currentDestination?.label}")
         val parent = findParentFragment(TimeListFragment::class.java)
         if (parent != null) {
             parent.editRecord(record, true)
@@ -386,7 +387,7 @@ class TimerFragment : TimeFormFragment() {
             args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
             args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
             args.putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
-            findNavController().navigate(R.id.action_timer_to_timeEdit, args)
+            navController.navigate(R.id.action_timer_to_timeEdit, args)
         }
     }
 

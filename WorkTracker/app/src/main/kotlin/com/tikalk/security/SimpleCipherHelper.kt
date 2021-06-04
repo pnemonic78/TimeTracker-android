@@ -49,22 +49,31 @@ import kotlin.math.min
  * Simple password-based encryption cipher helper.
  * @author moshe on 2018/07/18.
  */
-class SimpleCipherHelper(privateKey: String, salt: String, keyFactory: SecretKeyFactory, private val digest: MessageDigest) : CipherHelper {
+class SimpleCipherHelper(
+    privateKey: String,
+    salt: String,
+    keyFactory: SecretKeyFactory,
+    private val digest: MessageDigest
+) : CipherHelper {
 
-    constructor(privateKey: String, salt: String, keyFactory: SecretKeyFactory) : this(privateKey, salt, keyFactory, try {
-        MessageDigest.getInstance("SHA-256")
-    } catch (e: Throwable) {
-        MessageDigest.getInstance("SHA-1")
-    })
+    constructor(privateKey: String, salt: String, keyFactory: SecretKeyFactory) : this(
+        privateKey, salt, keyFactory, try {
+            MessageDigest.getInstance("SHA-256")
+        } catch (e: Throwable) {
+            MessageDigest.getInstance("SHA-1")
+        }
+    )
 
-    constructor(privateKey: String, salt: String) : this(privateKey, salt,
+    constructor(privateKey: String, salt: String) : this(
+        privateKey, salt,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
         else
             SecretKeyFactory.getInstance("PBKDF2withHmacSHA1")
     )
 
-    constructor(privateKey: String, salt: String, digest: MessageDigest) : this(privateKey, salt,
+    constructor(privateKey: String, salt: String, digest: MessageDigest) : this(
+        privateKey, salt,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             SecretKeyFactory.getInstance("PBKDF2withHmacSHA256")
         else

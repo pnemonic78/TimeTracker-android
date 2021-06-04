@@ -40,7 +40,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.User
 
-class ProfileViewModel: TrackerViewModel() {
+class ProfileViewModel : TrackerViewModel() {
 
     private val profileUpdateData = MutableLiveData<ProfileData>()
     val profileUpdate: LiveData<ProfileData> = profileUpdateData
@@ -78,6 +78,7 @@ class ProfileViewModel: TrackerViewModel() {
     companion object {
         fun get(fragment: Fragment) = get(fragment.requireActivity())
 
-        fun get(owner: ViewModelStoreOwner) = ViewModelProvider(owner).get(ProfileViewModel::class.java)
+        fun get(owner: ViewModelStoreOwner) =
+            ViewModelProvider(owner).get(ProfileViewModel::class.java)
     }
 }

@@ -72,7 +72,8 @@ abstract class InternetActivity : TrackerActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 ConnectivityManager.CONNECTIVITY_ACTION -> {
-                    val manager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+                    val manager =
+                        context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
                     val netInfo = manager.activeNetworkInfo
                     if ((netInfo != null) && netInfo.isConnected) {
                         //FIXME ping the server to verify connection.

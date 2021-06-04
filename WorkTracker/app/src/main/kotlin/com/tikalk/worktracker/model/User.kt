@@ -88,7 +88,8 @@ data class User(
         parcel.readString(),
         parcel.readString(),
         createUriFromParcel(parcel),
-        parcel.createStringArrayList())
+        parcel.createStringArrayList()
+    )
 
     fun isEmpty(): Boolean {
         return username.isEmpty()

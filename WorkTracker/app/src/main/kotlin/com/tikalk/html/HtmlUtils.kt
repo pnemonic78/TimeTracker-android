@@ -74,7 +74,8 @@ fun Element.textBr(): String {
             }
         }
 
-        override fun tail(node: Node, depth: Int) { // make sure there is a space between block tags and immediately following text nodes <div>One</div>Two should be "One Two".
+        override fun tail(node: Node, depth: Int) {
+            // make sure there is a space between block tags and immediately following text nodes <div>One</div>Two should be "One Two".
             if (node is Element) {
                 if (node.isBlock && (node.nextSibling() is TextNode) && !lastCharIsWhitespace(accum)) {
                     accum.append(' ')

@@ -54,13 +54,15 @@ class ProfilePageParser {
     }
 
     private fun createPage(page: MutableProfilePage): ProfilePage {
-        return ProfilePage(page.user,
+        return ProfilePage(
+            page.user,
             page.userCredentials,
             page.nameInputEditable,
             page.emailInputEditable,
             page.loginInputEditable,
             page.passwordConfirm,
-            page.errorMessage)
+            page.errorMessage
+        )
     }
 
     private fun createMutablePage(): MutableProfilePage {

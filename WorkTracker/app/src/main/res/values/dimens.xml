@@ -24,6 +24,6 @@
 
     <dimen name="time_list_marginTop">8dp</dimen>
     <dimen name="form_marginTop">8dp</dimen>
-    <dimen name="card_cornerRadius">4dp</dimen>
+    <dimen name="card_cornerRadius">10dp</dimen>
     <dimen name="icon_item">12dp</dimen>
 </resources>

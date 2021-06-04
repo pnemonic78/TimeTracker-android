@@ -46,14 +46,19 @@ import java.util.*
  *
  * @author Moshe Waisberg.
  */
-@Entity(tableName = "report",
+@Entity(
+    tableName = "report",
     foreignKeys = [
-        ForeignKey(entity = Project::class,
+        ForeignKey(
+            entity = Project::class,
             parentColumns = ["id"],
-            childColumns = ["project_id"]),
-        ForeignKey(entity = ProjectTask::class,
+            childColumns = ["project_id"]
+        ),
+        ForeignKey(
+            entity = ProjectTask::class,
             parentColumns = ["id"],
-            childColumns = ["task_id"])
+            childColumns = ["task_id"]
+        )
     ],
     inheritSuperIndices = true
 )
@@ -87,7 +92,10 @@ fun TimeRecord.toReportRecord(): ReportRecord =
         this.status
     )
 
-fun ReportRecord.toTimeRecord(projects: Collection<Project>? = null, tasks: Collection<ProjectTask>? = null): TimeRecord {
+fun ReportRecord.toTimeRecord(
+    projects: Collection<Project>? = null,
+    tasks: Collection<ProjectTask>? = null
+): TimeRecord {
     val value: ReportRecord = this
     val project = projects?.find { it.id == value.projectId }
         ?: projects?.find { it.name == value.projectName }

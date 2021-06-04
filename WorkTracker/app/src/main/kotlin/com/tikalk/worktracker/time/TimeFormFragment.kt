@@ -84,7 +84,11 @@ abstract class TimeFormFragment : InternetFragment() {
     protected open fun markFavorite(record: TimeRecord) {
         Timber.i("markFavorite $record")
         preferences.setFavorite(record)
-        Toast.makeText(requireContext(), getString(R.string.favorite_marked, record.project.name, record.task.name), Toast.LENGTH_LONG).show()
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.favorite_marked, record.project.name, record.task.name),
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     @MainThread
@@ -144,7 +148,13 @@ abstract class TimeFormFragment : InternetFragment() {
         return false
     }
 
-    protected fun setRecordStart(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int): Boolean {
+    protected fun setRecordStart(
+        year: Int,
+        month: Int,
+        dayOfMonth: Int,
+        hourOfDay: Int,
+        minute: Int
+    ): Boolean {
         Timber.d("${javaClass.simpleName} setRecordStart date=$year-$month-$dayOfMonth $hourOfDay:$minute")
         val time = Calendar.getInstance()
         time.year = year
@@ -164,7 +174,13 @@ abstract class TimeFormFragment : InternetFragment() {
         return false
     }
 
-    protected fun setRecordFinish(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int): Boolean {
+    protected fun setRecordFinish(
+        year: Int,
+        month: Int,
+        dayOfMonth: Int,
+        hourOfDay: Int,
+        minute: Int
+    ): Boolean {
         Timber.d("${javaClass.simpleName} setRecordFinish date=$year-$month-$dayOfMonth $hourOfDay:$minute")
         val time = Calendar.getInstance()
         time.year = year
@@ -200,7 +216,8 @@ abstract class TimeFormFragment : InternetFragment() {
         }
     }
 
-    protected open fun getEmptyProjectName() = requireContext().getString(R.string.project_name_select)
+    protected open fun getEmptyProjectName() =
+        requireContext().getString(R.string.project_name_select)
 
     protected open fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
 

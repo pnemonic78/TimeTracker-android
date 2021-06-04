@@ -101,7 +101,8 @@ class UsersPageParser {
         var isUncompletedEntry = false
         for (span in spans) {
             val classAttribute = span.attr("class")
-            isUncompletedEntry = isUncompletedEntry or (classAttribute == "uncompleted-entry active")
+            isUncompletedEntry =
+                isUncompletedEntry or (classAttribute == "uncompleted-entry active")
         }
 
         val tdLogin = cols[1]

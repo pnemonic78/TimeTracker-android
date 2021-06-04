@@ -82,7 +82,8 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
                 project.clearTasks()
             }
 
-            val pattern = Pattern.compile("project_property = project_prefix [+] (\\d+);\\s+obj_tasks\\[project_property\\] = \"(.+)\";")
+            val pattern =
+                Pattern.compile("project_property = project_prefix [+] (\\d+);\\s+obj_tasks\\[project_property\\] = \"(.+)\";")
             val matcher = pattern.matcher(scriptText)
             while (matcher.find()) {
                 val projectId = matcher.group(1)!!.toLong()
@@ -98,7 +99,13 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
         }
     }
 
-    override fun populateForm(doc: Document, page: MutableReportFormPage, form: FormElement, inputProjects: Element, inputTasks: Element) {
+    override fun populateForm(
+        doc: Document,
+        page: MutableReportFormPage,
+        form: FormElement,
+        inputProjects: Element,
+        inputTasks: Element
+    ) {
         super.populateForm(doc, page, form, inputProjects, inputTasks)
 
         val periods = ReportTimePeriod.values()
@@ -137,7 +144,10 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
         filter.status = TaskRecordStatus.CURRENT
     }
 
-    private fun findSelectedPeriod(periodInput: Element, periods: Array<ReportTimePeriod>): ReportTimePeriod {
+    private fun findSelectedPeriod(
+        periodInput: Element,
+        periods: Array<ReportTimePeriod>
+    ): ReportTimePeriod {
         for (option in periodInput.children()) {
             if (option.hasAttr("selected")) {
                 val value = option.value()
