@@ -105,7 +105,6 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.projectInput.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(adapterView: AdapterView<*>) {
-                    //projectItemSelected(projectEmpty)
                 }
 
                 override fun onItemSelected(
@@ -120,7 +119,6 @@ class ReportFormFragment : TimeFormFragment() {
             }
         bindingForm.taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //taskItemSelected(taskEmpty)
             }
 
             override fun onItemSelected(
