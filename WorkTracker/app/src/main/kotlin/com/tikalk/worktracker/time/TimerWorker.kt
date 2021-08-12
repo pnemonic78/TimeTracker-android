@@ -192,6 +192,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             action = TimeListActivity.ACTION_STOP
             addFlags(FLAG_ACTIVITY_CLEAR_TOP)
             addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(FLAG_ACTIVITY_NO_HISTORY)
         }
         context.startActivity(intent)
     }
@@ -255,8 +256,10 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
     private fun createActivityIntent(context: Context): PendingIntent {
         val pm = context.packageManager
-        val intent = pm.getLaunchIntentForPackage(context.packageName)
-        intent?.addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
+        val intent = pm.getLaunchIntentForPackage(context.packageName)!!.apply {
+            addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
+            addFlags(FLAG_ACTIVITY_NO_HISTORY)
+        }
         return PendingIntent.getActivity(
             context,
             ID_ACTIVITY,

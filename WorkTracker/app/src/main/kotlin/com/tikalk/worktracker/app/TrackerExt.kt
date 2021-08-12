@@ -46,6 +46,7 @@ fun Context.launchApp() {
     val pm = context.packageManager
     val intent = pm.getLaunchIntentForPackage(context.packageName) ?: return
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
     context.startActivity(intent)
 }
 
