@@ -75,21 +75,18 @@ android {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${BuildVersions.kotlin_version}")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:${BuildVersions.kotlin_version}")
-
     // Google Support
-    implementation("androidx.appcompat:appcompat:1.3.0")
-    implementation("com.google.android.material:material:1.4.0-rc01")
-    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
+    implementation("androidx.appcompat:appcompat:1.3.1")
+    implementation("com.google.android.material:material:1.5.0-alpha05")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.1")
     implementation("androidx.preference:preference-ktx:1.1.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
 
     // Testing
-    androidTestImplementation("androidx.test:core:1.3.0")
-    androidTestImplementation("androidx.test:runner:1.3.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
-    androidTestImplementation("androidx.test.ext:junit:1.1.2")
+    androidTestImplementation("androidx.test:core:1.4.0")
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
     testImplementation("junit:junit:${BuildVersions.junitVersion}")
 
     // Database
