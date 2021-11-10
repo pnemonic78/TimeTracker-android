@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    id("kotlin-kapt")
+    kotlin("android")
+    kotlin("kapt")
     id("kotlin-parcelize")
 }
 
@@ -64,9 +64,9 @@ android {
     }
 
     packagingOptions {
-        exclude("META-INF/DEPENDENCIES")
-        exclude("META-INF/INDEX.LIST")
-        exclude("META-INF/*.kotlin_module")
+        excludes.add("META-INF/DEPENDENCIES")
+        excludes.add("META-INF/INDEX.LIST")
+        excludes.add("META-INF/*.kotlin_module")
     }
 
     buildFeatures {
@@ -125,5 +125,5 @@ dependencies {
     implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
 
     // Dependency Injection
-    implementation("io.insert-koin:koin-android:3.0.1")
+    implementation("io.insert-koin:koin-android:3.1.2")
 }
