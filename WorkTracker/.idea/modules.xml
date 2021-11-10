@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/WorkTracker.iml" filepath="$PROJECT_DIR$/.idea/modules/WorkTracker.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/WorkTracker.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/WorkTracker.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/WorkTracker.buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/WorkTracker.buildSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Work_Tracker.iml" filepath="$PROJECT_DIR$/.idea/modules/Work_Tracker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Work_Tracker.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Work_Tracker.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.iml" />
     </modules>
   </component>
 </project>

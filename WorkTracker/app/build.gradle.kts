@@ -9,15 +9,14 @@ val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
 val versionMinor = (project.properties["APP_VERSION_MINOR"] as String).toInt()
 
 android {
-    compileSdkVersion(BuildVersions.compileSdkVersion)
+    compileSdk = BuildVersions.compileSdkVersion
 
     defaultConfig {
-        applicationId("com.tikalk.worktracker")
-        minSdkVersion(BuildVersions.minSdkVersion)
-        targetSdkVersion(BuildVersions.targetSdkVersion)
+        applicationId = "com.tikalk.worktracker"
+        minSdk = BuildVersions.minSdkVersion
+        targetSdk = BuildVersions.targetSdkVersion
         versionCode = versionMajor * 1000 + versionMinor
         versionName = "${versionMajor}." + versionMinor.toString().padStart(2, '0')
-        testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
 
         vectorDrawables.useSupportLibrary = true
     }
