@@ -222,8 +222,7 @@ class BasicRealmFragment : InternetDialogFragment() {
         notifyLoginFailure(realmName, "", "onCancel")
     }
 
-    override fun authenticate(submit: Boolean) {
-    }
+    override fun authenticate(submit: Boolean) = Unit
 
     companion object {
         const val EXTRA_REALM = "realm"

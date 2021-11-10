@@ -196,8 +196,7 @@ class ReportFormFragment : TimeFormFragment() {
         _binding = null
     }
 
-    override fun populateForm(record: TimeRecord) {
-    }
+    override fun populateForm(record: TimeRecord) = Unit
 
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")

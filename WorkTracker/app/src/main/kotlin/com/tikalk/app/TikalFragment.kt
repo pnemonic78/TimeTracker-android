@@ -56,8 +56,7 @@ open class TikalFragment() : Fragment() {
         }
     }
 
-    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) {
-    }
+    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) = Unit
 
     open fun onBackPressed(): Boolean = false
 }

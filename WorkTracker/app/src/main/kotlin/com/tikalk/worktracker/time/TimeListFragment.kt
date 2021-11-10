@@ -421,12 +421,10 @@ class TimeListFragment : TimeFormFragment(),
             .addTo(disposables)
     }
 
-    override fun populateForm(record: TimeRecord) {
-    }
+    override fun populateForm(record: TimeRecord) = Unit
 
     @MainThread
-    override fun bindForm(record: TimeRecord) {
-    }
+    override fun bindForm(record: TimeRecord) = Unit
 
     fun stopTimer() {
         Timber.i("stopTimer")

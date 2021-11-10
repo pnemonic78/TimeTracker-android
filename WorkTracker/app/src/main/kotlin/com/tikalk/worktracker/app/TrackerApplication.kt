@@ -83,11 +83,9 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         TrackerDatabase.getDatabase(this).close()
     }
 
-    override fun onActivityPaused(activity: Activity) {
-    }
+    override fun onActivityPaused(activity: Activity) = Unit
 
-    override fun onActivityResumed(activity: Activity) {
-    }
+    override fun onActivityResumed(activity: Activity) = Unit
 
     override fun onActivityStarted(activity: Activity) {
         active++
@@ -95,11 +93,9 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         TimerWorker.hideNotification(this)
     }
 
-    override fun onActivityDestroyed(activity: Activity) {
-    }
+    override fun onActivityDestroyed(activity: Activity) = Unit
 
-    override fun onActivitySaveInstanceState(activity: Activity, state: Bundle?) {
-    }
+    override fun onActivitySaveInstanceState(activity: Activity, savedState: Bundle) = Unit
 
     override fun onActivityStopped(activity: Activity) {
         active = max(0, active - 1)
@@ -109,6 +105,5 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         }
     }
 
-    override fun onActivityCreated(activity: Activity, state: Bundle?) {
-    }
+    override fun onActivityCreated(activity: Activity, state: Bundle?) = Unit
 }
