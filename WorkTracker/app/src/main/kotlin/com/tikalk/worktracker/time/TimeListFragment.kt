@@ -36,14 +36,7 @@ import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.GestureDetector
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
@@ -100,10 +93,10 @@ class TimeListFragment : TimeFormFragment(),
             bindTotals(totals)
         })
 
-        timeViewModel.delete.observe(this, { data ->
+        timeViewModel.deleted.observe(this, { data ->
             onRecordEditDeleted(data.record, data.responseHtml)
         })
-        timeViewModel.edit.observe(this, { data ->
+        timeViewModel.edited.observe(this, { data ->
             onRecordEditSubmitted(data.record, data.last, data.responseHtml)
         })
         timeViewModel.editFailure.observe(this, { data ->
@@ -469,7 +462,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         loadAndFetchPage(date, firstRun)
     }
@@ -492,15 +485,10 @@ class TimeListFragment : TimeFormFragment(),
         run()
     }
 
-    override fun onLoginSuccess(login: String) {
-        super.onLoginSuccess(login)
-        run()
-    }
-
     override fun onLoginFailure(login: String, reason: String) {
         super.onLoginFailure(login, reason)
         loginAutomatic = false
-        if (login.isEmpty() or (reason == "onCancel")) {
+        if (login.isEmpty() || (reason == LoginFragment.REASON_CANCEL)) {
             activity?.finish()
         }
     }
@@ -560,14 +548,9 @@ class TimeListFragment : TimeFormFragment(),
         } else {
             showTimer()
             // Refresh the list with the deleted item.
-            val records = recordsData.value
-            if (records != null) {
-                val index = records.indexOf(record)
-                if (index >= 0) {
-                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
-                    recordsNew.removeAt(index)
-                    bindList(date, recordsNew)
-                }
+            recordsData.value?.let { records ->
+                val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
+                bindList(date, recordsActive)
             }
             maybeFetchPage(date, responseHtml)
         }

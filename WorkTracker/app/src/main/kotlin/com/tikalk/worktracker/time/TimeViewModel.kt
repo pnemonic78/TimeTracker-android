@@ -59,8 +59,8 @@ class TimeViewModel : TrackerViewModel() {
         val responseHtml: String = ""
     )
 
-    private val editData = MutableLiveData<RecordEditData>()
-    val edit: LiveData<RecordEditData> = editData
+    private val _edited = MutableLiveData<RecordEditData>()
+    val edited: LiveData<RecordEditData> = _edited
 
     /**
      * The record was submitted.
@@ -69,13 +69,13 @@ class TimeViewModel : TrackerViewModel() {
      * @param responseHtml the response HTML.
      */
     fun onRecordEditSubmitted(record: TimeRecord, last: Boolean = true, responseHtml: String = "") {
-        editData.postValue(RecordEditData(record, last, responseHtml))
+        _edited.postValue(RecordEditData(record, last, responseHtml))
     }
 
     data class RecordDeletedData(val record: TimeRecord, val responseHtml: String = "")
 
-    private val deleteData = MutableLiveData<RecordDeletedData>()
-    val delete: LiveData<RecordDeletedData> = deleteData
+    private val _deleted = MutableLiveData<RecordDeletedData>()
+    val deleted: LiveData<RecordDeletedData> = _deleted
 
     /**
      * The record was deleted.
@@ -83,24 +83,24 @@ class TimeViewModel : TrackerViewModel() {
      * @param responseHtml the response HTML.
      */
     fun onRecordEditDeleted(record: TimeRecord, responseHtml: String = "") {
-        deleteData.postValue(RecordDeletedData(record, responseHtml))
+        _deleted.postValue(RecordDeletedData(record, responseHtml))
     }
 
-    private val favoriteData = MutableLiveData<TimeRecord>()
-    val favorite: LiveData<TimeRecord> = favoriteData
+    private val _favorite = MutableLiveData<TimeRecord>()
+    val favorite: LiveData<TimeRecord> = _favorite
 
     /**
      * The record was marked as favorite.
      * @param record the record.
      */
     fun onRecordEditFavorited(record: TimeRecord) {
-        favoriteData.postValue(record)
+        _favorite.postValue(record)
     }
 
     data class RecordEditFailureData(val record: TimeRecord, val reason: String)
 
-    private val editFailureData = MutableLiveData<RecordEditFailureData>()
-    val editFailure: LiveData<RecordEditFailureData> = editFailureData
+    private val _editFailure = MutableLiveData<RecordEditFailureData>()
+    val editFailure: LiveData<RecordEditFailureData> = _editFailure
 
     /**
      * Editing record failed.
@@ -108,7 +108,7 @@ class TimeViewModel : TrackerViewModel() {
      * @param reason the failure reason.
      */
     fun onRecordEditFailure(record: TimeRecord, reason: String) {
-        editFailureData.postValue(RecordEditFailureData(record, reason))
+        _editFailure.postValue(RecordEditFailureData(record, reason))
     }
 
     companion object {

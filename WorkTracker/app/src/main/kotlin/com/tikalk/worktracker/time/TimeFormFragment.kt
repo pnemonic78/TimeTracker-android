@@ -51,7 +51,7 @@ import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class TimeFormFragment : InternetFragment() {
+abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     protected lateinit var timeViewModel: TimeViewModel
@@ -101,6 +101,7 @@ abstract class TimeFormFragment : InternetFragment() {
 
     protected open fun onLoginSuccess(login: String) {
         Timber.i("login success")
+        run()
     }
 
     protected open fun onLoginFailure(login: String, reason: String) {
