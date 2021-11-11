@@ -276,12 +276,14 @@ class LoginFragment : InternetDialogFragment {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyLoginFailure("", "onCancel")
+        notifyLoginFailure("", REASON_CANCEL)
     }
 
     companion object {
         const val EXTRA_LOGIN = "login"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
+
+        const val REASON_CANCEL = "onCancel"
     }
 }

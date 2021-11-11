@@ -376,11 +376,15 @@ class ProfileFragment : InternetDialogFragment() {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyProfileFailure(userData.value!!, "onCancel")
+        notifyProfileFailure(userData.value!!, REASON_CANCEL)
     }
 
     private fun setErrorLabel(text: CharSequence) {
         binding.errorLabel.text = text
         binding.errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+    }
+
+    companion object {
+        const val REASON_CANCEL = "onCancel"
     }
 }

@@ -219,7 +219,7 @@ class BasicRealmFragment : InternetDialogFragment() {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyLoginFailure(realmName, "", "onCancel")
+        notifyLoginFailure(realmName, "", REASON_CANCEL)
     }
 
     override fun authenticate(submit: Boolean) = Unit
@@ -229,5 +229,7 @@ class BasicRealmFragment : InternetDialogFragment() {
         const val EXTRA_USER = "user"
         const val EXTRA_PASSWORD = "password"
         const val EXTRA_SUBMIT = "submit"
+
+        const val REASON_CANCEL = "onCancel"
     }
 }
