@@ -133,7 +133,10 @@ class TrackerFragmentDelegate(
 
     companion object {
         const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
+        const val EXTRA_DATE = BuildConfig.APPLICATION_ID + ".DATE"
 
+        const val ACTION_DATE = BuildConfig.APPLICATION_ID + ".action.DATE"
         const val ACTION_STOP = BuildConfig.APPLICATION_ID + ".action.STOP"
+        const val ACTION_TODAY = BuildConfig.APPLICATION_ID + ".action.TODAY"
     }
 }
