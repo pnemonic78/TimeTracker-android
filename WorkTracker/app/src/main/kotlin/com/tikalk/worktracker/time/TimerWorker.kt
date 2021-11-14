@@ -31,14 +31,15 @@
  */
 package com.tikalk.worktracker.time
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
-import android.text.format.DateUtils
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.tikalk.graphics.drawableToBitmap
@@ -137,26 +138,6 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             val worker = TimerWorker(context, inputData)
             worker.doWork()
         }
-
-        fun launchApp(context: Context) {
-            val pm = context.packageManager
-            val intent = pm.getLaunchIntentForPackage(context.packageName) ?: return
-            intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-        }
-
-        fun restartApp(context: Context) {
-            val intent = Intent(context, TimeReceiver::class.java)
-            intent.action = ACTION_LAUNCH
-            val operation =
-                PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.set(
-                AlarmManager.ELAPSED_REALTIME,
-                SystemClock.elapsedRealtime() + (2 * DateUtils.SECOND_IN_MILLIS),
-                operation
-            )
-        }
     }
 
     private val prefs: TimeTrackerPrefs = TimeTrackerPrefs(context)
@@ -211,6 +192,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             action = TimeListActivity.ACTION_STOP
             addFlags(FLAG_ACTIVITY_CLEAR_TOP)
             addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(FLAG_ACTIVITY_NO_HISTORY)
         }
         context.startActivity(intent)
     }
@@ -274,8 +256,10 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
     private fun createActivityIntent(context: Context): PendingIntent {
         val pm = context.packageManager
-        val intent = pm.getLaunchIntentForPackage(context.packageName)
-        intent?.addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
+        val intent = pm.getLaunchIntentForPackage(context.packageName)!!.apply {
+            addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
+            addFlags(FLAG_ACTIVITY_NO_HISTORY)
+        }
         return PendingIntent.getActivity(
             context,
             ID_ACTIVITY,

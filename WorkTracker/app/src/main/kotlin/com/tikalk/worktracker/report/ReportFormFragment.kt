@@ -196,8 +196,7 @@ class ReportFormFragment : TimeFormFragment() {
         _binding = null
     }
 
-    override fun populateForm(record: TimeRecord) {
-    }
+    override fun populateForm(record: TimeRecord) = Unit
 
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
@@ -259,7 +258,7 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.finishInput.visibility = visibility
     }
 
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         delegate.dataSource.reportFormPage(firstRun)
             .subscribeOn(Schedulers.io())
@@ -289,11 +288,6 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun onStart() {
         super.onStart()
-        run()
-    }
-
-    override fun onLoginSuccess(login: String) {
-        super.onLoginSuccess(login)
         run()
     }
 

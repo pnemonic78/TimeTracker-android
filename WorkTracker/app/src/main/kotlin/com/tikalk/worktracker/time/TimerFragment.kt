@@ -391,7 +391,7 @@ class TimerFragment : TimeFormFragment() {
         }
     }
 
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         delegate.dataSource.timerPage(firstRun)
             .subscribeOn(Schedulers.io())

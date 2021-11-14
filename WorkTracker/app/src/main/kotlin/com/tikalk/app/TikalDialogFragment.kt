@@ -61,8 +61,7 @@ open class TikalDialogFragment() : AppCompatDialogFragment() {
         }
     }
 
-    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) {
-    }
+    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) = Unit
 
     open fun onBackPressed(): Boolean = false
 }

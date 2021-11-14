@@ -59,14 +59,12 @@ abstract class InternetActivity : TrackerActivity() {
     /**
      * Notification that the Internet is connected and available.
      */
-    protected open fun onInternetConnected() {
-    }
+    protected open fun onInternetConnected() = Unit
 
     /**
      * Notification that the Internet is disconnected and unavailable.
      */
-    protected open fun onInternetDisconnected() {
-    }
+    protected open fun onInternetDisconnected() = Unit
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {

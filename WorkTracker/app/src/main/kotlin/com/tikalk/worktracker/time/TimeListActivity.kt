@@ -217,6 +217,8 @@ class TimeListActivity : InternetActivity() {
     }
 
     companion object {
+        const val ACTION_DATE = TimeListFragment.ACTION_DATE
         const val ACTION_STOP = TimeListFragment.ACTION_STOP
+        const val ACTION_TODAY = TimeListFragment.ACTION_TODAY
     }
 }

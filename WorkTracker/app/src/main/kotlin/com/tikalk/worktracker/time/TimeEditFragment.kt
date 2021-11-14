@@ -69,6 +69,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import retrofit2.Response
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.max
 
 class TimeEditFragment : TimeFormFragment() {
@@ -81,6 +82,7 @@ class TimeEditFragment : TimeFormFragment() {
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
     private var errorMessage: String = ""
+    private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,6 +153,7 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        recordsToSubmit.clear()
     }
 
     override fun populateForm(record: TimeRecord) {
@@ -450,8 +453,10 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
+        if (maybeResubmit()) return
+
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
             if (view?.visibility != View.VISIBLE) {
@@ -493,11 +498,6 @@ class TimeEditFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onLoginSuccess(login: String) {
-        super.onLoginSuccess(login)
-        run()
-    }
-
     override fun onLoginFailure(login: String, reason: String) {
         super.onLoginFailure(login, reason)
         activity?.finish()
@@ -522,27 +522,37 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun submit() {
+    private fun submit(): Boolean {
         val record = this.record
         Timber.i("submit $record")
 
         bindRecord(record)
         if (!validateForm(record)) {
-            return
+            return false
         }
 
+        val records = recordsToSubmit
+        records.clear()
         if (record.id == TikalEntity.ID_NONE) {
             val splits = record.split()
-            val size = splits.size
-            val lastIndex = size - 1
-            submit(splits[0], true, 0 == lastIndex)
-            if (size > 1) {
-                for (i in 1 until size) {
-                    submit(splits[i], false, i == lastIndex)
-                }
-            }
+            records.addAll(splits)
         } else {
-            submit(record, first = true, last = true)
+            records.add(record)
+        }
+        submit(records)
+
+        return true
+    }
+
+    private fun submit(records: List<TimeRecord>) {
+        val size = records.size
+        if (size == 0) return
+        val lastIndex = size - 1
+        submit(records[0], true, 0 == lastIndex)
+        if (size > 1) {
+            for (i in 1 until size) {
+                submit(records[i], false, i == lastIndex)
+            }
         }
     }
 
@@ -605,6 +615,7 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("processSubmittedPage last=$last")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
+            recordsToSubmit.remove(record)
             timeViewModel.onRecordEditSubmitted(record, last, html)
         } else {
             setErrorLabelMain(errorMessage)
@@ -619,6 +630,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
+            record.status = TaskRecordStatus.DELETED
             timeViewModel.onRecordEditDeleted(record)
             return
         }
@@ -634,7 +646,7 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgress(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    timeViewModel.onRecordEditDeleted(record, html)
+                    processDeletePage(record, html)
                 } else {
                     authenticate()
                 }
@@ -644,6 +656,18 @@ class TimeEditFragment : TimeFormFragment() {
                 showProgress(false)
             })
             .addTo(disposables)
+    }
+
+    private fun processDeletePage(record: TimeRecord, html: String) {
+        Timber.i("processDeletePage")
+        val errorMessage = getResponseError(html)
+        if (errorMessage.isNullOrEmpty()) {
+            record.status = TaskRecordStatus.DELETED
+            timeViewModel.onRecordEditDeleted(record, html)
+        } else {
+            setErrorLabelMain(errorMessage)
+            timeViewModel.onRecordEditFailure(record, errorMessage)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -767,6 +791,17 @@ class TimeEditFragment : TimeFormFragment() {
             record.status = TaskRecordStatus.MODIFIED
             record.version++
         }
+    }
+
+    /** Maybe we tried to submit the form and were asked to login first? */
+    private fun maybeResubmit(): Boolean {
+        val records = recordsToSubmit
+        Timber.i("maybeResubmit records=$records")
+        if (records.isNotEmpty()) {
+            submit(records)
+            return true
+        }
+        return false
     }
 
     companion object {

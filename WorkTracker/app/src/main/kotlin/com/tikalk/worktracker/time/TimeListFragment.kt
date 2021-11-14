@@ -36,14 +36,7 @@ import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.GestureDetector
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
@@ -100,10 +93,10 @@ class TimeListFragment : TimeFormFragment(),
             bindTotals(totals)
         })
 
-        timeViewModel.delete.observe(this, { data ->
+        timeViewModel.deleted.observe(this, { data ->
             onRecordEditDeleted(data.record, data.responseHtml)
         })
-        timeViewModel.edit.observe(this, { data ->
+        timeViewModel.edited.observe(this, { data ->
             onRecordEditSubmitted(data.record, data.last, data.responseHtml)
         })
         timeViewModel.editFailure.observe(this, { data ->
@@ -147,15 +140,15 @@ class TimeListFragment : TimeFormFragment(),
                     if ((vx > vy) && (vx > 500)) {
                         if (velocityX < 0) {    // Fling from right to left.
                             if (isLocaleRTL()) {
-                                navigateYesterday()
+                                navigatePreviousDay()
                             } else {
-                                navigateTomorrow()
+                                navigateNextDay()
                             }
                         } else {
                             if (isLocaleRTL()) {
-                                navigateTomorrow()
+                                navigateNextDay()
                             } else {
-                                navigateYesterday()
+                                navigatePreviousDay()
                             }
                         }
                         return true
@@ -244,7 +237,7 @@ class TimeListFragment : TimeFormFragment(),
         timeViewModel.projectsData.value = page.projects.sortedBy { it.name }
         recordsData.value = page.records
         var totals = totalsData.value
-        if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
+        if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
         totalsData.value = totals!!
@@ -255,7 +248,7 @@ class TimeListFragment : TimeFormFragment(),
         timeViewModel.projectsData.postValue(page.projects.sortedBy { it.name })
         recordsData.postValue(page.records)
         var totals = totalsData.value
-        if ((totals == null) or (page.totals.status == TaskRecordStatus.CURRENT)) {
+        if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
         totalsData.postValue(totals!!)
@@ -350,12 +343,11 @@ class TimeListFragment : TimeFormFragment(),
                     val oldMonth = date.month
                     val oldDayOfMonth = date.dayOfMonth
                     val refresh =
-                        (pickedYear != oldYear) or (pickedMonth != oldMonth) or (pickedDayOfMonth != oldDayOfMonth)
+                        (pickedYear != oldYear) || (pickedMonth != oldMonth) || (pickedDayOfMonth != oldDayOfMonth)
                     cal.year = pickedYear
                     cal.month = pickedMonth
                     cal.dayOfMonth = pickedDayOfMonth
-                    loadAndFetchPage(cal, refresh)
-                    hideEditor()
+                    navigateDate(cal, refresh)
                 }
             val context = requireContext()
             picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
@@ -421,12 +413,10 @@ class TimeListFragment : TimeFormFragment(),
             .addTo(disposables)
     }
 
-    override fun populateForm(record: TimeRecord) {
-    }
+    override fun populateForm(record: TimeRecord) = Unit
 
     @MainThread
-    override fun bindForm(record: TimeRecord) {
-    }
+    override fun bindForm(record: TimeRecord) = Unit
 
     fun stopTimer() {
         Timber.i("stopTimer")
@@ -443,26 +433,29 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun navigateTomorrow() {
-        Timber.i("navigateTomorrow")
+    private fun navigateNextDay() {
+        Timber.i("navigateNextDay")
         val cal = date
         cal.add(Calendar.DATE, 1)
-        loadAndFetchPage(cal, true)
-        hideEditor()
+        navigateDate(cal)
     }
 
-    private fun navigateYesterday() {
-        Timber.i("navigateYesterday")
+    private fun navigatePreviousDay() {
+        Timber.i("navigatePreviousDay")
         val cal = date
         cal.add(Calendar.DATE, -1)
-        loadAndFetchPage(cal, true)
-        hideEditor()
+        navigateDate(cal)
     }
 
     private fun navigateToday() {
         Timber.i("navigateToday")
         val today = Calendar.getInstance()
-        loadAndFetchPage(today, false)
+        navigateDate(today, true)
+    }
+
+    private fun navigateDate(date: Calendar, refresh: Boolean = false) {
+        Timber.i("navigateDate $date")
+        loadAndFetchPage(date, refresh)
         hideEditor()
     }
 
@@ -471,7 +464,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         loadAndFetchPage(date, firstRun)
     }
@@ -480,10 +473,22 @@ class TimeListFragment : TimeFormFragment(),
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_ACTION)) {
-                val action = args.getString(EXTRA_ACTION)
-                if (action == ACTION_STOP) {
-                    stopTimer()
-                    args.remove(EXTRA_ACTION)
+                when (args.getString(EXTRA_ACTION)) {
+                    ACTION_DATE -> {
+                        val dateMs = args.getLong(EXTRA_DATE, System.currentTimeMillis())
+                        val cal = Calendar.getInstance()
+                        cal.timeInMillis = dateMs
+                        navigateDate(cal, true)
+                        args.remove(EXTRA_ACTION)
+                    }
+                    ACTION_STOP -> {
+                        stopTimer()
+                        args.remove(EXTRA_ACTION)
+                    }
+                    ACTION_TODAY -> {
+                        navigateToday()
+                        args.remove(EXTRA_ACTION)
+                    }
                 }
             }
         }
@@ -494,15 +499,10 @@ class TimeListFragment : TimeFormFragment(),
         run()
     }
 
-    override fun onLoginSuccess(login: String) {
-        super.onLoginSuccess(login)
-        run()
-    }
-
     override fun onLoginFailure(login: String, reason: String) {
         super.onLoginFailure(login, reason)
         loginAutomatic = false
-        if (login.isEmpty() or (reason == "onCancel")) {
+        if (login.isEmpty() || (reason == LoginFragment.REASON_CANCEL)) {
             activity?.finish()
         }
     }
@@ -562,14 +562,9 @@ class TimeListFragment : TimeFormFragment(),
         } else {
             showTimer()
             // Refresh the list with the deleted item.
-            val records = recordsData.value
-            if (records != null) {
-                val index = records.indexOf(record)
-                if (index >= 0) {
-                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
-                    recordsNew.removeAt(index)
-                    bindList(date, recordsNew)
-                }
+            recordsData.value?.let { records ->
+                val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
+                bindList(date, recordsActive)
             }
             maybeFetchPage(date, responseHtml)
         }
@@ -647,8 +642,11 @@ class TimeListFragment : TimeFormFragment(),
         private const val STATE_DATE = "date"
         private const val STATE_TOTALS = "totals"
 
+        const val ACTION_DATE = TrackerFragmentDelegate.ACTION_DATE
         const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
+        const val ACTION_TODAY = TrackerFragmentDelegate.ACTION_TODAY
 
         const val EXTRA_ACTION = TrackerFragmentDelegate.EXTRA_ACTION
+        const val EXTRA_DATE = TrackerFragmentDelegate.EXTRA_DATE
     }
 }
