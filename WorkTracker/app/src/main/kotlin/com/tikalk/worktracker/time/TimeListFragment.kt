@@ -450,10 +450,10 @@ class TimeListFragment : TimeFormFragment(),
     private fun navigateToday() {
         Timber.i("navigateToday")
         val today = Calendar.getInstance()
-        navigateDate(today, true)
+        navigateDate(today)
     }
 
-    private fun navigateDate(date: Calendar, refresh: Boolean = false) {
+    private fun navigateDate(date: Calendar, refresh: Boolean = true) {
         Timber.i("navigateDate $date")
         loadAndFetchPage(date, refresh)
         hideEditor()

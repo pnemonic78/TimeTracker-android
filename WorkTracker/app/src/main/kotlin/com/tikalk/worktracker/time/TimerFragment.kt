@@ -66,8 +66,8 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -227,16 +227,6 @@ class TimerFragment : TimeFormFragment() {
 
     fun stopTimer() {
         Timber.i("stopTimer")
-        if (!isVisible or !isResumed) {
-            // Save for "run" later.
-            val args = arguments ?: Bundle()
-            args.putString(EXTRA_ACTION, ACTION_STOP)
-            if (arguments == null) {
-                arguments = args
-            }
-            return
-        }
-
         val recordStarted = getStartedRecord()
         Timber.i("stopTimer recordStarted=$recordStarted")
         if (recordStarted != null) {
@@ -256,13 +246,12 @@ class TimerFragment : TimeFormFragment() {
         record.start = null
         record.finish = null
         preferences.stopRecord()
-        val args = arguments
-        if (args != null) {
-            args.remove(EXTRA_PROJECT_ID)
-            args.remove(EXTRA_TASK_ID)
-            args.remove(EXTRA_START_TIME)
-            args.remove(EXTRA_FINISH_TIME)
-            args.remove(EXTRA_LOCATION)
+        arguments?.apply {
+            remove(EXTRA_PROJECT_ID)
+            remove(EXTRA_TASK_ID)
+            remove(EXTRA_START_TIME)
+            remove(EXTRA_FINISH_TIME)
+            remove(EXTRA_LOCATION)
         }
 
         bindForm(record)
@@ -413,9 +402,8 @@ class TimerFragment : TimeFormFragment() {
     }
 
     private fun handleArguments() {
-        Timber.d("handleArguments")
-        val args = arguments
-        if (args != null) {
+        Timber.d("handleArguments $arguments")
+        arguments?.let { args ->
             if (args.containsKey(EXTRA_ACTION)) {
                 val action = args.getString(EXTRA_ACTION)
                 if (action == ACTION_STOP) {
