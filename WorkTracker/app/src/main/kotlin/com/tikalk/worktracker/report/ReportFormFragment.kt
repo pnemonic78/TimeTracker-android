@@ -67,7 +67,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     private var _binding: FragmentReportFormBinding? = null
     private val binding get() = _binding!!
-    private val bindingForm get() = binding.form!!
+    private val bindingForm get() = binding.form
 
     private val date: Calendar = Calendar.getInstance()
     private val filterData = MutableLiveData<ReportFilter>()
@@ -511,7 +511,7 @@ class ReportFormFragment : TimeFormFragment() {
         super.onRestoreInstanceState(savedInstanceState)
         val filter = savedInstanceState.getParcelable<ReportFilter?>(STATE_FILTER)
         if (filter != null) {
-            filterData.value = filter!!
+            filterData.value = filter
         }
     }
 

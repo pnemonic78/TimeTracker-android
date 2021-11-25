@@ -240,7 +240,7 @@ class TimeListFragment : TimeFormFragment(),
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.value = totals!!
+        totalsData.value = totals
         setRecordValue(page.record)
     }
 
@@ -251,7 +251,7 @@ class TimeListFragment : TimeFormFragment(),
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.postValue(totals!!)
+        totalsData.postValue(totals)
         setRecordValue(page.record)
     }
 

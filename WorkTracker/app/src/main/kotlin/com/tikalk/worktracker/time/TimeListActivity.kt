@@ -74,7 +74,7 @@ class TimeListActivity : InternetActivity() {
         binding.navView.post { // wait for NavHostFragment to inflate
             val navController = findNavController()
             binding.navView.setupWithNavController(navController)
-            navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            navController.addOnDestinationChangedListener { _, destination, _ ->
                 supportActionBar?.title = destination.label
             }
         }
