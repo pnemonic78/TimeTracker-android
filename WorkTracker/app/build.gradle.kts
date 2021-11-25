@@ -112,7 +112,7 @@ dependencies {
 
     // Logging
     implementation("com.jakewharton.timber:timber:${BuildVersions.timberVersion}")
-    implementation("com.google.firebase:firebase-crashlytics:18.0.1")
+    implementation("com.google.firebase:firebase-crashlytics:18.2.4")
 
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:${BuildVersions.nav_version}")
