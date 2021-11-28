@@ -168,8 +168,9 @@ class TimeListActivity : InternetActivity() {
         val destination = navController.currentDestination ?: return
         Timber.i("showProfile currentDestination=${destination.label}")
         if (destination.id != R.id.profileFragment) {
-            val args = Bundle()
-            navController.navigate(R.id.action_show_profile, args)
+            Bundle().apply {
+                navController.navigate(R.id.action_show_profile, this)
+            }
         }
     }
 

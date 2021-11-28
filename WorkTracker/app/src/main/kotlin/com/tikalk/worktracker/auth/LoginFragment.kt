@@ -257,11 +257,11 @@ class LoginFragment : InternetDialogFragment {
         val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
         if (!isNavDestination(R.id.basicRealmFragment)) {
-            val args = Bundle().apply {
+            Bundle().apply {
                 putString(BasicRealmFragment.EXTRA_REALM, realm)
                 putString(BasicRealmFragment.EXTRA_USER, userClean)
+                navController.navigate(R.id.action_basicRealmLogin, this)
             }
-            navController.navigate(R.id.action_basicRealmLogin, args)
         }
     }
 

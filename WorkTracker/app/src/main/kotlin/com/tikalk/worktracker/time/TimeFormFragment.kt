@@ -272,5 +272,6 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
         const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".form.LOCATION"
+        const val EXTRA_STOP = BuildConfig.APPLICATION_ID + ".form.STOP"
     }
 }

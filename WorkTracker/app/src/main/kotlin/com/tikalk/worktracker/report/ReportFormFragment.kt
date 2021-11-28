@@ -295,9 +295,10 @@ class ReportFormFragment : TimeFormFragment() {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
-            val args = Bundle()
-            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            navController.navigate(R.id.action_reportForm_to_login, args)
+            Bundle().apply {
+                putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+                navController.navigate(R.id.action_reportForm_to_login, this)
+            }
         }
     }
 
@@ -479,8 +480,9 @@ class ReportFormFragment : TimeFormFragment() {
 
         if (!isNavDestination(R.id.reportFragment)) {
             val filter = populateFilter()
-            val args = Bundle()
-            args.putParcelable(ReportFragment.EXTRA_FILTER, filter)
+            val args = Bundle().apply {
+                putParcelable(ReportFragment.EXTRA_FILTER, filter)
+            }
 
             var reportFragmentController: NavController? = null
             val reportFragment =

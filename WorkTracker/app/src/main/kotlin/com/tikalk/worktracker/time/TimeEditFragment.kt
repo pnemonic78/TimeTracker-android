@@ -516,9 +516,10 @@ class TimeEditFragment : TimeFormFragment() {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
-            val args = Bundle()
-            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            navController.navigate(R.id.action_timeEdit_to_login, args)
+            Bundle().apply {
+                putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+                navController.navigate(R.id.action_timeEdit_to_login, this)
+            }
         }
     }
 
@@ -599,7 +600,7 @@ class TimeEditFragment : TimeFormFragment() {
 
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    processSubmittedPage(record, html, isLast)
+                    processSubmittedPage(record, isLast, html)
                 } else {
                     authenticateMain(true)
                 }
@@ -611,16 +612,31 @@ class TimeEditFragment : TimeFormFragment() {
             .addTo(disposables)
     }
 
-    private fun processSubmittedPage(record: TimeRecord, html: String, isLast: Boolean) {
+    private fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
         val errorMessage = getResponseError(html)
         Timber.i("processSubmittedPage last=$isLast err=[$errorMessage]")
         if (errorMessage.isNullOrEmpty()) {
-            recordsToSubmit.remove(record)
-            timeViewModel.onRecordEditSubmitted(record, isLast, html)
+            onRecordSubmitted(record, isLast, html)
         } else {
-            setErrorLabelMain(errorMessage)
-            timeViewModel.onRecordEditFailure(record, errorMessage)
+            onRecordError(record, errorMessage)
         }
+    }
+
+    private fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
+        recordsToSubmit.remove(record)
+        timeViewModel.onRecordEditSubmitted(record, isLast, html)
+
+        if (isLast) {
+            val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
+            if (isStop) {
+                stopTimer()
+            }
+        }
+    }
+
+    private fun onRecordError(record: TimeRecord, errorMessage: String) {
+        setErrorLabelMain(errorMessage)
+        timeViewModel.onRecordEditFailure(record, errorMessage)
     }
 
     private fun deleteRecord() {
@@ -697,7 +713,7 @@ class TimeEditFragment : TimeFormFragment() {
         timeViewModel.onRecordEditFavorited(record)
     }
 
-    fun editRecord(record: TimeRecord, date: Calendar) {
+    fun editRecord(record: TimeRecord, date: Calendar, isStop: Boolean = false) {
         Timber.i("editRecord record=$record")
         setRecordValue(record.copy())
         this.date = date
@@ -706,14 +722,17 @@ class TimeEditFragment : TimeFormFragment() {
             args = Bundle()
             arguments = args
         }
-        args.clear()
-        args.putLong(EXTRA_DATE, date.timeInMillis)
-        args.putLong(EXTRA_PROJECT_ID, record.project.id)
-        args.putLong(EXTRA_TASK_ID, record.task.id)
-        args.putLong(EXTRA_START_TIME, record.startTime)
-        args.putLong(EXTRA_FINISH_TIME, record.finishTime)
-        args.putLong(EXTRA_RECORD_ID, record.id)
-        args.putLong(EXTRA_LOCATION, record.location.id)
+        args.apply {
+            clear()
+            putLong(EXTRA_DATE, date.timeInMillis)
+            putLong(EXTRA_PROJECT_ID, record.project.id)
+            putLong(EXTRA_TASK_ID, record.task.id)
+            putLong(EXTRA_START_TIME, record.startTime)
+            putLong(EXTRA_FINISH_TIME, record.finishTime)
+            putLong(EXTRA_RECORD_ID, record.id)
+            putLong(EXTRA_LOCATION, record.location.id)
+            putBoolean(EXTRA_STOP, isStop)
+        }
         run()
     }
 
@@ -804,6 +823,10 @@ class TimeEditFragment : TimeFormFragment() {
         return false
     }
 
+    private fun stopTimer() {
+        preferences.stopRecord()
+    }
+
     companion object {
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE
         const val EXTRA_PROJECT_ID = TimeFormFragment.EXTRA_PROJECT_ID
@@ -812,6 +835,7 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
         const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
         const val EXTRA_LOCATION = TimeFormFragment.EXTRA_LOCATION
+        const val EXTRA_STOP = TimeFormFragment.EXTRA_STOP
 
         private const val STATE_DATE = "date"
     }

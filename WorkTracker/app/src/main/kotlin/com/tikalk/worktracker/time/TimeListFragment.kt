@@ -312,9 +312,10 @@ class TimeListFragment : TimeFormFragment(),
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
-            val args = Bundle()
-            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            navController.navigate(R.id.action_timeList_to_login, args)
+            Bundle().apply {
+                putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+                navController.navigate(R.id.action_timeList_to_login, this)
+            }
         }
     }
 
@@ -371,24 +372,26 @@ class TimeListFragment : TimeFormFragment(),
         editRecord(TimeRecord.EMPTY)
     }
 
-    fun editRecord(record: TimeRecord, timer: Boolean = false) {
-        Timber.i("editRecord record=$record timer=$timer")
-        recordForTimer = timer
+    fun editRecord(record: TimeRecord, isTimer: Boolean = false) {
+        Timber.i("editRecord record=$record timer=$isTimer")
+        recordForTimer = isTimer
 
         val form = findTopFormFragment()
         if (form is TimeEditFragment) {
-            form.editRecord(record, date)
+            form.editRecord(record, date, isStop = isTimer)
         } else {
             Timber.i("editRecord editor.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
-            val args = Bundle()
-            args.putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
-            args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-            args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-            args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-            args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-            args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            args.putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
-            formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, args)
+            Bundle().apply {
+                putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
+                putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+                putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+                putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+                putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
+                putBoolean(TimeEditFragment.EXTRA_STOP, isTimer)
+                formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, this)
+            }
         }
     }
 
@@ -519,10 +522,11 @@ class TimeListFragment : TimeFormFragment(),
             }
 
             if (recordForTimer) {
-                val args = Bundle()
-                args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
-                args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
-                showTimer(args, true)
+                Bundle().apply {
+                    putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
+                    putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                    showTimer(this, true)
+                }
                 // Refresh the list with the inserted item.
                 maybeFetchPage(date, responseHtml)
                 return
@@ -552,10 +556,11 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("record deleted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
-                val args = Bundle()
-                args.putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
-                args.putBoolean(TimerFragment.EXTRA_COMMIT, true)
-                showTimer(args, true)
+                Bundle().apply {
+                    putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
+                    putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                    showTimer(this, true)
+                }
             } else {
                 showTimer()
             }

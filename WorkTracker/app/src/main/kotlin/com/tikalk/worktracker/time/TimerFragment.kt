@@ -37,12 +37,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
@@ -55,13 +50,7 @@ import com.tikalk.worktracker.databinding.FragmentTimerBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
-import com.tikalk.worktracker.model.Location
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.findProject
-import com.tikalk.worktracker.model.findTask
-import com.tikalk.worktracker.model.isNullOrEmpty
+import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.report.LocationItem
@@ -252,6 +241,7 @@ class TimerFragment : TimeFormFragment() {
             remove(EXTRA_START_TIME)
             remove(EXTRA_FINISH_TIME)
             remove(EXTRA_LOCATION)
+            remove(EXTRA_STOP)
         }
 
         bindForm(record)
@@ -321,6 +311,7 @@ class TimerFragment : TimeFormFragment() {
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
                 val locationId = args.getLong(EXTRA_LOCATION)
+                val isStop = args.getBoolean(EXTRA_STOP)
 
                 val projects = timeViewModel.projectsData.value
                 val project = projects?.find { it.id == projectId } ?: timeViewModel.projectEmpty
@@ -369,14 +360,16 @@ class TimerFragment : TimeFormFragment() {
         if (parent != null) {
             parent.editRecord(record, true)
         } else {
-            val args = Bundle()
-            args.putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-            args.putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-            args.putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-            args.putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-            args.putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-            args.putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
-            navController.navigate(R.id.action_timer_to_timeEdit, args)
+            Bundle().apply {
+                putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+                putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+                putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+                putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
+                putBoolean(TimeEditFragment.EXTRA_STOP, true)
+                navController.navigate(R.id.action_timer_to_timeEdit, this)
+            }
         }
     }
 
