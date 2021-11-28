@@ -97,7 +97,7 @@ class TimeListFragment : TimeFormFragment(),
             onRecordEditDeleted(data.record, data.responseHtml)
         })
         timeViewModel.edited.observe(this, { data ->
-            onRecordEditSubmitted(data.record, data.last, data.responseHtml)
+            onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
         })
         timeViewModel.editFailure.observe(this, { data ->
             onRecordEditFailure(data.record, data.reason)
@@ -507,7 +507,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun onRecordEditSubmitted(record: TimeRecord, last: Boolean, responseHtml: String) {
+    private fun onRecordEditSubmitted(record: TimeRecord, isLast: Boolean, responseHtml: String) {
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
@@ -529,7 +529,7 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
 
-        if (last) {
+        if (isLast) {
             showTimer()
             // Refresh the list with the edited item.
             if (record.id != TikalEntity.ID_NONE) {

@@ -32,17 +32,15 @@
 
 package com.tikalk.worktracker.data.remote
 
-import com.tikalk.worktracker.auth.AccessDeniedException
-import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.*
 import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateResponse
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.rxjava3.core.Observable
-import retrofit2.Response
 import java.util.Calendar
 
 class TimeTrackerRemoteDataSource(
@@ -50,33 +48,6 @@ class TimeTrackerRemoteDataSource(
     private val db: TrackerDatabase,
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
-
-    @Throws(Exception::class)
-    private fun validateResponse(response: Response<String>) {
-        val html = response.body()
-        if (response.isSuccessful && (html != null)) {
-            val networkResponse = response.raw().networkResponse
-            val priorResponse = response.raw().priorResponse
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request.url
-                val priorUrl = priorResponse.request.url
-                if (networkUrl == priorUrl) {
-                    return
-                }
-                when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
-                    TimeTrackerService.PHP_TIME,
-                    TimeTrackerService.PHP_REPORT ->
-                        return
-                    TimeTrackerService.PHP_ACCESS_DENIED ->
-                        throw AccessDeniedException()
-                    else ->
-                        throw AuthenticationException("authentication required")
-                }
-            }
-            return
-        }
-        throw AuthenticationException("authentication required")
-    }
 
     override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
         if (recordId == TikalEntity.ID_NONE) {

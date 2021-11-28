@@ -556,10 +556,10 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun submit(record: TimeRecord, first: Boolean = true, last: Boolean = true) {
-        Timber.i("submit $record first=$first last=$last")
+    private fun submit(record: TimeRecord, isFirst: Boolean = true, isLast: Boolean = true) {
+        Timber.i("submit $record first=$isFirst last=$isLast")
         // Show a progress spinner, and kick off a background task to submit the form.
-        if (first) {
+        if (isFirst) {
             showProgress(true)
             setErrorLabel("")
         }
@@ -593,13 +593,13 @@ class TimeEditFragment : TimeFormFragment() {
                     saveRecord(record)
                 }
 
-                if (last) {
+                if (isLast) {
                     showProgressMain(false)
                 }
 
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    processSubmittedPage(record, html, last)
+                    processSubmittedPage(record, html, isLast)
                 } else {
                     authenticateMain(true)
                 }
@@ -611,12 +611,12 @@ class TimeEditFragment : TimeFormFragment() {
             .addTo(disposables)
     }
 
-    private fun processSubmittedPage(record: TimeRecord, html: String, last: Boolean) {
-        Timber.i("processSubmittedPage last=$last")
+    private fun processSubmittedPage(record: TimeRecord, html: String, isLast: Boolean) {
         val errorMessage = getResponseError(html)
+        Timber.i("processSubmittedPage last=$isLast err=[$errorMessage]")
         if (errorMessage.isNullOrEmpty()) {
             recordsToSubmit.remove(record)
-            timeViewModel.onRecordEditSubmitted(record, last, html)
+            timeViewModel.onRecordEditSubmitted(record, isLast, html)
         } else {
             setErrorLabelMain(errorMessage)
             timeViewModel.onRecordEditFailure(record, errorMessage)

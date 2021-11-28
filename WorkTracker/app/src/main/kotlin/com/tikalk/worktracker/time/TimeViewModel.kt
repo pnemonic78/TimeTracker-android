@@ -52,7 +52,7 @@ class TimeViewModel : TrackerViewModel() {
 
     data class RecordEditData(
         val record: TimeRecord,
-        val last: Boolean = true,
+        val isLast: Boolean = true,
         val responseHtml: String = ""
     )
 
