@@ -40,6 +40,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -67,7 +68,7 @@ class ProfileFragment : InternetDialogFragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var profileViewModule: ProfileViewModel
+    private val profileViewModule by activityViewModels<ProfileViewModel>()
     private var userData = MutableLiveData<User>()
     private var userCredentialsData = MutableLiveData<UserCredentials>()
     private var nameInputEditable = false
@@ -99,8 +100,6 @@ class ProfileFragment : InternetDialogFragment() {
                 Timber.e("login failure: $reason")
             }
         })
-
-        profileViewModule = ProfileViewModel.get(this)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

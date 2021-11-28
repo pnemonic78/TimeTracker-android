@@ -32,11 +32,8 @@
 
 package com.tikalk.worktracker.time
 
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
@@ -109,12 +106,5 @@ class TimeViewModel : TrackerViewModel() {
      */
     fun onRecordEditFailure(record: TimeRecord, reason: String) {
         _editFailure.postValue(RecordEditFailureData(record, reason))
-    }
-
-    companion object {
-        fun get(fragment: Fragment) = get(fragment.requireActivity())
-
-        fun get(owner: ViewModelStoreOwner) =
-            ViewModelProvider(owner).get(TimeViewModel::class.java)
     }
 }

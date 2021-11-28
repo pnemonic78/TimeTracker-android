@@ -36,6 +36,7 @@ import android.app.AlertDialog
 import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
@@ -55,7 +56,7 @@ class TrackerFragmentDelegate(
     private val callback: TrackerFragmentDelegateCallback
 ) {
 
-    lateinit var authenticationViewModel: AuthenticationViewModel
+    val authenticationViewModel by fragment.activityViewModels<AuthenticationViewModel>()
     lateinit var login: LiveData<AuthenticationViewModel.LoginData>
     lateinit var basicRealm: LiveData<AuthenticationViewModel.BasicRealmData>
 
@@ -68,7 +69,6 @@ class TrackerFragmentDelegate(
     val internet = InternetFragmentDelegate(callback)
 
     fun onCreate(savedInstanceState: Bundle?) {
-        authenticationViewModel = AuthenticationViewModel.get(fragment)
         login = authenticationViewModel.login
         basicRealm = authenticationViewModel.basicRealm
         firstRun = (savedInstanceState == null)

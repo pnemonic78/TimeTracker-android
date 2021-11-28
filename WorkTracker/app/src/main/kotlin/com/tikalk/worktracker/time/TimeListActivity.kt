@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
@@ -49,7 +50,7 @@ import timber.log.Timber
 class TimeListActivity : InternetActivity() {
 
     private lateinit var binding: ActivityTimeListBinding
-    private lateinit var profileViewModule: ProfileViewModel
+    private val profileViewModule by viewModels<ProfileViewModel>()
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +80,6 @@ class TimeListActivity : InternetActivity() {
             }
         }
 
-        profileViewModule = ProfileViewModel.get(this)
         profileViewModule.profileUpdate.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("profile success")
