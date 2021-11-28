@@ -311,7 +311,6 @@ class TimerFragment : TimeFormFragment() {
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
                 val locationId = args.getLong(EXTRA_LOCATION)
-                val isStop = args.getBoolean(EXTRA_STOP)
 
                 val projects = timeViewModel.projectsData.value
                 val project = projects?.find { it.id == projectId } ?: timeViewModel.projectEmpty

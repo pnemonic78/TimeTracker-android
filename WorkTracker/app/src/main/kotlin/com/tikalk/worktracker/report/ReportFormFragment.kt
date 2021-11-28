@@ -70,7 +70,7 @@ class ReportFormFragment : TimeFormFragment() {
     private val bindingForm get() = binding.form
 
     private val date: Calendar = Calendar.getInstance()
-    private val filterData = MutableLiveData<ReportFilter>()
+    private val filterData = MutableLiveData<ReportFilter?>()
     private var startPickerDialog: DatePickerDialog? = null
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
@@ -85,8 +85,10 @@ class ReportFormFragment : TimeFormFragment() {
         setHasOptionsMenu(true)
         filterData.value = ReportFilter()
         filterData.observe(this, { filter ->
-            setRecordValue(filter)
-            bindFilter(filter)
+            if (filter != null) {
+                setRecordValue(filter)
+                bindFilter(filter)
+            }
         })
     }
 
@@ -276,9 +278,9 @@ class ReportFormFragment : TimeFormFragment() {
         timeViewModel.projectsData.value = addEmpties(page.projects)
         errorMessage = page.errorMessage ?: ""
 
-        val filterValue = filterData.value
-        if (filterValue != null) {
-            if (filterValue.status == TaskRecordStatus.DRAFT) {
+        val filter = filterData.value
+        if (filter != null) {
+            if (filter.status == TaskRecordStatus.DRAFT) {
                 filterData.value = page.record
             }
         } else {
