@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
@@ -49,7 +50,7 @@ import timber.log.Timber
 class TimeListActivity : InternetActivity() {
 
     private lateinit var binding: ActivityTimeListBinding
-    private lateinit var profileViewModule: ProfileViewModel
+    private val profileViewModule by viewModels<ProfileViewModel>()
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,12 +75,11 @@ class TimeListActivity : InternetActivity() {
         binding.navView.post { // wait for NavHostFragment to inflate
             val navController = findNavController()
             binding.navView.setupWithNavController(navController)
-            navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            navController.addOnDestinationChangedListener { _, destination, _ ->
                 supportActionBar?.title = destination.label
             }
         }
 
-        profileViewModule = ProfileViewModel.get(this)
         profileViewModule.profileUpdate.observe(this, { (_, reason) ->
             if (reason == null) {
                 Timber.i("profile success")
@@ -168,8 +168,9 @@ class TimeListActivity : InternetActivity() {
         val destination = navController.currentDestination ?: return
         Timber.i("showProfile currentDestination=${destination.label}")
         if (destination.id != R.id.profileFragment) {
-            val args = Bundle()
-            navController.navigate(R.id.action_show_profile, args)
+            Bundle().apply {
+                navController.navigate(R.id.action_show_profile, this)
+            }
         }
     }
 

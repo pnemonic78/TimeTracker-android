@@ -32,11 +32,8 @@
 
 package com.tikalk.worktracker.auth
 
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
 
 class AuthenticationViewModel : TrackerViewModel() {
@@ -107,12 +104,5 @@ class AuthenticationViewModel : TrackerViewModel() {
 
     private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
         _basicRealm.postValue(BasicRealmData(realmName, username, reason))
-    }
-
-    companion object {
-        fun get(fragment: Fragment) = get(fragment.requireActivity())
-
-        fun get(owner: ViewModelStoreOwner) =
-            ViewModelProvider(owner).get(AuthenticationViewModel::class.java)
     }
 }

@@ -35,10 +35,4 @@ package com.tikalk.worktracker.app
 import androidx.lifecycle.ViewModel
 
 open class TrackerViewModel : ViewModel() {
-
-//    companion object {
-//        fun get(fragment: Fragment) = get(fragment.requireActivity())
-//
-//        fun get(owner: ViewModelStoreOwner) = ViewModelProvider(owner).get(TrackerViewModel::class.java)
-//    }
 }

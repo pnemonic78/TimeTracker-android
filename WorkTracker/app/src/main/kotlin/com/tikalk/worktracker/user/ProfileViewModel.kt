@@ -32,11 +32,8 @@
 
 package com.tikalk.worktracker.user
 
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.User
 
@@ -73,12 +70,5 @@ class ProfileViewModel : TrackerViewModel() {
 
     private fun notifyProfileFailure(user: User, reason: String) {
         profileUpdateData.postValue(ProfileData(user, reason))
-    }
-
-    companion object {
-        fun get(fragment: Fragment) = get(fragment.requireActivity())
-
-        fun get(owner: ViewModelStoreOwner) =
-            ViewModelProvider(owner).get(ProfileViewModel::class.java)
     }
 }

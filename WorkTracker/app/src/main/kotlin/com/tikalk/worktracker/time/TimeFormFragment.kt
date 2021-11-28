@@ -36,6 +36,7 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.fragment.app.activityViewModels
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -54,12 +55,11 @@ import kotlin.collections.ArrayList
 abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
-    protected lateinit var timeViewModel: TimeViewModel
+    protected val timeViewModel by activityViewModels<TimeViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        timeViewModel = TimeViewModel.get(this)
         timeViewModel.projectsData.observe(this, { projects ->
             onProjectsUpdated(projects)
         })
@@ -272,5 +272,6 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
         const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".form.LOCATION"
+        const val EXTRA_STOP = BuildConfig.APPLICATION_ID + ".form.STOP"
     }
 }

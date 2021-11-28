@@ -123,9 +123,10 @@ class UsersFragment : InternetFragment() {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
         if (!isNavDestination(R.id.loginFragment)) {
-            val args = Bundle()
-            args.putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
-            navController.navigate(R.id.action_users_to_login, args)
+            Bundle().apply {
+                putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
+                navController.navigate(R.id.action_users_to_login, this)
+            }
         }
     }
 }

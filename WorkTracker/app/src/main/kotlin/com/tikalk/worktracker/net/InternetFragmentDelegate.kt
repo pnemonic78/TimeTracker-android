@@ -49,26 +49,10 @@ class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
     private var authenticationCounter = 0
 
     fun isValidResponse(response: Response<String>): Boolean {
-        val html = response.body()
-        if (response.isSuccessful && (html != null)) {
-            val networkResponse = response.raw().networkResponse
-            val priorResponse = response.raw().priorResponse
-            if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
-                val networkUrl = networkResponse.request.url
-                val priorUrl = priorResponse.request.url
-                if (networkUrl == priorUrl) {
-                    return true
-                }
-                when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
-                    TimeTrackerService.PHP_TIME,
-                    TimeTrackerService.PHP_REPORT ->
-                        return true
-                    TimeTrackerService.PHP_ACCESS_DENIED ->
-                        throw AccessDeniedException()
-                }
-                return false
-            }
+        try {
+            validateResponse(response)
             return true
+        } catch (e: Exception) {
         }
         return false
     }
@@ -125,6 +109,35 @@ class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
 
     private fun showConnectionError() {
         callback.showError(R.string.error_connection)
+    }
+
+    companion object {
+        @Throws(Exception::class)
+        fun validateResponse(response: Response<String>) {
+            val html = response.body()
+            if (response.isSuccessful && (html != null)) {
+                val networkResponse = response.raw().networkResponse
+                val priorResponse = response.raw().priorResponse
+                if ((networkResponse != null) && (priorResponse != null) && priorResponse.isRedirect) {
+                    val networkUrl = networkResponse.request.url
+                    val priorUrl = priorResponse.request.url
+                    if (networkUrl == priorUrl) {
+                        return
+                    }
+                    when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
+                        TimeTrackerService.PHP_TIME,
+                        TimeTrackerService.PHP_REPORT ->
+                            return
+                        TimeTrackerService.PHP_ACCESS_DENIED ->
+                            throw AccessDeniedException()
+                        else ->
+                            throw AuthenticationException("authentication required")
+                    }
+                }
+                return
+            }
+            throw AuthenticationException("authentication required")
+        }
     }
 
     interface InternetFragmentCallback {

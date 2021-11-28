@@ -78,9 +78,9 @@ android {
 
 dependencies {
     // Google Support
-    implementation("androidx.appcompat:appcompat:1.3.1")
-    implementation("com.google.android.material:material:1.5.0-alpha05")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.1")
+    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("com.google.android.material:material:1.5.0-beta01")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
     implementation("androidx.preference:preference-ktx:1.1.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
 
