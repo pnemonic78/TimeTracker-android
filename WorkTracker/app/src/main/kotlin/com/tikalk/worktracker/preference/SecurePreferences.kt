@@ -176,13 +176,10 @@ class SecurePreferences(context: Context, name: String, mode: Int) : SharedPrefe
          * to values of the preferences.
          */
         fun getDefaultSharedPreferences(context: Context): SharedPreferences {
-            return getSharedPreferences(
-                context, getDefaultSharedPreferencesName(context),
-                getDefaultSharedPreferencesMode()
-            )
+            return getSharedPreferences(context, getDefaultSharedPreferencesName(context))
         }
 
-        fun getSharedPreferences(context: Context, name: String, mode: Int): SharedPreferences {
+        fun getSharedPreferences(context: Context, name: String): SharedPreferences {
             var masterKey = masterKeyAES256
             if (masterKey == null) {
                 masterKey = MasterKey.Builder(context)

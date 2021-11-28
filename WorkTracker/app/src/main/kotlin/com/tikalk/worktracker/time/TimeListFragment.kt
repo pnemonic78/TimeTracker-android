@@ -74,7 +74,7 @@ class TimeListFragment : TimeFormFragment(),
     private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
     private lateinit var gestureDetector: GestureDetector
-    private val totalsData = MutableLiveData<TimeTotals>()
+    private val totalsData = MutableLiveData<TimeTotals?>()
 
     private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
@@ -90,7 +90,7 @@ class TimeListFragment : TimeFormFragment(),
             bindList(date, records)
         })
         totalsData.observe(this, { totals ->
-            bindTotals(totals)
+            if (totals != null) bindTotals(totals)
         })
 
         timeViewModel.deleted.observe(this, { data ->
