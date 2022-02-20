@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.tikalk.worktracker">
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -19,6 +18,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".start.SplashActivity"
+            android:exported="true"
             android:label="@string/activity_splash"
             android:theme="@style/Theme.WorkTracker.NoActionBar">
             <intent-filter>
@@ -29,9 +29,12 @@
         </activity>
         <activity
             android:name="com.tikalk.worktracker.time.TimeListActivity"
+            android:exported="false"
             android:label="@string/activity_time" />
 
-        <receiver android:name=".time.TimeReceiver">
+        <receiver
+            android:name=".time.TimeReceiver"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />

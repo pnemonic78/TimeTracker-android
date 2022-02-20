@@ -34,4 +34,11 @@ package com.tikalk.worktracker.app
 
 import com.tikalk.app.TikalActivity
 
-abstract class TrackerActivity : TikalActivity()
+abstract class TrackerActivity : TikalActivity() {
+
+    /**
+     * Shows the progress UI and hides the form.
+     * @param show is visible?
+     */
+    abstract fun showProgress(show: Boolean)
+}

@@ -66,9 +66,11 @@ android {
     }
 
     packagingOptions {
-        excludes.add("META-INF/DEPENDENCIES")
-        excludes.add("META-INF/INDEX.LIST")
-        excludes.add("META-INF/*.kotlin_module")
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/*.kotlin_module"
+        }
     }
 
     buildFeatures {
@@ -77,11 +79,11 @@ android {
 }
 
 dependencies {
-    // Google Support
-    implementation("androidx.appcompat:appcompat:1.4.0")
-    implementation("com.google.android.material:material:1.5.0-beta01")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
-    implementation("androidx.preference:preference-ktx:1.1.1")
+    // Jetpack
+    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("com.google.android.material:material:1.6.0-alpha02")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
+    implementation("androidx.preference:preference-ktx:1.2.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
 
     // Testing
@@ -98,12 +100,12 @@ dependencies {
     kapt("androidx.room:room-compiler:${BuildVersions.roomVersion}")
 
     // Rx
+    implementation("com.squareup.retrofit2:adapter-rxjava3:${BuildVersions.retrofit2Version}")
     implementation("io.reactivex.rxjava3:rxandroid:${BuildVersions.rxAndroidVersion}")
     implementation("io.reactivex.rxjava3:rxkotlin:${BuildVersions.rxKotlinVersion}")
 
     // Web
     implementation("com.squareup.retrofit2:retrofit:${BuildVersions.retrofit2Version}")
-    implementation("com.squareup.retrofit2:adapter-rxjava3:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.retrofit2:converter-scalars:${BuildVersions.retrofit2Version}")
     implementation("com.squareup.okhttp3:logging-interceptor:${BuildVersions.okhttpVersion}")
     implementation("com.squareup.okhttp3:okhttp:${BuildVersions.okhttpVersion}")

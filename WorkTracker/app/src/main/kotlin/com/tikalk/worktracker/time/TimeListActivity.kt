@@ -42,12 +42,12 @@ import androidx.navigation.ui.setupWithNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.app.TrackerActivity
 import com.tikalk.worktracker.databinding.ActivityTimeListBinding
-import com.tikalk.worktracker.net.InternetActivity
 import com.tikalk.worktracker.user.ProfileViewModel
 import timber.log.Timber
 
-class TimeListActivity : InternetActivity() {
+class TimeListActivity : TrackerActivity() {
 
     private lateinit var binding: ActivityTimeListBinding
     private val profileViewModule by viewModels<ProfileViewModel>()
@@ -80,13 +80,13 @@ class TimeListActivity : InternetActivity() {
             }
         }
 
-        profileViewModule.profileUpdate.observe(this, { (_, reason) ->
+        profileViewModule.profileUpdate.observe(this) { (_, reason) ->
             if (reason == null) {
                 Timber.i("profile success")
             } else {
                 Timber.e("profile failure: $reason")
             }
-        })
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -145,71 +145,6 @@ class TimeListActivity : InternetActivity() {
         return findNavController(this, R.id.nav_host_fragment)
     }
 
-    private fun showMainFragment() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showMainFragment currentDestination=${destination.label}")
-        if (destination.id != R.id.timeListFragment) {
-            navController.popBackStack(R.id.timeListFragment, false)
-        }
-    }
-
-    private fun showSettings() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showSettings currentDestination=${destination.label}")
-        if (destination.id != R.id.timeSettingsFragment) {
-            navController.navigate(R.id.action_show_settings)
-        }
-    }
-
-    private fun showProfile() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showProfile currentDestination=${destination.label}")
-        if (destination.id != R.id.profileFragment) {
-            Bundle().apply {
-                navController.navigate(R.id.action_show_profile, this)
-            }
-        }
-    }
-
-    private fun showProjects() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showProjects currentDestination=${destination.label}")
-        if (destination.id != R.id.projectsFragment) {
-            navController.navigate(R.id.action_show_projects)
-        }
-    }
-
-    private fun showReports() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showReports currentDestination=${destination.label}")
-        if ((destination.id != R.id.reportFormFragment) and (destination.id != R.id.reportFragment)) {
-            navController.navigate(R.id.action_show_reportForm)
-        }
-    }
-
-    private fun showTasks() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showTasks currentDestination=${destination.label}")
-        if (destination.id != R.id.tasksFragment) {
-            navController.navigate(R.id.action_show_tasks)
-        }
-    }
-
-    private fun showUsers() {
-        val navController = findNavController()
-        val destination = navController.currentDestination ?: return
-        Timber.i("showUsers currentDestination=${destination.label}")
-        if (destination.id != R.id.usersFragment) {
-            navController.navigate(R.id.action_show_users)
-        }
-    }
-
     override fun onSupportNavigateUp(): Boolean {
         if (findNavController().navigateUp()) {
             return true
@@ -218,8 +153,6 @@ class TimeListActivity : InternetActivity() {
     }
 
     companion object {
-        const val ACTION_DATE = TimeListFragment.ACTION_DATE
         const val ACTION_STOP = TimeListFragment.ACTION_STOP
-        const val ACTION_TODAY = TimeListFragment.ACTION_TODAY
     }
 }

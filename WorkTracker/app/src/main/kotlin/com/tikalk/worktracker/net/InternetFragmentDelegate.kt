@@ -148,6 +148,6 @@ class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
          * Shows the progress UI and hides the login form.
          * @param show is visible?
          */
-        fun showProgress(show: Boolean)
+        fun showProgress(show: Boolean = true)
     }
 }
