@@ -63,7 +63,8 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         registerActivityLifecycleCallbacks(this)
 
         startKoin {
-            androidLogger(if (enableDebugLogging) Level.DEBUG else Level.INFO)
+            // FIXME https://github.com/InsertKoinIO/koin/issues/1188
+            // FIXME androidLogger(if (enableDebugLogging) Level.DEBUG else Level.INFO)
             androidContext(this@TrackerApplication)
             modules(
                 listOf(

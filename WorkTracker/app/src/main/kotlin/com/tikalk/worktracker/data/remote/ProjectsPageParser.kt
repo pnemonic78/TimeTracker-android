@@ -67,22 +67,23 @@ class ProjectsPageParser {
      */
     private fun findProjectsTable(doc: Document): Element? {
         val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
+        val table = body.selectFirst("table[class='x-scrollable-table']")
+        val candidates = table.getElementsByTag("th")
+        var th: Element
         var label: String
 
         for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
+            th = candidate
+            label = th.ownText()
             if (label != "Name") {
                 continue
             }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
+            th = th.nextElementSibling() ?: continue
+            label = th.ownText()
             if (label != "Description") {
                 continue
             }
-            return findParentElement(td, "table")
+            return findParentElement(th, "table")
         }
 
         return null
@@ -90,6 +91,7 @@ class ProjectsPageParser {
 
     private fun parseProject(row: Element): Project? {
         val cols = row.getElementsByTag("td")
+        if (cols.isEmpty()) return null
 
         val tdName = cols[0]
         val name = tdName.ownText()

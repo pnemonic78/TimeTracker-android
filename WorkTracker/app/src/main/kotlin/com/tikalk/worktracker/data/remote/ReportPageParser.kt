@@ -199,6 +199,8 @@ class ReportPageParser(private val filter: ReportFilter) {
         projects: MutableCollection<Project>
     ): TimeRecord? {
         val cols = row.getElementsByTag("td")
+        if (cols.isEmpty()) return null
+
         val record = TimeRecord.EMPTY.copy()
         record.id = index + 1L
         record.status = TaskRecordStatus.CURRENT

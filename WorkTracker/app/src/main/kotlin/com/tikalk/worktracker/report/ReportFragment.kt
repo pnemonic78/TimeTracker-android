@@ -79,24 +79,24 @@ class ReportFragment : InternetFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, { records ->
+        recordsData.observe(this) { records ->
             bindList(records)
-        })
-        totalsData.observe(this, { totals ->
+        }
+        totalsData.observe(this) { totals ->
             bindTotals(totals)
-        })
-        filterData.observe(this, { filter ->
+        }
+        filterData.observe(this) { filter ->
             this.listAdapter = ReportAdapter(filter)
             binding.list.adapter = listAdapter
-        })
-        delegate.login.observe(this, { (_, reason) ->
+        }
+        delegate.login.observe(this) { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
             } else {
                 Timber.e("login failure: $reason")
             }
-        })
+        }
     }
 
     override fun onCreateView(

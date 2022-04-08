@@ -86,25 +86,25 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        recordsData.observe(this, { records ->
+        recordsData.observe(this) { records ->
             bindList(date, records)
-        })
-        totalsData.observe(this, { totals ->
+        }
+        totalsData.observe(this) { totals ->
             if (totals != null) bindTotals(totals)
-        })
+        }
 
-        timeViewModel.deleted.observe(this, { data ->
+        timeViewModel.deleted.observe(this) { data ->
             onRecordEditDeleted(data.record, data.responseHtml)
-        })
-        timeViewModel.edited.observe(this, { data ->
+        }
+        timeViewModel.edited.observe(this) { data ->
             onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
-        })
-        timeViewModel.editFailure.observe(this, { data ->
+        }
+        timeViewModel.editFailure.observe(this) { data ->
             onRecordEditFailure(data.record, data.reason)
-        })
-        timeViewModel.favorite.observe(this, { record ->
+        }
+        timeViewModel.favorite.observe(this) { record ->
             onRecordEditFavorited(record)
-        })
+        }
     }
 
     override fun onCreateView(

@@ -55,6 +55,7 @@ import kotlinx.html.stream.HTMLStreamBuilder
 import kotlinx.html.style
 import kotlinx.html.table
 import kotlinx.html.td
+import kotlinx.html.th
 import kotlinx.html.title
 import kotlinx.html.tr
 import kotlinx.html.unsafe
@@ -161,53 +162,53 @@ class ReportExporterHTML(
 
                     br
 
-                    table {
+                    table(classes = "x-scrollable-table") {
                         attributes["border"] = "0"
                         attributes["cellpadding"] = "3"
                         attributes["cellspacing"] = "1"
                         attributes["width"] = "100%"
 
                         tr {
-                            td("tableHeader") {
+                            th {
                                 +context.getString(R.string.date_header)
                             }
                             if (showProjectField) {
-                                td("tableHeader") {
+                                th {
                                     +context.getString(R.string.project_header)
                                 }
                             }
                             if (showTaskField) {
-                                td("tableHeader") {
+                                th {
                                     +context.getString(R.string.task_header)
                                 }
                             }
                             if (showLocationField) {
-                                td("tableHeader") {
+                                th {
                                     +context.getString(R.string.location_header)
                                 }
                             }
                             if (showStartField) {
-                                td("tableHeaderCentered") {
+                                th {
                                     +context.getString(R.string.start_header)
                                 }
                             }
                             if (showFinishField) {
-                                td("tableHeaderCentered") {
+                                th {
                                     +context.getString(R.string.finish_header)
                                 }
                             }
                             if (showDurationField) {
-                                td("tableHeaderCentered") {
+                                th {
                                     +context.getString(R.string.duration_header)
                                 }
                             }
                             if (showNoteField) {
-                                td("tableHeader") {
+                                th {
                                     +context.getString(R.string.note_header)
                                 }
                             }
                             if (showCostField) {
-                                td("tableHeaderCentered") {
+                                th {
                                     +context.getString(R.string.cost_header)
                                 }
                             }
@@ -217,31 +218,31 @@ class ReportExporterHTML(
                             val record = records[i]
 
                             tr(if (i.isEven()) "rowReportItem" else "rowReportItemAlt") {
-                                td("cellLeftAligned") {
+                                td("date-cell") {
                                     +formatSystemDate(record.start)
                                 }
                                 if (showProjectField) {
-                                    td("cellLeftAligned") {
+                                    td("text-cell") {
                                         +record.project.name
                                     }
                                 }
                                 if (showTaskField) {
-                                    td("cellLeftAligned") {
+                                    td("text-cell") {
                                         +record.task.name
                                     }
                                 }
                                 if (showLocationField) {
-                                    td("cellLeftAligned") {
+                                    td("text-cell") {
                                         +record.location.toLocationItem(context).label
                                     }
                                 }
                                 if (showStartField) {
-                                    td("cellRightAligned") {
+                                    td("time-cell") {
                                         +formatSystemTime(record.start)
                                     }
                                 }
                                 if (showFinishField) {
-                                    td("cellRightAligned") {
+                                    td("time-cell") {
                                         +formatSystemTime(record.finish)
                                     }
                                 }
@@ -249,17 +250,17 @@ class ReportExporterHTML(
                                     timeBuffer.setLength(0)
                                     val durationMs = record.finishTime - record.startTime
                                     formatElapsedTime(context, timeFormatter, durationMs)
-                                    td("cellRightAligned") {
+                                    td("time-cell") {
                                         +timeFormatter.toString()
                                     }
                                 }
                                 if (showNoteField) {
-                                    td("cellLeftAligned") {
+                                    td("text-cell") {
                                         +record.note
                                     }
                                 }
                                 if (showCostField) {
-                                    td("cellRightAligned") {
+                                    td("money-value-cell") {
                                         +String.format(Locale.US, "%.2f", record.cost)
                                     }
                                 }
@@ -272,8 +273,8 @@ class ReportExporterHTML(
                             }
                         }
 
-                        tr("rowReportSubtotal") {
-                            td("cellLeftAlignedSubtotal") {
+                        tr {
+                            td("invoice-label") {
                                 +context.getString(R.string.total)
                             }
                             if (showProjectField) {
@@ -289,7 +290,7 @@ class ReportExporterHTML(
                                 td {}
                             }
                             if (showDurationField) {
-                                td("cellRightAlignedSubtotal") {
+                                td("time-cell subtotal-cell") {
                                     timeBuffer.setLength(0)
                                     +formatElapsedTime(
                                         context,
@@ -302,7 +303,7 @@ class ReportExporterHTML(
                                 td {}
                             }
                             if (showCostField) {
-                                td("cellRightAlignedSubtotal") {
+                                td("money-value-cell subtotal-cell") {
                                     timeBuffer.setLength(0)
                                     +formatCurrency(currencyFormatter, totals.cost).toString()
                                 }

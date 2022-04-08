@@ -60,16 +60,16 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        timeViewModel.projectsData.observe(this, { projects ->
+        timeViewModel.projectsData.observe(this) { projects ->
             onProjectsUpdated(projects)
-        })
-        delegate.login.observe(this, { (login, reason) ->
+        }
+        delegate.login.observe(this) { (login, reason) ->
             if (reason == null) {
                 onLoginSuccess(login)
             } else {
                 onLoginFailure(login, reason)
             }
-        })
+        }
     }
 
     abstract fun populateForm(record: TimeRecord)

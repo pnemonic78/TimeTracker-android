@@ -38,7 +38,11 @@ import com.tikalk.html.selectByName
 import com.tikalk.html.value
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.model.time.MutableTimeListPage
+import com.tikalk.worktracker.model.time.TaskRecordStatus
+import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.time.parseHours
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
@@ -46,8 +50,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
 import org.jsoup.select.Elements
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
 
 class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeListPage>() {
 
@@ -112,31 +115,33 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
     }
 
     /**
-     * Find the first table whose first row has both class="tableHeader" and labels 'Project' and 'Task' and 'Start'
+     * Find the first table whose first row has both class="record-list" and labels 'Project' and 'Task' and 'Start'
      */
     private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
+        val div = body.selectFirst("div[class='record-list']")
+        val table = div.selectFirst("table")
+        val candidates = table.getElementsByTag("th")
+        var th: Element
         var label: String
 
         for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
+            th = candidate
+            label = th.ownText()
             if (label != "Project") {
                 continue
             }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
+            th = th.nextElementSibling() ?: continue
+            label = th.ownText()
             if (label != "Task") {
                 continue
             }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
+            th = th.nextElementSibling() ?: continue
+            label = th.ownText()
             if (label != "Start") {
                 continue
             }
-            return findParentElement(td, "table")
+            return findParentElement(th, "table")
         }
 
         return null
@@ -144,6 +149,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
 
     private fun parseRecord(date: Calendar, projects: List<Project>, row: Element): TimeRecord? {
         val cols = row.getElementsByTag("td")
+        if (cols.isEmpty()) return null
 
         val tdProject = cols[0]
         if (tdProject.attr("class") == "tableHeader") {

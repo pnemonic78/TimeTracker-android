@@ -84,12 +84,12 @@ class ReportFormFragment : TimeFormFragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         filterData.value = ReportFilter()
-        filterData.observe(this, { filter ->
+        filterData.observe(this) { filter ->
             if (filter != null) {
                 setRecordValue(filter)
                 bindFilter(filter)
             }
-        })
+        }
     }
 
     override fun onCreateView(
