@@ -31,12 +31,12 @@
  */
 
 object BuildVersions {
-    const val kotlin_version = "1.5.31"
+    const val kotlin_version = "1.6.20"
     const val nav_version = "2.3.5"
 
     const val minSdkVersion = 21
     const val compileSdkVersion = 31
-    const val targetSdkVersion = 30
+    const val targetSdkVersion = 31
 
     // App dependencies
     const val junitVersion = "4.13"

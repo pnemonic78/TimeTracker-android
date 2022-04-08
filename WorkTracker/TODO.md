@@ -1,7 +1,10 @@
 To-Do List
 ====
 
-* rx3 to Flow
+* rename Timer ro Puncher
+* migrate "koin" to Hilt
+* migrate rx3 to Flow
+* migrate binding to Jetpack Compose
 
 * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * Reports - group by
