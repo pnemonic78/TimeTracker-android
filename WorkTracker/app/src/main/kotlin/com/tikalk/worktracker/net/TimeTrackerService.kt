@@ -38,6 +38,7 @@ import retrofit2.http.Field
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -49,6 +50,8 @@ import retrofit2.http.Query
 interface TimeTrackerService {
 
     companion object {
+        const val BASE_URL = "https://planet.tikalk.com/timetracker/"
+
         const val PHP_LOGIN = "login.php"
         const val PHP_TIME = "time.php"
         const val PHP_EDIT = "time_edit.php"
@@ -76,6 +79,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_TIME)
+    @Headers("Referer: ${BASE_URL}${PHP_TIME}")
     fun addTime(
         @Field("project") projectId: Long,
         @Field("task") taskId: Long,
@@ -93,6 +97,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_EDIT)
+    @Headers("Referer: ${BASE_URL}${PHP_EDIT}")
     fun editTime(
         @Field("id") id: Long,
         @Field("project") projectId: Long,
@@ -108,6 +113,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_DELETE)
+    @Headers("Referer: ${BASE_URL}${PHP_EDIT}")
     fun deleteTime(
         @Field("id") id: Long,
         @Field("delete_button") submit: String = "Delete",
@@ -119,6 +125,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_PROFILE)
+    @Headers("Referer: ${BASE_URL}${PHP_PROFILE}")
     fun editProfile(
         @Field("name") name: String,
         @Field("login") login: String,
@@ -142,6 +149,7 @@ interface TimeTrackerService {
 
     @FormUrlEncoded
     @POST(PHP_REPORTS)
+    @Headers("Referer: ${BASE_URL}${PHP_REPORTS}")
     fun generateReport(
         @FieldMap filter: Map<String, String>,
         @Field("btn_generate") submit: String = "Generate"
