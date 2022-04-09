@@ -71,22 +71,22 @@ class UsersPageParser {
      */
     private fun findUsersTable(doc: Document): Element? {
         val body = doc.body()
-        val candidates = body.select("td[class='tableHeader']")
-        var td: Element
+        val candidates = body.getElementsByTag("th")
+        var th: Element
         var label: String
 
         for (candidate in candidates) {
-            td = candidate
-            label = td.ownText()
+            th = candidate
+            label = th.ownText()
             if (label != "Name") {
                 continue
             }
-            td = td.nextElementSibling() ?: continue
-            label = td.ownText()
+            th = th.nextElementSibling() ?: continue
+            label = th.ownText()
             if (label != "Login") {
                 continue
             }
-            return findParentElement(td, "table")
+            return findParentElement(th, "table")
         }
 
         return null
@@ -94,6 +94,7 @@ class UsersPageParser {
 
     private fun parseUser(row: Element): User? {
         val cols = row.getElementsByTag("td")
+        if (cols.isEmpty()) return null
 
         val tdName = cols[0]
         val name = tdName.ownText()

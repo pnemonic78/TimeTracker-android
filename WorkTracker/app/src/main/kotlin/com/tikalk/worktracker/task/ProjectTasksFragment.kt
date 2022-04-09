@@ -61,17 +61,17 @@ class ProjectTasksFragment : InternetFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        tasksData.observe(this, { tasks ->
+        tasksData.observe(this) { tasks ->
             bindList(tasks)
-        })
-        delegate.login.observe(this, { (_, reason) ->
+        }
+        delegate.login.observe(this) { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
             } else {
                 Timber.e("login failure: $reason")
             }
-        })
+        }
     }
 
     override fun onCreateView(

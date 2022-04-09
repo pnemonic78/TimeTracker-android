@@ -148,7 +148,7 @@ class BasicRealmFragment : InternetDialogFragment() {
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    fun attemptLogin() {
+    private fun attemptLogin() {
         if (!binding.actionAuthenticate.isEnabled) {
             return
         }

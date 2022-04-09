@@ -175,11 +175,11 @@ class ReportPageParser(private val filter: ReportFilter) {
     private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
         val form = body.selectFirst("form[name='reportViewForm']") ?: return null
-        val td = form.selectFirst("td[class='tableHeader']") ?: return null
+        val th = form.selectFirst("th") ?: return null
 
-        val label = td.ownText()
+        val label = th.ownText()
         if (label == "Date") {
-            return findParentElement(td, "table")
+            return findParentElement(th, "table")
         }
 
         return null
@@ -199,6 +199,8 @@ class ReportPageParser(private val filter: ReportFilter) {
         projects: MutableCollection<Project>
     ): TimeRecord? {
         val cols = row.getElementsByTag("td")
+        if (cols.isEmpty()) return null
+
         val record = TimeRecord.EMPTY.copy()
         record.id = index + 1L
         record.status = TaskRecordStatus.CURRENT

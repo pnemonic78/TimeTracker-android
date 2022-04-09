@@ -264,7 +264,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             context,
             ID_ACTIVITY,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT //TODO or PendingIntent.FLAG_IMMUTABLE
         )
     }
 
@@ -288,7 +288,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             context,
             ID_ACTION_STOP,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT //TODO or PendingIntent.FLAG_IMMUTABLE
         )
     }
 

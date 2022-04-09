@@ -258,7 +258,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         return MutableFormPage(record) as MP
     }
 
-    protected fun populatePage(doc: Document, page: MP) {
+    private fun populatePage(doc: Document, page: MP) {
         populateForm(doc, page)
     }
 }

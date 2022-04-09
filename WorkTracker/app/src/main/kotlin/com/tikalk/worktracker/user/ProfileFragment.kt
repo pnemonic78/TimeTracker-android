@@ -86,20 +86,20 @@ class ProfileFragment : InternetDialogFragment() {
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
 
-        userData.observe(this, { user ->
+        userData.observe(this) { user ->
             bindForm(user, userCredentialsData.value)
-        })
-        userCredentialsData.observe(this, { userCredentials ->
+        }
+        userCredentialsData.observe(this) { userCredentials ->
             bindForm(userData.value, userCredentials)
-        })
-        delegate.login.observe(this, { (_, reason) ->
+        }
+        delegate.login.observe(this) { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
                 run()
             } else {
                 Timber.e("login failure: $reason")
             }
-        })
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

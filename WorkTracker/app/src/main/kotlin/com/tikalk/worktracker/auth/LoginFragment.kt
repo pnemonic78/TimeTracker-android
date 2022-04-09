@@ -73,14 +73,14 @@ class LoginFragment : InternetDialogFragment {
         showsDialog = true
         isCancelable = true
 
-        delegate.authenticationViewModel.basicRealm.observe(this, { (realm, _, reason) ->
+        delegate.authenticationViewModel.basicRealm.observe(this) { (realm, _, reason) ->
             if (reason == null) {
                 Timber.i("basic realm success for \"$realm\"")
                 attemptLogin()
             } else {
                 Timber.e("basic realm failure for \"$realm\": $reason")
             }
-        })
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

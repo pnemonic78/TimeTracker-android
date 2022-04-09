@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("kapt")
-    id("kotlin-parcelize")
+    kotlin("plugin.parcelize")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -81,7 +81,7 @@ android {
 dependencies {
     // Jetpack
     implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.6.0-alpha02")
+    implementation("com.google.android.material:material:1.6.0-beta01")
     implementation("androidx.constraintlayout:constraintlayout:2.1.3")
     implementation("androidx.preference:preference-ktx:1.2.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
@@ -130,5 +130,5 @@ dependencies {
     implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
 
     // Dependency Injection
-    implementation("io.insert-koin:koin-android:3.1.2")
+    implementation("io.insert-koin:koin-android:3.1.5")
 }
