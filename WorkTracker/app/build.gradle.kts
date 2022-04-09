@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("kapt")
-    id("kotlin-parcelize")
+    kotlin("plugin.parcelize")
 }
 
 val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
