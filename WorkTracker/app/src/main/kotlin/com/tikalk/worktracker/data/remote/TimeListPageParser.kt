@@ -119,9 +119,8 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
      */
     private fun findRecordsTable(doc: Document): Element? {
         val body = doc.body()
-        val div = body.selectFirst("div[class='record-list']")
-        val table = div.selectFirst("table")
-        val candidates = table.getElementsByTag("th")
+        val div = body.selectFirst("div[class='record-list']") ?: return null
+        val candidates = div.getElementsByTag("th")
         var th: Element
         var label: String
 

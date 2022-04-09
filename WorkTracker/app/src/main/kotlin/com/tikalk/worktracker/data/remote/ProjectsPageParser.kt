@@ -67,8 +67,7 @@ class ProjectsPageParser {
      */
     private fun findProjectsTable(doc: Document): Element? {
         val body = doc.body()
-        val table = body.selectFirst("table[class='x-scrollable-table']")
-        val candidates = table.getElementsByTag("th")
+        val candidates = body.getElementsByTag("th")
         var th: Element
         var label: String
 
