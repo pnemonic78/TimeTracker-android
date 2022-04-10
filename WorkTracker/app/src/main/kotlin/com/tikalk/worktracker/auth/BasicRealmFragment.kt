@@ -114,17 +114,29 @@ class BasicRealmFragment : InternetDialogFragment() {
     fun run() {
         Timber.i("run")
         val args = this.arguments ?: return
+        var submit = args.getBoolean(EXTRA_SUBMIT, false)
 
         if (args.containsKey(EXTRA_REALM)) {
             realmName = args.getString(EXTRA_REALM) ?: "?"
             binding.realmTitle.text = getString(R.string.authentication_basic_realm, realmName)
         }
         if (args.containsKey(EXTRA_USER)) {
-            val username = args.getString(EXTRA_USER)
-            binding.usernameInput.setText(username)
+            val userArg = args.getString(EXTRA_USER).orEmpty()
+            val indexAt = userArg.indexOf('@')
+            var username = if (indexAt < 0) userArg else userArg.substring(0, indexAt)
 
             val credentials = preferences.basicCredentials
+            if (credentials.isEmpty()) {
+                val userDemo = getString(R.string.demo_login_user)
+                if (userArg == userDemo) {
+                    username = getString(R.string.demo_basic_user)
+                    credentials.username = username
+                    credentials.password = getString(R.string.demo_basic_password)
+                    submit = true
+                }
+            }
 
+            binding.usernameInput.setText(username)
             when {
                 args.containsKey(EXTRA_PASSWORD) -> binding.passwordInput.setText(
                     args.getString(EXTRA_PASSWORD)
@@ -133,7 +145,7 @@ class BasicRealmFragment : InternetDialogFragment() {
                 else -> binding.passwordInput.text = null
             }
         }
-        if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
+        if (submit) {
             attemptLogin()
         }
     }

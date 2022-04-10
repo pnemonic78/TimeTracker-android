@@ -145,6 +145,8 @@ abstract class ReportExporter(
         ): File
     }
 
+    abstract val mimeType: String
+
     companion object {
         private const val FOLDER_EXPORTS = "exports"
         private const val AUTHORITY = "${BuildConfig.APPLICATION_ID}.files"

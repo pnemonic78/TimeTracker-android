@@ -45,7 +45,7 @@ data class LocationItem(val location: Location, val label: String) {
 
 fun Location.toLocationItem(context: Context): LocationItem {
     val label: String = when (this) {
-        Location.EMPTY -> context.getString(R.string.location_label_select)
+        Location.EMPTY -> ""
         Location.CLIENT -> context.getString(R.string.location_label_client)
         Location.HOME -> context.getString(R.string.location_label_home)
         Location.TIKAL -> context.getString(R.string.location_label_tikal)

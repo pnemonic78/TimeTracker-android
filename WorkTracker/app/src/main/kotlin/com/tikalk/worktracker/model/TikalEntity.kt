@@ -52,7 +52,7 @@ abstract class TikalEntity(
      */
     @ColumnInfo(name = "id")
     @PrimaryKey(autoGenerate = false)
-    var id: Long = ID_NONE
+    open var id: Long = ID_NONE
 ) {
     /**
      * SQLite table id.

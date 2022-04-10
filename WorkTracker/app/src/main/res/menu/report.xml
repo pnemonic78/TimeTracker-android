@@ -66,4 +66,37 @@
                 app:showAsAction="ifRoom" />
         </menu>
     </item>
+    <item
+        android:id="@+id/menu_preview"
+        android:icon="@drawable/ic_menu_preview"
+        android:orderInCategory="10"
+        android:title="@string/action_preview"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/menu_preview_html"
+                android:icon="@drawable/ic_menu_export_html"
+                android:orderInCategory="1"
+                android:title="@string/action_preview_html"
+                app:showAsAction="always" />
+            <item
+                android:id="@+id/menu_preview_odf"
+                android:icon="@drawable/ic_menu_export_odf"
+                android:orderInCategory="2"
+                android:title="@string/action_preview_odf"
+                app:showAsAction="ifRoom" />
+            <item
+                android:id="@+id/menu_preview_xml"
+                android:icon="@drawable/ic_menu_export_xml"
+                android:orderInCategory="3"
+                android:title="@string/action_preview_xml"
+                app:showAsAction="ifRoom" />
+            <item
+                android:id="@+id/menu_preview_csv"
+                android:icon="@drawable/ic_menu_export_csv"
+                android:orderInCategory="4"
+                android:title="@string/action_preview_csv"
+                app:showAsAction="ifRoom" />
+        </menu>
+    </item>
 </menu>

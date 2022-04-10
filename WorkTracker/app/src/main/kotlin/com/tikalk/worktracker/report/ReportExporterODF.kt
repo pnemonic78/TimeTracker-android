@@ -66,6 +66,9 @@ class ReportExporterODF(
     totals: ReportTotals
 ) : ReportExporter(context, records, filter, totals) {
 
+    override val mimeType: String
+        get() = MIME_TYPE
+
     override fun createRunner(
         context: Context,
         records: List<TimeRecord>,
