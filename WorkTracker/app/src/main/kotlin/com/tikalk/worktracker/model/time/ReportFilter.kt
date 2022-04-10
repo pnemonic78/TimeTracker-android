@@ -52,18 +52,18 @@ import java.util.Calendar
  * @author Moshe Waisberg.
  */
 @Parcelize
-class ReportFilter() : TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY), Parcelable {
-
-    var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
-    var favorite: String? = null
-    var showProjectField: Boolean = true
-    var showTaskField: Boolean = true
-    var showStartField: Boolean = true
-    var showFinishField: Boolean = true
-    var showDurationField: Boolean = true
-    var showNoteField: Boolean = true
-    var showCostField: Boolean = false
+class ReportFilter(
+    var period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
+    var favorite: String? = null,
+    var showProjectField: Boolean = true,
+    var showTaskField: Boolean = true,
+    var showStartField: Boolean = true,
+    var showFinishField: Boolean = true,
+    var showDurationField: Boolean = true,
+    var showNoteField: Boolean = true,
+    var showCostField: Boolean = false,
     var showLocationField: Boolean = true
+) : TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY), Parcelable {
 
     constructor(
         project: Project = Project.EMPTY,
@@ -72,7 +72,7 @@ class ReportFilter() : TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY), Pa
         finish: Calendar? = null,
         period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
         favorite: String? = null,
-        remote: Location = Location.EMPTY,
+        location: Location = Location.EMPTY,
         showProjectField: Boolean = true,
         showTaskField: Boolean = true,
         showStartField: Boolean = true,
@@ -81,22 +81,23 @@ class ReportFilter() : TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY), Pa
         showNoteField: Boolean = true,
         showCostField: Boolean = false,
         showLocationField: Boolean = true
-    ) : this() {
+    ) : this(
+        period = period,
+        favorite = favorite,
+        showProjectField = showProjectField,
+        showTaskField = showTaskField,
+        showStartField = showStartField,
+        showFinishField = showFinishField,
+        showDurationField = showDurationField,
+        showNoteField = showNoteField,
+        showCostField = showCostField,
+        showLocationField = showLocationField
+    ) {
         this.project = project
         this.task = task
         this.start = start
         this.finish = finish
-        this.period = period
-        this.favorite = favorite
-        this.location = remote
-        this.showProjectField = showProjectField
-        this.showTaskField = showTaskField
-        this.showStartField = showStartField
-        this.showFinishField = showFinishField
-        this.showDurationField = showDurationField
-        this.showNoteField = showNoteField
-        this.showCostField = showCostField
-        this.showLocationField = showLocationField
+        this.location = location
     }
 
     fun toFields(): Map<String, String> {
