@@ -253,13 +253,11 @@ class LoginFragment : InternetDialogFragment {
     private fun authenticateBasicRealm(username: String, realm: String) {
         val navController = findNavController()
         Timber.i("authenticateBasicRealm realm=$realm currentDestination=${navController.currentDestination?.label}")
-        val indexAt = username.indexOf('@')
-        val userClean = if (indexAt < 0) username else username.substring(0, indexAt)
 
         if (!isNavDestination(R.id.basicRealmFragment)) {
             Bundle().apply {
                 putString(BasicRealmFragment.EXTRA_REALM, realm)
-                putString(BasicRealmFragment.EXTRA_USER, userClean)
+                putString(BasicRealmFragment.EXTRA_USER, username)
                 navController.navigate(R.id.action_basicRealmLogin, this)
             }
         }
