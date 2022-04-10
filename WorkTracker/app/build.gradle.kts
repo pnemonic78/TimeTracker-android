@@ -42,18 +42,6 @@ android {
         }
     }
 
-    sourceSets {
-        getByName("androidTest") {
-            java { srcDir(file("src/androidTest/kotlin")) }
-        }
-        getByName("main") {
-            java { srcDir(file("src/main/kotlin")) }
-        }
-        getByName("test") {
-            java { srcDir(file("src/test/kotlin")) }
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
