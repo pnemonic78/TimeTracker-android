@@ -36,7 +36,12 @@ import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -54,7 +59,13 @@ import com.tikalk.worktracker.databinding.TimeFormBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
-import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.Location
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.findProject
+import com.tikalk.worktracker.model.findTask
+import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -68,7 +79,7 @@ import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
 import retrofit2.Response
 import timber.log.Timber
-import java.util.*
+import java.util.Calendar
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.max
 
@@ -678,11 +689,20 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("processDeletePage")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
-            record.status = TaskRecordStatus.DELETED
-            timeViewModel.onRecordEditDeleted(record, html)
+            onRecordDeleted(record, html)
         } else {
-            setErrorLabelMain(errorMessage)
-            timeViewModel.onRecordEditFailure(record, errorMessage)
+            onRecordError(record, errorMessage)
+        }
+    }
+
+    private fun onRecordDeleted(record: TimeRecord, html: String) {
+        record.status = TaskRecordStatus.DELETED
+        recordsToSubmit.remove(record)
+        timeViewModel.onRecordEditDeleted(record, html)
+
+        val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
+        if (isStop) {
+            stopTimer()
         }
     }
 
