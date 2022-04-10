@@ -31,26 +31,28 @@
  */
 package com.tikalk.worktracker.model.time
 
-import android.os.Parcel
 import android.os.Parcelable
-import com.tikalk.os.readBool
-import com.tikalk.os.writeBool
-import com.tikalk.worktracker.db.TimeRecordEntity
-import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
-import com.tikalk.worktracker.time.*
-import java.util.*
+import com.tikalk.worktracker.time.copy
+import com.tikalk.worktracker.time.dayOfMonth
+import com.tikalk.worktracker.time.dayOfWeek
+import com.tikalk.worktracker.time.formatSystemDate
+import com.tikalk.worktracker.time.month
+import com.tikalk.worktracker.time.setToEndOfDay
+import com.tikalk.worktracker.time.setToStartOfDay
+import kotlinx.parcelize.Parcelize
+import java.util.Calendar
 
 /**
  * Report filter entity.
  *
  * @author Moshe Waisberg.
  */
-//TODO @Parcelize
-class ReportFilter : TimeRecord, Parcelable {
+@Parcelize
+class ReportFilter() : TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY), Parcelable {
 
     var period: ReportTimePeriod = ReportTimePeriod.CUSTOM
     var favorite: String? = null
@@ -62,8 +64,6 @@ class ReportFilter : TimeRecord, Parcelable {
     var showNoteField: Boolean = true
     var showCostField: Boolean = false
     var showLocationField: Boolean = true
-
-    constructor() : super(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
 
     constructor(
         project: Project = Project.EMPTY,
@@ -81,7 +81,11 @@ class ReportFilter : TimeRecord, Parcelable {
         showNoteField: Boolean = true,
         showCostField: Boolean = false,
         showLocationField: Boolean = true
-    ) : super(ID_NONE, project, task, start, finish) {
+    ) : this() {
+        this.project = project
+        this.task = task
+        this.start = start
+        this.finish = finish
         this.period = period
         this.favorite = favorite
         this.location = remote
@@ -93,49 +97,6 @@ class ReportFilter : TimeRecord, Parcelable {
         this.showNoteField = showNoteField
         this.showCostField = showCostField
         this.showLocationField = showLocationField
-    }
-
-    constructor(parcel: Parcel) : super(ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy()) {
-        val entity = TimeRecordEntity.CREATOR.createFromParcel(parcel)
-        id = entity.id
-        project.id = entity.projectId
-        task.id = entity.taskId
-        start = entity.start
-        finish = entity.finish
-        note = entity.note
-        cost = entity.cost
-        status = entity.status
-        period = ReportTimePeriod.values()[parcel.readInt()]
-        location = Location.valueOf(parcel.readLong())
-        favorite = parcel.readString()
-        showProjectField = parcel.readBool()
-        showTaskField = parcel.readBool()
-        showStartField = parcel.readBool()
-        showFinishField = parcel.readBool()
-        showDurationField = parcel.readBool()
-        showNoteField = parcel.readBool()
-        showCostField = parcel.readBool()
-        showLocationField = parcel.readBool()
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        val entity = toTimeRecordEntity()
-        entity.writeToParcel(parcel, flags)
-        parcel.writeInt(period.ordinal)
-        parcel.writeLong(location.id)
-        parcel.writeString(favorite)
-        parcel.writeBool(showProjectField)
-        parcel.writeBool(showTaskField)
-        parcel.writeBool(showStartField)
-        parcel.writeBool(showFinishField)
-        parcel.writeBool(showDurationField)
-        parcel.writeBool(showNoteField)
-        parcel.writeBool(showCostField)
-        parcel.writeBool(showLocationField)
-    }
-
-    override fun describeContents(): Int {
-        return 0
     }
 
     fun toFields(): Map<String, String> {
@@ -254,19 +215,5 @@ class ReportFilter : TimeRecord, Parcelable {
         if (showCostField) s.append('C')
         if (showLocationField) s.append('R')
         return s
-    }
-
-    companion object {
-
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<ReportFilter> {
-            override fun createFromParcel(parcel: Parcel): ReportFilter {
-                return ReportFilter(parcel)
-            }
-
-            override fun newArray(size: Int): Array<ReportFilter?> {
-                return arrayOfNulls(size)
-            }
-        }
     }
 }
