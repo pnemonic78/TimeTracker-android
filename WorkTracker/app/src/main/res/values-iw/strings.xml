@@ -108,15 +108,20 @@
     <string name="cost_total">סה\"כ עליות</string>
     <string name="cost">עלות</string>
     <string name="action_export">ייצא</string>
-    <string name="action_export_csv">ייצא CSV</string>
-    <string name="action_export_html">ייצא HTML</string>
-    <string name="action_export_odf">ייצא ODF</string>
-    <string name="action_export_xml">ייצא XML</string>
+    <string name="action_export_csv">ייצא כ-CSV</string>
+    <string name="action_export_html">ייצא כ-HTML</string>
+    <string name="action_export_odf">כ-ייצא ODF</string>
+    <string name="action_export_xml">כ-ייצא XML</string>
     <string name="item_all">(הכל)</string>
     <string name="location_label_client">לקוח</string>
     <string name="location_label_home">בית</string>
     <string name="location_label_other">אחר</string>
     <string name="location_label_tikal">טיקאל</string>
+    <string name="action_preview">תצוגה מקדימה</string>
+    <string name="action_preview_csv">תצוגה מקדימה כ-CSV</string>
+    <string name="action_preview_html">תצוגה מקדימה כ-HTML</string>
+    <string name="action_preview_odf">תצוגה מקדימה כ-OpenDocument</string>
+    <string name="action_preview_xml">תצוגה מקדימה כ-XML</string>
 
     <!-- Errors -->
     <string name="error">שגיה</string>

@@ -160,6 +160,11 @@
     <string name="location_label_other">Other</string>
     <string name="location_label_select" translatable="false">@string/item_select</string>
     <string name="location_label_tikal">Tikal</string>
+    <string name="action_preview">Preview</string>
+    <string name="action_preview_csv">Preview as CSV</string>
+    <string name="action_preview_html">Preview as HTML</string>
+    <string name="action_preview_odf">Preview as OpenDocument</string>
+    <string name="action_preview_xml">Preview as XML</string>
 
     <!-- Errors -->
     <string name="error">Error</string>

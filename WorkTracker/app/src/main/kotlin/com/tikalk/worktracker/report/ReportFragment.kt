@@ -63,7 +63,8 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
-import java.util.*
+import java.util.Formatter
+import java.util.Locale
 
 class ReportFragment : InternetFragment() {
 
@@ -221,11 +222,11 @@ class ReportFragment : InternetFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_export_csv -> {
-                exportCSV(item)
+                exportCSV(item, false)
                 return true
             }
             R.id.menu_export_html -> {
-                exportHTML(item)
+                exportHTML(item, false)
                 return true
             }
             R.id.menu_export_odf -> {
@@ -236,114 +237,113 @@ class ReportFragment : InternetFragment() {
                 exportXML(item)
                 return true
             }
+            R.id.menu_preview_csv -> {
+                exportCSV(item, preview = true)
+                return true
+            }
+            R.id.menu_preview_html -> {
+                exportHTML(item, preview = true)
+                return true
+            }
+            R.id.menu_preview_odf -> {
+                exportODF(item, preview = true)
+                return true
+            }
+            R.id.menu_preview_xml -> {
+                exportXML(item, preview = true)
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun exportCSV(item: MenuItem? = null) {
-        val context = this.context ?: return
-        val records = recordsData.value ?: return
-        val filter = filterData.value ?: return
-        val totals = totalsData.value ?: return
-
+    private fun export(
+        context: Context,
+        item: MenuItem? = null,
+        exporter: ReportExporter,
+        preview: Boolean = false
+    ) {
         item?.isEnabled = false
         showProgress(true)
 
-        ReportExporterCSV(context, records, filter, totals)
+        exporter
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ uri ->
-                Timber.i("Exported CSV to $uri")
-                shareFile(context, uri, ReportExporterCSV.MIME_TYPE)
+                Timber.i("Exported to $uri")
+                if (preview) {
+                    previewFile(context, uri, exporter.mimeType)
+                } else {
+                    shareFile(context, uri, exporter.mimeType)
+                }
                 showProgress(false)
                 item?.isEnabled = true
             }, { err ->
-                Timber.e(err, "Error exporting CSV: ${err.message}")
+                Timber.e(err, "Error exporting: ${err.message}")
                 showProgress(false)
                 item?.isEnabled = true
             })
             .addTo(disposables)
     }
 
-    private fun exportHTML(item: MenuItem? = null) {
+    private fun exportCSV(item: MenuItem? = null, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
-        item?.isEnabled = false
-        showProgress(true)
-
-        ReportExporterHTML(context, records, filter, totals)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ file ->
-                Timber.i("Exported HTML to $file")
-                shareFile(context, file, ReportExporterHTML.MIME_TYPE)
-                showProgress(false)
-                item?.isEnabled = true
-            }, { err ->
-                Timber.e(err, "Error exporting HTML: ${err.message}")
-                showProgress(false)
-                item?.isEnabled = true
-            })
-            .addTo(disposables)
+        export(
+            context,
+            item,
+            ReportExporterCSV(context, records, filter, totals),
+            preview
+        )
     }
 
-    private fun exportODF(item: MenuItem? = null) {
+    private fun exportHTML(item: MenuItem? = null, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
-        item?.isEnabled = false
-        showProgress(true)
-
-        ReportExporterODF(context, records, filter, totals)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ file ->
-                Timber.i("Exported ODF to $file")
-                shareFile(context, file, ReportExporterODF.MIME_TYPE)
-                showProgress(false)
-                item?.isEnabled = true
-            }, { err ->
-                Timber.e(err, "Error exporting ODF: ${err.message}")
-                showProgress(false)
-                showError(err)
-                item?.isEnabled = true
-            })
-            .addTo(disposables)
+        export(
+            context,
+            item,
+            ReportExporterHTML(context, records, filter, totals),
+            preview
+        )
     }
 
-    private fun exportXML(item: MenuItem? = null) {
+    private fun exportODF(item: MenuItem? = null, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
-        item?.isEnabled = false
-        showProgress(true)
+        export(
+            context,
+            item,
+            ReportExporterODF(context, records, filter, totals),
+            preview
+        )
+    }
 
-        ReportExporterXML(context, records, filter, totals)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ file ->
-                Timber.i("Exported XML to $file")
-                shareFile(context, file, ReportExporterXML.MIME_TYPE)
-                showProgress(false)
-                item?.isEnabled = true
-            }, { err ->
-                Timber.e(err, "Error exporting XML: ${err.message}")
-                showProgress(false)
-                item?.isEnabled = true
-            })
-            .addTo(disposables)
+    private fun exportXML(item: MenuItem? = null, preview: Boolean = false) {
+        val context = this.context ?: return
+        val records = recordsData.value ?: return
+        val filter = filterData.value ?: return
+        val totals = totalsData.value ?: return
+
+        export(
+            context,
+            item,
+            ReportExporterXML(context, records, filter, totals),
+            preview
+        )
     }
 
     private fun shareFile(context: Context, fileUri: Uri, mimeType: String? = null) {
-        val activity = this.activity ?: return
-        val intent = ShareCompat.IntentBuilder(activity)
+        val intent = ShareCompat.IntentBuilder(context)
             .addStream(fileUri)
             .setType(mimeType ?: context.contentResolver.getType(fileUri))
             .intent
@@ -365,6 +365,21 @@ class ReportFragment : InternetFragment() {
             .setMessage(R.string.error_export)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    private fun previewFile(context: Context, fileUri: Uri, mimeType: String? = null) {
+        val intent = Intent(Intent.ACTION_VIEW)
+            .setDataAndType(fileUri, mimeType ?: context.contentResolver.getType(fileUri))
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        // Validate that the device can open your File!
+        val pm = context.packageManager
+        if (intent.resolveActivity(pm) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
+        }
     }
 
     companion object {

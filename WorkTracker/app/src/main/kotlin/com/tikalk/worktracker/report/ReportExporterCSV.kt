@@ -47,8 +47,7 @@ import io.reactivex.rxjava3.core.SingleObserver
 import java.io.File
 import java.io.FileWriter
 import java.io.Writer
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Locale
 
 /**
  * Write the list of records as a Comma-separated Values (CSV) file.
@@ -59,6 +58,9 @@ class ReportExporterCSV(
     filter: ReportFilter,
     totals: ReportTotals
 ) : ReportExporter(context, records, filter, totals) {
+
+    override val mimeType: String
+        get() = MIME_TYPE
 
     override fun createRunner(
         context: Context,

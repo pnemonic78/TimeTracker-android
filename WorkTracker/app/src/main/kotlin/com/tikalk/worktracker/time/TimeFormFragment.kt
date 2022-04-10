@@ -49,8 +49,7 @@ import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
 import timber.log.Timber
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
 
@@ -257,7 +256,12 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         for (value in values) {
             items.add(value.toLocationItem(context))
         }
-        timeViewModel.locationEmpty = items[0]
+
+        val select =
+            LocationItem(items[0].location, context.getString(R.string.location_label_select))
+        items[0] = select
+        timeViewModel.locationEmpty = select
+
         return items
     }
 
