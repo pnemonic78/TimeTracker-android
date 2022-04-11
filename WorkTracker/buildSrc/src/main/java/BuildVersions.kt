@@ -32,7 +32,7 @@
 
 object BuildVersions {
     const val kotlin_version = "1.6.20"
-    const val nav_version = "2.3.5"
+    const val nav_version = "2.4.2"
 
     const val minSdkVersion = 21
     const val compileSdkVersion = 31
@@ -42,7 +42,7 @@ object BuildVersions {
     const val junitVersion = "4.13"
     const val okhttpVersion = "4.9.3"
     const val retrofit2Version = "2.9.0"
-    const val roomVersion = "2.3.0"
+    const val roomVersion = "2.4.2"
     const val rxAndroidVersion = "3.0.0"
     const val rxKotlinVersion = "3.0.1"
     const val timberVersion = "5.0.1"
