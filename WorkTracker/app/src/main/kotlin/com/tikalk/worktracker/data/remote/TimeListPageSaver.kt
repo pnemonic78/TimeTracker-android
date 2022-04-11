@@ -43,8 +43,7 @@ import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
 import timber.log.Timber
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
 
 class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeListPage>(db) {
 

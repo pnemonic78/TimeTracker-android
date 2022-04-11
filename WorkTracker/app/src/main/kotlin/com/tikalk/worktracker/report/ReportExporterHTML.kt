@@ -63,7 +63,8 @@ import java.io.File
 import java.io.FileWriter
 import java.io.InputStreamReader
 import java.io.Writer
-import java.util.*
+import java.util.Formatter
+import java.util.Locale
 
 /**
  * Write the list of records as an Hypertext Markup Language (HTML) file.

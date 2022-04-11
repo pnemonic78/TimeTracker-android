@@ -37,10 +37,8 @@ import java.net.CookieStore
 import java.net.HttpCookie
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.*
+import java.util.Collections
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Store cookies as shared preferences.

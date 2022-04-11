@@ -38,14 +38,18 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.model.time.MutableReportPage
+import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportPage
+import com.tikalk.worktracker.model.time.ReportTotals
+import com.tikalk.worktracker.model.time.TaskRecordStatus
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
 
 class ReportPageParser(private val filter: ReportFilter) {
 
@@ -306,7 +310,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         }
     }
 
-    private fun populateTotals(records: List<TimeRecord>?, page: MutableReportPage) {
+    private fun populateTotals(records: List<TimeRecord>, page: MutableReportPage) {
         val totals = ReportTotals()
 
         var duration: Long

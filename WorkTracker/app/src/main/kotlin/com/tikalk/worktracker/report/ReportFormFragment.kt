@@ -37,7 +37,12 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.lifecycle.MutableLiveData
@@ -49,18 +54,27 @@ import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentReportFormBinding
-import com.tikalk.worktracker.model.*
+import com.tikalk.worktracker.model.Location
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.findProject
+import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.time.*
+import com.tikalk.worktracker.time.FORMAT_DATE_BUTTON
+import com.tikalk.worktracker.time.TimeFormFragment
+import com.tikalk.worktracker.time.dayOfMonth
+import com.tikalk.worktracker.time.millis
+import com.tikalk.worktracker.time.month
+import com.tikalk.worktracker.time.year
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
 import kotlin.math.max
 
 class ReportFormFragment : TimeFormFragment() {

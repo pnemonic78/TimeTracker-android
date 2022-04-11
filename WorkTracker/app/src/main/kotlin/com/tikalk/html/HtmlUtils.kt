@@ -33,7 +33,11 @@
 package com.tikalk.html
 
 import org.jsoup.internal.StringUtil
-import org.jsoup.nodes.*
+import org.jsoup.nodes.CDataNode
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.FormElement
+import org.jsoup.nodes.Node
+import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 

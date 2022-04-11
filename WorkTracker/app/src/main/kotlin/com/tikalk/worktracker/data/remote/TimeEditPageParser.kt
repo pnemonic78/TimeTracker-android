@@ -44,7 +44,7 @@ import com.tikalk.worktracker.time.parseSystemTime
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
-import java.util.*
+import java.util.Calendar
 
 class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeEditPage>() {
 

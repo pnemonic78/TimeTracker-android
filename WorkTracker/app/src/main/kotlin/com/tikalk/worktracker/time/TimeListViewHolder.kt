@@ -43,7 +43,8 @@ import com.tikalk.worktracker.databinding.TimeItemBinding
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.toLocationItem
-import java.util.*
+import java.util.Formatter
+import java.util.Locale
 
 open class TimeListViewHolder(
     private val binding: TimeItemBinding,

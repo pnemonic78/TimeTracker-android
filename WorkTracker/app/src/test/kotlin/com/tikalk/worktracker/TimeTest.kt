@@ -5,10 +5,16 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
-import com.tikalk.worktracker.time.*
-import org.junit.Assert.*
+import com.tikalk.worktracker.time.copy
+import com.tikalk.worktracker.time.hourOfDay
+import com.tikalk.worktracker.time.millis
+import com.tikalk.worktracker.time.setToEndOfDay
+import com.tikalk.worktracker.time.setToStartOfDay
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.*
+import java.util.Calendar
 
 /**
  * Time tests.

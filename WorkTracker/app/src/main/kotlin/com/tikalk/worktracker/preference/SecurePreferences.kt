@@ -39,7 +39,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.tikalk.security.CipherHelper
 import com.tikalk.security.SimpleCipherHelper
-import java.util.*
+import java.util.UUID
 
 /**
  * Secured preferences that encrypt/decrypt the keys and values.

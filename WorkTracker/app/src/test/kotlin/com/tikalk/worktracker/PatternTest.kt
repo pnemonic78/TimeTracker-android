@@ -34,7 +34,10 @@ package com.tikalk.worktracker
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.InputStreamReader
 import java.util.regex.Pattern
