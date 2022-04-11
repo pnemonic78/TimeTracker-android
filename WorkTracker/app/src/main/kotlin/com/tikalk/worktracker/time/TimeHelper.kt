@@ -36,7 +36,11 @@ import android.text.format.DateFormat
 import android.text.format.DateUtils
 import com.tikalk.worktracker.R
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Formatter
+import java.util.Locale
+import java.util.TimeZone
 
 const val SYSTEM_DATE_PATTERN = "yyyy-MM-dd"
 const val SYSTEM_TIME_PATTERN = "HH:mm"

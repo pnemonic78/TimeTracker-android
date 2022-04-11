@@ -54,7 +54,8 @@ import org.odftoolkit.odfdom.dom.style.props.OdfTextProperties
 import org.odftoolkit.odfdom.incubator.doc.number.OdfNumberDateStyle
 import org.odftoolkit.odfdom.type.Color
 import java.io.File
-import java.util.*
+import java.util.Currency
+import java.util.Locale
 
 /**
  * Write the list of records as an OpenDocument Format (ODF) spreadsheet file.

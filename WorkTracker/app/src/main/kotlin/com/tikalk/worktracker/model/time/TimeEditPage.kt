@@ -33,7 +33,7 @@
 package com.tikalk.worktracker.model.time
 
 import com.tikalk.worktracker.model.Project
-import java.util.*
+import java.util.Calendar
 
 class TimeEditPage(
     record: TimeRecord,

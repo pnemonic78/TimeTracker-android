@@ -34,8 +34,17 @@ package com.tikalk.worktracker.data.remote
 
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.*
-import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.model.ProfilePage
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.ReportPage
+import com.tikalk.worktracker.model.time.TimeEditPage
+import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateResponse
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs

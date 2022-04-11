@@ -36,8 +36,12 @@ import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.time.*
-import java.util.*
+import com.tikalk.worktracker.time.copy
+import com.tikalk.worktracker.time.isSameDay
+import com.tikalk.worktracker.time.millis
+import com.tikalk.worktracker.time.setToEndOfDay
+import com.tikalk.worktracker.time.setToStartOfDay
+import java.util.Calendar
 
 /**
  * Time record entity. Represents some work done for a project task.

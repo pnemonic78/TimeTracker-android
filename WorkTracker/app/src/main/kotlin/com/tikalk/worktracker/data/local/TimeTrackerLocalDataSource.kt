@@ -39,13 +39,29 @@ import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
-import com.tikalk.worktracker.model.*
-import com.tikalk.worktracker.model.time.*
+import com.tikalk.worktracker.model.ProfilePage
+import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.ReportPage
+import com.tikalk.worktracker.model.time.ReportTotals
+import com.tikalk.worktracker.model.time.TimeEditPage
+import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeTotals
+import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import com.tikalk.worktracker.time.*
+import com.tikalk.worktracker.time.copy
+import com.tikalk.worktracker.time.dayOfMonth
+import com.tikalk.worktracker.time.dayOfWeek
+import com.tikalk.worktracker.time.setToEndOfDay
+import com.tikalk.worktracker.time.setToStartOfDay
 import io.reactivex.rxjava3.core.Observable
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Calendar
 
 class TimeTrackerLocalDataSource(
     private val db: TrackerDatabase,
@@ -209,18 +225,16 @@ class TimeTrackerLocalDataSource(
         return reportRecordsDb.map { it.toTimeRecord(projects) }
     }
 
-    private fun calculateTotals(records: List<TimeRecord>?): ReportTotals {
+    private fun calculateTotals(records: List<TimeRecord>): ReportTotals {
         val totals = ReportTotals()
 
         var duration: Long
-        if (records != null) {
-            for (record in records) {
-                duration = record.finishTime - record.startTime
-                if (duration > 0L) {
-                    totals.duration += duration
-                }
-                totals.cost += record.cost
+        for (record in records) {
+            duration = record.finishTime - record.startTime
+            if (duration > 0L) {
+                totals.duration += duration
             }
+            totals.cost += record.cost
         }
 
         return totals

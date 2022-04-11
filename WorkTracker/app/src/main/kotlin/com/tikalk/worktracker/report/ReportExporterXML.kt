@@ -46,7 +46,7 @@ import org.xmlpull.v1.XmlSerializer
 import java.io.File
 import java.io.FileWriter
 import java.io.Writer
-import java.util.*
+import java.util.Locale
 
 /**
  * Write the list of records as an Extensible Markup Language (XML) file.

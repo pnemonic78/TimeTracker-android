@@ -39,7 +39,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.*
+import java.util.Calendar
 
 /**
  * Report time record for database entity.

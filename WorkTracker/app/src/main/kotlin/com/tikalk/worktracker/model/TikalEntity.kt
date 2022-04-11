@@ -38,7 +38,8 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.tikalk.worktracker.time.toCalendar
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Tikal base entity.

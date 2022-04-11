@@ -49,7 +49,6 @@ import com.tikalk.worktracker.time.parseSystemTime
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
-import org.jsoup.select.Elements
 import java.util.Calendar
 
 class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeListPage>() {
@@ -211,6 +210,9 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         val table = findTotalsTable(doc, parent) ?: return
         val cells = table.getElementsByTag("td")
         for (td in cells) {
+            val hasClass = td.classNames().any { it.startsWith("day-totals") }
+            if (!hasClass) continue
+
             val text = td.text()
             val value: String
             when {
@@ -239,28 +241,18 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
 
     private fun findTotalsTable(doc: Document, parent: Element?): Element? {
         val body = doc.body()
-        val tables = body.select("table")
-        var rows: Elements
-        var tr: Element
-        var cols: Elements
+        val div = body.selectFirst("div[class='day-totals']") ?: return null
+        val candidates = div.getElementsByTag("td")
         var td: Element
         var label: String
 
-        for (table in tables) {
-            if ((parent != null) && (table.parent() != parent)) {
-                continue
-            }
-            rows = table.getElementsByTag("tr")
-            tr = rows.first()
-            if (tr.children().size < 1) {
-                continue
-            }
-            cols = tr.getElementsByTag("td")
-            td = cols.first()
+        for (candidate in candidates) {
+            td = candidate
             label = td.ownText()
-            if (label.startsWith("Week total:")) {
-                return table
+            if (!label.startsWith("Week total:")) {
+                continue
             }
+            return findParentElement(td, "table")
         }
 
         return null

@@ -44,7 +44,7 @@ import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
 import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
-import java.util.*
+import java.util.Calendar
 
 class DateTimePickerDialog private constructor(
     context: Context,
