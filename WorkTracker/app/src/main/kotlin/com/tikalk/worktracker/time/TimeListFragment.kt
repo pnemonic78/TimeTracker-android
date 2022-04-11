@@ -398,7 +398,7 @@ class TimeListFragment : TimeFormFragment(),
                 putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
                 putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
                 putBoolean(TimeEditFragment.EXTRA_STOP, isTimer)
-                formNavHostFragment.navController.navigate(R.id.action_timer_to_timeEdit, this)
+                formNavHostFragment.navController.navigate(R.id.action_puncher_to_timeEdit, this)
             }
         }
     }
@@ -432,7 +432,7 @@ class TimeListFragment : TimeFormFragment(),
     fun stopTimer() {
         Timber.i("stopTimer")
         val form = findTopFormFragment()
-        if (form is TimerFragment) {
+        if (form is PuncherFragment) {
             form.stopTimer()
             return
         }
@@ -531,8 +531,8 @@ class TimeListFragment : TimeFormFragment(),
 
             if (recordForTimer) {
                 Bundle().apply {
-                    putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
-                    putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                    putString(PuncherFragment.EXTRA_ACTION, PuncherFragment.ACTION_STOP)
+                    putBoolean(PuncherFragment.EXTRA_COMMIT, true)
                     showTimer(this, true)
                 }
                 // Refresh the list with the inserted item.
@@ -565,8 +565,8 @@ class TimeListFragment : TimeFormFragment(),
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
                 Bundle().apply {
-                    putString(TimerFragment.EXTRA_ACTION, TimerFragment.ACTION_STOP)
-                    putBoolean(TimerFragment.EXTRA_COMMIT, true)
+                    putString(PuncherFragment.EXTRA_ACTION, PuncherFragment.ACTION_STOP)
+                    putBoolean(PuncherFragment.EXTRA_COMMIT, true)
                     showTimer(this, true)
                 }
             } else {
@@ -600,9 +600,9 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun showTimer(args: Bundle? = null, popInclusive: Boolean = false) {
         Timber.i("showTimer timer.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
-        formNavHostFragment.navController.popBackStack(R.id.timerFragment, popInclusive)
+        formNavHostFragment.navController.popBackStack(R.id.puncherFragment, popInclusive)
         if (popInclusive) {
-            formNavHostFragment.navController.navigate(R.id.timerFragment, args)
+            formNavHostFragment.navController.navigate(R.id.puncherFragment, args)
         }
     }
 

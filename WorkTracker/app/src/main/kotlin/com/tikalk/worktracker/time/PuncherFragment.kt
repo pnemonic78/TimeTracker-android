@@ -51,7 +51,7 @@ import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
-import com.tikalk.worktracker.databinding.FragmentTimerBinding
+import com.tikalk.worktracker.databinding.FragmentPuncherBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
@@ -75,9 +75,9 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-class TimerFragment : TimeFormFragment() {
+class PuncherFragment : TimeFormFragment() {
 
-    private var _binding: FragmentTimerBinding? = null
+    private var _binding: FragmentPuncherBinding? = null
     private val binding get() = _binding!!
 
     private var timer: Disposable? = null
@@ -92,7 +92,7 @@ class TimerFragment : TimeFormFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentTimerBinding.inflate(inflater, container, false)
+        _binding = FragmentPuncherBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -378,7 +378,7 @@ class TimerFragment : TimeFormFragment() {
                 putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
                 putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
                 putBoolean(TimeEditFragment.EXTRA_STOP, true)
-                navController.navigate(R.id.action_timer_to_timeEdit, this)
+                navController.navigate(R.id.action_puncher_to_timeEdit, this)
             }
         }
     }
