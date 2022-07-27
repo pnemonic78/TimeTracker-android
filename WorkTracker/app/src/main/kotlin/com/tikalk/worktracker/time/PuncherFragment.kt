@@ -239,8 +239,8 @@ class PuncherFragment : TimeFormFragment() {
         editRecord(record)
     }
 
-    private fun stopTimerCommit() {
-        Timber.i("stopTimerCommit")
+    private fun stopTimerCancel() {
+        Timber.i("stopTimerCancel")
         timer?.dispose()
 
         record.start = null
@@ -411,8 +411,8 @@ class PuncherFragment : TimeFormFragment() {
                 val action = args.getString(EXTRA_ACTION)
                 if (action == ACTION_STOP) {
                     args.remove(EXTRA_ACTION)
-                    if (args.getBoolean(EXTRA_COMMIT)) {
-                        stopTimerCommit()
+                    if (args.getBoolean(EXTRA_CANCEL)) {
+                        stopTimerCancel()
                     } else {
                         stopTimer()
                     }
@@ -467,7 +467,7 @@ class PuncherFragment : TimeFormFragment() {
         if (requestCode == REQUEST_EDIT) {
             if (resultCode == RESULT_OK) {
                 Timber.i("record processed")
-                stopTimerCommit()
+                stopTimerCancel()
             } else {
                 Timber.i("record edit cancelled")
             }
@@ -492,7 +492,7 @@ class PuncherFragment : TimeFormFragment() {
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
-        const val EXTRA_COMMIT = BuildConfig.APPLICATION_ID + ".COMMIT"
+        const val EXTRA_CANCEL = BuildConfig.APPLICATION_ID + ".CANCEL"
 
         const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
 

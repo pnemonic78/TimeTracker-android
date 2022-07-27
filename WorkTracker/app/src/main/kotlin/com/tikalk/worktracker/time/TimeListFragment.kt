@@ -532,7 +532,7 @@ class TimeListFragment : TimeFormFragment(),
             if (recordForTimer) {
                 Bundle().apply {
                     putString(PuncherFragment.EXTRA_ACTION, PuncherFragment.ACTION_STOP)
-                    putBoolean(PuncherFragment.EXTRA_COMMIT, true)
+                    putBoolean(PuncherFragment.EXTRA_CANCEL, true)
                     showTimer(this, true)
                 }
                 // Refresh the list with the inserted item.
@@ -566,7 +566,7 @@ class TimeListFragment : TimeFormFragment(),
             if (recordForTimer) {
                 Bundle().apply {
                     putString(PuncherFragment.EXTRA_ACTION, PuncherFragment.ACTION_STOP)
-                    putBoolean(PuncherFragment.EXTRA_COMMIT, true)
+                    putBoolean(PuncherFragment.EXTRA_CANCEL, true)
                     showTimer(this, true)
                 }
             } else {
