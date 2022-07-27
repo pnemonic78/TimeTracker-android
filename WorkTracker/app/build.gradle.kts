@@ -5,8 +5,8 @@ plugins {
     kotlin("plugin.parcelize")
 }
 
-val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
-val versionMinor = (project.properties["APP_VERSION_MINOR"] as String).toInt()
+val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()
+val versionMinor = project.properties["APP_VERSION_MINOR"].toString().toInt()
 
 android {
     compileSdk = BuildVersions.compileSdkVersion
@@ -24,9 +24,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("../release.keystore")
-            storePassword = project.properties["STORE_PASSWORD_RELEASE"] as String
+            storePassword = project.properties["STORE_PASSWORD_RELEASE"].toString()
             keyAlias = "release"
-            keyPassword = project.properties["KEY_PASSWORD_RELEASE"] as String
+            keyPassword = project.properties["KEY_PASSWORD_RELEASE"].toString()
         }
     }
 
@@ -66,9 +66,9 @@ android {
 
 dependencies {
     // Jetpack
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.6.0-beta01")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("com.google.android.material:material:1.7.0-alpha03")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.preference:preference-ktx:1.2.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
 

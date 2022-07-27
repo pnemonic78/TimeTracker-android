@@ -35,7 +35,7 @@ object BuildVersions {
     const val nav_version = "2.4.2"
 
     const val minSdkVersion = 21
-    const val compileSdkVersion = 31
+    const val compileSdkVersion = 32
     const val targetSdkVersion = 31
 
     // App dependencies
