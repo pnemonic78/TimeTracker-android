@@ -32,7 +32,9 @@
 
 package com.tikalk.worktracker.time
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -45,6 +47,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -81,7 +84,6 @@ class TimeListFragment : TimeFormFragment(),
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
-    private lateinit var gestureDetector: GestureDetector
     private val totalsData = MutableLiveData<TimeTotals?>()
 
     private var date: Calendar = Calendar.getInstance()
@@ -124,8 +126,10 @@ class TimeListFragment : TimeFormFragment(),
         return binding.root
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val context: Context = view.context
 
         formNavHostFragment =
             childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
@@ -134,37 +138,16 @@ class TimeListFragment : TimeFormFragment(),
         binding.recordAdd.setOnClickListener { addTime() }
 
         binding.list.adapter = listAdapter
-        gestureDetector = GestureDetector(
-            context,
-            object : GestureDetector.SimpleOnGestureListener() {
-                override fun onFling(
-                    e1: MotionEvent,
-                    e2: MotionEvent,
-                    velocityX: Float,
-                    velocityY: Float
-                ): Boolean {
-                    val vx = abs(velocityX)
-                    val vy = abs(velocityY)
-                    if ((vx > vy) && (vx > 500)) {
-                        if (velocityX < 0) {    // Fling from right to left.
-                            if (isLocaleRTL()) {
-                                navigatePreviousDay()
-                            } else {
-                                navigateNextDay()
-                            }
-                        } else {
-                            if (isLocaleRTL()) {
-                                navigateNextDay()
-                            } else {
-                                navigatePreviousDay()
-                            }
-                        }
-                        return true
-                    }
-                    return super.onFling(e1, e2, velocityX, velocityY)
-                }
-            })
-        binding.list.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+        val swipeDay = TimeListSwipeDay(context, object : TimeListSwipeDay.OnSwipeListener {
+            override fun onSwipePreviousDay() {
+                navigatePreviousDay()
+            }
+
+            override fun onSwipeNextDay() {
+                navigateNextDay()
+            }
+        })
+        binding.list.setOnTouchListener { _, event -> swipeDay.onTouchEvent(event) }
     }
 
     override fun onDestroyView() {
