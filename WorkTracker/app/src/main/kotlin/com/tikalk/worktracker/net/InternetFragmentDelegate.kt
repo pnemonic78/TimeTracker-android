@@ -126,12 +126,9 @@ class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
                     }
                     when (networkUrl.pathSegments[networkUrl.pathSize - 1]) {
                         TimeTrackerService.PHP_TIME,
-                        TimeTrackerService.PHP_REPORT ->
-                            return
-                        TimeTrackerService.PHP_ACCESS_DENIED ->
-                            throw AccessDeniedException()
-                        else ->
-                            throw AuthenticationException("authentication required")
+                        TimeTrackerService.PHP_REPORT -> return
+                        TimeTrackerService.PHP_ACCESS_DENIED -> throw AccessDeniedException()
+                        else -> throw AuthenticationException("authentication required")
                     }
                 }
                 return
