@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             app:defaultNavHost="false"
             app:navGraph="@navigation/main_form"
-            tools:layout="@layout/fragment_timer" />
+            tools:layout="@layout/fragment_puncher" />
     </androidx.cardview.widget.CardView>
 
     <View

@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* rename Timer ro Puncher
 * migrate "koin" to Hilt
 * migrate rx3 to Flow
 * migrate binding to Jetpack Compose

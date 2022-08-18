@@ -51,7 +51,7 @@ import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
-import com.tikalk.worktracker.databinding.FragmentTimerBinding
+import com.tikalk.worktracker.databinding.FragmentPuncherBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
@@ -75,9 +75,9 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-class TimerFragment : TimeFormFragment() {
+class PuncherFragment : TimeFormFragment() {
 
-    private var _binding: FragmentTimerBinding? = null
+    private var _binding: FragmentPuncherBinding? = null
     private val binding get() = _binding!!
 
     private var timer: Disposable? = null
@@ -92,7 +92,7 @@ class TimerFragment : TimeFormFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentTimerBinding.inflate(inflater, container, false)
+        _binding = FragmentPuncherBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -239,8 +239,8 @@ class TimerFragment : TimeFormFragment() {
         editRecord(record)
     }
 
-    private fun stopTimerCommit() {
-        Timber.i("stopTimerCommit")
+    private fun stopTimerCancel() {
+        Timber.i("stopTimerCancel")
         timer?.dispose()
 
         record.start = null
@@ -378,7 +378,7 @@ class TimerFragment : TimeFormFragment() {
                 putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
                 putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
                 putBoolean(TimeEditFragment.EXTRA_STOP, true)
-                navController.navigate(R.id.action_timer_to_timeEdit, this)
+                navController.navigate(R.id.action_puncher_to_timeEdit, this)
             }
         }
     }
@@ -411,8 +411,8 @@ class TimerFragment : TimeFormFragment() {
                 val action = args.getString(EXTRA_ACTION)
                 if (action == ACTION_STOP) {
                     args.remove(EXTRA_ACTION)
-                    if (args.getBoolean(EXTRA_COMMIT)) {
-                        stopTimerCommit()
+                    if (args.getBoolean(EXTRA_CANCEL)) {
+                        stopTimerCancel()
                     } else {
                         stopTimer()
                     }
@@ -467,7 +467,7 @@ class TimerFragment : TimeFormFragment() {
         if (requestCode == REQUEST_EDIT) {
             if (resultCode == RESULT_OK) {
                 Timber.i("record processed")
-                stopTimerCommit()
+                stopTimerCancel()
             } else {
                 Timber.i("record edit cancelled")
             }
@@ -492,7 +492,7 @@ class TimerFragment : TimeFormFragment() {
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
-        const val EXTRA_COMMIT = BuildConfig.APPLICATION_ID + ".COMMIT"
+        const val EXTRA_CANCEL = BuildConfig.APPLICATION_ID + ".CANCEL"
 
         const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
 

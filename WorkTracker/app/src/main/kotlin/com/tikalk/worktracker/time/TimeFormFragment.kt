@@ -192,6 +192,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
+        val record = this.record
         populateForm(record)
         bindForm(record)
     }

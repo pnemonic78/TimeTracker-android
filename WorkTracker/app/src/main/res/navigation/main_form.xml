@@ -33,8 +33,8 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_timer"
-    app:startDestination="@id/timerFragment">
+    android:id="@+id/main_form"
+    app:startDestination="@id/puncherFragment">
     <include app:graph="@navigation/login" />
     <fragment
         android:id="@+id/timeEditFragment"
@@ -46,18 +46,18 @@
             app:destination="@id/login" />
     </fragment>
     <fragment
-        android:id="@+id/timerFragment"
-        android:name="com.tikalk.worktracker.time.TimerFragment"
+        android:id="@+id/puncherFragment"
+        android:name="com.tikalk.worktracker.time.PuncherFragment"
         android:label="@string/activity_time">
         <action
-            android:id="@+id/action_timer_to_timeEdit"
+            android:id="@+id/action_puncher_to_timeEdit"
             app:destination="@id/timeEditFragment"
             app:enterAnim="@anim/slide_in_form"
             app:exitAnim="@anim/slide_out_form"
             app:popEnterAnim="@anim/slide_in_form"
             app:popExitAnim="@anim/slide_out_form" />
-        <action
-            android:id="@+id/action_timer_to_login"
+        <actionf
+            android:id="@+id/action_puncher_to_login"
             app:destination="@id/login" />
     </fragment>
 </navigation>
