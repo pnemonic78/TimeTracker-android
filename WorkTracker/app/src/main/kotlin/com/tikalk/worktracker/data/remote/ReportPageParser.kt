@@ -314,14 +314,12 @@ class ReportPageParser(private val filter: ReportFilter) {
         val totals = ReportTotals()
 
         var duration: Long
-        if (records != null) {
-            for (record in records) {
-                duration = record.finishTime - record.startTime
-                if (duration > 0L) {
-                    totals.duration += duration
-                }
-                totals.cost += record.cost
+        for (record in records) {
+            duration = record.finishTime - record.startTime
+            if (duration > 0L) {
+                totals.duration += duration
             }
+            totals.cost += record.cost
         }
 
         page.totals = totals

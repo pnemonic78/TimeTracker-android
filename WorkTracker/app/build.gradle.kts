@@ -7,16 +7,16 @@ plugins {
     id("com.google.firebase.crashlytics")
 }
 
-val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()
-val versionMinor = project.properties["APP_VERSION_MINOR"].toString().toInt()
+val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
+val versionMinor = (project.properties["APP_VERSION_MINOR"] as String).toInt()
 
 android {
-    compileSdk = BuildVersions.compileSdkVersion
+    compileSdk = Android.Version.compileSdk
 
     defaultConfig {
         applicationId = "com.tikalk.worktracker"
-        minSdk = BuildVersions.minSdkVersion
-        targetSdk = BuildVersions.targetSdkVersion
+        minSdk = Android.Version.minSdk
+        targetSdk = Android.Version.targetSdk
         versionCode = versionMajor * 1000 + versionMinor
         versionName = "${versionMajor}." + versionMinor.toString().padStart(2, '0')
 
@@ -26,17 +26,17 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("../release.keystore")
-            storePassword = project.properties["STORE_PASSWORD_RELEASE"].toString()
+            storePassword = project.properties["STORE_PASSWORD_RELEASE"] as String
             keyAlias = "release"
-            keyPassword = project.properties["KEY_PASSWORD_RELEASE"].toString()
+            keyPassword = project.properties["KEY_PASSWORD_RELEASE"] as String
         }
     }
 
     buildTypes {
-        getByName("debug") {
+        debug {
             applicationIdSuffix = ".debug"
         }
-        getByName("release") {
+        release {
             // disabled until fix proguard issues: minifyEnabled true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
             proguardFiles("proguard-rules.pro")
@@ -58,6 +58,10 @@ android {
             excludes += "META-INF/DEPENDENCIES"
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/*.kotlin_module"
+
+            pickFirsts += "META-INF/plexus/*"
+            pickFirsts += "META-INF/sisu/*"
+            pickFirsts += "plugin.properties"
         }
     }
 
@@ -68,55 +72,55 @@ android {
 
 dependencies {
     // Jetpack
-    implementation("androidx.appcompat:appcompat:1.5.0")
-    implementation("com.google.android.material:material:1.7.0-beta01")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.preference:preference-ktx:1.2.0")
-    implementation("androidx.security:security-crypto:1.1.0-alpha03")
-
-    // Testing
-    androidTestImplementation("androidx.test:core:1.4.0")
-    androidTestImplementation("androidx.test:runner:1.4.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    testImplementation("junit:junit:${BuildVersions.junitVersion}")
+    implementation(Android.Jetpack.appcompat)
+    implementation(Android.Jetpack.constraint_layout)
+    implementation(Android.Jetpack.preference)
+    implementation(Android.Jetpack.security)
 
     // Database
-    implementation("androidx.room:room-common:${BuildVersions.roomVersion}")
-    implementation("androidx.room:room-runtime:${BuildVersions.roomVersion}")
-    implementation("androidx.room:room-rxjava3:${BuildVersions.roomVersion}")
-    kapt("androidx.room:room-compiler:${BuildVersions.roomVersion}")
+    implementation(Android.Database.roomRx)
+    kapt(Android.Database.roomCompiler)
 
     // Rx
-    implementation("com.squareup.retrofit2:adapter-rxjava3:${BuildVersions.retrofit2Version}")
-    implementation("io.reactivex.rxjava3:rxandroid:${BuildVersions.rxAndroidVersion}")
-    implementation("io.reactivex.rxjava3:rxkotlin:${BuildVersions.rxKotlinVersion}")
+    implementation(Android.Reactive.retrofit)
+    implementation(Android.Reactive.rxandroid)
+    implementation(Android.Reactive.rxkotlin)
 
     // Web
-    implementation("com.squareup.retrofit2:retrofit:${BuildVersions.retrofit2Version}")
-    implementation("com.squareup.retrofit2:converter-scalars:${BuildVersions.retrofit2Version}")
-    implementation("com.squareup.okhttp3:logging-interceptor:${BuildVersions.okhttpVersion}")
-    implementation("com.squareup.okhttp3:okhttp:${BuildVersions.okhttpVersion}")
-    implementation("com.squareup.okhttp3:okhttp-urlconnection:${BuildVersions.okhttpVersion}")
-    implementation("org.jsoup:jsoup:1.13.1")
+    implementation(Android.Network.logging)
+    implementation(Android.Network.okhttp)
+    implementation(Android.Network.okhttp_url)
+    implementation(Android.Network.retrofit)
+    implementation(Android.Network.retrofit_scalars)
+    implementation(Java.Network.jsoup)
 
     // Logging
-    implementation("com.jakewharton.timber:timber:${BuildVersions.timberVersion}")
+    implementation(Android.Logging.timber)
     implementation("com.google.firebase:firebase-crashlytics:18.2.9")
 
     // Navigation
-    implementation("androidx.navigation:navigation-fragment-ktx:${BuildVersions.nav_version}")
-    implementation("androidx.navigation:navigation-ui-ktx:${BuildVersions.nav_version}")
+    implementation(Android.Navigation.navigation_fragment)
+    implementation(Android.Navigation.navigation_ui)
 
     // Export
-    implementation("com.opencsv:opencsv:5.4") {
+    implementation(Java.Document.opencsv) {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.3")
-    /// ODF
-    implementation("org.odftoolkit:odfdom-java:0.8.7")
-    implementation("com.fasterxml.woodstox:woodstox-core:6.2.6")
+    implementation(Kotlin.Document.html)
+    implementation(Java.Document.odf) {
+        exclude(group = "io.github.git-commit-id", module = "git-commit-id-maven-plugin")
+    }
+    implementation(Java.Document.odfXML)
+    implementation(Java.Document.woodstox)
 
     // Dependency Injection
-    implementation("io.insert-koin:koin-android:3.1.5")
+    implementation(Android.Inject.koin)
+
+    // Testing
+    testImplementation(Android.Test.junit)
+    androidTestImplementation(Android.Test.junit_ext)
+    androidTestImplementation(Android.Test.espresso_core)
+
+    // Miscellaneous
+    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
 }
