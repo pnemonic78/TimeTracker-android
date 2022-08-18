@@ -87,10 +87,6 @@ class TimeTrackerServiceFactory {
                 )
             }
 
-            if (preferences != null) {
-                httpClientBuilder.addInterceptor(AuthenticationInterceptor(preferences))
-            }
-
             return httpClientBuilder.build()
         }
 
