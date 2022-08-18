@@ -1,6 +1,6 @@
 object Android {
     object Version {
-        const val compileSdk = 32
+        const val compileSdk = 33
         const val minSdk = 23
         const val targetSdk = 32
 
@@ -37,7 +37,7 @@ object Android {
     }
 
     object Jetpack {
-        const val appcompat = "androidx.appcompat:appcompat:1.5.0"
+        const val appcompat = "androidx.appcompat:appcompat:1.6.0-beta01"
         const val material = "androidx.compose.material:material:${Version.compose}"
         const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
@@ -111,7 +111,7 @@ object Java {
 object Kotlin {
     object Version {
         const val html = "0.8.0"
-        const val kotlin = "1.6.21"
+        const val kotlin = "1.7.10"
         const val serialization = "1.3.33"
     }
 
