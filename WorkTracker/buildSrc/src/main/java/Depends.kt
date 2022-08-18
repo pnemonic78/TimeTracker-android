@@ -111,7 +111,7 @@ object Java {
 object Kotlin {
     object Version {
         const val html = "0.8.0"
-        const val kotlin = "1.6.21"
+        const val kotlin = "1.7.10"
         const val serialization = "1.3.33"
     }
 
