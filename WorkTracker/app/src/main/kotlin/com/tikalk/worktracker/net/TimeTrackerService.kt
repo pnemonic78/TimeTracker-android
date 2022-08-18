@@ -50,7 +50,7 @@ import retrofit2.http.Query
 interface TimeTrackerService {
 
     companion object {
-        const val BASE_URL = "https://planet.tikalk.com/timetracker/"
+        const val BASE_URL = "https://time.infra.tikalk.dev/"
 
         const val PHP_LOGIN = "login.php"
         const val PHP_TIME = "time.php"
