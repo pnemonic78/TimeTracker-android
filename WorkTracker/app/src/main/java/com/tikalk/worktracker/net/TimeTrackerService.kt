@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.net
 
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.rxjava3.core.Single
 import retrofit2.Response
@@ -50,7 +51,7 @@ import retrofit2.http.Query
 interface TimeTrackerService {
 
     companion object {
-        const val BASE_URL = "https://time.infra.tikalk.dev/"
+        const val BASE_URL = BuildConfig.API_URL
 
         const val PHP_LOGIN = "login.php"
         const val PHP_TIME = "time.php"

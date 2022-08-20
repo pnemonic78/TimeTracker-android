@@ -19,6 +19,8 @@ android {
         versionName = "${versionMajor}." + versionMinor.toString().padStart(2, '0')
 
         vectorDrawables.useSupportLibrary = true
+
+        buildConfigField("String", "API_URL", "\"https://time.infra.tikalk.dev/\"")
     }
 
     signingConfigs {
