@@ -148,6 +148,27 @@
         app:layout_constraintTop_toBottomOf="@+id/startInput" />
 
     <ImageView
+        android:id="@+id/durationIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/duration_hint"
+        app:layout_constraintBottom_toBottomOf="@+id/durationInput"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/durationInput"
+        app:srcCompat="@drawable/ic_timelapse" />
+
+    <Button
+        android:id="@+id/durationInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="@dimen/form_marginTop"
+        android:hint="@string/duration_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/durationIcon"
+        app:layout_constraintTop_toBottomOf="@+id/finishInput" />
+
+    <ImageView
         android:id="@+id/noteIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -168,7 +189,7 @@
         android:maxLines="4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/noteIcon"
-        app:layout_constraintTop_toBottomOf="@+id/finishInput" />
+        app:layout_constraintTop_toBottomOf="@+id/durationInput" />
 
     <TextView
         android:id="@+id/errorLabel"

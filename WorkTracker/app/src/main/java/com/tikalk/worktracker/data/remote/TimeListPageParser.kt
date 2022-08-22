@@ -43,7 +43,7 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.time.parseHours
+import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
 import org.jsoup.nodes.Document
@@ -84,11 +84,11 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         inputProjects: Element,
         inputTasks: Element
     ) {
-        super.populateForm(doc, page, form, inputProjects, inputTasks)
-
         val inputDate = form.selectByName("date") ?: return
         val dateValue = inputDate.value()
-        page.date = parseSystemDate(dateValue) ?: Calendar.getInstance()
+        page.date = parseSystemDate(dateValue) ?: return
+
+        super.populateForm(doc, page, form, inputProjects, inputTasks)
     }
 
     /** Populate the list. */
@@ -162,11 +162,15 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
 
         val tdStart = cols[2]
         val startText = tdStart.ownText()
-        val start = parseRecordTime(date, startText) ?: return null
+        val start = parseRecordTime(date, startText)
 
         val tdFinish = cols[3]
         val finishText = tdFinish.ownText()
-        val finish = parseRecordTime(date, finishText) ?: return null
+        val finish = parseRecordTime(date, finishText)
+
+        val tdDuration = cols[4]
+        val durationText = tdDuration.ownText()
+        val duration = parseDuration(durationText) ?: 0L
 
         val tdNote = cols[5]
         val noteText = tdNote.text()
@@ -176,15 +180,26 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         val editLink = tdEdit.child(0).attr("href")
         val id = parseRecordId(editLink)
 
-        return TimeRecord(id, project, task, start, finish, note, 0.0, TaskRecordStatus.CURRENT)
+        return TimeRecord(
+            id = id,
+            project = project,
+            task = task,
+            date = date,
+            start = start,
+            finish = finish,
+            duration = duration,
+            note = note,
+            cost = 0.0,
+            status = TaskRecordStatus.CURRENT
+        )
     }
 
     private fun parseRecordProject(projects: List<Project>, name: String): Project {
-        return projects.find { name == it.name } ?: Project(name)
+        return projects.find { name == it.name } ?: Project(name = name)
     }
 
     private fun parseRecordTask(project: Project, name: String): ProjectTask {
-        return project.tasks.find { task -> (task.name == name) } ?: ProjectTask(name)
+        return project.tasks.find { task -> (task.name == name) } ?: ProjectTask(name = name)
     }
 
     private fun parseRecordTime(date: Calendar, text: String): Calendar? {
@@ -218,19 +233,19 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
             when {
                 text.startsWith("Day total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.daily = parseHours(value) ?: TimeTotals.UNKNOWN
+                    totals.daily = parseDuration(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Week total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.weekly = parseHours(value) ?: TimeTotals.UNKNOWN
+                    totals.weekly = parseDuration(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Month total:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.monthly = parseHours(value) ?: TimeTotals.UNKNOWN
+                    totals.monthly = parseDuration(value) ?: TimeTotals.UNKNOWN
                 }
                 text.startsWith("Remaining quota:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.remaining = parseHours(value) ?: TimeTotals.UNKNOWN
+                    totals.remaining = parseDuration(value) ?: TimeTotals.UNKNOWN
                 }
             }
         }

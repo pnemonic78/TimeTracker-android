@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.time
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -69,6 +70,7 @@ import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
@@ -80,6 +82,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import retrofit2.Response
 import timber.log.Timber
 import java.util.Calendar
+import java.util.Formatter
+import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.max
 
@@ -92,8 +96,11 @@ class TimeEditFragment : TimeFormFragment() {
 
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
+    private var durationPickerDialog: TimePickerDialog? = null
     private var errorMessage: String = ""
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
+    private val timeBuffer = StringBuilder(20)
+    private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,6 +166,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         binding.startInput.setOnClickListener { pickStartTime() }
         binding.finishInput.setOnClickListener { pickFinishTime() }
+        binding.durationInput.setOnClickListener { pickDuration() }
     }
 
     override fun onDestroyView() {
@@ -171,6 +179,8 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
 
         if (record.id == TikalEntity.ID_NONE) {
+            record.date = date
+
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_RECORD_ID)) {
@@ -188,9 +198,13 @@ class TimeEditFragment : TimeFormFragment() {
                     val tasks = record.project.tasks
                     setRecordTask(tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty)
                 }
+                if (args.containsKey(EXTRA_DATE)) {
+                    val dateTime = args.getLong(EXTRA_DATE)
+                    record.date = Calendar.getInstance().apply { timeInMillis = dateTime }
+                }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
-                    if (startTime != TimeRecord.NEVER) {
+                    if (startTime != NEVER) {
                         record.startTime = startTime
                     } else {
                         record.start = null
@@ -198,7 +212,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_FINISH_TIME)) {
                     val finishTime = args.getLong(EXTRA_FINISH_TIME)
-                    if (finishTime != TimeRecord.NEVER) {
+                    if (finishTime != NEVER) {
                         record.finishTime = finishTime
                     } else {
                         record.finish = null
@@ -231,21 +245,14 @@ class TimeEditFragment : TimeFormFragment() {
 
         bindLocation(context, record)
 
-        val startTime = record.startTime
-        binding.startInput.text = if (startTime != TimeRecord.NEVER)
-            DateUtils.formatDateTime(context, startTime, FORMAT_TIME_BUTTON)
-        else
-            ""
-        binding.startInput.error = null
+        bindStartTime(context, record.start)
         startPickerDialog = null
 
-        val finishTime = record.finishTime
-        binding.finishInput.text = if (finishTime != TimeRecord.NEVER)
-            DateUtils.formatDateTime(context, finishTime, FORMAT_TIME_BUTTON)
-        else
-            ""
-        binding.finishInput.error = null
+        bindFinishTime(context, record.finish)
         finishPickerDialog = null
+
+        bindDuration(context, record.duration)
+        durationPickerDialog = null
 
         binding.noteInput.setText(record.note)
 
@@ -383,6 +390,8 @@ class TimeEditFragment : TimeFormFragment() {
         binding.startInput.isFocusableInTouchMode = false
         binding.finishInput.error = null
         binding.finishInput.isFocusableInTouchMode = false
+        binding.durationInput.error = null
+        binding.durationInput.isFocusableInTouchMode = false
         locationInputView.error = null
         locationInputView.isFocusableInTouchMode = false
         setErrorLabel("")
@@ -408,25 +417,26 @@ class TimeEditFragment : TimeFormFragment() {
             locationInputView.post { locationInputView.requestFocus() }
             return false
         }
-        if (record.start == null) {
-            binding.startInput.error = getText(R.string.error_start_field_required)
-            setErrorLabel(getText(R.string.error_start_field_required))
-            binding.startInput.isFocusableInTouchMode = true
-            binding.startInput.requestFocus()
-            return false
-        }
-        if (record.finish == null) {
-            binding.finishInput.error = getText(R.string.error_finish_field_required)
-            setErrorLabel(getText(R.string.error_finish_field_required))
-            binding.finishInput.isFocusableInTouchMode = true
-            binding.finishInput.requestFocus()
-            return false
-        }
-        if (record.startTime + DateUtils.MINUTE_IN_MILLIS > record.finishTime) {
-            binding.finishInput.error = getText(R.string.error_finish_time_before_start_time)
+        if (record.duration < DateUtils.MINUTE_IN_MILLIS) {
+            if (record.startTime == NEVER) {
+                binding.startInput.error = getText(R.string.error_start_field_required)
+                setErrorLabel(getText(R.string.error_start_field_required))
+                binding.startInput.isFocusableInTouchMode = true
+                binding.startInput.requestFocus()
+                return false
+            }
+            if (record.finishTime == NEVER) {
+                binding.finishInput.error = getText(R.string.error_finish_field_required)
+                setErrorLabel(getText(R.string.error_finish_field_required))
+                binding.finishInput.isFocusableInTouchMode = true
+                binding.finishInput.requestFocus()
+                return false
+            }
+
+            binding.durationInput.error = getText(R.string.error_finish_time_before_start_time)
             setErrorLabel(getText(R.string.error_finish_time_before_start_time))
-            binding.finishInput.isFocusableInTouchMode = true
-            binding.finishInput.requestFocus()
+            binding.durationInput.isFocusableInTouchMode = true
+            binding.durationInput.requestFocus()
             return false
         }
 
@@ -578,24 +588,26 @@ class TimeEditFragment : TimeFormFragment() {
 
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             delegate.service.addTime(
-                record.project.id,
-                record.task.id,
-                formatSystemDate(record.start),
-                formatSystemTime(record.start),
-                formatSystemTime(record.finish),
-                record.note,
-                record.location.id
+                projectId = record.project.id,
+                taskId = record.task.id,
+                date = formatSystemDate(record.date)!!,
+                start = formatSystemTime(record.start),
+                finish = formatSystemTime(record.finish),
+                duration = formatDuration(record.duration),
+                note = record.note,
+                locationId = record.location.id
             )
         } else {
             delegate.service.editTime(
-                record.id,
-                record.project.id,
-                record.task.id,
-                formatSystemDate(record.start),
-                formatSystemTime(record.start),
-                formatSystemTime(record.finish),
-                record.note,
-                record.location.id
+                id = record.id,
+                projectId = record.project.id,
+                taskId = record.task.id,
+                date = formatSystemDate(record.date)!!,
+                start = formatSystemTime(record.start),
+                finish = formatSystemTime(record.finish),
+                duration = formatDuration(record.duration),
+                note = record.note,
+                locationId = record.location.id
             )
         }
         submitter
@@ -807,22 +819,40 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun setRecordStart(time: Calendar): Boolean {
         if (super.setRecordStart(time)) {
-            binding.startInput.text =
-                DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
-            binding.startInput.error = null
+            val context = requireContext()
+            bindStartTime(context, time)
+            bindDuration(context, record.duration)
             return true
         }
         return false
     }
 
+    private fun bindStartTime(context: Context, time: Calendar?) {
+        val timeMillis = time?.timeInMillis ?: NEVER
+        binding.startInput.text = if (timeMillis != NEVER)
+            DateUtils.formatDateTime(context, timeMillis, FORMAT_TIME_BUTTON)
+        else
+            ""
+        binding.startInput.error = null
+    }
+
     override fun setRecordFinish(time: Calendar): Boolean {
         if (super.setRecordFinish(time)) {
-            binding.finishInput.text =
-                DateUtils.formatDateTime(context, time.timeInMillis, FORMAT_TIME_BUTTON)
-            binding.finishInput.error = null
+            val context = requireContext()
+            bindFinishTime(context, time)
+            bindDuration(context, record.duration)
             return true
         }
         return false
+    }
+
+    private fun bindFinishTime(context: Context, time: Calendar?) {
+        val timeMillis = time?.timeInMillis ?: NEVER
+        binding.finishInput.text = if (timeMillis != NEVER)
+            DateUtils.formatDateTime(context, timeMillis, FORMAT_TIME_BUTTON)
+        else
+            ""
+        binding.finishInput.error = null
     }
 
     private fun markRecordModified() {
@@ -845,6 +875,54 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun stopTimer() {
         preferences.stopRecord()
+    }
+
+    private fun bindDuration(context: Context, duration: Long) {
+        binding.durationInput.text = if (duration > 0L) {
+            timeBuffer.clear()
+            formatElapsedTime(context, timeFormatter, duration).toString()
+        } else {
+            ""
+        }
+        binding.durationInput.error = null
+    }
+
+    private fun pickDuration() {
+        val elapsedMs = record.duration
+        val hours = (elapsedMs / DateUtils.HOUR_IN_MILLIS).toInt()
+        val minutes = ((elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
+        var picker = durationPickerDialog
+        if (picker == null) {
+            val context = requireContext()
+            val listener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
+                setRecordDuration(
+                    hourOfDay,
+                    minute
+                )
+            }
+            picker = TimePickerDialog(
+                context,
+                listener,
+                hours,
+                minutes,
+                true
+            )
+            durationPickerDialog = picker
+        } else {
+            picker.updateTime(hours, minutes)
+        }
+        picker.show()
+    }
+
+    override fun setRecordDuration(time: Long): Boolean {
+        if (super.setRecordDuration(time)) {
+            val context = requireContext()
+            bindStartTime(context, record.start)
+            bindFinishTime(context, record.finish)
+            bindDuration(context, record.duration)
+            return true
+        }
+        return false
     }
 
     companion object {

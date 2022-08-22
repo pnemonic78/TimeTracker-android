@@ -109,7 +109,7 @@ class ReportExporterXML(
             for (record in records) {
                 xmlWriter.startTag(ns, "row")
                 xmlWriter.startTag(ns, "date")
-                xmlWriter.text(formatSystemDate(record.start))
+                xmlWriter.text(formatSystemDate(record.date))
                 xmlWriter.endTag(ns, "date")
                 if (showProjectField) {
                     xmlWriter.startTag(ns, "project")
@@ -138,7 +138,7 @@ class ReportExporterXML(
                     xmlWriter.endTag(ns, "finish")
                 }
                 if (showDurationField) {
-                    val durationMs = record.finishTime - record.startTime
+                    val durationMs = record.duration
                     val durationHs = durationMs.toDouble() / DateUtils.HOUR_IN_MILLIS
                     xmlWriter.startTag(ns, "duration")
                     xmlWriter.text(String.format(Locale.US, "%.2f", durationHs))

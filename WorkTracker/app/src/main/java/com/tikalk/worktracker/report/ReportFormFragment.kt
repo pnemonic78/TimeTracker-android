@@ -371,7 +371,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
         Timber.i("bindProjects filter=$filter projects=$projects")
-        val projectItems = projects?.toTypedArray() ?: emptyArray()
+        val projectItems = addEmpties(projects).toTypedArray()
         bindingForm.projectInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
         if (projectItems.isNotEmpty()) {

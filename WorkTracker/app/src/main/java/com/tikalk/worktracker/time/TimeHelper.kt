@@ -50,24 +50,25 @@ const val FORMAT_TIME_BUTTON =
     DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY
 const val FORMAT_DATE_BUTTON =
     DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_WEEKDAY
+const val FORMAT_DURATION_BUTTON = DateUtils.FORMAT_SHOW_TIME
 
 fun formatSystemDate(date: Long = System.currentTimeMillis()): String =
     DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemDate(date: Date?): String =
-    if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
+fun formatSystemDate(date: Date?): String? =
+    if (date == null) null else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
-fun formatSystemDate(date: Calendar?): String =
-    if (date == null) "" else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
+fun formatSystemDate(date: Calendar?): String? =
+    if (date == null) null else DateFormat.format(SYSTEM_DATE_PATTERN, date).toString()
 
 fun formatSystemTime(time: Long = System.currentTimeMillis()): String =
     DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Date?): String =
-    if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
+fun formatSystemTime(time: Date?): String? =
+    if (time == null) null else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
-fun formatSystemTime(time: Calendar?): String =
-    if (time == null) "" else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
+fun formatSystemTime(time: Calendar?): String? =
+    if (time == null) null else DateFormat.format(SYSTEM_TIME_PATTERN, time).toString()
 
 fun parseSystemTime(date: Long, time: String?): Calendar? {
     if (time.isNullOrEmpty()) {
@@ -118,7 +119,7 @@ fun parseSystemDate(date: String?): Calendar? {
     return null
 }
 
-fun parseHours(time: String?): Long? {
+fun parseDuration(time: String?): Long? {
     if (time.isNullOrEmpty()) {
         return null
     }
@@ -126,6 +127,12 @@ fun parseHours(time: String?): Long? {
     dateFormat.timeZone = TimeZone.getTimeZone("UTC")
     val parsed = dateFormat.parse(time)
     return parsed?.time
+}
+
+fun formatDuration(elapsedMs: Long): String {
+    val dateFormat = SimpleDateFormat(SYSTEM_HOURS_PATTERN, Locale.US)
+    dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+    return dateFormat.format(Date(elapsedMs))
 }
 
 var Calendar.era: Int
@@ -228,7 +235,6 @@ fun Long.toCalendar(): Calendar {
 private var sElapsedFormatHMM: String? = null
 
 fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): Formatter {
-    // Break the elapsed seconds into hours, minutes, and seconds.
     val hours = elapsedMs / DateUtils.HOUR_IN_MILLIS
     val minutes = (elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS
 

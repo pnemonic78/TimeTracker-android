@@ -86,7 +86,7 @@ data class ProjectTask(
     }
 
     companion object {
-        val EMPTY = ProjectTask("")
+        val EMPTY = ProjectTask(name = "")
     }
 }
 

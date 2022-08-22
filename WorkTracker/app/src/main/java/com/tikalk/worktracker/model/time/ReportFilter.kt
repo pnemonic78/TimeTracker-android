@@ -63,7 +63,12 @@ class ReportFilter(
     var showNoteField: Boolean = true,
     var showCostField: Boolean = false,
     var showLocationField: Boolean = true
-) : TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY), Parcelable {
+) : TimeRecord(
+    id = ID_NONE,
+    project = Project.EMPTY,
+    task = ProjectTask.EMPTY,
+    date = Calendar.getInstance()
+), Parcelable {
 
     constructor(
         project: Project = Project.EMPTY,
@@ -106,8 +111,8 @@ class ReportFilter(
             put("project", if (project.id == ID_NONE) "" else project.id.toString())
             put("task", if (task.id == ID_NONE) "" else task.id.toString())
             put("period", period.toString())
-            put("start_date", formatSystemDate(start))
-            put("end_date", formatSystemDate(finish))
+            formatSystemDate(start)?.let { put("start_date", it) }
+            formatSystemDate(finish)?.let { put("end_date", it) }
             put("time_field_5", location.id.toString())
 
             // Always fetch these fields - just hide them in UI.

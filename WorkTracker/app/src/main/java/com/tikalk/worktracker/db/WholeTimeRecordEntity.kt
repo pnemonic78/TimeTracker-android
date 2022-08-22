@@ -64,14 +64,16 @@ fun WholeTimeRecordEntity.toTimeRecord(): TimeRecord {
     val value: TimeRecordEntity = this.record
 
     return TimeRecord(
-        value.id,
-        project,
-        task,
-        value.start,
-        value.finish,
-        value.note,
-        value.cost,
-        value.status,
-        Location.valueOf(value.locationId)
+        id = value.id,
+        project = project,
+        task = task,
+        start = value.start,
+        finish = value.finish,
+        date = value.date,
+        duration = value.duration,
+        note = value.note,
+        cost = value.cost,
+        status = value.status,
+        location = Location.valueOf(value.locationId)
     )
 }

@@ -24,7 +24,11 @@ import java.util.Calendar
 class TimeTest {
     @Test
     fun splitRecords() {
-        val record = TimeRecord(TikalEntity.ID_NONE, Project.EMPTY.copy(), ProjectTask.EMPTY.copy(), null, null)
+        val record = TimeRecord(
+            id = TikalEntity.ID_NONE,
+            project = Project.EMPTY.copy(),
+            task = ProjectTask.EMPTY.copy()
+        )
         record.project.id = 1
         record.project.name = "Project"
         record.task.id = 1

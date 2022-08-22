@@ -56,6 +56,7 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import timber.log.Timber
+import java.util.Calendar
 
 class TimerWorker(private val context: Context, private val workerParams: Bundle) {
 
@@ -331,11 +332,16 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         if (taskName.isNullOrEmpty()) return null
         if (startTime <= TimeRecord.NEVER) return null
 
-        val project = Project(projectName)
+        val project = Project(name = projectName)
         project.id = projectId
-        val task = ProjectTask(taskName)
+        val task = ProjectTask(name = taskName)
         task.id = taskId
-        val record = TimeRecord(TikalEntity.ID_NONE, project, task)
+        val record = TimeRecord(
+            id = TikalEntity.ID_NONE,
+            project = project,
+            task = task,
+            date = Calendar.getInstance().apply { timeInMillis = startTime }
+        )
         record.startTime = startTime
         record.finishTime = finishTime
         record.location = Location.valueOf(locationId)

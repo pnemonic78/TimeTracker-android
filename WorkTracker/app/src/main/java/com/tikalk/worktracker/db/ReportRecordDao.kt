@@ -76,7 +76,7 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
+    @Query("SELECT * FROM report WHERE (:start <= date) AND (date <= :finish)")
     fun queryByDate(start: Long, finish: Long): List<ReportRecord>
 
     /**
@@ -84,7 +84,7 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
+    @Query("SELECT * FROM report WHERE (:start <= date) AND (date <= :finish)")
     fun queryByDateLive(start: Long, finish: Long): LiveData<List<ReportRecord>>
 
     /**
@@ -92,7 +92,7 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      *
      * @return all records between the dates.
      */
-    @Query("SELECT * FROM report WHERE (start >= :start) AND (finish <= :finish)")
+    @Query("SELECT * FROM report WHERE (:start <= date) AND (date <= :finish)")
     fun queryByDateSingle(start: Long, finish: Long): Single<List<ReportRecord>>
 
     /**

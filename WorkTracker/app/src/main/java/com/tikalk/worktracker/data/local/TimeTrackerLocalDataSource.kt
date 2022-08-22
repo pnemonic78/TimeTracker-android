@@ -62,6 +62,7 @@ import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
 import io.reactivex.rxjava3.core.Observable
 import java.util.Calendar
+import kotlin.math.max
 
 class TimeTrackerLocalDataSource(
     private val db: TrackerDatabase,
@@ -230,10 +231,8 @@ class TimeTrackerLocalDataSource(
 
         var duration: Long
         for (record in records) {
-            duration = record.finishTime - record.startTime
-            if (duration > 0L) {
-                totals.duration += duration
-            }
+            duration = record.duration
+            totals.duration += max(duration, 0L)
             totals.cost += record.cost
         }
 

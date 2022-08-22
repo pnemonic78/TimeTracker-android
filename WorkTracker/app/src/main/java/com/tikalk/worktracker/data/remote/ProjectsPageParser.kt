@@ -98,6 +98,6 @@ class ProjectsPageParser {
         val tdDescription = cols[1]
         val description = tdDescription.ownText()
 
-        return Project(name, description)
+        return Project(name = name, description = description)
     }
 }

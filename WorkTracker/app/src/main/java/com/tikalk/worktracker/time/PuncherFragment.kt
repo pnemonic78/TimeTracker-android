@@ -72,6 +72,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -328,7 +329,12 @@ class PuncherFragment : TimeFormFragment() {
                 val tasks = project.tasks
                 val task = tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty
 
-                val record = TimeRecord(TikalEntity.ID_NONE, project, task)
+                val record = TimeRecord(
+                    id = TikalEntity.ID_NONE,
+                    project = project,
+                    task = task,
+                    date = Calendar.getInstance().apply { timeInMillis = startTime }
+                )
                 if (startTime != TimeRecord.NEVER) {
                     record.startTime = startTime
                 }

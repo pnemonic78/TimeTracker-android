@@ -39,6 +39,7 @@ import com.tikalk.worktracker.model.time.MutableTimeEditPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
 import org.jsoup.nodes.Document
@@ -73,6 +74,7 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         val inputDate = form.selectByName("date") ?: return
         val dateValue = inputDate.value()
         page.date = parseSystemDate(dateValue) ?: Calendar.getInstance()
+        record.date = page.date
 
         val inputId = form.selectByName("id") ?: return
         val idValue = inputId.value()
@@ -85,6 +87,10 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         val inputFinish = form.selectByName("finish") ?: return
         val finishValue = inputFinish.value()
         record.finish = parseSystemTime(page.date, finishValue)
+
+        val inputDuration = form.selectByName("duration") ?: return
+        val durationValue = inputDuration.value()
+        record.duration = parseDuration(durationValue) ?: 0L
 
         val inputNote = form.selectByName("note")
         val noteValue = inputNote?.value() ?: ""

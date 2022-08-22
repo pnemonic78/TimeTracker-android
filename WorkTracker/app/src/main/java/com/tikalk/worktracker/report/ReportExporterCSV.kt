@@ -132,7 +132,7 @@ class ReportExporterCSV(
             val row = ArrayList<String>()
             for (record in records) {
                 row.clear()
-                row.add(formatSystemDate(record.start))
+                row.add(formatSystemDate(record.date)!!)
                 if (showProjectField) {
                     row.add(record.project.name)
                 }
@@ -144,13 +144,13 @@ class ReportExporterCSV(
                     row.add(text)
                 }
                 if (showStartField) {
-                    row.add(formatSystemTime(record.start))
+                    row.add(formatSystemTime(record.start).orEmpty())
                 }
                 if (showFinishField) {
-                    row.add(formatSystemTime(record.finish))
+                    row.add(formatSystemTime(record.finish).orEmpty())
                 }
                 if (showDurationField) {
-                    val durationMs = record.finishTime - record.startTime
+                    val durationMs = record.duration
                     val durationHs = durationMs.toDouble() / DateUtils.HOUR_IN_MILLIS
                     row.add(String.format(Locale.US, "%.2f", durationHs))
                 }

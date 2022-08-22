@@ -33,6 +33,7 @@
     <string name="start_label">Start Time</string>
     <string name="finish_label">Finish Time</string>
     <string name="duration_label">Duration</string>
+    <string name="duration_hint" translatable="false">@string/duration_label</string>
     <string name="cancel" translatable="false">@android:string/cancel</string>
     <string name="submit">Save</string>
     <string name="note_hint">Note</string>

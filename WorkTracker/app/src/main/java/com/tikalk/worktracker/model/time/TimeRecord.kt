@@ -37,6 +37,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.time.copy
+import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.isSameDay
 import com.tikalk.worktracker.time.millis
 import com.tikalk.worktracker.time.setToEndOfDay
@@ -52,8 +53,10 @@ open class TimeRecord(
     id: Long = ID_NONE,
     var project: Project,
     var task: ProjectTask,
+    var date: Calendar,
     start: Calendar? = null,
     finish: Calendar? = null,
+    duration: Long = 0,
     var note: String = "",
     var cost: Double = 0.0,
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
@@ -62,15 +65,31 @@ open class TimeRecord(
 
     var start: Calendar? = start
         set(value) {
+            if (value != null) this.duration = 0L
             // Server granularity is seconds.
             value?.millis = 0
             field = value
         }
     var finish: Calendar? = finish
         set(value) {
+            if (value != null) this.duration = 0L
             // Server granularity is seconds.
             value?.millis = 0
             field = value
+        }
+
+    var duration: Long = duration
+        get() {
+            val f = field
+            return if (f == 0L) {
+                val begin = startTime
+                if (begin == NEVER) return 0L
+                val end = finishTime
+                if (end == NEVER) return 0L
+                end - begin
+            } else {
+                f
+            }
         }
 
     var startTime: Long
@@ -91,34 +110,38 @@ open class TimeRecord(
     fun isEmpty(): Boolean {
         return project.isEmpty()
             || task.isEmpty()
-            || (startTime <= NEVER)
+            || (duration == 0L)
     }
 
     open fun copy(): TimeRecord {
         return TimeRecord(
-            id,
-            project,
-            task,
-            start,
-            finish,
-            note,
-            cost,
-            status,
-            location
+            id = id,
+            project = project,
+            task = task,
+            date = date,
+            start = start,
+            finish = finish,
+            duration = duration,
+            note = note,
+            cost = cost,
+            status = status,
+            location = location
         )
     }
 
     fun copy(start: Calendar?, finish: Calendar?): TimeRecord {
         return TimeRecord(
-            id,
-            project,
-            task,
-            start,
-            finish,
-            note,
-            cost,
-            status,
-            location
+            id = id,
+            project = project,
+            task = task,
+            date = date,
+            start = start,
+            finish = finish,
+            duration = duration,
+            note = note,
+            cost = cost,
+            status = status,
+            location = location
         )
     }
 
@@ -128,13 +151,14 @@ open class TimeRecord(
                 && (this.project == other.project)
                 && (this.task == other.task)
                 && (this.startTime == other.startTime)
-                && (this.finishTime == other.finishTime)
+                && (this.duration == other.duration)
         }
         return super.equals(other)
     }
 
     override fun toString(): String {
-        return "{id: $id, project: $project, task: $task, location: $location, start: $startTime, finish: $finishTime, version: $version, $status}"
+        val dateStr = formatSystemDate(date)
+        return "{id: $id, project: $project, task: $task, location: $location, start: $startTime, finish: $finishTime, date: $dateStr, duration: $duration, version: $version, $status}"
     }
 
     override fun hashCode(): Int {
@@ -160,6 +184,11 @@ open class TimeRecord(
         c = v1.compareTo(v2)
         if (c != 0) return c
 
+        val dt1 = this.date
+        val dt2 = that.date
+        c = dt1.compareTo(dt2)
+        if (c != 0) return c
+
         val st1 = this.startTime
         val st2 = that.startTime
         c = st1.compareTo(st2)
@@ -168,6 +197,11 @@ open class TimeRecord(
         val f1 = this.finishTime
         val f2 = that.finishTime
         c = f1.compareTo(f2)
+        if (c != 0) return c
+
+        val d1 = this.duration
+        val d2 = that.duration
+        c = d1.compareTo(d2)
         if (c != 0) return c
 
         val p1 = this.project
@@ -194,7 +228,13 @@ open class TimeRecord(
     }
 
     companion object {
-        val EMPTY: TimeRecord = TimeRecord(ID_NONE, Project.EMPTY, ProjectTask.EMPTY)
+        val EMPTY: TimeRecord =
+            TimeRecord(
+                id = ID_NONE,
+                project = Project.EMPTY,
+                task = ProjectTask.EMPTY,
+                date = Calendar.getInstance()
+            )
 
         const val NEVER = 0L
     }
@@ -204,11 +244,19 @@ fun TimeRecord.split(): List<TimeRecord> {
     val results = ArrayList<TimeRecord>()
 
     if (isEmpty()) return results
+    var duration = this.duration
+    if (duration < DateUtils.MINUTE_IN_MILLIS) return results
+
+    if (start == null) {
+        results.add(this)
+        return results
+    }
+    if (finish == null) {
+        finishTime = startTime + duration
+    }
+
     val start = start ?: return results
-    val startMillis = start.timeInMillis
     val finish = finish ?: return results
-    var diffMillis = finish.timeInMillis - startMillis
-    if (diffMillis < DateUtils.MINUTE_IN_MILLIS) return results
 
     if (start.isSameDay(finish)) {
         results.add(this)
@@ -218,19 +266,19 @@ fun TimeRecord.split(): List<TimeRecord> {
         val finishFirst = startFirst.copy()
         finishFirst.setToEndOfDay()
         results.add(this.copy(start = startFirst, finish = finishFirst))
-        diffMillis -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
+        duration -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
 
         // Intermediate days.
         var startDay = startFirst
         var finishDay: Calendar
-        while (diffMillis >= DateUtils.DAY_IN_MILLIS) {
+        while (duration >= DateUtils.DAY_IN_MILLIS) {
             startDay = startDay.copy()
             startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
             startDay.setToStartOfDay()
             finishDay = startDay.copy()
             finishDay.setToEndOfDay()
             results.add(this.copy(start = startDay, finish = finishDay))
-            diffMillis -= DateUtils.DAY_IN_MILLIS
+            duration -= DateUtils.DAY_IN_MILLIS
         }
 
         // The last day.

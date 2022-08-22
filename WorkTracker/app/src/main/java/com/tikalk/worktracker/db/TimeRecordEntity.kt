@@ -81,10 +81,14 @@ open class TimeRecordEntity(
     var projectId: Long,
     @ColumnInfo(name = "task_id")
     var taskId: Long,
+    @ColumnInfo(name = "date")
+    var date: Calendar,
     @ColumnInfo(name = "start")
     var start: Calendar? = null,
     @ColumnInfo(name = "finish")
     var finish: Calendar? = null,
+    @ColumnInfo(name = "duration")
+    var duration: Long = 0L,
     @ColumnInfo(name = "note")
     var note: String = "",
     @ColumnInfo(name = "cost")
@@ -111,15 +115,17 @@ open class TimeRecordConverters : Converters() {
 
 fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
     TimeRecordEntity(
-        this.id,
-        this.project.id,
-        this.task.id,
-        this.start,
-        this.finish,
-        this.note,
-        this.cost,
-        this.status,
-        this.location.id
+        id = this.id,
+        projectId = this.project.id,
+        taskId = this.task.id,
+        start = this.start,
+        finish = this.finish,
+        date = this.date,
+        duration = this.duration,
+        note = this.note,
+        cost = this.cost,
+        status = this.status,
+        locationId = this.location.id
     )
 
 fun TimeRecordEntity.toTimeRecord(
@@ -141,14 +147,16 @@ fun TimeRecordEntity.toTimeRecord(
     }
 
     return TimeRecord(
-        value.id,
-        project,
-        task,
-        value.start,
-        value.finish,
-        value.note,
-        value.cost,
-        value.status,
-        Location.valueOf(value.locationId)
+        id = value.id,
+        project = project,
+        task = task,
+        start = value.start,
+        finish = value.finish,
+        date = value.date,
+        duration = value.duration,
+        note = value.note,
+        cost = value.cost,
+        status = value.status,
+        location = Location.valueOf(value.locationId)
     )
 }
