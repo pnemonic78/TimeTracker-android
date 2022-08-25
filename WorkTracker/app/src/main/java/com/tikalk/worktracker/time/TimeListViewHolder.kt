@@ -42,6 +42,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.worktracker.databinding.TimeItemBinding
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.report.toLocationItem
 import java.util.Formatter
 import java.util.Locale
@@ -81,13 +82,23 @@ open class TimeListViewHolder(
         binding.task.text = record.task.name
         val startTime = record.startTime
         val endTime = record.finishTime
-        timeBuffer.setLength(0)
-        val formatterRange =
-            DateUtils.formatDateRange(context, timeFormatter, startTime, endTime, FORMAT_DURATION)
-        binding.timeRange.text = formatterRange.out() as CharSequence
-        timeBuffer.setLength(0)
-        val formatterElapsed = formatElapsedTime(context, timeFormatter, endTime - startTime)
-        binding.timeDuration.text = formatterElapsed.out() as CharSequence
+        if ((startTime == NEVER) || (endTime == NEVER)) {
+            binding.timeRange.text = null
+        } else {
+            timeBuffer.clear()
+            val formatterRange =
+                DateUtils.formatDateRange(
+                    context,
+                    timeFormatter,
+                    startTime,
+                    endTime,
+                    FORMAT_DURATION
+                )
+            binding.timeRange.text = formatterRange.toString()
+        }
+        timeBuffer.clear()
+        val formatterElapsed = formatElapsedTime(context, timeFormatter, record.duration)
+        binding.timeDuration.text = formatterElapsed.toString()
         binding.note.text = record.note
         binding.cost.text = formatCost(record.cost)
         binding.location.text =

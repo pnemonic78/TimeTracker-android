@@ -124,7 +124,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         for (option in options) {
             name = option.ownText()
             value = option.value()
-            val item = Project(name)
+            val item = Project(name = name)
             if (value.isNotBlank()) {
                 item.id = value.toLong()
             }
@@ -144,7 +144,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         for (option in options) {
             name = option.ownText()
             value = option.value()
-            val item = ProjectTask(name)
+            val item = ProjectTask(name = name)
             if (value.isNotBlank()) {
                 item.id = value.toLong()
             }

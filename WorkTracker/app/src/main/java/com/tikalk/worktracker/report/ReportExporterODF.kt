@@ -179,7 +179,7 @@ class ReportExporterODF(
                 columnIndex = 0
 
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
-                cell.dateValue = record.start
+                cell.dateValue = record.date
                 if (showProjectField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = record.project.name
@@ -202,7 +202,7 @@ class ReportExporterODF(
                     cell.timeValue = record.finish
                 }
                 if (showDurationField) {
-                    val durationMs = record.finishTime - record.startTime
+                    val durationMs = record.duration
                     val durationHs = durationMs.toDouble() / DateUtils.HOUR_IN_MILLIS
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.doubleValue = durationHs

@@ -223,7 +223,7 @@ class ReportExporterHTML(
 
                             tr(if (i.isEven()) "rowReportItem" else "rowReportItemAlt") {
                                 td("date-cell") {
-                                    +formatSystemDate(record.start)
+                                    +formatSystemDate(record.date)!!
                                 }
                                 if (showProjectField) {
                                     td("text-cell") {
@@ -242,17 +242,17 @@ class ReportExporterHTML(
                                 }
                                 if (showStartField) {
                                     td("time-cell") {
-                                        +formatSystemTime(record.start)
+                                        +formatSystemTime(record.start).orEmpty()
                                     }
                                 }
                                 if (showFinishField) {
                                     td("time-cell") {
-                                        +formatSystemTime(record.finish)
+                                        +formatSystemTime(record.finish).orEmpty()
                                     }
                                 }
                                 if (showDurationField) {
-                                    timeBuffer.setLength(0)
-                                    val durationMs = record.finishTime - record.startTime
+                                    timeBuffer.clear()
+                                    val durationMs = record.duration
                                     formatElapsedTime(context, timeFormatter, durationMs)
                                     td("time-cell") {
                                         +timeFormatter.toString()
@@ -295,7 +295,7 @@ class ReportExporterHTML(
                             }
                             if (showDurationField) {
                                 td("time-cell subtotal-cell") {
-                                    timeBuffer.setLength(0)
+                                    timeBuffer.clear()
                                     +formatElapsedTime(
                                         context,
                                         timeFormatter,
@@ -308,7 +308,7 @@ class ReportExporterHTML(
                             }
                             if (showCostField) {
                                 td("money-value-cell subtotal-cell") {
-                                    timeBuffer.setLength(0)
+                                    timeBuffer.clear()
                                     +formatCurrency(currencyFormatter, totals.cost).toString()
                                 }
                             }

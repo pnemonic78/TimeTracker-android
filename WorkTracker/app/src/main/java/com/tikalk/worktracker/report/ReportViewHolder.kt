@@ -39,6 +39,7 @@ import androidx.annotation.MainThread
 import com.tikalk.worktracker.databinding.TimeItemBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.time.TimeListViewHolder
 
 class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
@@ -48,11 +49,15 @@ class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
     override fun bind(record: TimeRecord) {
         super.bind(record)
         val context: Context = binding.root.context
+        val dateTime = record.date.timeInMillis
         val startTime = record.startTime
         val endTime = record.finishTime
-        if (filter.showStartField) {
+
+        if ((startTime == NEVER) || (endTime == NEVER)) {
+            binding.timeRange.text = DateUtils.formatDateTime(context, dateTime, DateUtils.FORMAT_SHOW_DATE)
+        } else if (filter.showStartField) {
             if (filter.showFinishField) {
-                timeBuffer.setLength(0)
+                timeBuffer.clear()
                 val formatterRange = DateUtils.formatDateRange(
                     context,
                     timeFormatter,
@@ -60,7 +65,7 @@ class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
                     endTime,
                     FORMAT_DURATION
                 )
-                binding.timeRange.text = formatterRange.out() as CharSequence
+                binding.timeRange.text = formatterRange.toString()
             } else {
                 binding.timeRange.text =
                     DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)

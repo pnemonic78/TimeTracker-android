@@ -31,6 +31,7 @@
  */
 package com.tikalk.worktracker.net
 
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.rxjava3.core.Single
 import retrofit2.Response
@@ -50,7 +51,7 @@ import retrofit2.http.Query
 interface TimeTrackerService {
 
     companion object {
-        const val BASE_URL = "https://time.infra.tikalk.dev/"
+        const val BASE_URL = BuildConfig.API_URL
 
         const val PHP_LOGIN = "login.php"
         const val PHP_TIME = "time.php"
@@ -84,8 +85,9 @@ interface TimeTrackerService {
         @Field("project") projectId: Long,
         @Field("task") taskId: Long,
         @Field("date") date: String,
-        @Field("start") start: String,
-        @Field("finish") finish: String,
+        @Field("start") start: String?,
+        @Field("finish") finish: String?,
+        @Field("duration") duration: String,
         @Field("note") note: String,
         @Field("time_field_5") locationId: Long,
         @Field("btn_submit") submit: String = "Submit",
@@ -103,8 +105,9 @@ interface TimeTrackerService {
         @Field("project") projectId: Long,
         @Field("task") taskId: Long,
         @Field("date") date: String,
-        @Field("start") start: String,
-        @Field("finish") finish: String,
+        @Field("start") start: String?,
+        @Field("finish") finish: String?,
+        @Field("duration") duration: String,
         @Field("note") note: String,
         @Field("time_field_5") locationId: Long,
         @Field("btn_save") submit: String = "Save",

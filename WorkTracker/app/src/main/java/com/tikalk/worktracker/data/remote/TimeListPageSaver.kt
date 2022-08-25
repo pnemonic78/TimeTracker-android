@@ -52,10 +52,10 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
         saveRecords(db, page.date, page.records)
     }
 
-    private fun saveRecords(db: TrackerDatabase, day: Calendar? = null, records: List<TimeRecord>) {
-        Timber.i("saveRecords ${formatSystemDate(day)}")
+    private fun saveRecords(db: TrackerDatabase, date: Calendar, records: List<TimeRecord>) {
+        Timber.i("saveRecords ${formatSystemDate(date)}")
         val recordsDao = db.timeRecordDao()
-        val recordsDb = queryRecords(db, day)
+        val recordsDb = queryRecords(db, date)
         val recordsDbById = recordsDb.associate { it.record.id to it.record }
 
         val recordsToInsert = ArrayList<TimeRecordEntity>()
@@ -80,18 +80,14 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
 
     private fun queryRecords(
         db: TrackerDatabase,
-        day: Calendar? = null
+        date: Calendar
     ): List<WholeTimeRecordEntity> {
         val recordsDao = db.timeRecordDao()
-        return if (day == null) {
-            recordsDao.queryAll()
-        } else {
-            val start = day.copy()
-            start.setToStartOfDay()
-            val finish = day.copy()
-            finish.setToEndOfDay()
-            recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
-        }
+        val start = date.copy()
+        start.setToStartOfDay()
+        val finish = date.copy()
+        finish.setToEndOfDay()
+        return recordsDao.queryByDate(start.timeInMillis, finish.timeInMillis)
     }
 
     /**
@@ -100,6 +96,7 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
      * @param recordPage The parsed record from the page.
      */
     private fun mergeRecord(recordDb: TimeRecordEntity, recordPage: TimeRecord) {
+        recordDb.duration = recordPage.duration
         recordDb.finish = recordPage.finish
         recordDb.note = recordPage.note
         recordDb.projectId = recordPage.project.id

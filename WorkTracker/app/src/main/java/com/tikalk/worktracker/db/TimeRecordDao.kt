@@ -76,14 +76,14 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * Select a record by its id.
      */
     @Transaction
-    @Query("SELECT * FROM record WHERE id = :recordId")
+    @Query("SELECT * FROM record WHERE (id = :recordId)")
     fun queryById(recordId: Long): WholeTimeRecordEntity?
 
     /**
      * Select a record by its id.
      */
     @Transaction
-    @Query("SELECT * FROM record WHERE id = :recordId")
+    @Query("SELECT * FROM record WHERE (id = :recordId)")
     fun queryByIdMaybe(recordId: Long): Maybe<WholeTimeRecordEntity>
 
     /**
@@ -99,7 +99,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return all records between the dates.
      */
     @Transaction
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
+    @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
     fun queryByDate(start: Long, finish: Long): List<WholeTimeRecordEntity>
 
     /**
@@ -108,7 +108,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return all records between the dates.
      */
     @Transaction
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
+    @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
     fun queryByDateLive(start: Long, finish: Long): LiveData<List<WholeTimeRecordEntity>>
 
     /**
@@ -117,7 +117,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return all records between the dates.
      */
     @Transaction
-    @Query("SELECT * FROM record WHERE (start >= :start) AND (finish <= :finish) ORDER BY start ASC")
+    @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
     fun queryByDateSingle(start: Long, finish: Long): Single<List<WholeTimeRecordEntity>>
 
     /**

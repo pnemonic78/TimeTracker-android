@@ -73,23 +73,38 @@ class ReportRecord(
     var taskName: String,
     start: Calendar? = null,
     finish: Calendar? = null,
+    date: Calendar,
+    duration: Long = 0L,
     note: String = "",
     cost: Double = 0.0,
     status: TaskRecordStatus = TaskRecordStatus.DRAFT
-) : TimeRecordEntity(id, projectId, taskId, start, finish, note, cost, status)
+) : TimeRecordEntity(
+    id = id,
+    projectId = projectId,
+    taskId = taskId,
+    start = start,
+    finish = finish,
+    date = date,
+    duration = duration,
+    note = note,
+    cost = cost,
+    status = status
+)
 
 fun TimeRecord.toReportRecord(): ReportRecord =
     ReportRecord(
-        this.id,
-        this.project.id,
-        this.project.name,
-        this.task.id,
-        this.task.name,
-        this.start,
-        this.finish,
-        this.note,
-        this.cost,
-        this.status
+        id = this.id,
+        projectId = this.project.id,
+        projectName = this.project.name,
+        taskId = this.task.id,
+        taskName = this.task.name,
+        start = this.start,
+        finish = this.finish,
+        date = this.date,
+        duration = this.duration,
+        note = this.note,
+        cost = this.cost,
+        status = this.status
     )
 
 fun ReportRecord.toTimeRecord(
@@ -105,13 +120,15 @@ fun ReportRecord.toTimeRecord(
         ?: ProjectTask.EMPTY.copy().apply { id = value.taskId }
 
     return TimeRecord(
-        value.id,
-        project,
-        task,
-        value.start,
-        value.finish,
-        value.note,
-        value.cost,
-        value.status
+        id = value.id,
+        project = project,
+        task = task,
+        start = value.start,
+        finish = value.finish,
+        date = value.date,
+        duration = value.duration,
+        note = value.note,
+        cost = value.cost,
+        status = value.status
     )
 }

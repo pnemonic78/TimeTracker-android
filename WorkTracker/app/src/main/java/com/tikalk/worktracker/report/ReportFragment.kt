@@ -143,7 +143,7 @@ class ReportFragment : InternetFragment() {
         val filter = filterData.value
 
         if (filter?.showDurationField == true) {
-            timeBuffer.setLength(0)
+            timeBuffer.clear()
             bindingTotals.durationTotalLabel.visibility = View.VISIBLE
             bindingTotals.durationTotal.text =
                 formatElapsedTime(context, timeFormatter, totals.duration).toString()
@@ -152,7 +152,7 @@ class ReportFragment : InternetFragment() {
             bindingTotals.durationTotal.text = null
         }
         if (filter?.showCostField == true) {
-            timeBuffer.setLength(0)
+            timeBuffer.clear()
             bindingTotals.costTotalLabel.visibility = View.VISIBLE
             bindingTotals.costTotal.text = formatCurrency(currencyFormatter, totals.cost).toString()
         } else {

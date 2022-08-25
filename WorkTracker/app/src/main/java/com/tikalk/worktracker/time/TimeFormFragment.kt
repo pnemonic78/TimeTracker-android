@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 
 import android.content.Context
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
@@ -50,6 +51,7 @@ import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
 import timber.log.Timber
 import java.util.Calendar
+import kotlin.math.min
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
 
@@ -142,6 +144,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     protected open fun setRecordStart(time: Calendar): Boolean {
         Timber.d("${javaClass.simpleName} setRecordStart time=$time")
         if (record.start != time) {
+            record.date = time
             record.start = time
             return true
         }
@@ -191,6 +194,26 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return setRecordFinish(time)
     }
 
+    protected open fun setRecordDuration(time: Long): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordDuration time=$time")
+        if (record.duration != time) {
+            record.start = null
+            record.finish = null
+            record.duration = time
+            return true
+        }
+        return false
+    }
+
+    protected fun setRecordDuration(
+        hourOfDay: Int,
+        minute: Int
+    ): Boolean {
+        Timber.d("${javaClass.simpleName} setRecordDuration $hourOfDay:$minute")
+        val time = ((hourOfDay * 60) + minute) * DateUtils.MINUTE_IN_MILLIS
+        return setRecordDuration(time)
+    }
+
     protected open fun onProjectsUpdated(projects: List<Project>) {
         val record = this.record
         populateForm(record)
@@ -222,14 +245,18 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     protected open fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
 
-    protected fun addEmpties(projects: List<Project>): List<Project> {
-        val projectEmptyFind = projects.find { it.isEmpty() }
+    protected fun addEmpties(projects: List<Project>?): List<Project> {
+        val projectEmptyFind = projects?.find { it.isEmpty() }
         val projectEmpty = projectEmptyFind ?: timeViewModel.projectEmpty
         projectEmpty.name = getEmptyProjectName()
-        val projectsWithEmpty = if (projectEmptyFind != null) {
-            projects.sortedBy { it.name }
+        val projectsWithEmpty = if (projects != null) {
+            if (projectEmptyFind != null) {
+                projects.sortedBy { it.name }
+            } else {
+                projects.sortedBy { it.name }.add(0, projectEmpty)
+            }
         } else {
-            projects.sortedBy { it.name }.add(0, projectEmpty)
+            listOf(projectEmpty)
         }
         timeViewModel.projectEmpty = projectEmpty
 

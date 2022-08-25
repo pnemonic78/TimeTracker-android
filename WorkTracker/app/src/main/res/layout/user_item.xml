@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:text="@string/name_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/name" />
 
         <TextView
             android:id="@+id/name"
@@ -59,46 +59,46 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/uncompletedEntry"
             app:layout_constraintStart_toEndOf="@+id/barrier"
-            app:layout_constraintTop_toTopOf="@+id/nameLabel"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/project_label" />
 
         <TextView
             android:id="@+id/loginLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="@string/login_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameLabel" />
+            app:layout_constraintTop_toTopOf="@+id/login" />
 
         <TextView
             android:id="@+id/login"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:autoLink="email"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/barrier"
-            app:layout_constraintTop_toTopOf="@+id/loginLabel"
+            app:layout_constraintTop_toBottomOf="@+id/name"
             tools:text="@tools:sample/lorem" />
 
         <TextView
             android:id="@+id/roleLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="@string/role_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/loginLabel" />
+            app:layout_constraintTop_toTopOf="@+id/role" />
 
         <TextView
             android:id="@+id/role"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/barrier"
-            app:layout_constraintTop_toTopOf="@+id/roleLabel"
+            app:layout_constraintTop_toBottomOf="@+id/login"
             tools:text="@tools:sample/lorem" />
 
         <androidx.constraintlayout.widget.Barrier

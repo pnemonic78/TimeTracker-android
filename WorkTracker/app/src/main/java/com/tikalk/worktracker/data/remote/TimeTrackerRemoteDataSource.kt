@@ -170,7 +170,7 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
-        val dateFormatted = formatSystemDate(date)
+        val dateFormatted = formatSystemDate(date).orEmpty()
         return service.fetchTimes(dateFormatted)
             .map { response ->
                 validateResponse(response)

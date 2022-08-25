@@ -44,12 +44,14 @@ import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.util.Calendar
+import kotlin.math.max
 
 class ReportPageParser(private val filter: ReportFilter) {
 
@@ -117,6 +119,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         var columnIndexTask = -1
         var columnIndexStart = -1
         var columnIndexFinish = -1
+        var columnIndexDuration = -1
         var columnIndexNote = -1
         var columnIndexCost = -1
         var columnIndexLocation = -1
@@ -141,6 +144,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             "Task" -> columnIndexTask = col
                             "Start" -> columnIndexStart = col
                             "Finish" -> columnIndexFinish = col
+                            "Duration" -> columnIndexDuration = col
                             "Note" -> columnIndexNote = col
                             "Cost" -> columnIndexCost = col
                             "Remote",
@@ -159,6 +163,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexTask,
                             columnIndexStart,
                             columnIndexFinish,
+                            columnIndexDuration,
                             columnIndexNote,
                             columnIndexCost,
                             columnIndexLocation,
@@ -197,6 +202,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         columnIndexTask: Int,
         columnIndexStart: Int,
         columnIndexFinish: Int,
+        columnIndexDuration: Int,
         columnIndexNote: Int,
         columnIndexCost: Int,
         columnIndexLocation: Int,
@@ -211,6 +217,7 @@ class ReportPageParser(private val filter: ReportFilter) {
 
         val tdDate = cols[columnIndexDate]
         val date = parseSystemDate(tdDate.ownText()) ?: return null
+        record.date = date
 
         var project: Project = record.project
         if (columnIndexProject >= 0) {
@@ -233,15 +240,22 @@ class ReportPageParser(private val filter: ReportFilter) {
         if (columnIndexStart >= 0) {
             val tdStart = cols[columnIndexStart]
             val startText = tdStart.ownText()
-            val start = parseRecordTime(date, startText) ?: return null
+            val start = parseRecordTime(date, startText)
             record.start = start
         }
 
         if (columnIndexFinish >= 0) {
             val tdFinish = cols[columnIndexFinish]
             val finishText = tdFinish.ownText()
-            val finish = parseRecordTime(date, finishText) ?: return null
+            val finish = parseRecordTime(date, finishText)
             record.finish = finish
+        }
+
+        if (columnIndexDuration >= 0) {
+            val tdDuration = cols[columnIndexDuration]
+            val durationText = tdDuration.ownText()
+            val duration = parseDuration(durationText) ?: 0L
+            record.duration = duration
         }
 
         if (columnIndexNote >= 0) {
@@ -271,7 +285,7 @@ class ReportPageParser(private val filter: ReportFilter) {
     private fun parseRecordProject(name: String, projects: MutableCollection<Project>): Project {
         var project = projects.find { it.name == name }
         if (project == null) {
-            project = Project(name)
+            project = Project(name = name)
             projects.add(project)
         }
         return project
@@ -280,7 +294,7 @@ class ReportPageParser(private val filter: ReportFilter) {
     private fun parseRecordTask(project: Project, name: String): ProjectTask {
         var task = project.tasks.find { task -> (task.name == name) }
         if (task == null) {
-            task = ProjectTask(name)
+            task = ProjectTask(name = name)
             project.addTask(task)
         }
         return task
@@ -315,10 +329,8 @@ class ReportPageParser(private val filter: ReportFilter) {
 
         var duration: Long
         for (record in records) {
-            duration = record.finishTime - record.startTime
-            if (duration > 0L) {
-                totals.duration += duration
-            }
+            duration = record.duration
+            totals.duration += max(duration, 0L)
             totals.cost += record.cost
         }
 

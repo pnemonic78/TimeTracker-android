@@ -40,6 +40,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.toCalendar
 
 /**
@@ -147,9 +148,9 @@ class TimeTrackerPrefs(context: Context) {
         val startTime = prefs.getLong(START_TIME, TimeRecord.NEVER)
         if (startTime <= TimeRecord.NEVER) return null
 
-        val project = Project(projectName, "")
+        val project = Project(name = projectName)
         project.id = projectId
-        val task = ProjectTask(taskName, "")
+        val task = ProjectTask(name = taskName)
         task.id = taskId
         project.addTask(task)
         val start = startTime.toCalendar()
@@ -157,7 +158,14 @@ class TimeTrackerPrefs(context: Context) {
         val locationId = prefs.getLong(LOCATION, TikalEntity.ID_NONE)
         val location = Location.valueOf(locationId)
 
-        return TimeRecord(TikalEntity.ID_NONE, project, task, start, location = location)
+        return TimeRecord(
+            id = TikalEntity.ID_NONE,
+            project = project,
+            task = task,
+            start = start,
+            date = start.copy(),
+            location = location
+        )
     }
 
     fun stopRecord() {

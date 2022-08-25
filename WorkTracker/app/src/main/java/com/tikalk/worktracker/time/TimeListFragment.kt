@@ -38,16 +38,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -72,7 +69,6 @@ import timber.log.Timber
 import java.util.Calendar
 import java.util.Formatter
 import java.util.Locale
-import kotlin.math.abs
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener {
@@ -193,7 +189,7 @@ class TimeListFragment : TimeFormFragment(),
      * Fetch from remote server.
      */
     private fun fetchPage(date: Calendar) {
-        val dateFormatted = formatSystemDate(date)
+        val dateFormatted = formatSystemDate(date)!!
         Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
         if (fetchingPage) return
         fetchingPage = true
@@ -274,7 +270,7 @@ class TimeListFragment : TimeFormFragment(),
             bindingTotals.weekTotalLabel.visibility = View.INVISIBLE
             bindingTotals.weekTotal.text = null
         } else {
-            timeBuffer.setLength(0)
+            timeBuffer.clear()
             bindingTotals.weekTotalLabel.visibility = View.VISIBLE
             bindingTotals.weekTotal.text =
                 formatElapsedTime(context, timeFormatter, totals.weekly).toString()
@@ -283,7 +279,7 @@ class TimeListFragment : TimeFormFragment(),
             bindingTotals.monthTotalLabel.visibility = View.INVISIBLE
             bindingTotals.monthTotal.text = null
         } else {
-            timeBuffer.setLength(0)
+            timeBuffer.clear()
             bindingTotals.monthTotalLabel.visibility = View.VISIBLE
             bindingTotals.monthTotal.text =
                 formatElapsedTime(context, timeFormatter, totals.monthly).toString()
@@ -292,7 +288,7 @@ class TimeListFragment : TimeFormFragment(),
             bindingTotals.remainingQuotaLabel.visibility = View.INVISIBLE
             bindingTotals.remainingQuota.text = null
         } else {
-            timeBuffer.setLength(0)
+            timeBuffer.clear()
             bindingTotals.remainingQuotaLabel.visibility = View.VISIBLE
             bindingTotals.remainingQuota.text =
                 formatElapsedTime(context, timeFormatter, totals.remaining).toString()
