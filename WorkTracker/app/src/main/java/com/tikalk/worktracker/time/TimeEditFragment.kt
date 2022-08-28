@@ -586,14 +586,25 @@ class TimeEditFragment : TimeFormFragment() {
             setErrorLabel("")
         }
 
+        val dateValue = formatSystemDate(record.date)!!
+        var startValue: String? = null
+        var finishValue: String? = null
+        var durationValue: String? = null
+        if ((record.start != null) && (record.finish != null)) {
+            startValue = formatSystemTime(record.start)
+            finishValue = formatSystemTime(record.finish)
+        } else {
+            durationValue = formatDuration(record.duration)
+        }
+
         val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
             delegate.service.addTime(
                 projectId = record.project.id,
                 taskId = record.task.id,
-                date = formatSystemDate(record.date)!!,
-                start = formatSystemTime(record.start),
-                finish = formatSystemTime(record.finish),
-                duration = formatDuration(record.duration),
+                date = dateValue,
+                start = startValue,
+                finish = finishValue,
+                duration = durationValue,
                 note = record.note,
                 locationId = record.location.id
             )
@@ -602,10 +613,10 @@ class TimeEditFragment : TimeFormFragment() {
                 id = record.id,
                 projectId = record.project.id,
                 taskId = record.task.id,
-                date = formatSystemDate(record.date)!!,
-                start = formatSystemTime(record.start),
-                finish = formatSystemTime(record.finish),
-                duration = formatDuration(record.duration),
+                date = dateValue,
+                start = startValue,
+                finish = finishValue,
+                duration = durationValue,
                 note = record.note,
                 locationId = record.location.id
             )
