@@ -31,7 +31,6 @@
  */
 package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.User
@@ -50,14 +49,6 @@ interface UserDao : BaseDao<User> {
      */
     @Query("SELECT * FROM user")
     fun queryAll(): List<User>
-
-    /**
-     * Select all users from the table.
-     *
-     * @return all users.
-     */
-    @Query("SELECT * FROM user")
-    fun queryAllLive(): LiveData<List<User>>
 
     /**
      * Select all users from the table.

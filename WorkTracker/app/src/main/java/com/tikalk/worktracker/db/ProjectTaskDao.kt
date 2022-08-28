@@ -31,7 +31,6 @@
  */
 package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.ProjectTask
@@ -59,14 +58,6 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
      */
     @Query("SELECT * FROM project_task")
     fun queryAllSingle(): Single<List<ProjectTask>>
-
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAllLive(): LiveData<List<ProjectTask>>
 
     /**
      * Select a task by its id.
