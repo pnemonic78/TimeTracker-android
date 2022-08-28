@@ -31,7 +31,6 @@
  */
 package com.tikalk.worktracker.db
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
@@ -53,15 +52,6 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
     @Transaction
     @Query("SELECT * FROM record ORDER BY start ASC")
     fun queryAll(): List<WholeTimeRecordEntity>
-
-    /**
-     * Select all records from the table.
-     *
-     * @return all records.
-     */
-    @Transaction
-    @Query("SELECT * FROM record ORDER BY start ASC")
-    fun queryAllLive(): LiveData<List<WholeTimeRecordEntity>>
 
     /**
      * Select all records from the table.
@@ -109,15 +99,6 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      */
     @Transaction
     @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
-    fun queryByDateLive(start: Long, finish: Long): LiveData<List<WholeTimeRecordEntity>>
-
-    /**
-     * Select all records from the table by date.
-     *
-     * @return all records between the dates.
-     */
-    @Transaction
-    @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
     fun queryByDateSingle(start: Long, finish: Long): Single<List<WholeTimeRecordEntity>>
 
     /**
@@ -126,9 +107,9 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return totals between the dates.
      */
     @Query(
-        """SELECT SUM(finish - start) AS daily, 0 AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (start >= :startDay) AND (finish <= :finishDay)
-        UNION ALL SELECT 0 AS daily, SUM(finish - start) AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (start >= :startWeek) AND (finish <= :finishWeek)
-        UNION ALL SELECT 0 AS daily, 0 AS weekly, SUM(finish - start) AS monthly, 0 AS remaining FROM record WHERE (start >= :startMonth) AND (finish <= :finishMonth)"""
+        """SELECT SUM(finish - start) AS daily, 0 AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (:startDay <= date) AND (date <= :finishDay)
+        UNION ALL SELECT 0 AS daily, SUM(finish - start) AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (:startWeek <= date) AND (date <= :finishWeek)
+        UNION ALL SELECT 0 AS daily, 0 AS weekly, SUM(finish - start) AS monthly, 0 AS remaining FROM record WHERE (:startMonth <= date) AND (date <= :finishMonth)"""
     )
     fun queryTotals(
         startDay: Long,
