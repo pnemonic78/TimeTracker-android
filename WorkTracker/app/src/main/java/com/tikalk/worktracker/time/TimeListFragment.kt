@@ -36,6 +36,7 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -46,6 +47,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
@@ -65,6 +67,8 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 import java.util.Formatter
@@ -194,23 +198,23 @@ class TimeListFragment : TimeFormFragment(),
         if (fetchingPage) return
         fetchingPage = true
 
-        delegate.service.fetchTimes(dateFormatted)
-            .subscribeOn(Schedulers.io())
-            .subscribe({ response ->
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = delegate.service.fetchTimes(dateFormatted)
                 if (isValidResponse(response)) {
-                    this.date = date
+                    this@TimeListFragment.date = date
                     val html = response.body()!!
                     processPage(html, date)
                 } else {
                     authenticateMain(loginAutomatic)
                 }
                 fetchingPage = false
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                handleErrorMain(err)
+            } catch (e: Exception) {
+                Timber.e(e, "Error fetching page: ${e.message}")
+                handleErrorMain(e)
                 fetchingPage = false
-            })
-            .addTo(disposables)
+            }
+        }
     }
 
     private fun processPage(html: String, date: Calendar) {
@@ -315,7 +319,11 @@ class TimeListFragment : TimeFormFragment(),
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        totalsData.value = savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
+        totalsData.value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            savedInstanceState.getParcelable(STATE_TOTALS, TimeTotals::class.java) ?: TimeTotals()
+        } else {
+            savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
+        }
     }
 
     private fun pickDate() {
@@ -385,22 +393,22 @@ class TimeListFragment : TimeFormFragment(),
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord record=$record")
 
-        delegate.service.deleteTime(record.id)
-            .subscribeOn(Schedulers.io())
-            .doOnSubscribe { showProgressMain(true) }
-            .doAfterTerminate { showProgressMain(false) }
-            .subscribe({ response ->
+        showProgress(true)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = delegate.service.deleteTime(record.id)
+                showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processPage(html, date)
                 } else {
                     authenticateMain()
                 }
-            }, { err ->
-                Timber.e(err, "Error deleting record: ${err.message}")
-                handleErrorMain(err)
-            })
-            .addTo(disposables)
+            } catch (e: Exception) {
+                Timber.e(e, "Error deleting record: ${e.message}")
+                handleErrorMain(e)
+            }
+        }
     }
 
     override fun populateForm(record: TimeRecord) = Unit

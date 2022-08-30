@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 
 import android.app.TimePickerDialog
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
@@ -47,6 +48,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.DateTimePickerDialog
 import com.tikalk.app.DateTimePickerDialog.OnDateTimeSetListener
@@ -76,10 +78,10 @@ import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 import java.util.Formatter
@@ -597,33 +599,33 @@ class TimeEditFragment : TimeFormFragment() {
             durationValue = formatDuration(record.duration)
         }
 
-        val submitter: Single<Response<String>> = if (record.id == TikalEntity.ID_NONE) {
-            delegate.service.addTime(
-                projectId = record.project.id,
-                taskId = record.task.id,
-                date = dateValue,
-                start = startValue,
-                finish = finishValue,
-                duration = durationValue,
-                note = record.note,
-                locationId = record.location.id
-            )
-        } else {
-            delegate.service.editTime(
-                id = record.id,
-                projectId = record.project.id,
-                taskId = record.task.id,
-                date = dateValue,
-                start = startValue,
-                finish = finishValue,
-                duration = durationValue,
-                note = record.note,
-                locationId = record.location.id
-            )
-        }
-        submitter
-            .subscribeOn(Schedulers.io())
-            .subscribe({ response ->
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = if (record.id == TikalEntity.ID_NONE) {
+                    delegate.service.addTime(
+                        projectId = record.project.id,
+                        taskId = record.task.id,
+                        date = dateValue,
+                        start = startValue,
+                        finish = finishValue,
+                        duration = durationValue,
+                        note = record.note,
+                        locationId = record.location.id
+                    )
+                } else {
+                    delegate.service.editTime(
+                        id = record.id,
+                        projectId = record.project.id,
+                        taskId = record.task.id,
+                        date = dateValue,
+                        start = startValue,
+                        finish = finishValue,
+                        duration = durationValue,
+                        note = record.note,
+                        locationId = record.location.id
+                    )
+                }
+
                 if (record.id != TikalEntity.ID_NONE) {
                     saveRecord(record)
                 }
@@ -638,12 +640,12 @@ class TimeEditFragment : TimeFormFragment() {
                 } else {
                     authenticateMain(true)
                 }
-            }, { err ->
-                Timber.e(err, "Error saving record: ${err.message}")
-                handleErrorMain(err)
+            } catch (e: Exception) {
+                Timber.e(e, "Error saving record: ${e.message}")
+                handleErrorMain(e)
                 showProgressMain(false)
-            })
-            .addTo(disposables)
+            }
+        }
     }
 
     private fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
@@ -689,23 +691,22 @@ class TimeEditFragment : TimeFormFragment() {
         showProgress(true)
 
         // Fetch from remote server.
-        delegate.service.deleteTime(record.id)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ response ->
-                showProgress(false)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = delegate.service.deleteTime(record.id)
+                showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processDeletePage(record, html)
                 } else {
-                    authenticate()
+                    authenticateMain()
                 }
-            }, { err ->
-                Timber.e(err, "Error deleting record: ${err.message}")
-                handleError(err)
-                showProgress(false)
-            })
-            .addTo(disposables)
+            } catch (e: Exception) {
+                Timber.e(e, "Error deleting record: ${e.message}")
+                handleErrorMain(e)
+                showProgressMain(false)
+            }
+        }
     }
 
     private fun processDeletePage(record: TimeRecord, html: String) {
@@ -742,7 +743,11 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity?>(STATE_RECORD)
+        val recordParcel: TimeRecordEntity? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
+        } else {
+            savedInstanceState.getParcelable(STATE_RECORD)
+        }
         if (recordParcel != null) {
             val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)

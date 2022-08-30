@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,36 +30,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.net
+package com.tikalk.util
 
-import android.os.Bundle
-import com.tikalk.worktracker.app.TrackerActivity
-import com.tikalk.worktracker.app.TrackerDialogFragment
-import retrofit2.Response
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
 
-/**
- * Fragment that is Internet-aware.
- */
-abstract class InternetDialogFragment : TrackerDialogFragment {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    protected fun isValidResponse(response: Response<String>): Boolean {
-        return delegate.isValidResponse(response)
+fun <T> Flow<T>.toObservable(): Observable<T> {
+    val flow = this
+    val o = PublishSubject.create<T>()
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            flow
+                .onCompletion { o.onComplete() }
+                .collect {
+                    o.onNext(it)
+                }
+        } catch (e: Exception) {
+            o.onError(e)
+        }
     }
-
-    protected fun getResponseError(html: String?): String? {
-        return delegate.getResponseError(html)
-    }
-
-    protected fun getResponseError(response: Response<String>): String? {
-        val html = response.body()
-        return getResponseError(html)
-    }
-
-    override fun showProgress(show: Boolean) {
-        (activity as? TrackerActivity)?.showProgress(show)
-    }
+    return o
 }

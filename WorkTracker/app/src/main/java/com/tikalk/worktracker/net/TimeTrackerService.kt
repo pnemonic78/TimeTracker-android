@@ -33,7 +33,6 @@ package com.tikalk.worktracker.net
 
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.rxjava3.core.Single
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FieldMap
@@ -50,6 +49,98 @@ import retrofit2.http.Query
  */
 interface TimeTrackerService {
 
+    @FormUrlEncoded
+    @POST(PHP_LOGIN)
+    suspend fun login(
+        @Field("login") email: String,
+        @Field("password") password: String,
+        @Field("browser_today") date: String,
+        @Field("btn_login") button: String = "Login"
+    ): Response<String>
+
+    @GET(PHP_TIME)
+    suspend fun fetchTimes(@Query("date") date: String): Response<String>
+
+    @FormUrlEncoded
+    @POST(PHP_TIME)
+    @Headers("Referer: ${BASE_URL}${PHP_TIME}")
+    suspend fun addTime(
+        @Field("project") projectId: Long,
+        @Field("task") taskId: Long,
+        @Field("date") date: String,
+        @Field("start") start: String?,
+        @Field("finish") finish: String?,
+        @Field("duration") duration: String?,
+        @Field("note") note: String,
+        @Field("time_field_5") locationId: Long,
+        @Field("btn_submit") submit: String = "Submit",
+        @Field("browser_today") browserToday: String = formatSystemDate()
+    ): Response<String>
+
+    @GET(PHP_EDIT)
+    suspend fun fetchTime(@Query("id") id: Long): Response<String>
+
+    @FormUrlEncoded
+    @POST(PHP_EDIT)
+    @Headers("Referer: ${BASE_URL}${PHP_EDIT}")
+    suspend fun editTime(
+        @Field("id") id: Long,
+        @Field("project") projectId: Long,
+        @Field("task") taskId: Long,
+        @Field("date") date: String,
+        @Field("start") start: String?,
+        @Field("finish") finish: String?,
+        @Field("duration") duration: String?,
+        @Field("note") note: String,
+        @Field("time_field_5") locationId: Long,
+        @Field("btn_save") submit: String = "Save",
+        @Field("browser_today") browserToday: String = formatSystemDate()
+    ): Response<String>
+
+    @FormUrlEncoded
+    @POST(PHP_DELETE)
+    @Headers("Referer: ${BASE_URL}${PHP_EDIT}")
+    suspend fun deleteTime(
+        @Field("id") id: Long,
+        @Field("delete_button") submit: String = "Delete",
+        @Field("browser_today") browserToday: String = formatSystemDate()
+    ): Response<String>
+
+    @GET(PHP_PROFILE)
+    suspend fun fetchProfile(): Response<String>
+
+    @FormUrlEncoded
+    @POST(PHP_PROFILE)
+    @Headers("Referer: ${BASE_URL}${PHP_PROFILE}")
+    suspend fun editProfile(
+        @Field("name") name: String,
+        @Field("login") login: String,
+        @Field("password1") password1: String,
+        @Field("password2") password2: String,
+        @Field("email") email: String,
+        @Field("btn_save") submit: String = "Save"
+    ): Response<String>
+
+    @GET(PHP_PROJECTS)
+    suspend fun fetchProjects(): Response<String>
+
+    @GET(PHP_TASKS)
+    suspend fun fetchProjectTasks(): Response<String>
+
+    @GET(PHP_USERS)
+    suspend fun fetchUsers(): Response<String>
+
+    @GET(PHP_REPORTS)
+    suspend fun fetchReports(): Response<String>
+
+    @FormUrlEncoded
+    @POST(PHP_REPORTS)
+    @Headers("Referer: ${BASE_URL}${PHP_REPORTS}")
+    suspend fun generateReport(
+        @FieldMap filter: Map<String, String>,
+        @Field("btn_generate") submit: String = "Generate"
+    ): Response<String>
+
     companion object {
         const val BASE_URL = BuildConfig.API_URL
 
@@ -65,96 +156,4 @@ interface TimeTrackerService {
         const val PHP_REPORT = "report.php"
         const val PHP_ACCESS_DENIED = "access_denied.php"
     }
-
-    @FormUrlEncoded
-    @POST(PHP_LOGIN)
-    fun login(
-        @Field("login") email: String,
-        @Field("password") password: String,
-        @Field("browser_today") date: String,
-        @Field("btn_login") button: String = "Login"
-    ): Single<Response<String>>
-
-    @GET(PHP_TIME)
-    fun fetchTimes(@Query("date") date: String): Single<Response<String>>
-
-    @FormUrlEncoded
-    @POST(PHP_TIME)
-    @Headers("Referer: ${BASE_URL}${PHP_TIME}")
-    fun addTime(
-        @Field("project") projectId: Long,
-        @Field("task") taskId: Long,
-        @Field("date") date: String,
-        @Field("start") start: String?,
-        @Field("finish") finish: String?,
-        @Field("duration") duration: String?,
-        @Field("note") note: String,
-        @Field("time_field_5") locationId: Long,
-        @Field("btn_submit") submit: String = "Submit",
-        @Field("browser_today") browserToday: String = formatSystemDate()
-    ): Single<Response<String>>
-
-    @GET(PHP_EDIT)
-    fun fetchTime(@Query("id") id: Long): Single<Response<String>>
-
-    @FormUrlEncoded
-    @POST(PHP_EDIT)
-    @Headers("Referer: ${BASE_URL}${PHP_EDIT}")
-    fun editTime(
-        @Field("id") id: Long,
-        @Field("project") projectId: Long,
-        @Field("task") taskId: Long,
-        @Field("date") date: String,
-        @Field("start") start: String?,
-        @Field("finish") finish: String?,
-        @Field("duration") duration: String?,
-        @Field("note") note: String,
-        @Field("time_field_5") locationId: Long,
-        @Field("btn_save") submit: String = "Save",
-        @Field("browser_today") browserToday: String = formatSystemDate()
-    ): Single<Response<String>>
-
-    @FormUrlEncoded
-    @POST(PHP_DELETE)
-    @Headers("Referer: ${BASE_URL}${PHP_EDIT}")
-    fun deleteTime(
-        @Field("id") id: Long,
-        @Field("delete_button") submit: String = "Delete",
-        @Field("browser_today") browserToday: String = formatSystemDate()
-    ): Single<Response<String>>
-
-    @GET(PHP_PROFILE)
-    fun fetchProfile(): Single<Response<String>>
-
-    @FormUrlEncoded
-    @POST(PHP_PROFILE)
-    @Headers("Referer: ${BASE_URL}${PHP_PROFILE}")
-    fun editProfile(
-        @Field("name") name: String,
-        @Field("login") login: String,
-        @Field("password1") password1: String,
-        @Field("password2") password2: String,
-        @Field("email") email: String,
-        @Field("btn_save") submit: String = "Save"
-    ): Single<Response<String>>
-
-    @GET(PHP_PROJECTS)
-    fun fetchProjects(): Single<Response<String>>
-
-    @GET(PHP_TASKS)
-    fun fetchProjectTasks(): Single<Response<String>>
-
-    @GET(PHP_USERS)
-    fun fetchUsers(): Single<Response<String>>
-
-    @GET(PHP_REPORTS)
-    fun fetchReports(): Single<Response<String>>
-
-    @FormUrlEncoded
-    @POST(PHP_REPORTS)
-    @Headers("Referer: ${BASE_URL}${PHP_REPORTS}")
-    fun generateReport(
-        @FieldMap filter: Map<String, String>,
-        @Field("btn_generate") submit: String = "Generate"
-    ): Single<Response<String>>
 }

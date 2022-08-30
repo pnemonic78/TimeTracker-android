@@ -50,6 +50,10 @@ import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class TimeTrackerRemoteDataSource(
@@ -62,15 +66,21 @@ class TimeTrackerRemoteDataSource(
         if (recordId == TikalEntity.ID_NONE) {
             return Observable.empty()
         }
-        return service.fetchTime(recordId)
-            .map { response ->
+        val o = PublishSubject.create<TimeEditPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchTime(recordId)
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseEditPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseEditPage(html: String): TimeEditPage {
@@ -82,13 +92,20 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
-        return service.fetchProjects()
-            .map { response ->
+        val o = PublishSubject.create<List<Project>>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchProjects()
                 validateResponse(response)
                 val html = response.body()!!
-                return@map parseProjectsPage(html)
+                val page = parseProjectsPage(html)
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseProjectsPage(html: String): List<Project> {
@@ -96,13 +113,20 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
-        return service.fetchProjectTasks()
-            .map { response ->
+        val o = PublishSubject.create<List<ProjectTask>>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchProjectTasks()
                 validateResponse(response)
                 val html = response.body()!!
-                return@map parseProjectTasksPage(html)
+                val page = parseProjectTasksPage(html)
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseProjectTasksPage(html: String): List<ProjectTask> {
@@ -110,15 +134,21 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        return service.fetchUsers()
-            .map { response ->
+        val o = PublishSubject.create<UsersPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchUsers()
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseUsersPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseUsersPage(html: String): UsersPage {
@@ -130,15 +160,21 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        return service.fetchReports()
-            .map { response ->
+        val o = PublishSubject.create<ReportFormPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchReports()
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseReportFormPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseReportFormPage(html: String): ReportFormPage {
@@ -150,15 +186,21 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        return service.generateReport(filter.toFields())
-            .map { response ->
+        val o = PublishSubject.create<ReportPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.generateReport(filter.toFields())
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseReportPage(html, filter)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
@@ -171,15 +213,21 @@ class TimeTrackerRemoteDataSource(
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
         val dateFormatted = formatSystemDate(date).orEmpty()
-        return service.fetchTimes(dateFormatted)
-            .map { response ->
+        val o = PublishSubject.create<TimeListPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchTimes(dateFormatted)
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseTimeListPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseTimeListPage(html: String): TimeListPage {
@@ -191,15 +239,21 @@ class TimeTrackerRemoteDataSource(
     }
 
     override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
-        return service.fetchProfile()
-            .map { response ->
+        val o = PublishSubject.create<ProfilePage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchProfile()
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseProfilePage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseProfilePage(html: String): ProfilePage {

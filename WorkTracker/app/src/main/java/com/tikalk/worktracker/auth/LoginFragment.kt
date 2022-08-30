@@ -42,6 +42,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
@@ -50,9 +51,8 @@ import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.databinding.FragmentLoginBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.Response
 import timber.log.Timber
 
@@ -193,37 +193,37 @@ class LoginFragment : InternetDialogFragment {
             focusView?.requestFocus()
         } else {
             binding.actionSignIn.isEnabled = false
+            showProgress(true)
 
             preferences.userCredentials = UserCredentials(loginValue, passwordValue)
 
             val today = formatSystemDate()
-            delegate.service.login(loginValue, passwordValue, today)
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe { showProgressMain(true) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .doAfterTerminate { showProgress(false) }
-                .subscribe({ response ->
-                    binding.actionSignIn.isEnabled = true
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val response = delegate.service.login(loginValue, passwordValue, today)
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        binding.actionSignIn.isEnabled = true
+                        showProgress(false)
 
-                    if (isValidResponse(response)) {
-                        val html = response.body()!!
-                        val errorMessage = getResponseError(html)
-                        if (errorMessage.isNullOrEmpty()) {
-                            notifyLoginSuccess(loginValue)
+                        if (isValidResponse(response)) {
+                            val errorMessage = getResponseError(response)
+                            if (errorMessage.isNullOrEmpty()) {
+                                notifyLoginSuccess(loginValue)
+                            } else {
+                                binding.loginInput.error = errorMessage
+                                notifyLoginFailure(loginValue, errorMessage)
+                            }
                         } else {
-                            binding.loginInput.error = errorMessage
-                            notifyLoginFailure(loginValue, errorMessage)
+                            binding.passwordInput.requestFocus()
+                            authenticate(loginValue, response.raw())
                         }
-                    } else {
-                        binding.passwordInput.requestFocus()
-                        authenticate(loginValue, response.raw())
                     }
-                }, { err ->
-                    Timber.e(err, "Error signing in: ${err.message}")
-                    handleError(err)
+                } catch (e: Exception) {
+                    Timber.e(e, "Error signing in: ${e.message}")
+                    handleErrorMain(e)
                     binding.actionSignIn.isEnabled = true
-                })
-                .addTo(disposables)
+                }
+            }
         }
     }
 

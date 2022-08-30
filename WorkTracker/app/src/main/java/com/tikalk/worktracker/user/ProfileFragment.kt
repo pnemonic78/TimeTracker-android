@@ -42,6 +42,7 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
@@ -58,6 +59,8 @@ import com.tikalk.worktracker.net.InternetDialogFragment
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
@@ -266,41 +269,42 @@ class ProfileFragment : InternetDialogFragment() {
             // form field with an error.
             focusView?.requestFocus()
         } else {
+            showProgress(true)
             binding.actionSave.isEnabled = false
 
-            delegate.service.editProfile(
-                nameValue,
-                loginValue,
-                passwordValue,
-                confirmPasswordValue,
-                emailValue
-            )
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe { showProgressMain(true) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .doAfterTerminate { showProgress(false) }
-                .subscribe({ response ->
-                    binding.actionSave.isEnabled = true
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val response = delegate.service.editProfile(
+                        nameValue,
+                        loginValue,
+                        passwordValue,
+                        confirmPasswordValue,
+                        emailValue
+                    )
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        binding.actionSave.isEnabled = true
+                        showProgress(false)
 
-                    if (isValidResponse(response)) {
-                        val html = response.body()!!
-                        processEdit(
-                            html,
-                            loginValue,
-                            emailValue,
-                            nameValue,
-                            passwordValue,
-                            confirmPasswordValue
-                        )
-                    } else {
-                        authenticate(true)
+                        if (isValidResponse(response)) {
+                            val html = response.body()!!
+                            processEdit(
+                                html,
+                                loginValue,
+                                emailValue,
+                                nameValue,
+                                passwordValue,
+                                confirmPasswordValue
+                            )
+                        } else {
+                            authenticate(true)
+                        }
                     }
-                }, { err ->
-                    Timber.e(err, "Error updating profile: ${err.message}")
-                    handleError(err)
+                } catch (e: Exception) {
+                    Timber.e(e, "Error updating profile: ${e.message}")
+                    handleErrorMain(e)
                     binding.actionSave.isEnabled = true
-                })
-                .addTo(disposables)
+                }
+            }
         }
     }
 

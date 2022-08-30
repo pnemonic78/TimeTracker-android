@@ -53,10 +53,6 @@ abstract class TrackerDialogFragment : TikalDialogFragment,
         delegate.onCreate(savedInstanceState)
     }
 
-    protected fun authenticateMain(submit: Boolean = true) {
-        delegate.authenticateMain(submit)
-    }
-
     protected fun handleError(error: Throwable) {
         delegate.handleError(error)
     }
