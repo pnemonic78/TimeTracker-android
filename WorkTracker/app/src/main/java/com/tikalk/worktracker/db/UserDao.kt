@@ -34,7 +34,6 @@ package com.tikalk.worktracker.db
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.User
-import io.reactivex.rxjava3.core.Single
 
 /**
  * User entity DAO.
@@ -48,19 +47,11 @@ interface UserDao : BaseDao<User> {
      * @return all users.
      */
     @Query("SELECT * FROM user")
-    fun queryAll(): List<User>
-
-    /**
-     * Select all users from the table.
-     *
-     * @return all users.
-     */
-    @Query("SELECT * FROM user")
-    fun queryAllSingle(): Single<List<User>>
+    suspend fun queryAll(): List<User>
 
     /**
      * Delete all users.
      */
     @Query("DELETE FROM user")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 }

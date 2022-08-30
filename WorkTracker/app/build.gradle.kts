@@ -78,13 +78,14 @@ dependencies {
     implementation(Android.Jetpack.security)
 
     // Database
-    implementation(Android.Database.roomRx)
+    implementation(Android.Database.roomKotlin)
     kapt(Android.Database.roomCompiler)
 
     // Rx
     implementation(Android.Reactive.retrofit)
     implementation(Android.Reactive.rxandroid)
     implementation(Android.Reactive.rxkotlin)
+    implementation(Kotlin.Reactive.coroutinesAndroid)
 
     // Web
     implementation(Android.Network.logging)

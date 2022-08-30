@@ -33,8 +33,6 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Single
 
 /**
  * Report time record entity DAO.
@@ -48,27 +46,13 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      * @return all records.
      */
     @Query("SELECT * FROM report")
-    fun queryAll(): List<ReportRecord>
-
-    /**
-     * Select all records from the table.
-     *
-     * @return all records.
-     */
-    @Query("SELECT * FROM report")
-    fun queryAllSingle(): Single<List<ReportRecord>>
+    suspend fun queryAll(): List<ReportRecord>
 
     /**
      * Select a record by its id.
      */
     @Query("SELECT * FROM report WHERE id = :recordId")
-    fun queryById(recordId: Long): ReportRecord?
-
-    /**
-     * Select a record by its id.
-     */
-    @Query("SELECT * FROM report WHERE id = :recordId")
-    fun queryByIdMaybe(recordId: Long): Maybe<ReportRecord>
+    suspend fun queryById(recordId: Long): ReportRecord?
 
     /**
      * Select all records from the table by date.
@@ -76,31 +60,23 @@ interface ReportRecordDao : BaseDao<ReportRecord> {
      * @return all records between the dates.
      */
     @Query("SELECT * FROM report WHERE (:start <= date) AND (date <= :finish)")
-    fun queryByDate(start: Long, finish: Long): List<ReportRecord>
-
-    /**
-     * Select all records from the table by date.
-     *
-     * @return all records between the dates.
-     */
-    @Query("SELECT * FROM report WHERE (:start <= date) AND (date <= :finish)")
-    fun queryByDateSingle(start: Long, finish: Long): Single<List<ReportRecord>>
+    suspend fun queryByDate(start: Long, finish: Long): List<ReportRecord>
 
     /**
      * Delete all records.
      */
     @Query("DELETE FROM report")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 
     /**
      * Delete all records for projects.
      */
     @Query("DELETE FROM report WHERE project_id IN (:projectIds)")
-    fun deleteProjects(projectIds: Collection<Long>): Int
+    suspend fun deleteProjects(projectIds: Collection<Long>): Int
 
     /**
      * Delete all records for tasks.
      */
     @Query("DELETE FROM report WHERE task_id IN (:taskIds)")
-    fun deleteTasks(taskIds: Collection<Long>): Int
+    suspend fun deleteTasks(taskIds: Collection<Long>): Int
 }

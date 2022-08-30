@@ -35,10 +35,10 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.ProfilePage
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ProjectTasksPage
+import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -87,12 +87,12 @@ class TimeTrackerRemoteDataSource(
         return TimeEditPageParser().parse(html)
     }
 
-    private fun savePage(page: TimeEditPage) {
+    private suspend fun savePage(page: TimeEditPage) {
         return TimeEditPageSaver(db).save(page)
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
-        val o = PublishSubject.create<List<Project>>()
+    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
+        val o = PublishSubject.create<ProjectsPage>()
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = service.fetchProjects()
@@ -108,12 +108,12 @@ class TimeTrackerRemoteDataSource(
         return o
     }
 
-    private fun parseProjectsPage(html: String): List<Project> {
+    private fun parseProjectsPage(html: String): ProjectsPage {
         return ProjectsPageParser().parse(html)
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
-        val o = PublishSubject.create<List<ProjectTask>>()
+    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
+        val o = PublishSubject.create<ProjectTasksPage>()
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = service.fetchProjectTasks()
@@ -129,7 +129,7 @@ class TimeTrackerRemoteDataSource(
         return o
     }
 
-    private fun parseProjectTasksPage(html: String): List<ProjectTask> {
+    private fun parseProjectTasksPage(html: String): ProjectTasksPage {
         return ProjectTasksPageParser().parse(html)
     }
 
@@ -155,7 +155,7 @@ class TimeTrackerRemoteDataSource(
         return UsersPageParser().parse(html)
     }
 
-    private fun savePage(page: UsersPage) {
+    private suspend fun savePage(page: UsersPage) {
         UserPageSaver(db).save(page)
     }
 
@@ -181,7 +181,7 @@ class TimeTrackerRemoteDataSource(
         return ReportFormPageParser().parse(html)
     }
 
-    private fun savePage(page: ReportFormPage) {
+    private suspend fun savePage(page: ReportFormPage) {
         ReportFormPageSaver(db).save(page)
     }
 
@@ -203,11 +203,11 @@ class TimeTrackerRemoteDataSource(
         return o
     }
 
-    private fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
+    private suspend fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
         return ReportPageParser(filter).parse(html, db)
     }
 
-    private fun savePage(page: ReportPage) {
+    private suspend fun savePage(page: ReportPage) {
         ReportPageSaver(db).save(page)
     }
 
@@ -234,7 +234,7 @@ class TimeTrackerRemoteDataSource(
         return TimeListPageParser().parse(html)
     }
 
-    override fun savePage(page: TimeListPage) {
+    override suspend fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
     }
 

@@ -34,8 +34,6 @@ package com.tikalk.worktracker.db
 import androidx.room.Dao
 import androidx.room.Query
 import com.tikalk.worktracker.model.ProjectTask
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Single
 
 /**
  * Project Task entity DAO.
@@ -49,25 +47,17 @@ interface ProjectTaskDao : BaseDao<ProjectTask> {
      * @return all tasks.
      */
     @Query("SELECT * FROM project_task")
-    fun queryAll(): List<ProjectTask>
-
-    /**
-     * Select all tasks from the table.
-     *
-     * @return all tasks.
-     */
-    @Query("SELECT * FROM project_task")
-    fun queryAllSingle(): Single<List<ProjectTask>>
+    suspend fun queryAll(): List<ProjectTask>
 
     /**
      * Select a task by its id.
      */
     @Query("SELECT * FROM project_task WHERE id = :taskId")
-    fun queryById(taskId: Long): Maybe<ProjectTask>
+    suspend fun queryById(taskId: Long): ProjectTask?
 
     /**
      * Delete all tasks.
      */
     @Query("DELETE FROM project_task")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 }

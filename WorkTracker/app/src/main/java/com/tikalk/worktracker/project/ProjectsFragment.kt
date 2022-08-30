@@ -103,8 +103,8 @@ class ProjectsFragment : InternetFragment() {
         delegate.dataSource.projectsPage(firstRun)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ projects ->
-                projectsData.value = projects
+            .subscribe({ page ->
+                projectsData.value = page.projects
             }, { err ->
                 Timber.e(err, "Error loading page: ${err.message}")
                 handleError(err)

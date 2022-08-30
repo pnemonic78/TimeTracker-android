@@ -33,11 +33,11 @@
 package com.tikalk.worktracker.model
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.room.TypeConverter
 import com.tikalk.worktracker.time.toCalendar
 import java.util.Calendar
 import java.util.Date
-import androidx.core.net.toUri
 
 open class Converters {
 

@@ -526,7 +526,7 @@ class TimeEditFragment : TimeFormFragment() {
         activity?.finish()
     }
 
-    private fun saveRecord(record: TimeRecord) {
+    private suspend fun saveRecord(record: TimeRecord) {
         val recordDao = delegate.db.timeRecordDao()
         if (record.id == TikalEntity.ID_NONE) {
             recordDao.insert(record.toTimeRecordEntity())

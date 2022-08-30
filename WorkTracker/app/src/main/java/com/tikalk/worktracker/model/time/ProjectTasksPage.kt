@@ -30,30 +30,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.util
+package com.tikalk.worktracker.model.time
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import com.tikalk.worktracker.model.ProjectTask
 
-fun <E> List<E>.add(element: E): List<E> {
-    val l: MutableList<E> = ArrayList(this.size + 1)
-    l.addAll(this)
-    l.add(element)
-    return l
-}
-
-fun <E> List<E>.add(index: Int, element: E): List<E> {
-    val l: MutableList<E> = ArrayList(this.size + 1)
-    l.addAll(this)
-    l.add(index, element)
-    return l
-}
-
-fun <T> Flow<T>.concat(f2: Flow<T>): Flow<T> {
-    val f1 = this
-    return flow {
-        emitAll(f1)
-        emitAll(f2)
-    }
-}
+class ProjectTasksPage(val tasks: List<ProjectTask>)

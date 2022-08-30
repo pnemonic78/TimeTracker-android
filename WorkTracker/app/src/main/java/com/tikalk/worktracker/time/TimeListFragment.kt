@@ -64,9 +64,9 @@ import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -217,7 +217,7 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    private fun processPage(html: String, date: Calendar) {
+    private suspend fun processPage(html: String, date: Calendar) {
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
@@ -629,12 +629,9 @@ class TimeListFragment : TimeFormFragment(),
         if (responseHtml.isEmpty()) {
             fetchPage(date)
         } else {
-            Single.just(responseHtml)
-                .subscribeOn(Schedulers.io())
-                .subscribe { html ->
-                    processPage(html, date)
-                }
-                .addTo(disposables)
+            CoroutineScope(Dispatchers.IO).launch {
+                processPage(responseHtml, date)
+            }
         }
     }
 

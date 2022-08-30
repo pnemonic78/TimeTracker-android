@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.data.remote
 
+import androidx.room.withTransaction
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.UsersPage
@@ -39,18 +40,18 @@ import timber.log.Timber
 
 class UserPageSaver(private val db: TrackerDatabase) {
 
-    fun save(page: UsersPage) {
+    suspend fun save(page: UsersPage) {
         Timber.i("save page $page")
-        db.runInTransaction {
+        db.withTransaction {
             savePage(db, page)
         }
     }
 
-    private fun savePage(db: TrackerDatabase, page: UsersPage) {
+    private suspend fun savePage(db: TrackerDatabase, page: UsersPage) {
         saveUsers(db, page.users)
     }
 
-    private fun saveUsers(db: TrackerDatabase, users: List<User>) {
+    private suspend fun saveUsers(db: TrackerDatabase, users: List<User>) {
         val userDao = db.userDao()
         userDao.deleteAll()
         userDao.insert(users)

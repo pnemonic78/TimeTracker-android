@@ -33,8 +33,6 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Dao
 import androidx.room.Query
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Single
 
 /**
  * DAO for joining Project and Task entities.
@@ -48,37 +46,29 @@ interface ProjectTaskKeyDao : BaseDao<ProjectTaskKey> {
      * @return all keys.
      */
     @Query("SELECT * FROM project_task_key")
-    fun queryAll(): List<ProjectTaskKey>
-
-    /**
-     * Select all keys from the table.
-     *
-     * @return all keys.
-     */
-    @Query("SELECT * FROM project_task_key")
-    fun queryAllSingle(): Single<List<ProjectTaskKey>>
+    suspend fun queryAll(): List<ProjectTaskKey>
 
     /**
      * Select a project's keys.
      */
     @Query("SELECT * FROM project_task_key WHERE project_id = :projectId")
-    fun queryAllByProject(projectId: Long): Maybe<List<ProjectTaskKey>>
+    suspend fun queryAllByProject(projectId: Long): List<ProjectTaskKey>
 
     /**
      * Delete all keys.
      */
     @Query("DELETE FROM project_task_key")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 
     /**
      * Delete all keys for projects.
      */
     @Query("DELETE FROM project_task_key WHERE project_id IN (:projectIds)")
-    fun deleteProjects(projectIds: Collection<Long>): Int
+    suspend fun deleteProjects(projectIds: Collection<Long>): Int
 
     /**
      * Delete all keys for tasks.
      */
     @Query("DELETE FROM project_task_key WHERE task_id IN (:taskIds)")
-    fun deleteTasks(taskIds: Collection<Long>): Int
+    suspend fun deleteTasks(taskIds: Collection<Long>): Int
 }

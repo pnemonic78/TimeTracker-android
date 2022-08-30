@@ -41,12 +41,12 @@ import java.util.Calendar
 
 class TimeEditPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeEditPage>(db) {
 
-    override fun savePage(db: TrackerDatabase, page: TimeEditPage) {
+    override suspend fun savePage(db: TrackerDatabase, page: TimeEditPage) {
         super.savePage(db, page)
         saveRecord(db, page.date, page.record)
     }
 
-    private fun saveRecord(db: TrackerDatabase, date: Calendar, record: TimeRecord) {
+    private suspend fun saveRecord(db: TrackerDatabase, date: Calendar, record: TimeRecord) {
         val recordDao = db.timeRecordDao()
         val entity = record.toTimeRecordEntity()
         if (record.id == TikalEntity.ID_NONE) {

@@ -35,9 +35,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import com.tikalk.worktracker.model.Project
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 
 /**
  * Project entity DAO.
@@ -51,15 +48,7 @@ interface ProjectDao : BaseDao<Project> {
      * @return all projects.
      */
     @Query("SELECT * FROM project")
-    fun queryAll(): List<Project>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects.
-     */
-    @Query("SELECT * FROM project")
-    fun queryAllSingle(): Single<List<Project>>
+    suspend fun queryAll(): List<Project>
 
     /**
      * Select all projects from the table.
@@ -68,31 +57,13 @@ interface ProjectDao : BaseDao<Project> {
      */
     @Transaction
     @Query("SELECT * FROM project")
-    fun queryAllWithTasks(): List<ProjectWithTasks>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasksSingle(): Single<List<ProjectWithTasks>>
-
-    /**
-     * Select all projects from the table.
-     *
-     * @return all projects with their tasks.
-     */
-    @Transaction
-    @Query("SELECT * FROM project")
-    fun queryAllWithTasksObservable(): Observable<List<ProjectWithTasks>>
+    suspend fun queryAllWithTasks(): List<ProjectWithTasks>
 
     /**
      * Select a project by its id.
      */
     @Query("SELECT * FROM project WHERE id = :projectId")
-    fun queryById(projectId: Long): Maybe<Project>
+    suspend fun queryById(projectId: Long): Project?
 
     /**
      * Delete all projects.

@@ -11,7 +11,7 @@ object Android {
         const val okhttp = "4.9.3"
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
-        const val room = "2.4.2"
+        const val room = "2.4.3"
         const val rxAndroid = "3.0.0"
         const val rxKotlin = "3.0.1"
         const val security = "1.1.0-alpha03"
@@ -20,8 +20,7 @@ object Android {
 
     object Database {
         const val roomCompiler = "androidx.room:room-compiler:${Version.room}"
-        const val roomKtx = "androidx.room:room-ktx:${Version.room}"
-        const val roomRx = "androidx.room:room-rxjava3:${Version.room}"
+        const val roomKotlin = "androidx.room:room-ktx:${Version.room}"
     }
 
     object Image {
@@ -110,6 +109,7 @@ object Java {
 
 object Kotlin {
     object Version {
+        const val coroutines = "1.6.2"
         const val html = "0.8.0"
         const val kotlin = "1.7.10"
         const val serialization = "1.3.33"
@@ -121,5 +121,10 @@ object Kotlin {
 
     object JSON {
         const val json = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Version.serialization}"
+    }
+
+    object Reactive {
+        const val coroutinesAndroid =
+            "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.coroutines}"
     }
 }

@@ -55,12 +55,12 @@ import kotlin.math.max
 
 class ReportPageParser(private val filter: ReportFilter) {
 
-    fun parse(html: String, db: TrackerDatabase?): ReportPage {
+    suspend fun parse(html: String, db: TrackerDatabase?): ReportPage {
         val doc: Document = Jsoup.parse(html)
         return parse(doc, db)
     }
 
-    private fun parse(doc: Document, db: TrackerDatabase?): ReportPage {
+    private suspend fun parse(doc: Document, db: TrackerDatabase?): ReportPage {
         val page = createMutablePage(filter)
 
         if (db != null) {
@@ -83,7 +83,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         return MutableReportPage(filter)
     }
 
-    private fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
+    private suspend fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
         val projectsDao = db.projectDao()
         return projectsDao.queryAllWithTasks()
     }

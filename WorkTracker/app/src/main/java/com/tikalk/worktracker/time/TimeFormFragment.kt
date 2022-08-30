@@ -51,7 +51,6 @@ import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
 import timber.log.Timber
 import java.util.Calendar
-import kotlin.math.min
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
 

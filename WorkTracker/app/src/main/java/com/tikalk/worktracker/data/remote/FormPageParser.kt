@@ -50,7 +50,7 @@ import java.util.regex.Pattern
 
 open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<R>> {
 
-    protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String {
+    protected fun findScript(doc: Document, tokenStart: String, tokenEnd: String): String? {
         val scripts = doc.select("script")
         var scriptText: String
         var indexStart: Int
@@ -69,7 +69,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
             }
         }
 
-        return ""
+        return null
     }
 
     private fun findSelectedProject(projectInput: Element, projects: List<Project>): Project {
