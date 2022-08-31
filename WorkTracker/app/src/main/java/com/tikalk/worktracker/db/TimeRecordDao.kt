@@ -35,8 +35,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import com.tikalk.worktracker.model.time.TimeTotals
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Single
 
 /**
  * Time record entity DAO.
@@ -51,37 +49,21 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      */
     @Transaction
     @Query("SELECT * FROM record ORDER BY start ASC")
-    fun queryAll(): List<WholeTimeRecordEntity>
-
-    /**
-     * Select all records from the table.
-     *
-     * @return all records.
-     */
-    @Transaction
-    @Query("SELECT * FROM record ORDER BY start ASC")
-    fun queryAllSingle(): Single<List<WholeTimeRecordEntity>>
+    suspend fun queryAll(): List<WholeTimeRecordEntity>
 
     /**
      * Select a record by its id.
      */
     @Transaction
     @Query("SELECT * FROM record WHERE (id = :recordId)")
-    fun queryById(recordId: Long): WholeTimeRecordEntity?
-
-    /**
-     * Select a record by its id.
-     */
-    @Transaction
-    @Query("SELECT * FROM record WHERE (id = :recordId)")
-    fun queryByIdMaybe(recordId: Long): Maybe<WholeTimeRecordEntity>
+    suspend fun queryById(recordId: Long): WholeTimeRecordEntity?
 
     /**
      * Select records by their ids.
      */
     @Transaction
     @Query("SELECT * FROM record WHERE id IN (:recordIds)")
-    fun queryByIds(recordIds: LongArray): List<WholeTimeRecordEntity>
+    suspend fun queryByIds(recordIds: LongArray): List<WholeTimeRecordEntity>
 
     /**
      * Select all records from the table by date.
@@ -90,16 +72,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      */
     @Transaction
     @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
-    fun queryByDate(start: Long, finish: Long): List<WholeTimeRecordEntity>
-
-    /**
-     * Select all records from the table by date.
-     *
-     * @return all records between the dates.
-     */
-    @Transaction
-    @Query("SELECT * FROM record WHERE (:start <= date) AND (date <= :finish) ORDER BY start ASC")
-    fun queryByDateSingle(start: Long, finish: Long): Single<List<WholeTimeRecordEntity>>
+    suspend fun queryByDate(start: Long, finish: Long): List<WholeTimeRecordEntity>
 
     /**
      * Select the totals.
@@ -111,7 +84,7 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
         UNION ALL SELECT 0 AS daily, SUM(finish - start) AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (:startWeek <= date) AND (date <= :finishWeek)
         UNION ALL SELECT 0 AS daily, 0 AS weekly, SUM(finish - start) AS monthly, 0 AS remaining FROM record WHERE (:startMonth <= date) AND (date <= :finishMonth)"""
     )
-    fun queryTotals(
+    suspend fun queryTotals(
         startDay: Long,
         finishDay: Long,
         startWeek: Long,
@@ -124,17 +97,17 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * Delete all records.
      */
     @Query("DELETE FROM record")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 
     /**
      * Delete all records for projects.
      */
     @Query("DELETE FROM record WHERE project_id IN (:projectIds)")
-    fun deleteProjects(projectIds: Collection<Long>): Int
+    suspend fun deleteProjects(projectIds: Collection<Long>): Int
 
     /**
      * Delete all records for tasks.
      */
     @Query("DELETE FROM record WHERE task_id IN (:taskIds)")
-    fun deleteTasks(taskIds: Collection<Long>): Int
+    suspend fun deleteTasks(taskIds: Collection<Long>): Int
 }

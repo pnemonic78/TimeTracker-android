@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,28 +32,27 @@
 
 package com.tikalk.util
 
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
 
-fun <E> List<E>.add(element: E): List<E> {
-    val l: MutableList<E> = ArrayList(this.size + 1)
-    l.addAll(this)
-    l.add(element)
-    return l
-}
-
-fun <E> List<E>.add(index: Int, element: E): List<E> {
-    val l: MutableList<E> = ArrayList(this.size + 1)
-    l.addAll(this)
-    l.add(index, element)
-    return l
-}
-
-fun <T> Flow<T>.concat(f2: Flow<T>): Flow<T> {
-    val f1 = this
-    return flow {
-        emitAll(f1)
-        emitAll(f2)
+fun <T> Flow<T>.toObservable(): Observable<T> {
+    val flow = this
+    val o = PublishSubject.create<T>()
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            flow
+                .onCompletion { o.onComplete() }
+                .collect {
+                    o.onNext(it)
+                }
+        } catch (e: Exception) {
+            o.onError(e)
+        }
     }
+    return o
 }

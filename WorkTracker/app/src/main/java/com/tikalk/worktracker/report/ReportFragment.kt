@@ -32,9 +32,11 @@
 
 package com.tikalk.worktracker.report
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -42,7 +44,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
@@ -79,7 +80,7 @@ class ReportFragment : InternetFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this)
         recordsData.observe(this) { records ->
             bindList(records)
         }
@@ -98,6 +99,12 @@ class ReportFragment : InternetFragment() {
                 Timber.e("login failure: $reason")
             }
         }
+
+        val i = Intent(Intent.ACTION_VIEW)
+        i.setPackage("com.android.htmlviewer")
+        val pm = requireContext().packageManager
+        val q = i.resolveActivity(pm)
+        println("±!@ q=$q")
     }
 
     override fun onCreateView(
@@ -181,7 +188,11 @@ class ReportFragment : InternetFragment() {
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
-                val filterExtra = args.getParcelable<ReportFilter?>(EXTRA_FILTER)
+                val filterExtra = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    args.getParcelable(EXTRA_FILTER, ReportFilter::class.java)
+                } else {
+                    args.getParcelable(EXTRA_FILTER)
+                }
                 if (filterExtra != null) {
                     filter = filterExtra
                 }
@@ -214,56 +225,56 @@ class ReportFragment : InternetFragment() {
         run()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.report, menu)
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menu.clear()
+        menuInflater.inflate(R.menu.report, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.menu_export_csv -> {
-                exportCSV(item, false)
+                exportCSV(menuItem, false)
                 return true
             }
             R.id.menu_export_html -> {
-                exportHTML(item, false)
+                exportHTML(menuItem, false)
                 return true
             }
             R.id.menu_export_odf -> {
-                exportODF(item)
+                exportODF(menuItem)
                 return true
             }
             R.id.menu_export_xml -> {
-                exportXML(item)
+                exportXML(menuItem)
                 return true
             }
             R.id.menu_preview_csv -> {
-                exportCSV(item, preview = true)
+                exportCSV(menuItem, preview = true)
                 return true
             }
             R.id.menu_preview_html -> {
-                exportHTML(item, preview = true)
+                exportHTML(menuItem, preview = true)
                 return true
             }
             R.id.menu_preview_odf -> {
-                exportODF(item, preview = true)
+                exportODF(menuItem, preview = true)
                 return true
             }
             R.id.menu_preview_xml -> {
-                exportXML(item, preview = true)
+                exportXML(menuItem, preview = true)
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return super.onMenuItemSelected(menuItem)
     }
 
     private fun export(
         context: Context,
-        item: MenuItem? = null,
+        menuItem: MenuItem,
         exporter: ReportExporter,
         preview: Boolean = false
     ) {
-        item?.isEnabled = false
+        menuItem.isEnabled = false
         showProgress(true)
 
         exporter
@@ -271,22 +282,22 @@ class ReportFragment : InternetFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ uri ->
                 Timber.i("Exported to $uri")
+                menuItem.isEnabled = true
                 if (preview) {
-                    previewFile(context, uri, exporter.mimeType)
+                    previewFile(context, menuItem, uri, exporter.mimeType)
                 } else {
-                    shareFile(context, uri, exporter.mimeType)
+                    shareFile(context, menuItem, uri, exporter.mimeType)
                 }
                 showProgress(false)
-                item?.isEnabled = true
             }, { err ->
                 Timber.e(err, "Error exporting: ${err.message}")
                 showProgress(false)
-                item?.isEnabled = true
+                menuItem.isEnabled = true
             })
             .addTo(disposables)
     }
 
-    private fun exportCSV(item: MenuItem? = null, preview: Boolean = false) {
+    private fun exportCSV(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
@@ -294,13 +305,13 @@ class ReportFragment : InternetFragment() {
 
         export(
             context,
-            item,
+            menuItem,
             ReportExporterCSV(context, records, filter, totals),
             preview
         )
     }
 
-    private fun exportHTML(item: MenuItem? = null, preview: Boolean = false) {
+    private fun exportHTML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
@@ -308,13 +319,13 @@ class ReportFragment : InternetFragment() {
 
         export(
             context,
-            item,
+            menuItem,
             ReportExporterHTML(context, records, filter, totals),
             preview
         )
     }
 
-    private fun exportODF(item: MenuItem? = null, preview: Boolean = false) {
+    private fun exportODF(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
@@ -322,13 +333,13 @@ class ReportFragment : InternetFragment() {
 
         export(
             context,
-            item,
+            menuItem,
             ReportExporterODF(context, records, filter, totals),
             preview
         )
     }
 
-    private fun exportXML(item: MenuItem? = null, preview: Boolean = false) {
+    private fun exportXML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value ?: return
         val filter = filterData.value ?: return
@@ -336,29 +347,34 @@ class ReportFragment : InternetFragment() {
 
         export(
             context,
-            item,
+            menuItem,
             ReportExporterXML(context, records, filter, totals),
             preview
         )
     }
 
-    private fun shareFile(context: Context, fileUri: Uri, mimeType: String? = null) {
+    private fun shareFile(
+        context: Context,
+        menuItem: MenuItem,
+        fileUri: Uri,
+        mimeType: String? = null
+    ) {
         val intent = ShareCompat.IntentBuilder(context)
             .addStream(fileUri)
             .setType(mimeType ?: context.contentResolver.getType(fileUri))
             .intent
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-        // Validate that the device can open your File!
-        val pm = context.packageManager
-        if (intent.resolveActivity(pm) != null) {
+        try {
             startActivity(intent)
-        } else {
-            Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
+        } catch (e: ActivityNotFoundException) {
+            menuItem.isEnabled = false
+            showError(e)
         }
     }
 
     private fun showError(error: Throwable) {
+        Timber.e(error)
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.error_title)
             .setIcon(R.drawable.ic_dialog)
@@ -367,18 +383,22 @@ class ReportFragment : InternetFragment() {
             .show()
     }
 
-    private fun previewFile(context: Context, fileUri: Uri, mimeType: String? = null) {
+    private fun previewFile(
+        context: Context,
+        menuItem: MenuItem,
+        fileUri: Uri,
+        mimeType: String? = null
+    ) {
         val intent = Intent(Intent.ACTION_VIEW)
             .setDataAndType(fileUri, mimeType ?: context.contentResolver.getType(fileUri))
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-        // Validate that the device can open your File!
-        val pm = context.packageManager
-        if (intent.resolveActivity(pm) != null) {
+        try {
             startActivity(intent)
-        } else {
-            Toast.makeText(context, fileUri.toString(), Toast.LENGTH_LONG).show()
+        } catch (e: ActivityNotFoundException) {
+            menuItem.isEnabled = false
+            showError(e)
         }
     }
 

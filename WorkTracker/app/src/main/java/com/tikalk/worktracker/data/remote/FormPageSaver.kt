@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.data.remote
 
+import androidx.room.withTransaction
 import com.tikalk.worktracker.db.ProjectTaskKey
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
@@ -42,21 +43,21 @@ import timber.log.Timber
 
 open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: TrackerDatabase) {
 
-    fun save(page: P) {
+    suspend fun save(page: P) {
         Timber.i("save page $page")
-        db.runInTransaction {
+        db.withTransaction {
             savePage(db, page)
         }
     }
 
-    protected open fun savePage(db: TrackerDatabase, page: P) {
+    protected open suspend fun savePage(db: TrackerDatabase, page: P) {
         saveProjects(db, page.projects)
         val tasks = page.projects.flatMap { project -> project.tasks }
         saveTasks(db, tasks)
         saveProjectTaskKeys(db, page.projects)
     }
 
-    protected open fun saveProjects(db: TrackerDatabase, projects: List<Project>) {
+    protected open suspend fun saveProjects(db: TrackerDatabase, projects: List<Project>) {
         val projectsDao = db.projectDao()
         val projectsDb = projectsDao.queryAll()
         val projectsDbById = projectsDb.associateBy { it.id }
@@ -83,7 +84,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         projectsDao.update(projectsToUpdate)
     }
 
-    private fun deleteProjectDependencies(
+    private suspend fun deleteProjectDependencies(
         db: TrackerDatabase,
         projectsToDelete: Collection<Project>
     ) {
@@ -98,7 +99,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         reportsDao.deleteProjects(projectIds)
     }
 
-    protected open fun saveTasks(db: TrackerDatabase, tasks: List<ProjectTask>) {
+    protected open suspend fun saveTasks(db: TrackerDatabase, tasks: List<ProjectTask>) {
         val tasksDao = db.taskDao()
         val tasksDb = tasksDao.queryAll()
         val tasksDbById = tasksDb.associateBy { it.id }
@@ -124,7 +125,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         tasksDao.update(tasksToUpdate)
     }
 
-    private fun deleteProjectTaskDependencies(
+    private suspend fun deleteProjectTaskDependencies(
         db: TrackerDatabase,
         tasksToDelete: Collection<ProjectTask>
     ) {
@@ -139,7 +140,7 @@ open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: Trac
         reportsDao.deleteTasks(taskIds)
     }
 
-    protected open fun saveProjectTaskKeys(db: TrackerDatabase, projects: List<Project>) {
+    protected open suspend fun saveProjectTaskKeys(db: TrackerDatabase, projects: List<Project>) {
         val keys: List<ProjectTaskKey> = projects.flatMap { project ->
             project.tasks.map { task -> ProjectTaskKey(project.id, task.id) }
         }

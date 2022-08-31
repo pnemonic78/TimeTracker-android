@@ -195,11 +195,19 @@ class ReportExporterODF(
                 }
                 if (showStartField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
-                    cell.timeValue = record.start
+                    if (record.start != null) {
+                        cell.timeValue = record.start
+                    } else {
+                        cell.stringValue = null
+                    }
                 }
                 if (showFinishField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
-                    cell.timeValue = record.finish
+                    if (record.finish != null) {
+                        cell.timeValue = record.finish
+                    } else {
+                        cell.stringValue = null
+                    }
                 }
                 if (showDurationField) {
                     val durationMs = record.duration

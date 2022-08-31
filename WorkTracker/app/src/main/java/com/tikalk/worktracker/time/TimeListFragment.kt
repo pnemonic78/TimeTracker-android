@@ -36,6 +36,7 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -46,6 +47,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
@@ -62,9 +64,11 @@ import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 import java.util.Formatter
@@ -91,7 +95,7 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this)
         recordsData.observe(this) { records ->
             bindList(date, records)
         }
@@ -194,26 +198,26 @@ class TimeListFragment : TimeFormFragment(),
         if (fetchingPage) return
         fetchingPage = true
 
-        delegate.service.fetchTimes(dateFormatted)
-            .subscribeOn(Schedulers.io())
-            .subscribe({ response ->
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = delegate.service.fetchTimes(dateFormatted)
                 if (isValidResponse(response)) {
-                    this.date = date
+                    this@TimeListFragment.date = date
                     val html = response.body()!!
                     processPage(html, date)
                 } else {
                     authenticateMain(loginAutomatic)
                 }
                 fetchingPage = false
-            }, { err ->
-                Timber.e(err, "Error fetching page: ${err.message}")
-                handleErrorMain(err)
+            } catch (e: Exception) {
+                Timber.e(e, "Error fetching page: ${e.message}")
+                handleErrorMain(e)
                 fetchingPage = false
-            })
-            .addTo(disposables)
+            }
+        }
     }
 
-    private fun processPage(html: String, date: Calendar) {
+    private suspend fun processPage(html: String, date: Calendar) {
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
@@ -315,7 +319,11 @@ class TimeListFragment : TimeFormFragment(),
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        totalsData.value = savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
+        totalsData.value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            savedInstanceState.getParcelable(STATE_TOTALS, TimeTotals::class.java) ?: TimeTotals()
+        } else {
+            savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
+        }
     }
 
     private fun pickDate() {
@@ -385,22 +393,22 @@ class TimeListFragment : TimeFormFragment(),
     private fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord record=$record")
 
-        delegate.service.deleteTime(record.id)
-            .subscribeOn(Schedulers.io())
-            .doOnSubscribe { showProgressMain(true) }
-            .doAfterTerminate { showProgressMain(false) }
-            .subscribe({ response ->
+        showProgress(true)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = delegate.service.deleteTime(record.id)
+                showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processPage(html, date)
                 } else {
                     authenticateMain()
                 }
-            }, { err ->
-                Timber.e(err, "Error deleting record: ${err.message}")
-                handleErrorMain(err)
-            })
-            .addTo(disposables)
+            } catch (e: Exception) {
+                Timber.e(e, "Error deleting record: ${e.message}")
+                handleErrorMain(e)
+            }
+        }
     }
 
     override fun populateForm(record: TimeRecord) = Unit
@@ -589,18 +597,18 @@ class TimeListFragment : TimeFormFragment(),
         showTimer()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menu.clear()
         if (view?.visibility == View.VISIBLE) {
-            inflater.inflate(R.menu.time_list, menu)
+            menuInflater.inflate(R.menu.time_list, menu)
         }
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (view?.visibility != View.VISIBLE) {
             return false
         }
-        when (item.itemId) {
+        when (menuItem.itemId) {
             R.id.menu_date -> {
                 pickDate()
                 return true
@@ -610,7 +618,7 @@ class TimeListFragment : TimeFormFragment(),
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return super.onMenuItemSelected(menuItem)
     }
 
     private fun findTopFormFragment(): TimeFormFragment {
@@ -621,12 +629,9 @@ class TimeListFragment : TimeFormFragment(),
         if (responseHtml.isEmpty()) {
             fetchPage(date)
         } else {
-            Single.just(responseHtml)
-                .subscribeOn(Schedulers.io())
-                .subscribe { html ->
-                    processPage(html, date)
-                }
-                .addTo(disposables)
+            CoroutineScope(Dispatchers.IO).launch {
+                processPage(responseHtml, date)
+            }
         }
     }
 

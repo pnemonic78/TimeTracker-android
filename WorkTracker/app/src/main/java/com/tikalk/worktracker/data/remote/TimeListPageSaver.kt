@@ -47,12 +47,12 @@ import java.util.Calendar
 
 class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeListPage>(db) {
 
-    override fun savePage(db: TrackerDatabase, page: TimeListPage) {
+    override suspend fun savePage(db: TrackerDatabase, page: TimeListPage) {
         super.savePage(db, page)
         saveRecords(db, page.date, page.records)
     }
 
-    private fun saveRecords(db: TrackerDatabase, date: Calendar, records: List<TimeRecord>) {
+    private suspend fun saveRecords(db: TrackerDatabase, date: Calendar, records: List<TimeRecord>) {
         Timber.i("saveRecords ${formatSystemDate(date)}")
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, date)
@@ -78,7 +78,7 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
         recordsDao.update(recordsToUpdate)
     }
 
-    private fun queryRecords(
+    private suspend fun queryRecords(
         db: TrackerDatabase,
         date: Calendar
     ): List<WholeTimeRecordEntity> {

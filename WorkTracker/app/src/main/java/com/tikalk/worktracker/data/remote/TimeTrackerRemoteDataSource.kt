@@ -35,10 +35,10 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.ProfilePage
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ProjectTasksPage
+import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -50,6 +50,10 @@ import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class TimeTrackerRemoteDataSource(
@@ -62,144 +66,194 @@ class TimeTrackerRemoteDataSource(
         if (recordId == TikalEntity.ID_NONE) {
             return Observable.empty()
         }
-        return service.fetchTime(recordId)
-            .map { response ->
+        val o = PublishSubject.create<TimeEditPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchTime(recordId)
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseEditPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseEditPage(html: String): TimeEditPage {
         return TimeEditPageParser().parse(html)
     }
 
-    private fun savePage(page: TimeEditPage) {
+    private suspend fun savePage(page: TimeEditPage) {
         return TimeEditPageSaver(db).save(page)
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
-        return service.fetchProjects()
-            .map { response ->
+    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
+        val o = PublishSubject.create<ProjectsPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchProjects()
                 validateResponse(response)
                 val html = response.body()!!
-                return@map parseProjectsPage(html)
+                val page = parseProjectsPage(html)
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
-    private fun parseProjectsPage(html: String): List<Project> {
+    private fun parseProjectsPage(html: String): ProjectsPage {
         return ProjectsPageParser().parse(html)
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
-        return service.fetchProjectTasks()
-            .map { response ->
+    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
+        val o = PublishSubject.create<ProjectTasksPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchProjectTasks()
                 validateResponse(response)
                 val html = response.body()!!
-                return@map parseProjectTasksPage(html)
+                val page = parseProjectTasksPage(html)
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
-    private fun parseProjectTasksPage(html: String): List<ProjectTask> {
+    private fun parseProjectTasksPage(html: String): ProjectTasksPage {
         return ProjectTasksPageParser().parse(html)
     }
 
     override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        return service.fetchUsers()
-            .map { response ->
+        val o = PublishSubject.create<UsersPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchUsers()
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseUsersPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseUsersPage(html: String): UsersPage {
         return UsersPageParser().parse(html)
     }
 
-    private fun savePage(page: UsersPage) {
+    private suspend fun savePage(page: UsersPage) {
         UserPageSaver(db).save(page)
     }
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        return service.fetchReports()
-            .map { response ->
+        val o = PublishSubject.create<ReportFormPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchReports()
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseReportFormPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseReportFormPage(html: String): ReportFormPage {
         return ReportFormPageParser().parse(html)
     }
 
-    private fun savePage(page: ReportFormPage) {
+    private suspend fun savePage(page: ReportFormPage) {
         ReportFormPageSaver(db).save(page)
     }
 
     override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        return service.generateReport(filter.toFields())
-            .map { response ->
+        val o = PublishSubject.create<ReportPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.generateReport(filter.toFields())
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseReportPage(html, filter)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
-    private fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
+    private suspend fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
         return ReportPageParser(filter).parse(html, db)
     }
 
-    private fun savePage(page: ReportPage) {
+    private suspend fun savePage(page: ReportPage) {
         ReportPageSaver(db).save(page)
     }
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
         val dateFormatted = formatSystemDate(date).orEmpty()
-        return service.fetchTimes(dateFormatted)
-            .map { response ->
+        val o = PublishSubject.create<TimeListPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchTimes(dateFormatted)
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseTimeListPage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseTimeListPage(html: String): TimeListPage {
         return TimeListPageParser().parse(html)
     }
 
-    override fun savePage(page: TimeListPage) {
+    override suspend fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
     }
 
     override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
-        return service.fetchProfile()
-            .map { response ->
+        val o = PublishSubject.create<ProfilePage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.fetchProfile()
                 validateResponse(response)
                 val html = response.body()!!
                 val page = parseProfilePage(html)
                 savePage(page)
-                return@map page
+                o.onNext(page)
+                o.onComplete()
+            } catch (e: Exception) {
+                o.onError(e)
             }
-            .toObservable()
+        }
+        return o
     }
 
     private fun parseProfilePage(html: String): ProfilePage {

@@ -129,12 +129,12 @@ class ReportExporterXML(
                 }
                 if (showStartField) {
                     xmlWriter.startTag(ns, "start")
-                    xmlWriter.text(formatSystemTime(record.start))
+                    xmlWriter.text(formatSystemTime(record.start).orEmpty())
                     xmlWriter.endTag(ns, "start")
                 }
                 if (showFinishField) {
                     xmlWriter.startTag(ns, "finish")
-                    xmlWriter.text(formatSystemTime(record.finish))
+                    xmlWriter.text(formatSystemTime(record.finish).orEmpty())
                     xmlWriter.endTag(ns, "finish")
                 }
                 if (showDurationField) {

@@ -96,7 +96,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this)
         filterData.value = ReportFilter()
         filterData.observe(this) { filter ->
             if (filter != null) {
@@ -533,19 +533,19 @@ class ReportFormFragment : TimeFormFragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.report_form, menu)
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menu.clear()
+        menuInflater.inflate(R.menu.report_form, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.menu_generate -> {
                 generateReport()
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return super.onMenuItemSelected(menuItem)
     }
 
     private fun setErrorLabel(text: CharSequence) {

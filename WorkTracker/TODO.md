@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* migrate rx3 to Flow
 * migrate "koin" to Hilt
 * "model" module
 * "domain" module

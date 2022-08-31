@@ -35,9 +35,9 @@ package com.tikalk.worktracker.data
 import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
 import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.ProfilePage
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ProjectTasksPage
+import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -72,7 +72,7 @@ class TimeTrackerRepository(
         return localRepository.profilePage(refresh)
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
+    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
         if (refresh) {
             return Observable.merge(
                 localRepository.projectsPage(refresh),
@@ -102,7 +102,7 @@ class TimeTrackerRepository(
         return localRepository.reportPage(filter, refresh)
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
+    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
         if (refresh) {
             return Observable.merge(
                 localRepository.tasksPage(refresh),
@@ -136,7 +136,7 @@ class TimeTrackerRepository(
         return localRepository.timerPage(refresh)
     }
 
-    override fun savePage(page: TimeListPage) {
+    override suspend fun savePage(page: TimeListPage) {
         localRepository.savePage(page)
     }
 }

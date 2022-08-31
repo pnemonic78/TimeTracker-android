@@ -32,27 +32,27 @@
 
 package com.tikalk.worktracker.data.remote
 
+import androidx.room.withTransaction
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toReportRecord
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import timber.log.Timber
-import java.util.Calendar
 
 class ReportPageSaver(private val db: TrackerDatabase) {
 
-    fun save(page: ReportPage) {
+    suspend fun save(page: ReportPage) {
         Timber.i("save page $page")
-        db.runInTransaction {
+        db.withTransaction {
             savePage(db, page)
         }
     }
 
-    private fun savePage(db: TrackerDatabase, page: ReportPage) {
+    private suspend fun savePage(db: TrackerDatabase, page: ReportPage) {
         saveRecords(db, page.records)
     }
 
-    private fun saveRecords(db: TrackerDatabase, records: List<TimeRecord>) {
+    private suspend fun saveRecords(db: TrackerDatabase, records: List<TimeRecord>) {
         val recordsDao = db.reportRecordDao()
         recordsDao.deleteAll()
         recordsDao.insert(records.map { it.toReportRecord() })

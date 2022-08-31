@@ -33,9 +33,9 @@
 package com.tikalk.worktracker.data
 
 import com.tikalk.worktracker.model.ProfilePage
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ProjectTasksPage
+import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -48,13 +48,13 @@ import java.util.Calendar
 interface TimeTrackerDataSource {
     fun editPage(recordId: Long, refresh: Boolean = true): Observable<TimeEditPage>
     fun profilePage(refresh: Boolean = true): Observable<ProfilePage>
-    fun projectsPage(refresh: Boolean = true): Observable<List<Project>>
+    fun projectsPage(refresh: Boolean = true): Observable<ProjectsPage>
     fun reportFormPage(refresh: Boolean = true): Observable<ReportFormPage>
     fun reportPage(filter: ReportFilter, refresh: Boolean = true): Observable<ReportPage>
-    fun tasksPage(refresh: Boolean = true): Observable<List<ProjectTask>>
+    fun tasksPage(refresh: Boolean = true): Observable<ProjectTasksPage>
     fun timeListPage(date: Calendar, refresh: Boolean = true): Observable<TimeListPage>
     fun timerPage(refresh: Boolean = true): Observable<TimerPage>
     fun usersPage(refresh: Boolean = true): Observable<UsersPage>
 
-    fun savePage(page: TimeListPage)
+    suspend fun savePage(page: TimeListPage)
 }

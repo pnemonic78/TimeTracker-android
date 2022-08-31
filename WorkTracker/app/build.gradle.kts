@@ -80,13 +80,14 @@ dependencies {
     implementation(Android.Jetpack.security)
 
     // Database
-    implementation(Android.Database.roomRx)
+    implementation(Android.Database.roomKotlin)
     kapt(Android.Database.roomCompiler)
 
     // Rx
     implementation(Android.Reactive.retrofit)
     implementation(Android.Reactive.rxandroid)
     implementation(Android.Reactive.rxkotlin)
+    implementation(Kotlin.Reactive.coroutinesAndroid)
 
     // Web
     implementation(Android.Network.logging)
@@ -109,7 +110,7 @@ dependencies {
         exclude(group = "commons-logging", module = "commons-logging")
     }
     implementation(Kotlin.Document.html)
-    implementation(Java.Document.odf) {
+    implementation(Java.Document.odfJava) {
         exclude(group = "io.github.git-commit-id", module = "git-commit-id-maven-plugin")
     }
     implementation(Java.Document.odfXML)

@@ -50,7 +50,7 @@ interface BaseDao<E> {
      * @return the entity id.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(entity: E): Long
+    suspend fun insert(entity: E): Long
 
     /**
      * Insert entities in the database. If an entity already exists, replace it.
@@ -59,7 +59,7 @@ interface BaseDao<E> {
      * @return the entity ids.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(entities: Array<E>): LongArray
+    suspend fun insert(entities: Array<E>): LongArray
 
     /**
      * Insert entities in the database. If an entity already exists, replace it.
@@ -68,7 +68,7 @@ interface BaseDao<E> {
      * @return the entity ids.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(entities: Collection<E>): LongArray
+    suspend fun insert(entities: Collection<E>): LongArray
 
     /**
      * Update an entity.
@@ -77,7 +77,7 @@ interface BaseDao<E> {
      * @return the number of entities updated. This should always be 1.
      */
     @Update
-    fun update(entity: E): Int
+    suspend fun update(entity: E): Int
 
     /**
      * Update entities.
@@ -86,7 +86,7 @@ interface BaseDao<E> {
      * @return the number of entities updated.
      */
     @Update
-    fun update(entities: Array<E>): Int
+    suspend fun update(entities: Array<E>): Int
 
     /**
      * Update entities.
@@ -95,7 +95,7 @@ interface BaseDao<E> {
      * @return the number of entities updated.
      */
     @Update
-    fun update(entities: Collection<E>): Int
+    suspend fun update(entities: Collection<E>): Int
 
     /**
      * Delete an entity.
@@ -103,7 +103,7 @@ interface BaseDao<E> {
      * @return the number of entities deleted.
      */
     @Delete
-    fun delete(entity: E): Int
+    suspend fun delete(entity: E): Int
 
     /**
      * Delete entities.
@@ -111,7 +111,7 @@ interface BaseDao<E> {
      * @return the number of entities deleted.
      */
     @Delete
-    fun delete(entities: Array<E>): Int
+    suspend fun delete(entities: Array<E>): Int
 
     /**
      * Delete entities.
@@ -119,5 +119,5 @@ interface BaseDao<E> {
      * @return the number of entities deleted.
      */
     @Delete
-    fun delete(entities: Collection<E>): Int
+    suspend fun delete(entities: Collection<E>): Int
 }

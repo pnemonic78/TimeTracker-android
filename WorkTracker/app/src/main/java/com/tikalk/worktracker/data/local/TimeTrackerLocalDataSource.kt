@@ -41,10 +41,10 @@ import com.tikalk.worktracker.db.WholeTimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.ProjectTasksPage
+import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -61,6 +61,10 @@ import com.tikalk.worktracker.time.dayOfWeek
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.max
 
@@ -70,25 +74,29 @@ class TimeTrackerLocalDataSource(
 ) : TimeTrackerDataSource {
 
     override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
-        val projects = ArrayList<Project>()
-        val errorMessage: String? = null
+        val o = PublishSubject.create<TimeEditPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val projects = ArrayList<Project>()
+            val errorMessage: String? = null
 
-        return loadProjectsWithTasks(db)
-            .map { projectsWithTasks ->
-                populateProjects(projectsWithTasks, projects)
+            val projectsWithTasks = loadProjectsWithTasks(db)
+            populateProjects(projectsWithTasks, projects)
 
-                val record = loadRecord(db, recordId) ?: TimeRecord.EMPTY.copy()
+            val record = loadRecord(db, recordId) ?: TimeRecord.EMPTY.copy()
 
-                return@map TimeEditPage(
-                    record,
-                    projects,
-                    errorMessage,
-                    record.start ?: Calendar.getInstance()
-                )
-            }
+            val page = TimeEditPage(
+                record,
+                projects,
+                errorMessage,
+                record.start ?: Calendar.getInstance()
+            )
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
-    private fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {
+    private suspend fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {
         if (recordId != TikalEntity.ID_NONE) {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
@@ -99,81 +107,92 @@ class TimeTrackerLocalDataSource(
         return null
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<List<Project>> {
+    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
         return loadProjects(db)
     }
 
-    private fun loadProjects(db: TrackerDatabase): Observable<List<Project>> {
-        val projectsDao = db.projectDao()
-        val projectsDb = projectsDao.queryAllSingle()
-        return projectsDb
-            .map { projects ->
-                projects
-                    .filter { it.id != TikalEntity.ID_NONE }
-                    .sortedBy { it.name }
-            }
-            .toObservable()
+    private fun loadProjects(db: TrackerDatabase): Observable<ProjectsPage> {
+        val o = PublishSubject.create<ProjectsPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val projectsDao = db.projectDao()
+            val projectsDb = projectsDao.queryAll()
+            val projects = projectsDb
+                .filter { it.id != TikalEntity.ID_NONE }
+                .sortedBy { it.name }
+            val page = ProjectsPage(projects)
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<List<ProjectTask>> {
+    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
         return loadTasks(db)
     }
 
-    private fun loadTasks(db: TrackerDatabase): Observable<List<ProjectTask>> {
-        val tasksDao = db.taskDao()
-        val tasksDb = tasksDao.queryAllSingle()
-        return tasksDb
-            .map { tasks ->
-                tasks
-                    .filter { it.id != TikalEntity.ID_NONE }
-                    .sortedBy { it.name }
-            }
-            .toObservable()
+    private fun loadTasks(db: TrackerDatabase): Observable<ProjectTasksPage> {
+        val o = PublishSubject.create<ProjectTasksPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val tasksDao = db.taskDao()
+            val tasksDb = tasksDao.queryAll()
+            val tasks = tasksDb
+                .filter { it.id != TikalEntity.ID_NONE }
+                .sortedBy { it.name }
+            val page = ProjectTasksPage(tasks)
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
     override fun usersPage(refresh: Boolean): Observable<UsersPage> {
         return Observable.merge(
             Observable.just(UsersPage(listOf(preferences.user))),
-            loadUsers(db).map { UsersPage(it) }
+            loadUsers(db).map { it }
         )
     }
 
-    private fun loadUsers(db: TrackerDatabase): Observable<List<User>> {
-        val userDao = db.userDao()
-        val usersDb = userDao.queryAllSingle()
-        return usersDb
-            .map { users ->
-                users
-                    .filter { it.id != TikalEntity.ID_NONE }
-                    .sortedBy { it.displayName }
-            }
-            .toObservable()
+    private fun loadUsers(db: TrackerDatabase): Observable<UsersPage> {
+        val o = PublishSubject.create<UsersPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val userDao = db.userDao()
+            val usersDb = userDao.queryAll()
+            val users = usersDb
+                .filter { it.id != TikalEntity.ID_NONE }
+                .sortedBy { it.displayName }
+            val page = UsersPage(users)
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        val projects = ArrayList<Project>()
-        val filter = ReportFilter()
-        val errorMessage: String? = null
+        val o = PublishSubject.create<ReportFormPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val projects = ArrayList<Project>()
+            val filter = ReportFilter()
+            val errorMessage: String? = null
 
-        return loadProjectsWithTasks(db)
-            .map { projectsWithTasks ->
-                populateProjects(projectsWithTasks, projects)
+            val projectsWithTasks = loadProjectsWithTasks(db)
+            populateProjects(projectsWithTasks, projects)
 
-                return@map ReportFormPage(
-                    filter,
-                    projects,
-                    errorMessage
-                )
-            }
+            val page = ReportFormPage(
+                filter,
+                projects,
+                errorMessage
+            )
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
-    private fun loadProjectsWithTasks(db: TrackerDatabase): Observable<List<ProjectWithTasks>> {
+    private suspend fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
         val projectsDao = db.projectDao()
-        return projectsDao.queryAllWithTasksObservable()
-            .map { projects ->
-                projects
-                    .filter { it.project.id != TikalEntity.ID_NONE }
-            }
+        val projects = projectsDao.queryAllWithTasks()
+            .filter { it.project.id != TikalEntity.ID_NONE }
+        return projects
     }
 
     private fun populateProjects(
@@ -190,25 +209,29 @@ class TimeTrackerLocalDataSource(
     }
 
     override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        val projects = ArrayList<Project>()
+        val o = PublishSubject.create<ReportPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val projects = ArrayList<Project>()
 
-        return loadProjectsWithTasks(db)
-            .map { projectsWithTasks ->
-                populateProjects(projectsWithTasks, projects)
+            val projectsWithTasks = loadProjectsWithTasks(db)
+            populateProjects(projectsWithTasks, projects)
 
-                val records = loadReportRecords(db, filter, projects)
+            val records = loadReportRecords(db, filter, projects)
 
-                val totals = calculateTotals(records)
+            val totals = calculateTotals(records)
 
-                return@map ReportPage(
-                    filter,
-                    records,
-                    totals
-                )
-            }
+            val page = ReportPage(
+                filter,
+                records,
+                totals
+            )
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
-    private fun loadReportRecords(
+    private suspend fun loadReportRecords(
         db: TrackerDatabase,
         filter: ReportFilter,
         projects: Collection<Project>?
@@ -218,7 +241,7 @@ class TimeTrackerLocalDataSource(
         val reportRecordsDao = db.reportRecordDao()
         val reportRecordsDb = reportRecordsDao.queryByDate(start, finish)
 
-        if (reportRecordsDb.isNullOrEmpty()) {
+        if (reportRecordsDb.isEmpty()) {
             val recordsDao = db.timeRecordDao()
             val recordsDb = recordsDao.queryByDate(start, finish)
             return recordsDb.map { it.toTimeRecord() }
@@ -240,33 +263,37 @@ class TimeTrackerLocalDataSource(
     }
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
-        val projects = ArrayList<Project>()
-        val record = TimeRecord.EMPTY
-        val errorMessage: String? = null
+        val o = PublishSubject.create<TimeListPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val projects = ArrayList<Project>()
+            val record = TimeRecord.EMPTY
+            val errorMessage: String? = null
 
-        return loadProjectsWithTasks(db)
-            .map { projectsWithTasks ->
-                populateProjects(projectsWithTasks, projects)
+            val projectsWithTasks = loadProjectsWithTasks(db)
+            populateProjects(projectsWithTasks, projects)
 
-                val records = loadRecords(db, date)
-                    .map { entity ->
-                        entity.toTimeRecord()
-                    }
+            val records = loadRecords(db, date)
+                .map { entity ->
+                    entity.toTimeRecord()
+                }
 
-                val totals = loadTotals(db, date)
+            val totals = loadTotals(db, date)
 
-                return@map TimeListPage(
-                    record,
-                    projects,
-                    errorMessage,
-                    date,
-                    records,
-                    totals
-                )
-            }
+            val page = TimeListPage(
+                record,
+                projects,
+                errorMessage,
+                date,
+                records,
+                totals
+            )
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
-    private fun loadRecords(
+    private suspend fun loadRecords(
         db: TrackerDatabase,
         day: Calendar? = null
     ): List<WholeTimeRecordEntity> {
@@ -282,7 +309,7 @@ class TimeTrackerLocalDataSource(
         }
     }
 
-    private fun loadTotals(db: TrackerDatabase, date: Calendar): TimeTotals {
+    private suspend fun loadTotals(db: TrackerDatabase, date: Calendar): TimeTotals {
         val totals = TimeTotals()
 
         val cal = date.copy()
@@ -346,21 +373,25 @@ class TimeTrackerLocalDataSource(
     }
 
     override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        val projects = ArrayList<Project>()
-        val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
+        val o = PublishSubject.create<TimerPage>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val projects = ArrayList<Project>()
+            val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
 
-        return loadProjectsWithTasks(db)
-            .map { projectsWithTasks ->
-                populateProjects(projectsWithTasks, projects)
+            val projectsWithTasks = loadProjectsWithTasks(db)
+            populateProjects(projectsWithTasks, projects)
 
-                return@map TimerPage(
-                    record,
-                    projects
-                )
-            }
+            val page = TimerPage(
+                record,
+                projects
+            )
+            o.onNext(page)
+            o.onComplete()
+        }
+        return o
     }
 
-    override fun savePage(page: TimeListPage) {
+    override suspend fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
     }
 
