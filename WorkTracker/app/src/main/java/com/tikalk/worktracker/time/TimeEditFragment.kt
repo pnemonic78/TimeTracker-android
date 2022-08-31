@@ -106,7 +106,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this)
     }
 
     override fun onCreateView(
@@ -743,11 +743,12 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        val recordParcel: TimeRecordEntity? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
-        } else {
-            savedInstanceState.getParcelable(STATE_RECORD)
-        }
+        val recordParcel: TimeRecordEntity? =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
+            } else {
+                savedInstanceState.getParcelable(STATE_RECORD)
+            }
         if (recordParcel != null) {
             val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)
@@ -784,18 +785,17 @@ class TimeEditFragment : TimeFormFragment() {
         run()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         if (view?.visibility == View.VISIBLE) {
-            inflater.inflate(R.menu.time_edit, menu)
+            menuInflater.inflate(R.menu.time_edit, menu)
         }
-        return super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (view?.visibility != View.VISIBLE) {
             return false
         }
-        when (item.itemId) {
+        when (menuItem.itemId) {
             R.id.menu_delete -> {
                 deleteRecord()
                 return true
@@ -809,7 +809,7 @@ class TimeEditFragment : TimeFormFragment() {
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return super.onMenuItemSelected(menuItem)
     }
 
     @MainThread

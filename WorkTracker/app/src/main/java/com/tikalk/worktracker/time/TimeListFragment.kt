@@ -95,7 +95,7 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this)
         recordsData.observe(this) { records ->
             bindList(date, records)
         }
@@ -597,18 +597,18 @@ class TimeListFragment : TimeFormFragment(),
         showTimer()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menu.clear()
         if (view?.visibility == View.VISIBLE) {
-            inflater.inflate(R.menu.time_list, menu)
+            menuInflater.inflate(R.menu.time_list, menu)
         }
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (view?.visibility != View.VISIBLE) {
             return false
         }
-        when (item.itemId) {
+        when (menuItem.itemId) {
             R.id.menu_date -> {
                 pickDate()
                 return true
@@ -618,7 +618,7 @@ class TimeListFragment : TimeFormFragment(),
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return super.onMenuItemSelected(menuItem)
     }
 
     private fun findTopFormFragment(): TimeFormFragment {

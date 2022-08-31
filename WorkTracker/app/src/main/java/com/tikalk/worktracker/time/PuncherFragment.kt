@@ -85,7 +85,7 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this)
     }
 
     override fun onCreateView(
@@ -449,24 +449,23 @@ class PuncherFragment : TimeFormFragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         if (view?.visibility == View.VISIBLE) {
-            inflater.inflate(R.menu.timer, menu)
+            menuInflater.inflate(R.menu.timer, menu)
         }
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (view?.visibility != View.VISIBLE) {
             return false
         }
-        when (item.itemId) {
+        when (menuItem.itemId) {
             R.id.menu_favorite -> {
                 markFavorite()
                 return true
             }
         }
-        return super.onOptionsItemSelected(item)
+        return super.onMenuItemSelected(menuItem)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

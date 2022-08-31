@@ -34,6 +34,8 @@ package com.tikalk.worktracker.project
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
@@ -60,6 +62,7 @@ class ProjectsFragment : InternetFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requireActivity().addMenuProvider(this)
         projectsData.observe(this) { projects ->
             bindList(projects)
         }
@@ -90,6 +93,10 @@ class ProjectsFragment : InternetFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menu.clear()
     }
 
     override fun onStart() {

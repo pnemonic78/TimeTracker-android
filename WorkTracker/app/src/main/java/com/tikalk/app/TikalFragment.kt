@@ -33,10 +33,14 @@
 package com.tikalk.app
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
-open class TikalFragment() : Fragment() {
+open class TikalFragment() : Fragment(), MenuProvider {
 
     constructor(args: Bundle) : this() {
         arguments = args
@@ -59,4 +63,8 @@ open class TikalFragment() : Fragment() {
     protected open fun onRestoreInstanceState(savedInstanceState: Bundle) = Unit
 
     open fun onBackPressed(): Boolean = false
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) = Unit
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = false
 }
