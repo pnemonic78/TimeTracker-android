@@ -107,7 +107,7 @@ dependencies {
         exclude(group = "commons-logging", module = "commons-logging")
     }
     implementation(Kotlin.Document.html)
-    implementation(Java.Document.odf) {
+    implementation(Java.Document.odfJava) {
         exclude(group = "io.github.git-commit-id", module = "git-commit-id-maven-plugin")
     }
     implementation(Java.Document.odfXML)

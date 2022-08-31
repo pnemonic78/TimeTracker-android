@@ -90,14 +90,14 @@ object Android {
 object Java {
     object Version {
         const val jsoup = "1.15.2"
-        const val odf = "0.10.0"
+        const val odf = "0.8.7"
         const val opencsv = "5.6"
         const val woodstox = "6.3.1"
     }
 
     object Document {
         const val opencsv = "com.opencsv:opencsv:${Version.opencsv}"
-        const val odf = "org.odftoolkit:odfdom-java:${Version.odf}"
+        const val odfJava = "org.odftoolkit:odfdom-java:${Version.odf}"
         const val odfXML = "xml-apis:xml-apis:1.4.01"
         const val woodstox = "com.fasterxml.woodstox:woodstox-core:${Version.woodstox}"
     }
