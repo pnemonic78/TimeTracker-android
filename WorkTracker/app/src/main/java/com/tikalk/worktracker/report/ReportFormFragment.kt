@@ -234,7 +234,7 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.d("filterTasks project=$project")
         val context = this.context ?: return
         if (!isVisible) return
-        val options = addEmpty(project.tasks)
+        val options = addEmptyTask(project.tasks)
         bindingForm.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
 
@@ -289,7 +289,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: ReportFormPage) {
-        timeViewModel.projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
 
         val filter = filterData.value
@@ -371,11 +371,11 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
         Timber.i("bindProjects filter=$filter projects=$projects")
-        val projectItems = addEmpties(projects).toTypedArray()
+        val options = addEmptyProject(projects).toTypedArray()
         bindingForm.projectInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            bindingForm.projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        if (options.isNotEmpty()) {
+            bindingForm.projectInput.setSelection(max(0, findProject(options, filter.project)))
             projectItemSelected(filter.project)
         }
         bindingForm.projectInput.requestFocus()

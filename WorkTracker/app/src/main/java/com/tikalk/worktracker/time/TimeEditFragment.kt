@@ -267,11 +267,11 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
-        val projectItems = projects?.toTypedArray() ?: emptyArray()
+        val options = addEmptyProject(projects).toTypedArray()
         binding.projectInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            binding.projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        if (options.isNotEmpty()) {
+            binding.projectInput.setSelection(max(0, findProject(options, record.project)))
             projectItemSelected(record.project)
         }
         binding.projectInput.requestFocus()
@@ -448,7 +448,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun filterTasks(project: Project) {
         Timber.i("filterTasks $project")
         val context = this.context ?: return
-        val options = addEmpty(project.tasks)
+        val options = addEmptyTask(project.tasks)
         binding.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
         binding.taskInput.setSelection(findTask(options, record.task))
@@ -511,7 +511,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        timeViewModel.projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }
