@@ -45,6 +45,8 @@ import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimerPage
 import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 import java.util.Calendar
 
 class TimeTrackerRepository(
@@ -112,9 +114,9 @@ class TimeTrackerRepository(
         return localRepository.tasksPage(refresh)
     }
 
-    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
+    override fun usersPage(refresh: Boolean): Flow<UsersPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.usersPage(refresh),
                 remoteRepository.usersPage(refresh)
             )

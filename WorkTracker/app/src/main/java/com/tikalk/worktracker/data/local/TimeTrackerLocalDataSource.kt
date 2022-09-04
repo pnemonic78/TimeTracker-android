@@ -64,6 +64,10 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.max
@@ -145,26 +149,23 @@ class TimeTrackerLocalDataSource(
         return o
     }
 
-    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        return Observable.merge(
-            Observable.just(UsersPage(listOf(preferences.user))),
-            loadUsers(db).map { it }
+    override fun usersPage(refresh: Boolean): Flow<UsersPage> {
+        return merge(
+            flowOf(UsersPage(listOf(preferences.user))),
+            loadUsers(db)
         )
     }
 
-    private fun loadUsers(db: TrackerDatabase): Observable<UsersPage> {
-        val o = PublishSubject.create<UsersPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun loadUsers(db: TrackerDatabase): Flow<UsersPage> {
+        return flow {
             val userDao = db.userDao()
             val usersDb = userDao.queryAll()
             val users = usersDb
                 .filter { it.id != TikalEntity.ID_NONE }
                 .sortedBy { it.displayName }
             val page = UsersPage(users)
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {

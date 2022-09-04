@@ -53,6 +53,8 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -133,22 +135,15 @@ class TimeTrackerRemoteDataSource(
         return ProjectTasksPageParser().parse(html)
     }
 
-    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        val o = PublishSubject.create<UsersPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchUsers()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseUsersPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun usersPage(refresh: Boolean): Flow<UsersPage> {
+        return flow {
+            val response = service.fetchUsers()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseUsersPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseUsersPage(html: String): UsersPage {
