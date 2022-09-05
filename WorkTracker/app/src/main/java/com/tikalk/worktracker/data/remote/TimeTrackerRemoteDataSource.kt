@@ -219,22 +219,15 @@ class TimeTrackerRemoteDataSource(
         TimeListPageSaver(db).save(page)
     }
 
-    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
-        val o = PublishSubject.create<ProfilePage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchProfile()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseProfilePage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun profilePage(refresh: Boolean): Flow<ProfilePage> {
+        return flow {
+            val response = service.fetchProfile()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseProfilePage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseProfilePage(html: String): ProfilePage {

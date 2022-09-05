@@ -354,7 +354,7 @@ class TimeTrackerLocalDataSource(
         return quota * DateUtils.HOUR_IN_MILLIS
     }
 
-    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
+    override fun profilePage(refresh: Boolean): Flow<ProfilePage> {
         val page = ProfilePage(
             preferences.user,
             preferences.userCredentials,
@@ -364,7 +364,7 @@ class TimeTrackerLocalDataSource(
             passwordConfirm = null,
             errorMessage = null
         )
-        return Observable.just(page)
+        return flowOf(page)
     }
 
     override fun timerPage(refresh: Boolean): Observable<TimerPage> {
