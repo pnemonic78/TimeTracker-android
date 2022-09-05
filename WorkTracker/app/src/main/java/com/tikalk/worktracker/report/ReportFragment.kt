@@ -100,12 +100,6 @@ class ReportFragment : InternetFragment() {
                 Timber.e("login failure: $reason")
             }
         }
-
-        val i = Intent(Intent.ACTION_VIEW)
-        i.setPackage("com.android.htmlviewer")
-        val pm = requireContext().packageManager
-        val q = i.resolveActivity(pm)
-        println("±!@ q=$q")
     }
 
     override fun onCreateView(

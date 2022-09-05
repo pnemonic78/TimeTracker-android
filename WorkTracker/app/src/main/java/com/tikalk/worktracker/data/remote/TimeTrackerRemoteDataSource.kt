@@ -134,22 +134,15 @@ class TimeTrackerRemoteDataSource(
         UserPageSaver(db).save(page)
     }
 
-    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        val o = PublishSubject.create<ReportFormPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchReports()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseReportFormPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
+        return flow {
+            val response = service.fetchReports()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseReportFormPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseReportFormPage(html: String): ReportFormPage {

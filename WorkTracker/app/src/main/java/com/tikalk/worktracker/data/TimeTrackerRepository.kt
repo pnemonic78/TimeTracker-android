@@ -84,9 +84,9 @@ class TimeTrackerRepository(
         return localRepository.projectsPage(refresh)
     }
 
-    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
+    override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.reportFormPage(refresh),
                 remoteRepository.reportFormPage(refresh)
             )

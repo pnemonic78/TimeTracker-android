@@ -159,9 +159,8 @@ class TimeTrackerLocalDataSource(
         }
     }
 
-    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        val o = PublishSubject.create<ReportFormPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val filter = ReportFilter()
             val errorMessage: String? = null
@@ -174,10 +173,8 @@ class TimeTrackerLocalDataSource(
                 projects,
                 errorMessage
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
