@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 
 interface TimeTrackerDataSource {
-    fun editPage(recordId: Long, refresh: Boolean = true): Observable<TimeEditPage>
+    fun editPage(recordId: Long, refresh: Boolean = true): Flow<TimeEditPage>
     fun profilePage(refresh: Boolean = true): Flow<ProfilePage>
     fun projectsPage(refresh: Boolean = true): Flow<ProjectsPage>
     fun puncherPage(refresh: Boolean = true): Flow<PuncherPage>

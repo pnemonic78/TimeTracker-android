@@ -77,9 +77,8 @@ class TimeTrackerLocalDataSource(
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
-        val o = PublishSubject.create<TimeEditPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val errorMessage: String? = null
 
@@ -94,10 +93,8 @@ class TimeTrackerLocalDataSource(
                 errorMessage,
                 record.start ?: Calendar.getInstance()
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {

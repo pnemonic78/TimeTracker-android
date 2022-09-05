@@ -54,9 +54,9 @@ class TimeTrackerRepository(
     private val remoteRepository: TimeTrackerRemoteDataSource
 ) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
+    override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.editPage(recordId, refresh),
                 remoteRepository.editPage(recordId, refresh)
             )

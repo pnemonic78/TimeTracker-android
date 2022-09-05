@@ -176,7 +176,7 @@ class TimeListFragment : TimeFormFragment(),
                 delegate.dataSource.timeListPage(date, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
-                        processPageMain(page)
+                        processPage(page)
                         handleArguments()
                         showProgress(false)
                     }

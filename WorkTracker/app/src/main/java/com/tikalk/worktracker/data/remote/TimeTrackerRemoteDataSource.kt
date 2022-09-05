@@ -39,12 +39,12 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateResponse
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -65,25 +65,18 @@ class TimeTrackerRemoteDataSource(
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
+    override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         if (recordId == TikalEntity.ID_NONE) {
-            return Observable.empty()
+            return emptyFlow()
         }
-        val o = PublishSubject.create<TimeEditPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchTime(recordId)
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseEditPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+        return flow {
+            val response = service.fetchTime(recordId)
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseEditPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseEditPage(html: String): TimeEditPage {
