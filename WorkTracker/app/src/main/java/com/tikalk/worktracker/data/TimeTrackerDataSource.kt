@@ -49,7 +49,7 @@ import java.util.Calendar
 interface TimeTrackerDataSource {
     fun editPage(recordId: Long, refresh: Boolean = true): Observable<TimeEditPage>
     fun profilePage(refresh: Boolean = true): Observable<ProfilePage>
-    fun projectsPage(refresh: Boolean = true): Observable<ProjectsPage>
+    fun projectsPage(refresh: Boolean = true): Flow<ProjectsPage>
     fun reportFormPage(refresh: Boolean = true): Observable<ReportFormPage>
     fun reportPage(filter: ReportFilter, refresh: Boolean = true): Observable<ReportPage>
     fun tasksPage(refresh: Boolean = true): Observable<ProjectTasksPage>

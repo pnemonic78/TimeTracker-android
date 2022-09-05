@@ -111,23 +111,20 @@ class TimeTrackerLocalDataSource(
         return null
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
+    override fun projectsPage(refresh: Boolean): Flow<ProjectsPage> {
         return loadProjects(db)
     }
 
-    private fun loadProjects(db: TrackerDatabase): Observable<ProjectsPage> {
-        val o = PublishSubject.create<ProjectsPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun loadProjects(db: TrackerDatabase): Flow<ProjectsPage> {
+        return flow {
             val projectsDao = db.projectDao()
             val projectsDb = projectsDao.queryAll()
             val projects = projectsDb
                 .filter { it.id != TikalEntity.ID_NONE }
                 .sortedBy { it.name }
             val page = ProjectsPage(projects)
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
