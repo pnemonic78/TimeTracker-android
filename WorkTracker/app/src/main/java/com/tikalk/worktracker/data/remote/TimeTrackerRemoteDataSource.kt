@@ -107,21 +107,14 @@ class TimeTrackerRemoteDataSource(
         return ProjectsPageParser().parse(html)
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
-        val o = PublishSubject.create<ProjectTasksPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchProjectTasks()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseProjectTasksPage(html)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun tasksPage(refresh: Boolean): Flow<ProjectTasksPage> {
+        return flow {
+            val response = service.fetchProjectTasks()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseProjectTasksPage(html)
+            emit(page)
         }
-        return o
     }
 
     private fun parseProjectTasksPage(html: String): ProjectTasksPage {

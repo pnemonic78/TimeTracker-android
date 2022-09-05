@@ -52,7 +52,7 @@ interface TimeTrackerDataSource {
     fun projectsPage(refresh: Boolean = true): Flow<ProjectsPage>
     fun reportFormPage(refresh: Boolean = true): Observable<ReportFormPage>
     fun reportPage(filter: ReportFilter, refresh: Boolean = true): Observable<ReportPage>
-    fun tasksPage(refresh: Boolean = true): Observable<ProjectTasksPage>
+    fun tasksPage(refresh: Boolean = true): Flow<ProjectTasksPage>
     fun timeListPage(date: Calendar, refresh: Boolean = true): Observable<TimeListPage>
     fun timerPage(refresh: Boolean = true): Observable<TimerPage>
     fun usersPage(refresh: Boolean = true): Flow<UsersPage>
