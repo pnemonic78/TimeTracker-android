@@ -38,13 +38,12 @@ import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.PuncherPage
-import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
 import java.util.Calendar
@@ -94,9 +93,9 @@ class TimeTrackerRepository(
         return localRepository.reportFormPage(refresh)
     }
 
-    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.reportPage(filter, refresh),
                 remoteRepository.reportPage(filter, refresh)
             )

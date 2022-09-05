@@ -49,14 +49,9 @@ import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateRes
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class TimeTrackerRemoteDataSource(
@@ -153,22 +148,15 @@ class TimeTrackerRemoteDataSource(
         ReportFormPageSaver(db).save(page)
     }
 
-    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        val o = PublishSubject.create<ReportPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.generateReport(filter.toFields())
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseReportPage(html, filter)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
+        return flow {
+            val response = service.generateReport(filter.toFields())
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseReportPage(html, filter)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private suspend fun parseReportPage(html: String, filter: ReportFilter): ReportPage {

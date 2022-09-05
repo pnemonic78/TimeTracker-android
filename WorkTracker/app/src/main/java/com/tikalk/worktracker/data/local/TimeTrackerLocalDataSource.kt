@@ -60,15 +60,10 @@ import com.tikalk.worktracker.time.dayOfMonth
 import com.tikalk.worktracker.time.dayOfWeek
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.max
 
@@ -197,9 +192,8 @@ class TimeTrackerLocalDataSource(
         }
     }
 
-    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        val o = PublishSubject.create<ReportPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
+        return flow {
             val projects = ArrayList<Project>()
 
             val projectsWithTasks = loadProjectsWithTasks(db)
@@ -214,10 +208,8 @@ class TimeTrackerLocalDataSource(
                 records,
                 totals
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadReportRecords(
