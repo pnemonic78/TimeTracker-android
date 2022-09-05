@@ -41,7 +41,7 @@ import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimerPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
@@ -50,11 +50,11 @@ interface TimeTrackerDataSource {
     fun editPage(recordId: Long, refresh: Boolean = true): Observable<TimeEditPage>
     fun profilePage(refresh: Boolean = true): Flow<ProfilePage>
     fun projectsPage(refresh: Boolean = true): Flow<ProjectsPage>
+    fun puncherPage(refresh: Boolean = true): Flow<PuncherPage>
     fun reportFormPage(refresh: Boolean = true): Observable<ReportFormPage>
     fun reportPage(filter: ReportFilter, refresh: Boolean = true): Observable<ReportPage>
     fun tasksPage(refresh: Boolean = true): Flow<ProjectTasksPage>
     fun timeListPage(date: Calendar, refresh: Boolean = true): Observable<TimeListPage>
-    fun timerPage(refresh: Boolean = true): Observable<TimerPage>
     fun usersPage(refresh: Boolean = true): Flow<UsersPage>
 
     suspend fun savePage(page: TimeListPage)

@@ -43,7 +43,7 @@ import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimerPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
@@ -134,8 +134,8 @@ class TimeTrackerRepository(
         return localRepository.timeListPage(date, refresh)
     }
 
-    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        return localRepository.timerPage(refresh)
+    override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return localRepository.puncherPage(refresh)
     }
 
     override suspend fun savePage(page: TimeListPage) {

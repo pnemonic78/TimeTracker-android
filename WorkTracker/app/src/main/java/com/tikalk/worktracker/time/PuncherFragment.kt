@@ -47,6 +47,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
@@ -63,15 +64,17 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.findProject
 import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.isNullOrEmpty
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -392,21 +395,23 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun run() {
         Timber.i("run first=$firstRun")
-        delegate.dataSource.timerPage(firstRun)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPage(page)
-                populateAndBind()
-                handleArguments()
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.puncherPage(firstRun)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPage(page)
+                        populateAndBind()
+                        handleArguments()
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
+                handleError(e)
+            }
+        }
     }
 
-    private fun processPage(page: TimerPage) {
+    private fun processPage(page: PuncherPage) {
         timeViewModel.projectsData.value = page.projects
         setRecordValue(page.record)
     }

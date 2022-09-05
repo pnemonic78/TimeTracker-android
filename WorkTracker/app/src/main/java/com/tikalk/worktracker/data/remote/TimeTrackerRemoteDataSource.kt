@@ -44,7 +44,7 @@ import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimerPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateResponse
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -54,6 +54,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -238,7 +239,7 @@ class TimeTrackerRemoteDataSource(
         ProfilePageSaver(preferences).save(page)
     }
 
-    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        return Observable.empty()
+    override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return emptyFlow()
     }
 }

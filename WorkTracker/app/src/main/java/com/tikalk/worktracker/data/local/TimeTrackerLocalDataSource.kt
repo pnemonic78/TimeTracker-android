@@ -53,7 +53,7 @@ import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.model.time.TimerPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.dayOfMonth
@@ -367,23 +367,20 @@ class TimeTrackerLocalDataSource(
         return flowOf(page)
     }
 
-    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        val o = PublishSubject.create<TimerPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
 
             val projectsWithTasks = loadProjectsWithTasks(db)
             populateProjects(projectsWithTasks, projects)
 
-            val page = TimerPage(
+            val page = PuncherPage(
                 record,
                 projects
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     override suspend fun savePage(page: TimeListPage) {
