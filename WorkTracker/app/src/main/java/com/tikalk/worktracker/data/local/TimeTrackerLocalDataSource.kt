@@ -45,6 +45,7 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -53,7 +54,6 @@ import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.dayOfMonth
@@ -257,9 +257,8 @@ class TimeTrackerLocalDataSource(
         return totals
     }
 
-    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
-        val o = PublishSubject.create<TimeListPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val record = TimeRecord.EMPTY
             val errorMessage: String? = null
@@ -282,10 +281,8 @@ class TimeTrackerLocalDataSource(
                 records,
                 totals
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadRecords(

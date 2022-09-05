@@ -124,9 +124,9 @@ class TimeTrackerRepository(
         return localRepository.usersPage(refresh)
     }
 
-    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
+    override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.timeListPage(date, refresh),
                 remoteRepository.timeListPage(date, refresh)
             )

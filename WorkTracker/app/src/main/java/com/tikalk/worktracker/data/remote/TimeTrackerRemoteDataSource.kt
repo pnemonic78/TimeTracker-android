@@ -193,23 +193,16 @@ class TimeTrackerRemoteDataSource(
         ReportPageSaver(db).save(page)
     }
 
-    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
-        val dateFormatted = formatSystemDate(date).orEmpty()
-        val o = PublishSubject.create<TimeListPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchTimes(dateFormatted)
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseTimeListPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
+        return flow {
+            val dateFormatted = formatSystemDate(date).orEmpty()
+            val response = service.fetchTimes(dateFormatted)
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseTimeListPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseTimeListPage(html: String): TimeListPage {

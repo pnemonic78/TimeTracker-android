@@ -64,11 +64,9 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
@@ -172,20 +170,22 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("loadAndFetchPage $dateFormatted refresh=$refresh")
         this.date = date
 
-        delegate.dataSource.timeListPage(date, refresh)
-            .subscribeOn(Schedulers.io())
-            .doOnSubscribe { showProgressMain(true) }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPageMain(page)
-                handleArguments()
+        showProgress(true)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.timeListPage(date, refresh)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPageMain(page)
+                        handleArguments()
+                        showProgress(false)
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
                 showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-                handleError(err)
-            })
-            .addTo(disposables)
+                handleError(e)
+            }
+        }
     }
 
     private var fetchingPage = false
