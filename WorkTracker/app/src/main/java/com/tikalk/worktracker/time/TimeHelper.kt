@@ -234,9 +234,16 @@ fun Long.toCalendar(): Calendar {
 
 private var sElapsedFormatHMM: String? = null
 
+private const val SECONDS_FOR_MINUTE = DateUtils.MINUTE_IN_MILLIS / 2L
+
 fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): Formatter {
     val hours = elapsedMs / DateUtils.HOUR_IN_MILLIS
-    val minutes = (elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS
+    val seconds = elapsedMs % DateUtils.HOUR_IN_MILLIS
+    var minutes = seconds / DateUtils.MINUTE_IN_MILLIS
+
+    if ((SECONDS_FOR_MINUTE < seconds) && (seconds < DateUtils.MINUTE_IN_MILLIS)) {
+        minutes++
+    }
 
     var format = sElapsedFormatHMM
     if (format == null) {

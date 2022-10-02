@@ -40,6 +40,7 @@ import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.isSameDay
 import com.tikalk.worktracker.time.millis
+import com.tikalk.worktracker.time.second
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
 import java.util.Calendar
@@ -62,6 +63,12 @@ open class TimeRecord(
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
     var location: Location = Location.EMPTY
 ) : TikalEntity(id) {
+
+    init {
+        // Server granularity is seconds.
+        start?.millis = 0
+        finish?.millis = 0
+    }
 
     var start: Calendar? = start
         set(value) {

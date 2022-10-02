@@ -291,6 +291,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickStartTime() {
         val cal = getCalendar(record.start)
+        // Server granularity is seconds.
+        cal.second = 0
+        cal.millis = 0
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
@@ -330,6 +333,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickFinishTime() {
         val cal = getCalendar(record.finish)
+        // Server granularity is seconds.
+        cal.second = 0
+        cal.millis = 0
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth

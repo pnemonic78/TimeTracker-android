@@ -1,8 +1,6 @@
 package com.tikalk.worktracker
 
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import android.text.format.DateUtils
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.time.copy
@@ -24,11 +22,7 @@ import java.util.Calendar
 class TimeTest {
     @Test
     fun splitRecords() {
-        val record = TimeRecord(
-            id = TikalEntity.ID_NONE,
-            project = Project.EMPTY.copy(),
-            task = ProjectTask.EMPTY.copy()
-        )
+        val record = TimeRecord.EMPTY.copy()
         record.project.id = 1
         record.project.name = "Project"
         record.task.id = 1
@@ -73,11 +67,12 @@ class TimeTest {
         assertNotNull(rec1.start)
         assertNotNull(rec1.finish)
         var start1 = start
+        start1.millis = 0
         var finish1 = start1.copy()
         finish1.setToEndOfDay()
         finish1.millis = 0
-        assertEquals(start1, rec1.start)
-        assertEquals(finish1, rec1.finish)
+        assertEquals(start1.timeInMillis, rec1.startTime)
+        assertEquals(finish1.timeInMillis, rec1.finishTime)
         var rec2 = splits[1]
         assertNotNull(rec2)
         assertNotNull(rec2.start)
@@ -86,8 +81,8 @@ class TimeTest {
         start2.add(Calendar.DAY_OF_MONTH, 1)
         start2.setToStartOfDay()
         var finish2 = finish
-        assertEquals(start2, rec2.start)
-        assertEquals(finish2, rec2.finish)
+        assertEquals(start2.timeInMillis, rec2.startTime)
+        assertEquals(finish2.timeInMillis, rec2.finishTime)
 
         // Finish 2 days later.
         finish.add(Calendar.DAY_OF_MONTH, 1)
@@ -103,8 +98,8 @@ class TimeTest {
         finish1 = start.copy()
         finish1.setToEndOfDay()
         finish1.millis = 0
-        assertEquals(start1, rec1.start)
-        assertEquals(finish1, rec1.finish)
+        assertEquals(start1.timeInMillis, rec1.startTime)
+        assertEquals(finish1.timeInMillis, rec1.finishTime)
         rec2 = splits[1]
         assertNotNull(rec2)
         assertNotNull(rec2.start)
@@ -115,8 +110,8 @@ class TimeTest {
         finish2 = start2.copy()
         finish2.setToEndOfDay()
         finish2.millis = 0
-        assertEquals(start2, rec2.start)
-        assertEquals(finish2, rec2.finish)
+        assertEquals(start2.timeInMillis, rec2.startTime)
+        assertEquals(finish2.timeInMillis, rec2.finishTime)
         val rec3 = splits[2]
         assertNotNull(rec3)
         assertNotNull(rec3.start)
@@ -127,5 +122,28 @@ class TimeTest {
         val finish3 = record.finish
         assertEquals(start3, rec3.start)
         assertEquals(finish3, rec3.finish)
+    }
+
+    @Test
+    fun seconds() {
+        val record = TimeRecord.EMPTY.copy()
+        val now1 = System.currentTimeMillis()
+        val seconds1 = now1 / DateUtils.SECOND_IN_MILLIS
+        val millis1 = seconds1 * DateUtils.SECOND_IN_MILLIS
+
+        record.startTime = now1
+        assertEquals(millis1, record.startTime)
+
+        val now2 = System.currentTimeMillis()
+        val seconds2 = now2 / DateUtils.SECOND_IN_MILLIS
+        val millis2 = seconds2 * DateUtils.SECOND_IN_MILLIS
+
+        record.finishTime = now2
+        assertEquals(millis2, record.finishTime)
+
+        val duration = now2 - now1
+        val seconds3 = duration / DateUtils.SECOND_IN_MILLIS
+        val millis3 = seconds3 * DateUtils.SECOND_IN_MILLIS
+        assertEquals(millis3, record.finishTime - record.startTime)
     }
 }
