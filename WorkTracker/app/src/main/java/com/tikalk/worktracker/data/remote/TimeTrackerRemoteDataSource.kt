@@ -39,21 +39,19 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateResponse
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import java.util.Calendar
 
 class TimeTrackerRemoteDataSource(
@@ -62,25 +60,18 @@ class TimeTrackerRemoteDataSource(
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
+    override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         if (recordId == TikalEntity.ID_NONE) {
-            return Observable.empty()
+            return emptyFlow()
         }
-        val o = PublishSubject.create<TimeEditPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchTime(recordId)
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseEditPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+        return flow {
+            val response = service.fetchTime(recordId)
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseEditPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseEditPage(html: String): TimeEditPage {
@@ -91,64 +82,43 @@ class TimeTrackerRemoteDataSource(
         return TimeEditPageSaver(db).save(page)
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
-        val o = PublishSubject.create<ProjectsPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchProjects()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseProjectsPage(html)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun projectsPage(refresh: Boolean): Flow<ProjectsPage> {
+        return flow {
+            val response = service.fetchProjects()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseProjectsPage(html)
+            emit(page)
         }
-        return o
     }
 
     private fun parseProjectsPage(html: String): ProjectsPage {
         return ProjectsPageParser().parse(html)
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
-        val o = PublishSubject.create<ProjectTasksPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchProjectTasks()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseProjectTasksPage(html)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun tasksPage(refresh: Boolean): Flow<ProjectTasksPage> {
+        return flow {
+            val response = service.fetchProjectTasks()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseProjectTasksPage(html)
+            emit(page)
         }
-        return o
     }
 
     private fun parseProjectTasksPage(html: String): ProjectTasksPage {
         return ProjectTasksPageParser().parse(html)
     }
 
-    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        val o = PublishSubject.create<UsersPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchUsers()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseUsersPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun usersPage(refresh: Boolean): Flow<UsersPage> {
+        return flow {
+            val response = service.fetchUsers()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseUsersPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseUsersPage(html: String): UsersPage {
@@ -159,22 +129,15 @@ class TimeTrackerRemoteDataSource(
         UserPageSaver(db).save(page)
     }
 
-    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        val o = PublishSubject.create<ReportFormPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchReports()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseReportFormPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
+        return flow {
+            val response = service.fetchReports()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseReportFormPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseReportFormPage(html: String): ReportFormPage {
@@ -185,22 +148,15 @@ class TimeTrackerRemoteDataSource(
         ReportFormPageSaver(db).save(page)
     }
 
-    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        val o = PublishSubject.create<ReportPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.generateReport(filter.toFields())
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseReportPage(html, filter)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
+        return flow {
+            val response = service.generateReport(filter.toFields())
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseReportPage(html, filter)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private suspend fun parseReportPage(html: String, filter: ReportFilter): ReportPage {
@@ -211,23 +167,16 @@ class TimeTrackerRemoteDataSource(
         ReportPageSaver(db).save(page)
     }
 
-    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
-        val dateFormatted = formatSystemDate(date).orEmpty()
-        val o = PublishSubject.create<TimeListPage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchTimes(dateFormatted)
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseTimeListPage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
+        return flow {
+            val dateFormatted = formatSystemDate(date).orEmpty()
+            val response = service.fetchTimes(dateFormatted)
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseTimeListPage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseTimeListPage(html: String): TimeListPage {
@@ -238,22 +187,15 @@ class TimeTrackerRemoteDataSource(
         TimeListPageSaver(db).save(page)
     }
 
-    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
-        val o = PublishSubject.create<ProfilePage>()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = service.fetchProfile()
-                validateResponse(response)
-                val html = response.body()!!
-                val page = parseProfilePage(html)
-                savePage(page)
-                o.onNext(page)
-                o.onComplete()
-            } catch (e: Exception) {
-                o.onError(e)
-            }
+    override fun profilePage(refresh: Boolean): Flow<ProfilePage> {
+        return flow {
+            val response = service.fetchProfile()
+            validateResponse(response)
+            val html = response.body()!!
+            val page = parseProfilePage(html)
+            savePage(page)
+            emit(page)
         }
-        return o
     }
 
     private fun parseProfilePage(html: String): ProfilePage {
@@ -264,7 +206,7 @@ class TimeTrackerRemoteDataSource(
         ProfilePageSaver(preferences).save(page)
     }
 
-    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        return Observable.empty()
+    override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return emptyFlow()
     }
 }

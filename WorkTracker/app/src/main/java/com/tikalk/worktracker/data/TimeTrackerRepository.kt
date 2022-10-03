@@ -38,13 +38,14 @@ import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimerPage
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 import java.util.Calendar
 
 class TimeTrackerRepository(
@@ -52,9 +53,9 @@ class TimeTrackerRepository(
     private val remoteRepository: TimeTrackerRemoteDataSource
 ) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
+    override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.editPage(recordId, refresh),
                 remoteRepository.editPage(recordId, refresh)
             )
@@ -62,9 +63,9 @@ class TimeTrackerRepository(
         return localRepository.editPage(recordId, refresh)
     }
 
-    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
+    override fun profilePage(refresh: Boolean): Flow<ProfilePage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.profilePage(refresh),
                 remoteRepository.profilePage(refresh)
             )
@@ -72,9 +73,9 @@ class TimeTrackerRepository(
         return localRepository.profilePage(refresh)
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
+    override fun projectsPage(refresh: Boolean): Flow<ProjectsPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.projectsPage(refresh),
                 remoteRepository.projectsPage(refresh)
             )
@@ -82,9 +83,9 @@ class TimeTrackerRepository(
         return localRepository.projectsPage(refresh)
     }
 
-    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
+    override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.reportFormPage(refresh),
                 remoteRepository.reportFormPage(refresh)
             )
@@ -92,9 +93,9 @@ class TimeTrackerRepository(
         return localRepository.reportFormPage(refresh)
     }
 
-    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.reportPage(filter, refresh),
                 remoteRepository.reportPage(filter, refresh)
             )
@@ -102,9 +103,9 @@ class TimeTrackerRepository(
         return localRepository.reportPage(filter, refresh)
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
+    override fun tasksPage(refresh: Boolean): Flow<ProjectTasksPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.tasksPage(refresh),
                 remoteRepository.tasksPage(refresh)
             )
@@ -112,9 +113,9 @@ class TimeTrackerRepository(
         return localRepository.tasksPage(refresh)
     }
 
-    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
+    override fun usersPage(refresh: Boolean): Flow<UsersPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.usersPage(refresh),
                 remoteRepository.usersPage(refresh)
             )
@@ -122,9 +123,9 @@ class TimeTrackerRepository(
         return localRepository.usersPage(refresh)
     }
 
-    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
+    override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
         if (refresh) {
-            return Observable.merge(
+            return merge(
                 localRepository.timeListPage(date, refresh),
                 remoteRepository.timeListPage(date, refresh)
             )
@@ -132,8 +133,8 @@ class TimeTrackerRepository(
         return localRepository.timeListPage(date, refresh)
     }
 
-    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        return localRepository.timerPage(refresh)
+    override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return localRepository.puncherPage(refresh)
     }
 
     override suspend fun savePage(page: TimeListPage) {

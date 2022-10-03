@@ -48,6 +48,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.DateTimePickerDialog
@@ -77,10 +78,8 @@ import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
@@ -94,8 +93,6 @@ class TimeEditFragment : TimeFormFragment() {
     private var _binding: TimeFormBinding? = null
     private val binding get() = _binding!!
 
-    private var date: Calendar = Calendar.getInstance()
-
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
     private var durationPickerDialog: TimePickerDialog? = null
@@ -106,7 +103,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
     }
 
     override fun onCreateView(
@@ -181,8 +178,6 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
 
         if (record.id == TikalEntity.ID_NONE) {
-            record.date = date
-
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_RECORD_ID)) {
@@ -267,11 +262,11 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
-        val projectItems = projects?.toTypedArray() ?: emptyArray()
+        val options = addEmptyProject(projects).toTypedArray()
         binding.projectInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            binding.projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        if (options.isNotEmpty()) {
+            binding.projectInput.setSelection(max(0, findProject(options, record.project)))
             projectItemSelected(record.project)
         }
         binding.projectInput.requestFocus()
@@ -292,6 +287,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickStartTime() {
         val cal = getCalendar(record.start)
+        // Server granularity is seconds.
+        cal.second = 0
+        cal.millis = 0
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
@@ -331,6 +329,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickFinishTime() {
         val cal = getCalendar(record.finish)
+        // Server granularity is seconds.
+        cal.second = 0
+        cal.millis = 0
         val year = cal.year
         val month = cal.month
         val dayOfMonth = cal.dayOfMonth
@@ -369,14 +370,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun getCalendar(cal: Calendar?): Calendar {
-        if (cal == null) {
-            val calDate = Calendar.getInstance()
-            calDate.year = date.year
-            calDate.month = date.month
-            calDate.dayOfMonth = date.dayOfMonth
-            return calDate
-        }
-        return cal
+        return cal ?: Calendar.getInstance().apply { timeInMillis = record.date.timeInMillis }
     }
 
     private fun validateForm(record: TimeRecord): Boolean {
@@ -448,7 +442,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun filterTasks(project: Project) {
         Timber.i("filterTasks $project")
         val context = this.context ?: return
-        val options = addEmpty(project.tasks)
+        val options = addEmptyTask(project.tasks)
         binding.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
         binding.taskInput.setSelection(findTask(options, record.task))
@@ -490,28 +484,30 @@ class TimeEditFragment : TimeFormFragment() {
                 return
             }
         }
-        date.timeInMillis = args.getLong(EXTRA_DATE, date.timeInMillis)
+        record.date.timeInMillis = args.getLong(EXTRA_DATE, record.date.timeInMillis)
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
-        delegate.dataSource.editPage(recordId, firstRun)
-            .subscribeOn(Schedulers.io())
-            .doOnSubscribe { showProgressMain(true) }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPage(page)
-                populateAndBind()
+        showProgress(true)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.editPage(recordId, firstRun)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPage(page)
+                        populateAndBind()
+                        showProgress(false)
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
                 showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-                handleError(err)
-            })
-            .addTo(disposables)
+                handleError(e)
+            }
+        }
     }
 
     private fun processPage(page: TimeEditPage) {
-        timeViewModel.projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
     }
@@ -589,6 +585,8 @@ class TimeEditFragment : TimeFormFragment() {
         }
 
         val dateValue = formatSystemDate(record.date)!!
+        showProgress(false)
+
         var startValue: String? = null
         var finishValue: String? = null
         var durationValue: String? = null
@@ -736,13 +734,11 @@ class TimeEditFragment : TimeFormFragment() {
         if (isVisible) {
             bindRecord(record)
         }
-        outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val recordParcel: TimeRecordEntity? =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
@@ -762,10 +758,10 @@ class TimeEditFragment : TimeFormFragment() {
         timeViewModel.onRecordEditFavorited(record)
     }
 
-    fun editRecord(record: TimeRecord, date: Calendar, isStop: Boolean = false) {
+    fun editRecord(record: TimeRecord, isStop: Boolean = false) {
         Timber.i("editRecord record=$record")
         setRecordValue(record.copy())
-        this.date = date
+
         var args = arguments
         if (args == null) {
             args = Bundle()
@@ -773,7 +769,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         args.apply {
             clear()
-            putLong(EXTRA_DATE, date.timeInMillis)
+            putLong(EXTRA_DATE, record.date.timeInMillis)
             putLong(EXTRA_PROJECT_ID, record.project.id)
             putLong(EXTRA_TASK_ID, record.task.id)
             putLong(EXTRA_START_TIME, record.startTime)
@@ -950,7 +946,5 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
         const val EXTRA_LOCATION = TimeFormFragment.EXTRA_LOCATION
         const val EXTRA_STOP = TimeFormFragment.EXTRA_STOP
-
-        private const val STATE_DATE = "date"
     }
 }

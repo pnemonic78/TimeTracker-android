@@ -63,6 +63,12 @@ open class TimeRecord(
     var location: Location = Location.EMPTY
 ) : TikalEntity(id) {
 
+    init {
+        // Server granularity is seconds.
+        start?.millis = 0
+        finish?.millis = 0
+    }
+
     var start: Calendar? = start
         set(value) {
             if (value != null) this.duration = 0L

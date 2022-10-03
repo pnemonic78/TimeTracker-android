@@ -45,7 +45,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -70,9 +72,9 @@ import com.tikalk.worktracker.time.dayOfMonth
 import com.tikalk.worktracker.time.millis
 import com.tikalk.worktracker.time.month
 import com.tikalk.worktracker.time.year
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 import kotlin.math.max
@@ -96,7 +98,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
         filterData.value = ReportFilter()
         filterData.observe(this) { filter ->
             if (filter != null) {
@@ -234,7 +236,7 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.d("filterTasks project=$project")
         val context = this.context ?: return
         if (!isVisible) return
-        val options = addEmpty(project.tasks)
+        val options = addEmptyTask(project.tasks)
         bindingForm.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
 
@@ -276,20 +278,22 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun run() {
         Timber.i("run first=$firstRun")
-        delegate.dataSource.reportFormPage(firstRun)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPage(page)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.reportFormPage(firstRun)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPage(page)
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
+                handleError(e)
+            }
+        }
     }
 
     private fun processPage(page: ReportFormPage) {
-        timeViewModel.projectsData.value = addEmpties(page.projects)
+        timeViewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
 
         val filter = filterData.value
@@ -371,11 +375,11 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
         Timber.i("bindProjects filter=$filter projects=$projects")
-        val projectItems = addEmpties(projects).toTypedArray()
+        val options = addEmptyProject(projects).toTypedArray()
         bindingForm.projectInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            bindingForm.projectInput.setSelection(max(0, findProject(projectItems, filter.project)))
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        if (options.isNotEmpty()) {
+            bindingForm.projectInput.setSelection(max(0, findProject(options, filter.project)))
             projectItemSelected(filter.project)
         }
         bindingForm.projectInput.requestFocus()

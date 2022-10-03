@@ -56,10 +56,8 @@ import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.set
 import com.tikalk.worktracker.net.InternetDialogFragment
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -134,16 +132,18 @@ class ProfileFragment : InternetDialogFragment() {
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        delegate.dataSource.profilePage(firstRun)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPage(page)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.profilePage(firstRun)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPage(page)
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
+                handleError(e)
+            }
+        }
     }
 
     private fun processPage(page: ProfilePage) {

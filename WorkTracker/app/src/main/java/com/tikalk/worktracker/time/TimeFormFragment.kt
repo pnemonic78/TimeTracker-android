@@ -244,7 +244,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     protected open fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
 
-    protected fun addEmpties(projects: List<Project>?): List<Project> {
+    protected fun addEmptyProject(projects: List<Project>?): List<Project> {
         val projectEmptyFind = projects?.find { it.isEmpty() }
         val projectEmpty = projectEmptyFind ?: timeViewModel.projectEmpty
         projectEmpty.name = getEmptyProjectName()
@@ -259,17 +259,14 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         }
         timeViewModel.projectEmpty = projectEmpty
 
-        val taskEmpty = projectEmpty.tasksById[TikalEntity.ID_NONE] ?: timeViewModel.taskEmpty
-        taskEmpty.name = getEmptyTaskName()
-        timeViewModel.taskEmpty = taskEmpty
-
         return projectsWithEmpty
     }
 
-    protected fun addEmpty(tasks: List<ProjectTask>): List<ProjectTask> {
+    protected fun addEmptyTask(tasks: List<ProjectTask>): List<ProjectTask> {
         val taskEmptyFind = tasks.find { it.isEmpty() }
         val taskEmpty = taskEmptyFind ?: timeViewModel.taskEmpty
         taskEmpty.name = getEmptyTaskName()
+        timeViewModel.taskEmpty = taskEmpty
         return if (taskEmptyFind != null) {
             tasks.sortedBy { it.name }
         } else {

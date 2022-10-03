@@ -46,6 +46,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.worktracker.BuildConfig
@@ -62,18 +64,17 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.findProject
 import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.isNullOrEmpty
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 class PuncherFragment : TimeFormFragment() {
@@ -81,11 +82,11 @@ class PuncherFragment : TimeFormFragment() {
     private var _binding: FragmentPuncherBinding? = null
     private val binding get() = _binding!!
 
-    private var timer: Disposable? = null
+    private var timer: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
     }
 
     override fun onCreateView(
@@ -99,6 +100,7 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val binding = this.binding
 
         binding.projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -160,7 +162,7 @@ class PuncherFragment : TimeFormFragment() {
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
         val context = this.context ?: return
-        if (!isVisible) return
+        val binding = _binding ?: return
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(timeViewModel.taskEmpty)
@@ -192,11 +194,12 @@ class PuncherFragment : TimeFormFragment() {
 
     private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
         Timber.i("bindProjects record=$record projects=$projects")
-        val projectItems = projects?.toTypedArray() ?: emptyArray()
+        val binding = _binding ?: return
+        val options = addEmptyProject(projects).toTypedArray()
         binding.projectInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, projectItems)
-        if (projectItems.isNotEmpty()) {
-            binding.projectInput.setSelection(max(0, findProject(projectItems, record.project)))
+            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
+        if (options.isNotEmpty()) {
+            binding.projectInput.setSelection(max(0, findProject(options, record.project)))
             projectItemSelected(record.project)
         }
         binding.projectInput.requestFocus()
@@ -204,6 +207,7 @@ class PuncherFragment : TimeFormFragment() {
 
     private fun bindLocation(context: Context, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
+        val binding = _binding ?: return
         val locations = buildLocations(context)
         binding.locationInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
@@ -242,7 +246,7 @@ class PuncherFragment : TimeFormFragment() {
 
     private fun stopTimerCancel() {
         Timber.i("stopTimerCancel")
-        timer?.dispose()
+        timer?.cancel()
 
         record.start = null
         record.finish = null
@@ -262,7 +266,8 @@ class PuncherFragment : TimeFormFragment() {
     private fun filterTasks(project: Project) {
         Timber.d("filterTasks project=$project")
         val context = this.context ?: return
-        val options = addEmpty(project.tasks)
+        val binding = _binding ?: return
+        val options = addEmptyTask(project.tasks)
         binding.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
         binding.taskInput.setSelection(findTask(options, record.task))
@@ -270,16 +275,19 @@ class PuncherFragment : TimeFormFragment() {
 
     private fun maybeStartTimer() {
         val timer = this.timer
-        if ((timer == null) || timer.isDisposed) {
-            this.timer = Observable.interval(1L, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { updateTimer() }
-                .addTo(disposables)
+        if ((timer == null) || timer.isCancelled || timer.isCompleted) {
+            this.timer = lifecycleScope.launch {
+                while (true) {
+                    delay(1000)
+                    updateTimer()
+                }
+            }
         }
         updateTimer()
     }
 
     private fun updateTimer() {
+        val binding = _binding ?: return
         val now = System.currentTimeMillis()
         val elapsedSeconds = (now - record.startTime) / DateUtils.SECOND_IN_MILLIS
         binding.timerText.text = DateUtils.formatElapsedTime(elapsedSeconds)
@@ -288,7 +296,7 @@ class PuncherFragment : TimeFormFragment() {
     private fun projectItemSelected(project: Project) {
         Timber.d("projectItemSelected project=$project")
         setRecordProject(project)
-        if (!isVisible) return
+        val binding = _binding ?: return
         filterTasks(project)
         binding.actionStart.isEnabled =
             (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
@@ -297,7 +305,7 @@ class PuncherFragment : TimeFormFragment() {
     private fun taskItemSelected(task: ProjectTask) {
         Timber.d("taskItemSelected task=$task")
         setRecordTask(task)
-        if (!isVisible) return
+        val binding = _binding ?: return
         binding.actionStart.isEnabled =
             (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
@@ -305,7 +313,7 @@ class PuncherFragment : TimeFormFragment() {
     private fun locationItemSelected(location: LocationItem) {
         Timber.d("locationItemSelected location=$location")
         setRecordLocation(location.location)
-        if (!isVisible) return
+        val binding = _binding ?: return
         binding.actionStart.isEnabled =
             (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
     }
@@ -391,22 +399,24 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun run() {
         Timber.i("run first=$firstRun")
-        delegate.dataSource.timerPage(firstRun)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPage(page)
-                populateAndBind()
-                handleArguments()
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.puncherPage(firstRun)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPage(page)
+                        populateAndBind()
+                        handleArguments()
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
+                handleError(e)
+            }
+        }
     }
 
-    private fun processPage(page: TimerPage) {
-        timeViewModel.projectsData.value = addEmpties(page.projects)
+    private fun processPage(page: PuncherPage) {
+        timeViewModel.projectsData.value = page.projects
         setRecordValue(page.record)
     }
 

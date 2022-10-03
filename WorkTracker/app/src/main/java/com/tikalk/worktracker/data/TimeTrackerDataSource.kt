@@ -36,25 +36,25 @@ import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import com.tikalk.worktracker.model.time.TimerPage
-import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 
 interface TimeTrackerDataSource {
-    fun editPage(recordId: Long, refresh: Boolean = true): Observable<TimeEditPage>
-    fun profilePage(refresh: Boolean = true): Observable<ProfilePage>
-    fun projectsPage(refresh: Boolean = true): Observable<ProjectsPage>
-    fun reportFormPage(refresh: Boolean = true): Observable<ReportFormPage>
-    fun reportPage(filter: ReportFilter, refresh: Boolean = true): Observable<ReportPage>
-    fun tasksPage(refresh: Boolean = true): Observable<ProjectTasksPage>
-    fun timeListPage(date: Calendar, refresh: Boolean = true): Observable<TimeListPage>
-    fun timerPage(refresh: Boolean = true): Observable<TimerPage>
-    fun usersPage(refresh: Boolean = true): Observable<UsersPage>
+    fun editPage(recordId: Long, refresh: Boolean = true): Flow<TimeEditPage>
+    fun profilePage(refresh: Boolean = true): Flow<ProfilePage>
+    fun projectsPage(refresh: Boolean = true): Flow<ProjectsPage>
+    fun puncherPage(refresh: Boolean = true): Flow<PuncherPage>
+    fun reportFormPage(refresh: Boolean = true): Flow<ReportFormPage>
+    fun reportPage(filter: ReportFilter, refresh: Boolean = true): Flow<ReportPage>
+    fun tasksPage(refresh: Boolean = true): Flow<ProjectTasksPage>
+    fun timeListPage(date: Calendar, refresh: Boolean = true): Flow<TimeListPage>
+    fun usersPage(refresh: Boolean = true): Flow<UsersPage>
 
     suspend fun savePage(page: TimeListPage)
 }

@@ -33,6 +33,8 @@
 package com.tikalk.app
 
 import android.app.Dialog
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.IdRes
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -40,11 +42,23 @@ import androidx.fragment.app.FragmentManager
 import androidx.navigation.fragment.findNavController
 
 fun Fragment.runOnUiThread(action: Runnable) {
-    activity!!.runOnUiThread(action)
+    val activity = this.activity
+    if (activity != null) {
+        activity.runOnUiThread(action)
+    } else {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post(action)
+    }
 }
 
 fun Fragment.runOnUiThread(action: () -> Unit) {
-    activity!!.runOnUiThread(action)
+    val activity = this.activity
+    if (activity != null) {
+        activity.runOnUiThread(action)
+    } else {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post(action)
+    }
 }
 
 fun Fragment.topLevel(): Fragment {

@@ -39,7 +39,9 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
@@ -48,9 +50,9 @@ import com.tikalk.worktracker.databinding.FragmentTasksBinding
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.project.ProjectTasksAdapter
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment() {
@@ -63,7 +65,7 @@ class ProjectTasksFragment : InternetFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
         tasksData.observe(this) { tasks ->
             bindList(tasks)
         }
@@ -108,16 +110,18 @@ class ProjectTasksFragment : InternetFragment() {
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
-        delegate.dataSource.tasksPage(firstRun)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                tasksData.value = page.tasks
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                handleError(err)
-            })
-            .addTo(disposables)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.tasksPage(firstRun)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        tasksData.value = page.tasks
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
+                handleError(e)
+            }
+        }
     }
 
     private fun bindList(tasks: List<ProjectTask>) {

@@ -45,6 +45,7 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
+import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
@@ -53,18 +54,16 @@ import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.model.time.TimerPage
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.dayOfMonth
 import com.tikalk.worktracker.time.dayOfWeek
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.merge
 import java.util.Calendar
 import kotlin.math.max
 
@@ -73,9 +72,8 @@ class TimeTrackerLocalDataSource(
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
 
-    override fun editPage(recordId: Long, refresh: Boolean): Observable<TimeEditPage> {
-        val o = PublishSubject.create<TimeEditPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val errorMessage: String? = null
 
@@ -90,10 +88,8 @@ class TimeTrackerLocalDataSource(
                 errorMessage,
                 record.start ?: Calendar.getInstance()
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {
@@ -107,69 +103,59 @@ class TimeTrackerLocalDataSource(
         return null
     }
 
-    override fun projectsPage(refresh: Boolean): Observable<ProjectsPage> {
+    override fun projectsPage(refresh: Boolean): Flow<ProjectsPage> {
         return loadProjects(db)
     }
 
-    private fun loadProjects(db: TrackerDatabase): Observable<ProjectsPage> {
-        val o = PublishSubject.create<ProjectsPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun loadProjects(db: TrackerDatabase): Flow<ProjectsPage> {
+        return flow {
             val projectsDao = db.projectDao()
             val projectsDb = projectsDao.queryAll()
             val projects = projectsDb
                 .filter { it.id != TikalEntity.ID_NONE }
                 .sortedBy { it.name }
             val page = ProjectsPage(projects)
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
-    override fun tasksPage(refresh: Boolean): Observable<ProjectTasksPage> {
+    override fun tasksPage(refresh: Boolean): Flow<ProjectTasksPage> {
         return loadTasks(db)
     }
 
-    private fun loadTasks(db: TrackerDatabase): Observable<ProjectTasksPage> {
-        val o = PublishSubject.create<ProjectTasksPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun loadTasks(db: TrackerDatabase): Flow<ProjectTasksPage> {
+        return flow {
             val tasksDao = db.taskDao()
             val tasksDb = tasksDao.queryAll()
             val tasks = tasksDb
                 .filter { it.id != TikalEntity.ID_NONE }
                 .sortedBy { it.name }
             val page = ProjectTasksPage(tasks)
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
-    override fun usersPage(refresh: Boolean): Observable<UsersPage> {
-        return Observable.merge(
-            Observable.just(UsersPage(listOf(preferences.user))),
-            loadUsers(db).map { it }
+    override fun usersPage(refresh: Boolean): Flow<UsersPage> {
+        return merge(
+            flowOf(UsersPage(listOf(preferences.user))),
+            loadUsers(db)
         )
     }
 
-    private fun loadUsers(db: TrackerDatabase): Observable<UsersPage> {
-        val o = PublishSubject.create<UsersPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun loadUsers(db: TrackerDatabase): Flow<UsersPage> {
+        return flow {
             val userDao = db.userDao()
             val usersDb = userDao.queryAll()
             val users = usersDb
                 .filter { it.id != TikalEntity.ID_NONE }
                 .sortedBy { it.displayName }
             val page = UsersPage(users)
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
-    override fun reportFormPage(refresh: Boolean): Observable<ReportFormPage> {
-        val o = PublishSubject.create<ReportFormPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val filter = ReportFilter()
             val errorMessage: String? = null
@@ -182,10 +168,8 @@ class TimeTrackerLocalDataSource(
                 projects,
                 errorMessage
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
@@ -208,9 +192,8 @@ class TimeTrackerLocalDataSource(
         }
     }
 
-    override fun reportPage(filter: ReportFilter, refresh: Boolean): Observable<ReportPage> {
-        val o = PublishSubject.create<ReportPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
+        return flow {
             val projects = ArrayList<Project>()
 
             val projectsWithTasks = loadProjectsWithTasks(db)
@@ -225,10 +208,8 @@ class TimeTrackerLocalDataSource(
                 records,
                 totals
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadReportRecords(
@@ -262,9 +243,8 @@ class TimeTrackerLocalDataSource(
         return totals
     }
 
-    override fun timeListPage(date: Calendar, refresh: Boolean): Observable<TimeListPage> {
-        val o = PublishSubject.create<TimeListPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val record = TimeRecord.EMPTY
             val errorMessage: String? = null
@@ -287,10 +267,8 @@ class TimeTrackerLocalDataSource(
                 records,
                 totals
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     private suspend fun loadRecords(
@@ -359,7 +337,7 @@ class TimeTrackerLocalDataSource(
         return quota * DateUtils.HOUR_IN_MILLIS
     }
 
-    override fun profilePage(refresh: Boolean): Observable<ProfilePage> {
+    override fun profilePage(refresh: Boolean): Flow<ProfilePage> {
         val page = ProfilePage(
             preferences.user,
             preferences.userCredentials,
@@ -369,26 +347,23 @@ class TimeTrackerLocalDataSource(
             passwordConfirm = null,
             errorMessage = null
         )
-        return Observable.just(page)
+        return flowOf(page)
     }
 
-    override fun timerPage(refresh: Boolean): Observable<TimerPage> {
-        val o = PublishSubject.create<TimerPage>()
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return flow {
             val projects = ArrayList<Project>()
             val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
 
             val projectsWithTasks = loadProjectsWithTasks(db)
             populateProjects(projectsWithTasks, projects)
 
-            val page = TimerPage(
+            val page = PuncherPage(
                 record,
                 projects
             )
-            o.onNext(page)
-            o.onComplete()
+            emit(page)
         }
-        return o
     }
 
     override suspend fun savePage(page: TimeListPage) {

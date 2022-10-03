@@ -49,11 +49,3 @@ fun <E> List<E>.add(index: Int, element: E): List<E> {
     l.add(index, element)
     return l
 }
-
-fun <T> Flow<T>.concat(f2: Flow<T>): Flow<T> {
-    val f1 = this
-    return flow {
-        emitAll(f1)
-        emitAll(f2)
-    }
-}

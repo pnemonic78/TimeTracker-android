@@ -36,7 +36,6 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -46,6 +45,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
@@ -63,11 +63,9 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
@@ -86,7 +84,6 @@ class TimeListFragment : TimeFormFragment(),
     private val listAdapter = TimeListAdapter(this)
     private val totalsData = MutableLiveData<TimeTotals?>()
 
-    private var date: Calendar = Calendar.getInstance()
     private val recordsData = MutableLiveData<List<TimeRecord>>()
 
     /** Is the record from the "timer" or "+" FAB? */
@@ -95,9 +92,9 @@ class TimeListFragment : TimeFormFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
         recordsData.observe(this) { records ->
-            bindList(date, records)
+            bindList(records)
         }
         totalsData.observe(this) { totals ->
             if (totals != null) bindTotals(totals)
@@ -167,24 +164,24 @@ class TimeListFragment : TimeFormFragment(),
      * Load and then fetch.
      */
     private fun loadAndFetchPage(date: Calendar, refresh: Boolean) {
-        val dateFormatted = formatSystemDate(date)
-        Timber.i("loadAndFetchPage $dateFormatted refresh=$refresh")
-        this.date = date
+        Timber.i("loadAndFetchPage ${formatSystemDate(date)} refresh=$refresh")
 
-        delegate.dataSource.timeListPage(date, refresh)
-            .subscribeOn(Schedulers.io())
-            .doOnSubscribe { showProgressMain(true) }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ page ->
-                processPageMain(page)
-                handleArguments()
+        showProgress(true)
+        lifecycleScope.launch {
+            try {
+                delegate.dataSource.timeListPage(date, refresh)
+                    .flowOn(Dispatchers.IO)
+                    .collect { page ->
+                        processPage(page)
+                        handleArguments()
+                        showProgress(false)
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading page: ${e.message}")
                 showProgress(false)
-            }, { err ->
-                Timber.e(err, "Error loading page: ${err.message}")
-                showProgress(false)
-                handleError(err)
-            })
-            .addTo(disposables)
+                handleError(e)
+            }
+        }
     }
 
     private var fetchingPage = false
@@ -202,7 +199,6 @@ class TimeListFragment : TimeFormFragment(),
             try {
                 val response = delegate.service.fetchTimes(dateFormatted)
                 if (isValidResponse(response)) {
-                    this@TimeListFragment.date = date
                     val html = response.body()!!
                     processPage(html, date)
                 } else {
@@ -224,17 +220,6 @@ class TimeListFragment : TimeFormFragment(),
         delegate.dataSource.savePage(page)
     }
 
-    private fun processPageMain(page: TimeListPage) {
-        timeViewModel.projectsData.value = page.projects.sortedBy { it.name }
-        recordsData.value = page.records
-        var totals = totalsData.value
-        if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
-            totals = page.totals
-        }
-        totalsData.value = totals
-        setRecordValue(page.record)
-    }
-
     private fun processPage(page: TimeListPage) {
         timeViewModel.projectsData.postValue(page.projects.sortedBy { it.name })
         recordsData.postValue(page.records)
@@ -247,7 +232,9 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     @MainThread
-    private fun bindList(date: Calendar, records: List<TimeRecord>) {
+    private fun bindList(records: List<TimeRecord>) {
+        val record = records.firstOrNull()
+        val date = record?.date ?: this.record.date
         binding.dateInput.text =
             DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
         listAdapter.submitList(records)
@@ -310,23 +297,8 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putLong(STATE_DATE, date.timeInMillis)
-        outState.putParcelable(STATE_TOTALS, totalsData.value)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
-        totalsData.value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            savedInstanceState.getParcelable(STATE_TOTALS, TimeTotals::class.java) ?: TimeTotals()
-        } else {
-            savedInstanceState.getParcelable(STATE_TOTALS) ?: TimeTotals()
-        }
-    }
-
     private fun pickDate() {
+        val date = record.date
         val cal = date
         val year = cal.year
         val month = cal.month
@@ -364,7 +336,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun addTime() {
-        editRecord(TimeRecord.EMPTY)
+        editRecord(TimeRecord.EMPTY.copy().apply { date = record.date })
     }
 
     fun editRecord(record: TimeRecord, isTimer: Boolean = false) {
@@ -373,11 +345,11 @@ class TimeListFragment : TimeFormFragment(),
 
         val form = findTopFormFragment()
         if (form is TimeEditFragment) {
-            form.editRecord(record, date, isStop = isTimer)
+            form.editRecord(record, isStop = isTimer)
         } else {
             Timber.i("editRecord editor.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
             Bundle().apply {
-                putLong(TimeEditFragment.EXTRA_DATE, date.timeInMillis)
+                putLong(TimeEditFragment.EXTRA_DATE, record.date.timeInMillis)
                 putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
                 putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
                 putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
@@ -400,7 +372,7 @@ class TimeListFragment : TimeFormFragment(),
                 showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
-                    processPage(html, date)
+                    processPage(html, record.date)
                 } else {
                     authenticateMain()
                 }
@@ -433,14 +405,14 @@ class TimeListFragment : TimeFormFragment(),
 
     private fun navigateNextDay() {
         Timber.i("navigateNextDay")
-        val cal = date
+        val cal = record.date
         cal.add(Calendar.DATE, 1)
         navigateDate(cal)
     }
 
     private fun navigatePreviousDay() {
         Timber.i("navigatePreviousDay")
-        val cal = date
+        val cal = record.date
         cal.add(Calendar.DATE, -1)
         navigateDate(cal)
     }
@@ -452,19 +424,15 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private fun navigateDate(date: Calendar, refresh: Boolean = true) {
-        Timber.i("navigateDate $date")
+        Timber.i("navigateDate ${formatSystemDate(date)}")
         loadAndFetchPage(date, refresh)
         hideEditor()
-    }
-
-    private fun isLocaleRTL(): Boolean {
-        return Locale.getDefault().language == "iw"
     }
 
     @MainThread
     override fun run() {
         Timber.i("run first=$firstRun")
-        loadAndFetchPage(date, firstRun)
+        loadAndFetchPage(record.date, firstRun)
     }
 
     private fun handleArguments() {
@@ -513,7 +481,7 @@ class TimeListFragment : TimeFormFragment(),
                 val recordsNew: MutableList<TimeRecord> = ArrayList(records)
                 recordsNew.add(record)
                 recordsNew.sortBy { it.startTime }
-                runOnUiThread { bindList(date, recordsNew) }
+                runOnUiThread { bindList(recordsNew) }
             }
 
             if (recordForTimer) {
@@ -523,7 +491,7 @@ class TimeListFragment : TimeFormFragment(),
                     showTimer(this, true)
                 }
                 // Refresh the list with the inserted item.
-                maybeFetchPage(date, responseHtml)
+                maybeFetchPage(record.date, responseHtml)
                 return
             }
         }
@@ -539,11 +507,11 @@ class TimeListFragment : TimeFormFragment(),
                     if (index >= 0) {
                         recordsNew[index] = record
                         recordsNew.sortBy { it.startTime }
-                        runOnUiThread { bindList(date, recordsNew) }
+                        runOnUiThread { bindList(recordsNew) }
                     }
                 }
             }
-            maybeFetchPage(date, responseHtml)
+            maybeFetchPage(record.date, responseHtml)
         }
     }
 
@@ -564,9 +532,9 @@ class TimeListFragment : TimeFormFragment(),
             // Refresh the list with the deleted item.
             recordsData.value?.let { records ->
                 val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
-                bindList(date, recordsActive)
+                bindList(recordsActive)
             }
-            maybeFetchPage(date, responseHtml)
+            maybeFetchPage(record.date, responseHtml)
         }
     }
 
@@ -636,9 +604,6 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     companion object {
-        private const val STATE_DATE = "date"
-        private const val STATE_TOTALS = "totals"
-
         const val ACTION_DATE = TrackerFragmentDelegate.ACTION_DATE
         const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
         const val ACTION_TODAY = TrackerFragmentDelegate.ACTION_TODAY
