@@ -87,6 +87,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         val inputDate = form.selectByName("date") ?: return
         val dateValue = inputDate.value()
         page.date = parseSystemDate(dateValue) ?: return
+        page.record.date = page.date
 
         super.populateForm(doc, page, form, inputProjects, inputTasks)
     }

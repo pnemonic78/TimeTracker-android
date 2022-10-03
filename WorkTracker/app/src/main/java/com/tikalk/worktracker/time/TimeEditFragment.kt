@@ -93,8 +93,6 @@ class TimeEditFragment : TimeFormFragment() {
     private var _binding: TimeFormBinding? = null
     private val binding get() = _binding!!
 
-    private var date: Calendar = Calendar.getInstance()
-
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
     private var durationPickerDialog: TimePickerDialog? = null
@@ -180,8 +178,6 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
 
         if (record.id == TikalEntity.ID_NONE) {
-            record.date = date
-
             val args = arguments
             if (args != null) {
                 if (args.containsKey(EXTRA_RECORD_ID)) {
@@ -374,14 +370,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun getCalendar(cal: Calendar?): Calendar {
-        if (cal == null) {
-            val calDate = Calendar.getInstance()
-            calDate.year = date.year
-            calDate.month = date.month
-            calDate.dayOfMonth = date.dayOfMonth
-            return calDate
-        }
-        return cal
+        return cal ?: Calendar.getInstance().apply { timeInMillis = record.date.timeInMillis }
     }
 
     private fun validateForm(record: TimeRecord): Boolean {
@@ -495,7 +484,7 @@ class TimeEditFragment : TimeFormFragment() {
                 return
             }
         }
-        date.timeInMillis = args.getLong(EXTRA_DATE, date.timeInMillis)
+        record.date.timeInMillis = args.getLong(EXTRA_DATE, record.date.timeInMillis)
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
@@ -596,6 +585,8 @@ class TimeEditFragment : TimeFormFragment() {
         }
 
         val dateValue = formatSystemDate(record.date)!!
+        showProgress(false)
+
         var startValue: String? = null
         var finishValue: String? = null
         var durationValue: String? = null
@@ -743,13 +734,11 @@ class TimeEditFragment : TimeFormFragment() {
         if (isVisible) {
             bindRecord(record)
         }
-        outState.putLong(STATE_DATE, date.timeInMillis)
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        date.timeInMillis = savedInstanceState.getLong(STATE_DATE)
         val recordParcel: TimeRecordEntity? =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
@@ -769,10 +758,10 @@ class TimeEditFragment : TimeFormFragment() {
         timeViewModel.onRecordEditFavorited(record)
     }
 
-    fun editRecord(record: TimeRecord, date: Calendar, isStop: Boolean = false) {
+    fun editRecord(record: TimeRecord, isStop: Boolean = false) {
         Timber.i("editRecord record=$record")
         setRecordValue(record.copy())
-        this.date = date
+
         var args = arguments
         if (args == null) {
             args = Bundle()
@@ -780,7 +769,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
         args.apply {
             clear()
-            putLong(EXTRA_DATE, date.timeInMillis)
+            putLong(EXTRA_DATE, record.date.timeInMillis)
             putLong(EXTRA_PROJECT_ID, record.project.id)
             putLong(EXTRA_TASK_ID, record.task.id)
             putLong(EXTRA_START_TIME, record.startTime)
@@ -957,7 +946,5 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
         const val EXTRA_LOCATION = TimeFormFragment.EXTRA_LOCATION
         const val EXTRA_STOP = TimeFormFragment.EXTRA_STOP
-
-        private const val STATE_DATE = "date"
     }
 }

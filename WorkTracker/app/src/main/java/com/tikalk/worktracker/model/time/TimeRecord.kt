@@ -40,7 +40,6 @@ import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.isSameDay
 import com.tikalk.worktracker.time.millis
-import com.tikalk.worktracker.time.second
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
 import java.util.Calendar
