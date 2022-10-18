@@ -41,7 +41,7 @@ import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
-import io.reactivex.rxjava3.core.SingleObserver
+import kotlinx.coroutines.flow.FlowCollector
 import org.xmlpull.v1.XmlSerializer
 import java.io.File
 import java.io.FileWriter
@@ -66,9 +66,9 @@ class ReportExporterXML(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
+        collector: FlowCollector<Uri>
     ): ReportExporterRunner {
-        return ReportExporterXMLRunner(context, records, filter, totals, observer)
+        return ReportExporterXMLRunner(context, records, filter, totals, collector)
     }
 
     private class ReportExporterXMLRunner(
@@ -76,9 +76,9 @@ class ReportExporterXML(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
-    ) : ReportExporterRunner(context, records, filter, totals, observer) {
-        override fun writeContents(
+        collector: FlowCollector<Uri>
+    ) : ReportExporterRunner(context, records, filter, totals, collector) {
+        override suspend fun writeContents(
             context: Context,
             records: List<TimeRecord>,
             filter: ReportFilter,
@@ -97,7 +97,6 @@ class ReportExporterXML(
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
-            out = writer
             val xmlWriter: XmlSerializer = Xml.newSerializer()
 
             val ns: String? = null
@@ -160,7 +159,6 @@ class ReportExporterXML(
             xmlWriter.endTag(ns, "rows")
             xmlWriter.endDocument()
             writer.close()
-            out = null
 
             return file
         }

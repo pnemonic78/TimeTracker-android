@@ -12,8 +12,6 @@ object Android {
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
         const val room = "2.4.3"
-        const val rxAndroid = "3.0.0"
-        const val rxKotlin = "3.0.1"
         const val security = "1.1.0-alpha03"
         const val test = "1.4.0"
     }
@@ -70,12 +68,6 @@ object Android {
         const val okhttp_url = "com.squareup.okhttp3:okhttp-urlconnection:${Version.okhttp}"
         const val retrofit = "com.squareup.retrofit2:retrofit:${Version.retrofit}"
         const val retrofit_scalars = "com.squareup.retrofit2:converter-scalars:${Version.retrofit}"
-    }
-
-    object Reactive {
-        const val retrofit = "com.squareup.retrofit2:adapter-rxjava3:${Version.retrofit}"
-        const val rxandroid="io.reactivex.rxjava3:rxandroid:${Version.rxAndroid}"
-        const val rxkotlin="io.reactivex.rxjava3:rxkotlin:${Version.rxKotlin}"
     }
 
     object Test {

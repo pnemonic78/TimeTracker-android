@@ -154,7 +154,6 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        disposables.clear()
         _binding = null
     }
 

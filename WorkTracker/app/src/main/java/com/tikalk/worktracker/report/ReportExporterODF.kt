@@ -42,7 +42,7 @@ import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.SYSTEM_DATE_PATTERN
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.rxjava3.core.SingleObserver
+import kotlinx.coroutines.flow.FlowCollector
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument
 import org.odftoolkit.odfdom.doc.table.OdfTableCell
 import org.odftoolkit.odfdom.dom.attribute.style.StyleDataStyleNameAttribute
@@ -75,9 +75,9 @@ class ReportExporterODF(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
+        collector: FlowCollector<Uri>
     ): ReportExporterRunner {
-        return ReportExporterODFRunner(context, records, filter, totals, observer)
+        return ReportExporterODFRunner(context, records, filter, totals, collector)
     }
 
     private class ReportExporterODFRunner(
@@ -85,9 +85,9 @@ class ReportExporterODF(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
-    ) : ReportExporterRunner(context, records, filter, totals, observer) {
-        override fun writeContents(
+        collector: FlowCollector<Uri>
+    ) : ReportExporterRunner(context, records, filter, totals, collector) {
+        override suspend fun writeContents(
             context: Context,
             records: List<TimeRecord>,
             filter: ReportFilter,
@@ -109,7 +109,6 @@ class ReportExporterODF(
             val currencyCode = currency.currencyCode
 
             val file = File(folder, filenamePrefix + EXTENSION)
-            out = null
 
             val doc = OdfSpreadsheetDocument.newSpreadsheetDocument()
             val table = doc.tableList[0]
