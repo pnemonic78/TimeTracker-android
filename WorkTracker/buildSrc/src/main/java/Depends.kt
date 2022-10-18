@@ -2,7 +2,7 @@ object Android {
     object Version {
         const val compileSdk = 33
         const val minSdk = 23
-        const val targetSdk = 32
+        const val targetSdk = 33
 
         const val compose = "1.2.1"
         const val hilt = "2.42"
@@ -36,13 +36,13 @@ object Android {
     }
 
     object Jetpack {
-        const val appcompat = "androidx.appcompat:appcompat:1.6.0-beta01"
+        const val appcompat = "androidx.appcompat:appcompat:1.7.0-alpha01"
         const val material = "androidx.compose.material:material:${Version.compose}"
         const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
         const val compose = "androidx.compose.ui:ui:${Version.compose}"
         const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.4"
-        const val core = "androidx.core:core-ktx:1.7.0"
+        const val core = "androidx.core:core-ktx:1.9.0"
         const val navigationCompose = "androidx.navigation:navigation-compose:${Version.navigation}"
         const val navigationFragment = "androidx.navigation:navigation-fragment-ktx:${Version.navigation}"
         const val navigationUI = "androidx.navigation:navigation-ui-ktx:${Version.navigation}"

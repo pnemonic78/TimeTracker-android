@@ -74,6 +74,7 @@ dependencies {
     // Jetpack
     implementation(Android.Jetpack.appcompat)
     implementation(Android.Jetpack.constraint_layout)
+    implementation(Android.Jetpack.core)
     implementation(Android.Jetpack.preference)
     implementation(Android.Jetpack.security)
 
