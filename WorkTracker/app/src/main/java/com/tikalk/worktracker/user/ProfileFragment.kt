@@ -83,6 +83,7 @@ class ProfileFragment : InternetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
+        isCancelable = true
 
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
@@ -134,7 +135,7 @@ class ProfileFragment : InternetDialogFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                delegate.dataSource.profilePage(firstRun)
+                dataSource.profilePage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -274,7 +275,7 @@ class ProfileFragment : InternetDialogFragment() {
 
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val response = delegate.service.editProfile(
+                    val response = service.editProfile(
                         nameValue,
                         loginValue,
                         passwordValue,

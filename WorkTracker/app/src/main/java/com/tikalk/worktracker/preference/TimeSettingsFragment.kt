@@ -43,11 +43,12 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import org.koin.android.ext.android.inject
+import javax.inject.Inject
 
 class TimeSettingsFragment : TikalPreferenceFragment() {
 
-    private val preferences by inject<TimeTrackerPrefs>()
+    @Inject
+    lateinit var preferences: TimeTrackerPrefs
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)

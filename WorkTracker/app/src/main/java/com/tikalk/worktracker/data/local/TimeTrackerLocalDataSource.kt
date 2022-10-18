@@ -65,9 +65,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
 import java.util.Calendar
+import javax.inject.Inject
 import kotlin.math.max
 
-class TimeTrackerLocalDataSource(
+class TimeTrackerLocalDataSource @Inject constructor(
     private val db: TrackerDatabase,
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {

@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("dagger.hilt.android.plugin")
     kotlin("android")
     kotlin("kapt")
     kotlin("plugin.parcelize")
@@ -112,7 +113,8 @@ dependencies {
     implementation(Java.Document.woodstox)
 
     // Dependency Injection
-    implementation(Android.Inject.koin)
+    implementation(Android.Inject.hilt)
+    kapt(Android.Inject.hiltCompiler)
 
     // Testing
     testImplementation(Android.Test.junit)

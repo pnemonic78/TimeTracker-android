@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,59 +30,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.app
+package com.tikalk.worktracker.inject
 
-import android.os.Bundle
-import androidx.annotation.StringRes
-import com.tikalk.app.TikalFragment
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
+import android.content.Context
 import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import java.net.CookieHandler
+import javax.inject.Singleton
 
-@AndroidEntryPoint
-abstract class TrackerFragment : TikalFragment,
-    TrackerFragmentDelegate.TrackerFragmentDelegateCallback {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    @Inject
-    lateinit var preferences: TimeTrackerPrefs
-
-    @Inject
-    lateinit var db: TrackerDatabase
-
-    @Inject
-    lateinit var service: TimeTrackerService
-
-    @Inject
-    lateinit var dataSource: TimeTrackerRepository
-
-    protected val delegate = TrackerFragmentDelegate(this, this)
-    protected val firstRun: Boolean get() = delegate.firstRun
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        delegate.onCreate(savedInstanceState)
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
+    @Provides
+    @Singleton
+    fun provideCookieHandler(@ApplicationContext context: Context? = null): CookieHandler {
+        return TimeTrackerServiceFactory.createCookieHandler(context)
     }
 
-    protected fun authenticateMain(submit: Boolean = true) {
-        delegate.authenticateMain(submit)
+    @Provides
+    @Singleton
+    fun provideHttpClient(
+        preferences: TimeTrackerPrefs? = null,
+        cookieHandler: CookieHandler
+    ): OkHttpClient {
+        return TimeTrackerServiceFactory.createHttpClient(preferences, cookieHandler)
     }
 
-    protected fun handleError(error: Throwable) {
-        delegate.handleError(error)
+    @Provides
+    @Singleton
+    fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
+        return TimeTrackerServiceFactory.createRetrofit(httpClient)
     }
 
-    protected open fun handleErrorMain(error: Throwable) {
-        delegate.handleErrorMain(error)
-    }
-
-    override fun showError(@StringRes messageId: Int) {
-        delegate.showError(messageId)
+    @Provides
+    @Singleton
+    fun provideTimeTracker(retrofit: Retrofit): TimeTrackerService {
+        return TimeTrackerServiceFactory.createTimeTracker(retrofit)
     }
 }

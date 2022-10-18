@@ -34,7 +34,9 @@ package com.tikalk.app
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 open class TikalDialogFragment() : AppCompatDialogFragment() {
 
     constructor(args: Bundle) : this() {

@@ -169,7 +169,7 @@ class TimeListFragment : TimeFormFragment(),
         showProgress(true)
         lifecycleScope.launch {
             try {
-                delegate.dataSource.timeListPage(date, refresh)
+                dataSource.timeListPage(date, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -197,7 +197,7 @@ class TimeListFragment : TimeFormFragment(),
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = delegate.service.fetchTimes(dateFormatted)
+                val response = service.fetchTimes(dateFormatted)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processPage(html, date)
@@ -217,7 +217,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
-        delegate.dataSource.savePage(page)
+        dataSource.savePage(page)
     }
 
     private fun processPage(page: TimeListPage) {
@@ -368,7 +368,7 @@ class TimeListFragment : TimeFormFragment(),
         showProgress(true)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = delegate.service.deleteTime(record.id)
+                val response = service.deleteTime(record.id)
                 showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!

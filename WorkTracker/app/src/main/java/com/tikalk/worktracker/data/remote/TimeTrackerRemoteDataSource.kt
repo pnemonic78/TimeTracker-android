@@ -53,8 +53,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import java.util.Calendar
+import javax.inject.Inject
 
-class TimeTrackerRemoteDataSource(
+class TimeTrackerRemoteDataSource @Inject constructor(
     private val service: TimeTrackerService,
     private val db: TrackerDatabase,
     private val preferences: TimeTrackerPrefs

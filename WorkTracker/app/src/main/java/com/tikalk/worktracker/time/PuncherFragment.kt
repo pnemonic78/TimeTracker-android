@@ -400,7 +400,7 @@ class PuncherFragment : TimeFormFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                delegate.dataSource.puncherPage(firstRun)
+                dataSource.puncherPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)

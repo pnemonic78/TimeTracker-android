@@ -39,14 +39,14 @@ import com.tikalk.util.LogTree
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.time.TimerWorker
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
+import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import kotlin.math.max
 
 /**
  * Time tracker application.
  */
+@HiltAndroidApp
 class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCallbacks {
 
     private var active = 0
@@ -59,21 +59,6 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         Timber.plant(LogTree(enableDebugLogging))
 
         registerActivityLifecycleCallbacks(this)
-
-        startKoin {
-            // FIXME https://github.com/InsertKoinIO/koin/issues/1188
-            // FIXME androidLogger(if (enableDebugLogging) Level.DEBUG else Level.INFO)
-            androidContext(this@TrackerApplication)
-            modules(
-                listOf(
-                    preferencesModule,
-                    databaseModule,
-                    retrofitModule,
-                    apiModule,
-                    dataModule
-                )
-            )
-        }
     }
 
     override fun onTerminate() {

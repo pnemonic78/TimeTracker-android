@@ -491,7 +491,7 @@ class TimeEditFragment : TimeFormFragment() {
         showProgress(true)
         lifecycleScope.launch {
             try {
-                delegate.dataSource.editPage(recordId, firstRun)
+                dataSource.editPage(recordId, firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -523,7 +523,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private suspend fun saveRecord(record: TimeRecord) {
-        val recordDao = delegate.db.timeRecordDao()
+        val recordDao = db.timeRecordDao()
         if (record.id == TikalEntity.ID_NONE) {
             recordDao.insert(record.toTimeRecordEntity())
         } else {
@@ -600,7 +600,7 @@ class TimeEditFragment : TimeFormFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val response = if (record.id == TikalEntity.ID_NONE) {
-                    delegate.service.addTime(
+                    service.addTime(
                         projectId = record.project.id,
                         taskId = record.task.id,
                         date = dateValue,
@@ -611,7 +611,7 @@ class TimeEditFragment : TimeFormFragment() {
                         locationId = record.location.id
                     )
                 } else {
-                    delegate.service.editTime(
+                    service.editTime(
                         id = record.id,
                         projectId = record.project.id,
                         taskId = record.task.id,
@@ -691,7 +691,7 @@ class TimeEditFragment : TimeFormFragment() {
         // Fetch from remote server.
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = delegate.service.deleteTime(record.id)
+                val response = service.deleteTime(record.id)
                 showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!

@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* migrate "koin" to Hilt
 * "model" module
 * "domain" module
 * "ui-common" module
