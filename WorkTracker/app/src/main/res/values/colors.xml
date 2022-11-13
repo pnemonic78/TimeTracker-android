@@ -11,7 +11,8 @@
     <color name="icon">@color/black</color>
     <color name="icon_disabled">@color/black_x40</color>
 
-    <color name="remainingQuota">@color/red_xC0</color>
+    <color name="balancePositive">@color/green_xC0</color>
+    <color name="balanceNegative">@color/red_xC0</color>
 
     <color name="uncompleted_entry_normal">@color/green</color>
     <color name="uncompleted_entry_normal_border">@color/black_x40</color>

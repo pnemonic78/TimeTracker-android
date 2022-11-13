@@ -1,132 +1,133 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">גשש טיקאל</string>
+    <string name="app_name">"גשש טיקאל"</string>
 
     <string name="drawer_close">"סגירת חלונית ההזזה לניווט"</string>
 
-    <string name="no">לא</string>
-    <string name="yes">כן</string>
+    <string name="no">"לא"</string>
+    <string name="yes">"כן"</string>
 
     <!-- Strings related to login -->
-    <string name="activity_login">כניסה</string>
-    <string name="prompt_login">שם כניסה</string>
-    <string name="prompt_email">דוא\"ל</string>
-    <string name="prompt_password">סיסמה</string>
-    <string name="action_sign_in">היכנס</string>
-    <string name="error_invalid_login">שם כניסה זה שגוי</string>
-    <string name="error_invalid_email">כתובת דוא\"ל זו שגויה</string>
-    <string name="error_invalid_password">סיסמה זו שגויה</string>
-    <string name="error_field_required">שדה חובה</string>
-    <string name="activity_basic_realm">אימות תחום בסיסי</string>
-    <string name="authentication_basic_realm">אימות תחום בסיסי ל-\"%1$s\"</string>
-    <string name="action_authenticate">אימות</string>
+    <string name="activity_login">"כניסה"</string>
+    <string name="prompt_login">"שם כניסה"</string>
+    <string name="prompt_email">"דוא\"ל"</string>
+    <string name="prompt_password">"סיסמה"</string>
+    <string name="action_sign_in">"היכנס"</string>
+    <string name="error_invalid_login">"שם כניסה זה שגוי"</string>
+    <string name="error_invalid_email">"כתובת דוא\"ל זו שגויה"</string>
+    <string name="error_invalid_password">"סיסמה זו שגויה"</string>
+    <string name="error_field_required">"שדה חובה"</string>
+    <string name="activity_basic_realm">"אימות תחום בסיסי"</string>
+    <string name="authentication_basic_realm">"אימות תחום בסיסי ל-\"%1$s\"</string>
+    <string name="action_authenticate">"אימות"</string>
 
     <!-- Time edit -->
-    <string name="activity_time">גשש שעות</string>
-    <string name="prompt_username">שם משתמש</string>
-    <string name="project_label">פרויקט</string>
-    <string name="task_label">משימה</string>
-    <string name="location_label">מיקום</string>
-    <string name="date_label">תאריך</string>
-    <string name="start_label">שעת התחלה</string>
-    <string name="finish_label">שעת סיום</string>
-    <string name="duration_label">משך הזמן</string>
-    <string name="submit">שמור</string>
-    <string name="note_hint">הערה</string>
-    <string name="error_project_field_required">פרויקט חובה</string>
-    <string name="error_task_field_required">משימה חובה</string>
-    <string name="error_start_field_required">שעת התחלה חובה</string>
-    <string name="error_finish_field_required">שעת סיום חובה</string>
-    <string name="error_finish_time_before_start_time">זמן הסיום חייב להיות מאוחר משעת ההתחלה.</string>
-    <string name="error_location_field_required">מיקום חובה</string>
-    <string name="delete">מחק</string>
+    <string name="activity_time">"גשש שעות"</string>
+    <string name="prompt_username">"שם משתמש"</string>
+    <string name="project_label">"פרויקט"</string>
+    <string name="task_label">"משימה"</string>
+    <string name="location_label">"מיקום"</string>
+    <string name="date_label">"תאריך"</string>
+    <string name="start_label">"שעת התחלה"</string>
+    <string name="finish_label">"שעת סיום"</string>
+    <string name="duration_label">"משך הזמן"</string>
+    <string name="submit">"שמור"</string>
+    <string name="note_hint">"הערה"</string>
+    <string name="error_project_field_required">"פרויקט חובה"</string>
+    <string name="error_task_field_required">"משימה חובה"</string>
+    <string name="error_start_field_required">"שעת התחלה חובה"</string>
+    <string name="error_finish_field_required">"שעת סיום חובה"</string>
+    <string name="error_finish_time_before_start_time">"זמן הסיום חייב להיות מאוחר משעת ההתחלה."</string>
+    <string name="error_location_field_required">"מיקום חובה"</string>
+    <string name="delete">"מחק"</string>
 
     <!-- Time recorder -->
-    <string name="action_start">התחל</string>
-    <string name="action_stop">עצור</string>
+    <string name="action_start">"התחל"</string>
+    <string name="action_stop">"עצור"</string>
 
     <!-- Favourite / Favorite -->
-    <string name="action_favorite">מועדף</string>
-    <string name="favorite_marked">פרויקט <xliff:g id="PROJECT">\"%1$s\"</xliff:g> ומשימה <xliff:g id="TASK">\"%2$s\"</xliff:g> מסומנים כמועדפים.</string>
+    <string name="action_favorite">"מועדף"</string>
+    <string name="favorite_marked">"פרויקט <xliff:g id="PROJECT">\"%1$s\"</xliff:g> ומשימה <xliff:g id="TASK">\"%2$s\"</xliff:g> מסומנים כמועדפים."</string>
 
     <!-- Time list -->
-    <string name="timeList_title">זמנים</string>
+    <string name="timeList_title">"זמנים"</string>
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
-    <string name="day_total">סה\"כ יום</string>
-    <string name="remaining_quota">מכסה נותרת</string>
-    <string name="month_total">סה\"כ חודש</string>
-    <string name="week_total">סה\"כ שבוע</string>
-    <string name="pick_date">מעבר לתאריך</string>
-    <string name="today">היום</string>
-    <string name="add">הוסף</string>
+    <string name="day_total">"סה\"כ יום"</string>
+    <string name="remaining_quota">"מכסה נותרת"</string>
+    <string name="month_total">"סה\"כ חודש"</string>
+    <string name="week_total">"סה\"כ שבוע"</string>
+    <string name="pick_date">"מעבר לתאריך"</string>
+    <string name="today">"היום"</string>
+    <string name="add">"הוסף"</string>
+    <string name="balance">"יִתרָה"</string>
 
     <!-- Settings -->
-    <string name="settings_label" msgid="1626402585530130914">הגדרות</string>
+    <string name="settings_label" msgid="1626402585530130914">"הגדרות"</string>
 
     <!-- Settings - Privacy -->
-    <string name="pref_privacy_security_title">פרטיות ואבטחה</string>
+    <string name="pref_privacy_security_title">"פרטיות ואבטחה"</string>
     <string name="clear_user_data_text" msgid="355574089263023363">"פינוי שטח אחסון"</string>
-    <string name="pref_logout_title">התנתק</string>
+    <string name="pref_logout_title">"התנתק"</string>
 
     <!-- Settings - About -->
-    <string name="pref_about_title">אודות</string>
-    <string name="pref_version_title">גרסת יישום</string>
-    <string name="pref_issue_title">בעיות</string>
-    <string name="pref_issue_summary">דווח על בעיה או בקש תכונה חדשה.</string>
+    <string name="pref_about_title">"אודות"</string>
+    <string name="pref_version_title">"גרסת יישום"</string>
+    <string name="pref_issue_title">"בעיות"</string>
+    <string name="pref_issue_summary">"דווח על בעיה או בקש תכונה חדשה."</string>
 
     <!-- Profile -->
-    <string name="profile">פרופיל</string>
-    <string name="name">שם</string>
-    <string name="prompt_confirmPassword">אשר סיסמה</string>
-    <string name="error_match_password">סיסמאות אינן זהות</string>
-    <string name="uncompleted_entry">משתמש עם הזנת זמן לא הושלמה</string>
-    <string name="role">תפקיד</string>
-    <string name="users">משתמשים</string>
+    <string name="profile">"פרופיל"</string>
+    <string name="name">"שם"</string>
+    <string name="prompt_confirmPassword">"אשר סיסמה"</string>
+    <string name="error_match_password">"סיסמאות אינן זהות"</string>
+    <string name="uncompleted_entry">"משתמש עם הזנת זמן לא הושלמה"</string>
+    <string name="role">"תפקיד"</string>
+    <string name="users">"משתמשים"</string>
 
     <!-- Projects and Tasks -->
-    <string name="projects">פרויקטים</string>
-    <string name="tasks">משימות</string>
-    <string name="name_label">שם</string>
-    <string name="description_label">תיאור</string>
-    <string name="item_select">(בחר)</string>
+    <string name="projects">"פרויקטים"</string>
+    <string name="tasks">"משימות"</string>
+    <string name="name_label">"שם"</string>
+    <string name="description_label">"תיאור"</string>
+    <string name="item_select">"(בחר)"</string>
 
     <!-- Reports -->
-    <string name="reports">דיווחים</string>
-    <string name="reports_header">דיווח: %1$s - %2$s</string>
-    <string name="start_date_label">תאריך התחלה</string>
-    <string name="finish_date_label">תאריך סיום</string>
-    <string name="action_generate">ליצור</string>
-    <string name="error_no_results">אין תוצאות</string>
-    <string name="period_label">תקופת זמן</string>
-    <string name="period_custom">מותאם אישית</string>
-    <string name="period_this_week">השבוע</string>
-    <string name="period_this_month">החודש</string>
-    <string name="period_previous_week">השבוע הקודם</string>
-    <string name="period_previous_month">החודש הקודם</string>
-    <string name="period_yesterday">אתמול</string>
-    <string name="total">סה\"כ</string>
-    <string name="duration_total">סה\"כ שעות</string>
-    <string name="cost_total">סה\"כ עליות</string>
-    <string name="cost">עלות</string>
-    <string name="action_export">ייצא</string>
-    <string name="action_export_csv">ייצא כ-CSV</string>
-    <string name="action_export_html">ייצא כ-HTML</string>
-    <string name="action_export_odf">כ-ייצא ODF</string>
-    <string name="action_export_xml">כ-ייצא XML</string>
-    <string name="item_all">(הכל)</string>
-    <string name="location_label_client">לקוח</string>
-    <string name="location_label_home">בית</string>
-    <string name="location_label_other">אחר</string>
-    <string name="location_label_tikal">טיקאל</string>
-    <string name="action_preview">תצוגה מקדימה</string>
-    <string name="action_preview_csv">תצוגה מקדימה כ-CSV</string>
-    <string name="action_preview_html">תצוגה מקדימה כ-HTML</string>
-    <string name="action_preview_odf">תצוגה מקדימה כ-OpenDocument</string>
-    <string name="action_preview_xml">תצוגה מקדימה כ-XML</string>
+    <string name="reports">"דיווחים"</string>
+    <string name="reports_header">"דיווח: %1$s - %2$s"</string>
+    <string name="start_date_label">"תאריך התחלה"</string>
+    <string name="finish_date_label">"תאריך סיום"</string>
+    <string name="action_generate">"ליצור"</string>
+    <string name="error_no_results">"אין תוצאות"</string>
+    <string name="period_label">"תקופת זמן"</string>
+    <string name="period_custom">"מותאם אישית"</string>
+    <string name="period_this_week">"השבוע"</string>
+    <string name="period_this_month">"החודש"</string>
+    <string name="period_previous_week">"השבוע הקודם"</string>
+    <string name="period_previous_month">"החודש הקודם"</string>
+    <string name="period_yesterday">"אתמול"</string>
+    <string name="total">"סה\"כ"</string>
+    <string name="duration_total">"סה\"כ שעות"</string>
+    <string name="cost_total">"סה\"כ עליות"</string>
+    <string name="cost">"עלות"</string>
+    <string name="action_export">"ייצא"</string>
+    <string name="action_export_csv">"ייצא כ-CSV"</string>
+    <string name="action_export_html">"ייצא כ-HTML"</string>
+    <string name="action_export_odf">"כ-ייצא ODF"</string>
+    <string name="action_export_xml">"כ-ייצא XML"</string>
+    <string name="item_all">"(הכל)"</string>
+    <string name="location_label_client">"לקוח"</string>
+    <string name="location_label_home">"בית"</string>
+    <string name="location_label_other">"אחר"</string>
+    <string name="location_label_tikal">"טיקאל"</string>
+    <string name="action_preview">"תצוגה מקדימה"</string>
+    <string name="action_preview_csv">"תצוגה מקדימה כ-CSV"</string>
+    <string name="action_preview_html">"תצוגה מקדימה כ-HTML"</string>
+    <string name="action_preview_odf">"תצוגה מקדימה כ-OpenDocument"</string>
+    <string name="action_preview_xml">"תצוגה מקדימה כ-XML"</string>
 
     <!-- Errors -->
-    <string name="error">שגיה</string>
-    <string name="error_connection">לא ניתן להתחבר לשרת המרוחק.</string>
-    <string name="error_accessDenied">לא ניתן לגשת לדף המבוקש.</string>
-    <string name="error_unknown">אירעה שגיאה לא ידועה.</string>
-    <string name="error_export">שגיאה בייצוא הדוח!</string>
+    <string name="error">"שגיה"</string>
+    <string name="error_connection">"לא ניתן להתחבר לשרת המרוחק."</string>
+    <string name="error_accessDenied">"לא ניתן לגשת לדף המבוקש."</string>
+    <string name="error_unknown">"אירעה שגיאה לא ידועה."</string>
+    <string name="error_export">"שגיאה בייצוא הדוח!"</string>
 </resources>

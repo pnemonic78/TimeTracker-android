@@ -320,7 +320,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
             totals.monthly = totalsAll[2].monthly
         }
         val quota = calculateQuota(date)
-        totals.remaining = quota - totals.monthly
+        totals.balance = quota - totals.monthly
 
         return totals
     }

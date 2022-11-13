@@ -80,9 +80,9 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
      * @return totals between the dates.
      */
     @Query(
-        """SELECT SUM(finish - start) AS daily, 0 AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (:startDay <= date) AND (date <= :finishDay)
-        UNION ALL SELECT 0 AS daily, SUM(finish - start) AS weekly, 0 AS monthly, 0 AS remaining FROM record WHERE (:startWeek <= date) AND (date <= :finishWeek)
-        UNION ALL SELECT 0 AS daily, 0 AS weekly, SUM(finish - start) AS monthly, 0 AS remaining FROM record WHERE (:startMonth <= date) AND (date <= :finishMonth)"""
+        """SELECT SUM(duration) AS daily, 0 AS weekly, 0 AS monthly, 0 AS balance FROM record WHERE (:startDay <= date) AND (date <= :finishDay)
+        UNION ALL SELECT 0 AS daily, SUM(duration) AS weekly, 0 AS monthly, 0 AS balance FROM record WHERE (:startWeek <= date) AND (date <= :finishWeek)
+        UNION ALL SELECT 0 AS daily, 0 AS weekly, SUM(duration) AS monthly, 0 AS balance FROM record WHERE (:startMonth <= date) AND (date <= :finishMonth)"""
     )
     suspend fun queryTotals(
         startDay: Long,

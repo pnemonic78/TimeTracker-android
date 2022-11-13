@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.data.remote
 
 import android.net.Uri
+import android.text.format.DateUtils
 import com.tikalk.html.findParentElement
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
@@ -246,7 +247,11 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
                 }
                 text.startsWith("Remaining quota:") -> {
                     value = text.substring(text.indexOf(':') + 1).trim()
-                    totals.remaining = parseDuration(value) ?: TimeTotals.UNKNOWN
+                    totals.balance = parseDuration(value)?.times(-1L) ?: TimeTotals.UNKNOWN
+                }
+                text.startsWith("Over quota:") -> {
+                    value = text.substring(text.indexOf(':') + 1).trim()
+                    totals.balance = parseDuration(value) ?: TimeTotals.UNKNOWN
                 }
             }
         }

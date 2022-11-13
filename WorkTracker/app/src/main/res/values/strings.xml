@@ -1,148 +1,149 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Tikal Tracker</string>
+    <string name="app_name">"Tikal Tracker"</string>
 
     <string name="activity_splash" translatable="false">@string/app_name</string>
 
     <string name="drawer_open" translatable="false">@string/nav_app_bar_open_drawer_description</string>
-    <string name="drawer_close">Close navigation drawer</string>
+    <string name="drawer_close">"Close navigation drawer"</string>
 
-    <string name="no">No</string>
-    <string name="yes">Yes</string>
+    <string name="no">"No"</string>
+    <string name="yes">"Yes"</string>
 
     <!-- Strings related to login -->
-    <string name="activity_login">Sign in</string>
-    <string name="prompt_login">Login name</string>
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in</string>
-    <string name="error_invalid_login">This login name is invalid</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="activity_basic_realm">Basic Realm Authentication</string>
-    <string name="authentication_basic_realm">Basic Realm Authentication for \"%1$s\"</string>
-    <string name="action_authenticate">Authenticate</string>
+    <string name="activity_login">"Sign in"</string>
+    <string name="prompt_login">"Login name"</string>
+    <string name="prompt_email">"Email"</string>
+    <string name="prompt_password">"Password"</string>
+    <string name="action_sign_in">"Sign in"</string>
+    <string name="error_invalid_login">"This login name is invalid"</string>
+    <string name="error_invalid_email">"This email address is invalid"</string>
+    <string name="error_invalid_password">"This password is incorrect"</string>
+    <string name="error_field_required">"This field is required"</string>
+    <string name="activity_basic_realm">"Basic Realm Authentication"</string>
+    <string name="authentication_basic_realm">"Basic Realm Authentication for \"%1$s\""</string>
+    <string name="action_authenticate">"Authenticate"</string>
 
     <!-- Time edit -->
-    <string name="activity_time">Time Tracker</string>
-    <string name="prompt_username">Username</string>
-    <string name="project_label">Project</string>
-    <string name="task_label">Task</string>
-    <string name="location_label">Location</string>
-    <string name="date_label">Date</string>
-    <string name="start_label">Start Time</string>
-    <string name="finish_label">Finish Time</string>
-    <string name="duration_label">Duration</string>
+    <string name="activity_time">"Time Tracker"</string>
+    <string name="prompt_username">"Username"</string>
+    <string name="project_label">"Project"</string>
+    <string name="task_label">"Task"</string>
+    <string name="location_label">"Location"</string>
+    <string name="date_label">"Date"</string>
+    <string name="start_label">"Start Time"</string>
+    <string name="finish_label">"Finish Time"</string>
+    <string name="duration_label">"Duration"</string>
     <string name="duration_hint" translatable="false">@string/duration_label</string>
     <string name="cancel" translatable="false">@android:string/cancel</string>
-    <string name="submit">Save</string>
-    <string name="note_hint">Note</string>
-    <string name="error_project_field_required">Project required</string>
-    <string name="error_task_field_required">Task required</string>
-    <string name="error_start_field_required">Start time required</string>
-    <string name="error_finish_field_required">Finish time required</string>
-    <string name="error_finish_time_before_start_time">Finish time must be later than start time.</string>
-    <string name="error_location_field_required">Location required</string>
-    <string name="delete">Delete</string>
+    <string name="submit">"Save"</string>
+    <string name="note_hint">"Note"</string>
+    <string name="error_project_field_required">"Project required"</string>
+    <string name="error_task_field_required">"Task required"</string>
+    <string name="error_start_field_required">"Start time required"</string>
+    <string name="error_finish_field_required">"Finish time required"</string>
+    <string name="error_finish_time_before_start_time">"Finish time must be later than start time."</string>
+    <string name="error_location_field_required">"Location required"</string>
+    <string name="delete">"Delete"</string>
     <string name="action_delete" translatable="false">@string/delete</string>
     <string name="action_submit" translatable="false">@string/submit</string>
 
     <!-- Time recorder -->
-    <string name="action_start">Start</string>
-    <string name="action_stop">Stop</string>
-    <string name="timer_0" translatable="false">0:00</string>
+    <string name="action_start">"Start"</string>
+    <string name="action_stop">"Stop"</string>
+    <string name="timer_0" translatable="false">"0:00"</string>
 
     <!-- Favourite / Favorite -->
-    <string name="action_favorite">Favourite</string>
+    <string name="action_favorite">"Favourite"</string>
     <string name="favorite_marked">Project <xliff:g id="PROJECT">\"%1$s\"</xliff:g> and task <xliff:g id="TASK">\"%2$s\"</xliff:g> marked as favorite.</string>
 
     <!-- Time list -->
-    <string name="timeList_title">Times</string>
+    <string name="timeList_title">"Times"</string>
     <string name="menu_time" translatable="false">@string/timeList_title</string>
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
-    <string name="day_total">Day total</string>
-    <string name="remaining_quota">Remaining quota</string>
-    <string name="month_total">Month total</string>
-    <string name="week_total">Week total</string>
-    <string name="pick_date">Go to date</string>
-    <string name="today">Today</string>
+    <string name="day_total">"Day total"</string>
+    <string name="remaining_quota">"Remaining quota"</string>
+    <string name="month_total">"Month total"</string>
+    <string name="week_total">"Week total"</string>
+    <string name="pick_date">"Go to date"</string>
+    <string name="today">"Today"</string>
     <string name="menu_today" translatable="false">@string/today</string>
-    <string name="add">Add</string>
+    <string name="add">"Add"</string>
     <string name="action_add" translatable="false">@string/add</string>
+    <string name="balance">"Balance"</string>
 
     <!-- Settings -->
-    <string name="settings_label">Settings</string>
+    <string name="settings_label">"Settings"</string>
     <string name="menu_settings" translatable="false">@string/settings_label</string>
 
     <!-- Settings - Privacy -->
-    <string name="pref_privacy_security_title">Privacy &amp; security</string>
-    <string name="clear_user_data_text">Clear storage</string>
+    <string name="pref_privacy_security_title">"Privacy &amp; security"</string>
+    <string name="clear_user_data_text">"Clear storage"</string>
     <string name="pref_clear_user_data" translatable="false">@string/clear_user_data_text</string>
-    <string name="pref_logout_title">Sign out</string>
+    <string name="pref_logout_title">"Sign out"</string>
 
     <!-- Settings - About -->
-    <string name="pref_about_title">About</string>
-    <string name="pref_version_title">Application version</string>
-    <string name="support_url" translatable="false">http://pnemonic78.github.io/TimeTracker-android</string>
-    <string name="pref_issue_title">Issues</string>
-    <string name="pref_issue_summary">Report a problem, or request a new feature.</string>
-    <string name="pref_issue_url" translatable="false">mailto:moshe.waisberg@tikalk.com?subject=Tikal+Time+Tracker</string>
+    <string name="pref_about_title">"About"</string>
+    <string name="pref_version_title">"Application version"</string>
+    <string name="support_url" translatable="false">"http://pnemonic78.github.io/TimeTracker-android"</string>
+    <string name="pref_issue_title">"Issues"</string>
+    <string name="pref_issue_summary">"Report a problem, or request a new feature."</string>
+    <string name="pref_issue_url" translatable="false">"mailto:moshe.waisberg@tikalk.com?subject=Tikal+Time+Tracker"</string>
 
     <!-- Profile -->
-    <string name="profile">Profile</string>
+    <string name="profile">"Profile"</string>
     <string name="profile_title" translatable="false">@string/profile</string>
-    <string name="name">Name</string>
+    <string name="name">"Name"</string>
     <string name="prompt_name" translatable="false">@string/name</string>
-    <string name="prompt_confirmPassword">Confirm Password</string>
+    <string name="prompt_confirmPassword">"Confirm Password"</string>
     <string name="menu_profile" translatable="false">@string/profile</string>
-    <string name="error_match_password">Passwords are not the same</string>
-    <string name="uncompleted_entry">User has an uncompleted time entry</string>
+    <string name="error_match_password">"Passwords are not the same"</string>
+    <string name="uncompleted_entry">"User has an uncompleted time entry"</string>
     <string name="login_label" translatable="false">@string/prompt_login</string>
-    <string name="role">Role</string>
+    <string name="role">"Role"</string>
     <string name="role_label" translatable="false">@string/role</string>
-    <string name="users">Users</string>
+    <string name="users">"Users"</string>
     <string name="menu_users" translatable="false">@string/users</string>
     <string name="users_title" translatable="false">@string/users</string>
 
     <!-- Projects and Tasks -->
-    <string name="projects">Projects</string>
-    <string name="tasks">Tasks</string>
-    <string name="name_label">Name</string>
-    <string name="description_label">Description</string>
+    <string name="projects">"Projects"</string>
+    <string name="tasks">"Tasks"</string>
+    <string name="name_label">"Name"</string>
+    <string name="description_label">"Description"</string>
     <string name="menu_projects" translatable="false">@string/projects</string>
     <string name="menu_tasks" translatable="false">@string/tasks</string>
     <string name="projects_title" translatable="false">@string/projects</string>
     <string name="tasks_title" translatable="false">@string/tasks</string>
-    <string name="item_select">(Select)</string>
+    <string name="item_select">"(Select)"</string>
     <string name="project_name_select" translatable="false">@string/item_select</string>
     <string name="task_name_select" translatable="false">@string/item_select</string>
 
     <!-- Reports -->
-    <string name="reports">Reports</string>
+    <string name="reports">"Reports"</string>
     <string name="menu_reports" translatable="false">@string/reports</string>
     <string name="reports_title" translatable="false">@string/reports</string>
-    <string name="reports_header">Report: %1$s - %2$s</string>
-    <string name="start_date_label">Start Date</string>
-    <string name="finish_date_label">Finish Date</string>
-    <string name="action_generate">Generate</string>
-    <string name="error_no_results">No results</string>
-    <string name="period_label">Time Period</string>
-    <string name="period_custom">Custom</string>
+    <string name="reports_header">"Report: %1$s - %2$s"</string>
+    <string name="start_date_label">"Start Date"</string>
+    <string name="finish_date_label">"Finish Date"</string>
+    <string name="action_generate">"Generate"</string>
+    <string name="error_no_results">"No results"</string>
+    <string name="period_label">"Time Period"</string>
+    <string name="period_custom">"Custom"</string>
     <string name="period_today" translatable="false">@string/today</string>
-    <string name="period_this_week">This week</string>
-    <string name="period_this_month">This month</string>
-    <string name="period_previous_week">The previous week</string>
-    <string name="period_previous_month">The previous month</string>
-    <string name="period_yesterday">Yesterday</string>
-    <string name="total">Total</string>
-    <string name="duration_total">Total hours</string>
-    <string name="cost_total">Total cost</string>
-    <string name="cost">Cost</string>
-    <string name="action_export">Export</string>
-    <string name="action_export_csv">Export as CSV</string>
-    <string name="action_export_html">Export as HTML</string>
-    <string name="action_export_odf">Export as OpenDocument</string>
-    <string name="action_export_xml">Export as XML</string>
+    <string name="period_this_week">"This week"</string>
+    <string name="period_this_month">"This month"</string>
+    <string name="period_previous_week">"The previous week"</string>
+    <string name="period_previous_month">"The previous month"</string>
+    <string name="period_yesterday">"Yesterday"</string>
+    <string name="total">"Total"</string>
+    <string name="duration_total">"Total hours"</string>
+    <string name="cost_total">"Total cost"</string>
+    <string name="cost">"Cost"</string>
+    <string name="action_export">"Export"</string>
+    <string name="action_export_csv">"Export as CSV"</string>
+    <string name="action_export_html">"Export as HTML"</string>
+    <string name="action_export_odf">"Export as OpenDocument"</string>
+    <string name="action_export_xml">"Export as XML"</string>
     <string name="date_header" translatable="false">@string/date_label</string>
     <string name="project_header" translatable="false">@string/project_label</string>
     <string name="task_header" translatable="false">@string/task_label</string>
@@ -152,27 +153,27 @@
     <string name="note_header" translatable="false">@string/note_hint</string>
     <string name="cost_header" translatable="false">@string/cost</string>
     <string name="location_header" translatable="false">@string/location_label</string>
-    <string name="item_all">(All)</string>
+    <string name="item_all">"(All)"</string>
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>
     <string name="location_label_all" translatable="false">@string/item_all</string>
-    <string name="location_label_client">Client</string>
-    <string name="location_label_home">Home</string>
-    <string name="location_label_other">Other</string>
+    <string name="location_label_client">"Client"</string>
+    <string name="location_label_home">"Home"</string>
+    <string name="location_label_other">"Other"</string>
     <string name="location_label_select" translatable="false">@string/item_select</string>
-    <string name="location_label_tikal">Tikal</string>
-    <string name="action_preview">Preview</string>
-    <string name="action_preview_csv">Preview as CSV</string>
-    <string name="action_preview_html">Preview as HTML</string>
-    <string name="action_preview_odf">Preview as OpenDocument</string>
-    <string name="action_preview_xml">Preview as XML</string>
+    <string name="location_label_tikal">"Tikal"</string>
+    <string name="action_preview">"Preview"</string>
+    <string name="action_preview_csv">"Preview as CSV"</string>
+    <string name="action_preview_html">"Preview as HTML"</string>
+    <string name="action_preview_odf">"Preview as OpenDocument"</string>
+    <string name="action_preview_xml">"Preview as XML"</string>
 
     <!-- Errors -->
-    <string name="error">Error</string>
+    <string name="error">"Error"</string>
     <string name="error_title" translatable="false">@string/error</string>
     <string name="error_unknownHost" translatable="false">@string/error_connection</string>
-    <string name="error_accessDenied">Cannot access the requested page.</string>
-    <string name="error_unknown">An unknown error occurred.</string>
-    <string name="error_connection">Cannot connect to the remote server.</string>
-    <string name="error_export">Error exporting report!</string>
+    <string name="error_accessDenied">"Cannot access the requested page."</string>
+    <string name="error_unknown">"An unknown error occurred."</string>
+    <string name="error_connection">"Cannot connect to the remote server."</string>
+    <string name="error_export">"Error exporting report!"</string>
 </resources>

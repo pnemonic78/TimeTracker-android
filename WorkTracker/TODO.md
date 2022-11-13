@@ -5,6 +5,7 @@ To-Do List
 * "domain" module
 * "ui-common" module
 * migrate binding to Jetpack Compose
+* migrate Retrofit/OkHttp to ktor
 
 * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * Reports - group by
