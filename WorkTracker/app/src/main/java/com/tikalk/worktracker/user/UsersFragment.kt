@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.user
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -128,6 +129,7 @@ class UsersFragment : InternetFragment() {
         if (users === this.usersData.value) {
             listAdapter.notifyDataSetChanged()
         }
+        bindIndex(users)
     }
 
     override fun authenticate(submit: Boolean) {
@@ -139,5 +141,31 @@ class UsersFragment : InternetFragment() {
                 navController.navigate(R.id.action_users_to_login, this)
             }
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun bindIndex(users: List<User>) {
+        val chars = users.filter { it.displayName?.isNotEmpty() == true }
+            .map { it.displayName!![0].uppercase() }
+            .toSet()
+        val positions = chars.associateWith { c ->
+            users.indexOfFirst { it.displayName.orEmpty().startsWith(c) }
+        }
+
+        binding.listIndex.apply {
+            setIndices(chars)
+            scrollIndexListener = object : UsersScrollerView.OnScrollIndexListener {
+                override fun onScrollIndex(index: String) {
+                    onIndexTouch(positions, index)
+                }
+            }
+        }
+    }
+
+    private fun onIndexTouch(positions: Map<String, Int>, char: String) {
+        val position = positions[char] ?: return
+        if (position < 0) return
+        val listView = binding.list
+        listView.scrollToPosition(position)
     }
 }
