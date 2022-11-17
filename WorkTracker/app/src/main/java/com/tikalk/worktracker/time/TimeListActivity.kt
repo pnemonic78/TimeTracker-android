@@ -45,8 +45,10 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerActivity
 import com.tikalk.worktracker.databinding.ActivityTimeListBinding
 import com.tikalk.worktracker.user.ProfileViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
+@AndroidEntryPoint
 class TimeListActivity : TrackerActivity() {
 
     private lateinit var binding: ActivityTimeListBinding

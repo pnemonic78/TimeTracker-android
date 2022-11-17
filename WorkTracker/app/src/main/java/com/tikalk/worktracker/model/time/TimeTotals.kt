@@ -50,8 +50,8 @@ data class TimeTotals(
     var weekly: Long = UNKNOWN,
     @ColumnInfo(name = "monthly")
     var monthly: Long = UNKNOWN,
-    @ColumnInfo(name = "remaining")
-    var remaining: Long = UNKNOWN
+    @ColumnInfo(name = "balance")
+    var balance: Long = UNKNOWN
 ) : Parcelable {
 
     @IgnoredOnParcel
@@ -63,12 +63,12 @@ data class TimeTotals(
             daily = UNKNOWN
             weekly = UNKNOWN
             monthly = UNKNOWN
-            remaining = UNKNOWN
+            balance = UNKNOWN
         } else {
             daily = 0
             weekly = 0
             monthly = 0
-            remaining = 0
+            balance = 0
         }
     }
 

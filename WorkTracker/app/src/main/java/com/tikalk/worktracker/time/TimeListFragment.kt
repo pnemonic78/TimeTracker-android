@@ -45,6 +45,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
@@ -71,6 +72,7 @@ import timber.log.Timber
 import java.util.Calendar
 import java.util.Formatter
 import java.util.Locale
+import kotlin.math.absoluteValue
 
 class TimeListFragment : TimeFormFragment(),
     TimeListAdapter.OnTimeListListener {
@@ -169,7 +171,7 @@ class TimeListFragment : TimeFormFragment(),
         showProgress(true)
         lifecycleScope.launch {
             try {
-                delegate.dataSource.timeListPage(date, refresh)
+                dataSource.timeListPage(date, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -197,7 +199,7 @@ class TimeListFragment : TimeFormFragment(),
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = delegate.service.fetchTimes(dateFormatted)
+                val response = service.fetchTimes(dateFormatted)
                 if (isValidResponse(response)) {
                     val html = response.body()!!
                     processPage(html, date)
@@ -217,7 +219,7 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
-        delegate.dataSource.savePage(page)
+        dataSource.savePage(page)
     }
 
     private fun processPage(page: TimeListPage) {
@@ -246,43 +248,61 @@ class TimeListFragment : TimeFormFragment(),
     @MainThread
     private fun bindTotals(totals: TimeTotals) {
         val context = this.context ?: return
+        val res = context.resources ?: return
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
         if (totals.daily == TimeTotals.UNKNOWN) {
             bindingTotals.dayTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.dayTotal.text = null
+            bindingTotals.dayTotalValue.text = null
         } else {
             bindingTotals.dayTotalLabel.visibility = View.VISIBLE
-            bindingTotals.dayTotal.text =
+            bindingTotals.dayTotalValue.text =
                 formatElapsedTime(context, timeFormatter, totals.daily).toString()
         }
         if (totals.weekly == TimeTotals.UNKNOWN) {
             bindingTotals.weekTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.weekTotal.text = null
+            bindingTotals.weekTotalValue.text = null
         } else {
             timeBuffer.clear()
             bindingTotals.weekTotalLabel.visibility = View.VISIBLE
-            bindingTotals.weekTotal.text =
+            bindingTotals.weekTotalValue.text =
                 formatElapsedTime(context, timeFormatter, totals.weekly).toString()
         }
         if (totals.monthly == TimeTotals.UNKNOWN) {
             bindingTotals.monthTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.monthTotal.text = null
+            bindingTotals.monthTotalValue.text = null
         } else {
             timeBuffer.clear()
             bindingTotals.monthTotalLabel.visibility = View.VISIBLE
-            bindingTotals.monthTotal.text =
+            bindingTotals.monthTotalValue.text =
                 formatElapsedTime(context, timeFormatter, totals.monthly).toString()
         }
-        if (totals.remaining == TimeTotals.UNKNOWN) {
-            bindingTotals.remainingQuotaLabel.visibility = View.INVISIBLE
-            bindingTotals.remainingQuota.text = null
+        if (totals.balance == TimeTotals.UNKNOWN) {
+            bindingTotals.balanceLabel.visibility = View.INVISIBLE
+            bindingTotals.balanceValue.text = null
         } else {
             timeBuffer.clear()
-            bindingTotals.remainingQuotaLabel.visibility = View.VISIBLE
-            bindingTotals.remainingQuota.text =
-                formatElapsedTime(context, timeFormatter, totals.remaining).toString()
+            bindingTotals.balanceLabel.visibility = View.VISIBLE
+            bindingTotals.balanceValue.text =
+                formatElapsedTime(context, timeFormatter, totals.balance.absoluteValue).toString()
+            if (totals.balance < 0) {
+                bindingTotals.balanceValue.setTextColor(
+                    ResourcesCompat.getColor(
+                        res,
+                        R.color.balanceNegative,
+                        null
+                    )
+                )
+            } else {
+                bindingTotals.balanceValue.setTextColor(
+                    ResourcesCompat.getColor(
+                        res,
+                        R.color.balancePositive,
+                        null
+                    )
+                )
+            }
         }
     }
 
@@ -368,7 +388,7 @@ class TimeListFragment : TimeFormFragment(),
         showProgress(true)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = delegate.service.deleteTime(record.id)
+                val response = service.deleteTime(record.id)
                 showProgressMain(false)
                 if (isValidResponse(response)) {
                     val html = response.body()!!

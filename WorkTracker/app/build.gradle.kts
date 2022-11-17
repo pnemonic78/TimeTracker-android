@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("dagger.hilt.android.plugin")
     kotlin("android")
     kotlin("kapt")
     kotlin("plugin.parcelize")
@@ -76,6 +77,7 @@ dependencies {
     // Jetpack
     implementation(Android.Jetpack.appcompat)
     implementation(Android.Jetpack.constraint_layout)
+    implementation(Android.Jetpack.core)
     implementation(Android.Jetpack.preference)
     implementation(Android.Jetpack.security)
 
@@ -84,9 +86,6 @@ dependencies {
     kapt(Android.Database.roomCompiler)
 
     // Rx
-    implementation(Android.Reactive.retrofit)
-    implementation(Android.Reactive.rxandroid)
-    implementation(Android.Reactive.rxkotlin)
     implementation(Kotlin.Reactive.coroutinesAndroid)
 
     // Web
@@ -117,7 +116,8 @@ dependencies {
     implementation(Java.Document.woodstox)
 
     // Dependency Injection
-    implementation(Android.Inject.koin)
+    implementation(Android.Inject.hilt)
+    kapt(Android.Inject.hiltCompiler)
 
     // Testing
     testImplementation(Android.Test.junit)

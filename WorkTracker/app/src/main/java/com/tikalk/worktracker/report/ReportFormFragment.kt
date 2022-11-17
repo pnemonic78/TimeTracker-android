@@ -280,7 +280,7 @@ class ReportFormFragment : TimeFormFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                delegate.dataSource.reportFormPage(firstRun)
+                dataSource.reportFormPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)

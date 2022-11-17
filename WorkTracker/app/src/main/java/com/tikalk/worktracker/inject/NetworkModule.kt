@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,28 +30,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.reactivex
+package com.tikalk.worktracker.inject
 
-import io.reactivex.rxjava3.disposables.Disposable
-import java.util.concurrent.atomic.AtomicBoolean
+import android.content.Context
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import java.net.CookieHandler
+import javax.inject.Singleton
 
-/**
- * Default disposable.
- * @author Moshe Waisberg
- */
-abstract class DefaultDisposable : Disposable {
-
-    private val disposed = AtomicBoolean()
-
-    override fun isDisposed(): Boolean {
-        return disposed.get()
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
+    @Provides
+    @Singleton
+    fun provideCookieHandler(@ApplicationContext context: Context? = null): CookieHandler {
+        return TimeTrackerServiceFactory.createCookieHandler(context)
     }
 
-    override fun dispose() {
-        if (disposed.compareAndSet(false, true)) {
-            onDispose()
-        }
+    @Provides
+    @Singleton
+    fun provideHttpClient(
+        preferences: TimeTrackerPrefs? = null,
+        cookieHandler: CookieHandler
+    ): OkHttpClient {
+        return TimeTrackerServiceFactory.createHttpClient(preferences, cookieHandler)
     }
 
-    protected abstract fun onDispose()
+    @Provides
+    @Singleton
+    fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
+        return TimeTrackerServiceFactory.createRetrofit(httpClient)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTimeTracker(retrofit: Retrofit): TimeTrackerService {
+        return TimeTrackerServiceFactory.createTimeTracker(retrofit)
+    }
 }

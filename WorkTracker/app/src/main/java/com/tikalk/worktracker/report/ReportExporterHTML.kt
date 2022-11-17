@@ -43,7 +43,7 @@ import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
-import io.reactivex.rxjava3.core.SingleObserver
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.html.Entities
 import kotlinx.html.body
 import kotlinx.html.br
@@ -84,9 +84,9 @@ class ReportExporterHTML(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
+        collector: FlowCollector<Uri>
     ): ReportExporterRunner {
-        return ReportExporterHTMLRunner(context, records, filter, totals, observer)
+        return ReportExporterHTMLRunner(context, records, filter, totals, collector)
     }
 
     private class ReportExporterHTMLRunner(
@@ -94,9 +94,9 @@ class ReportExporterHTML(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
-    ) : ReportExporterRunner(context, records, filter, totals, observer) {
-        override fun writeContents(
+        collector: FlowCollector<Uri>
+    ) : ReportExporterRunner(context, records, filter, totals, collector) {
+        override suspend fun writeContents(
             context: Context,
             records: List<TimeRecord>,
             filter: ReportFilter,
@@ -115,7 +115,6 @@ class ReportExporterHTML(
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
-            out = writer
 
             val titleText = context.getString(
                 R.string.reports_header,
@@ -318,7 +317,6 @@ class ReportExporterHTML(
             }
 
             consumer.close()
-            out = null
 
             return file
         }

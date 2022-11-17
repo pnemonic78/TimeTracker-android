@@ -200,7 +200,7 @@ class LoginFragment : InternetDialogFragment {
             val today = formatSystemDate()
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val response = delegate.service.login(loginValue, passwordValue, today)
+                    val response = service.login(loginValue, passwordValue, today)
                     lifecycleScope.launch(Dispatchers.Main) {
                         binding.actionSignIn.isEnabled = true
                         showProgress(false)

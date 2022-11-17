@@ -112,7 +112,7 @@ class ProjectTasksFragment : InternetFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                delegate.dataSource.tasksPage(firstRun)
+                dataSource.tasksPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         tasksData.value = page.tasks

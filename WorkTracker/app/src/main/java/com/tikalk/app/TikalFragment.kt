@@ -38,19 +38,11 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 open class TikalFragment() : Fragment(), MenuProvider {
 
     constructor(args: Bundle) : this() {
         arguments = args
-    }
-
-    protected val disposables = CompositeDisposable()
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

@@ -47,8 +47,9 @@ import com.tikalk.worktracker.model.time.TimeListPage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
 import java.util.Calendar
+import javax.inject.Inject
 
-class TimeTrackerRepository(
+class TimeTrackerRepository @Inject constructor(
     private val localRepository: TimeTrackerLocalDataSource,
     private val remoteRepository: TimeTrackerRemoteDataSource
 ) : TimeTrackerDataSource {

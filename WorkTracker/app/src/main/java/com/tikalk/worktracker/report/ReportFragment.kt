@@ -62,9 +62,6 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -203,7 +200,7 @@ class ReportFragment : InternetFragment() {
 
         lifecycleScope.launch {
             try {
-                delegate.dataSource.reportPage(filter, firstRun)
+                dataSource.reportPage(filter, firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -278,24 +275,26 @@ class ReportFragment : InternetFragment() {
         menuItem.isEnabled = false
         showProgress(true)
 
-        exporter
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ uri ->
-                Timber.i("Exported to $uri")
-                menuItem.isEnabled = true
-                if (preview) {
-                    previewFile(context, menuItem, uri, exporter.mimeType)
-                } else {
-                    shareFile(context, menuItem, uri, exporter.mimeType)
-                }
-                showProgress(false)
-            }, { err ->
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                exporter
+                    .flowOn(Dispatchers.IO)
+                    .collect { uri ->
+                        Timber.i("Exported to $uri")
+                        menuItem.isEnabled = true
+                        if (preview) {
+                            previewFile(context, menuItem, uri, exporter.mimeType)
+                        } else {
+                            shareFile(context, menuItem, uri, exporter.mimeType)
+                        }
+                        showProgress(false)
+                    }
+            } catch (err: Exception) {
                 Timber.e(err, "Error exporting: ${err.message}")
                 showProgress(false)
                 menuItem.isEnabled = true
-            })
-            .addTo(disposables)
+            }
+        }
     }
 
     private fun exportCSV(menuItem: MenuItem, preview: Boolean = false) {

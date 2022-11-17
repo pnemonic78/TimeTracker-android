@@ -14,7 +14,7 @@
             android:text="@string/day_total" />
 
         <TextView
-            android:id="@+id/dayTotal"
+            android:id="@+id/dayTotalValue"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
             android:text="@string/week_total" />
 
         <TextView
-            android:id="@+id/weekTotal"
+            android:id="@+id/weekTotalValue"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,7 +50,7 @@
             android:text="@string/month_total" />
 
         <TextView
-            android:id="@+id/monthTotal"
+            android:id="@+id/monthTotalValue"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,21 +59,21 @@
             tools:text="@tools:sample/date/hhmm" />
 
         <TextView
-            android:id="@+id/remainingQuotaLabel"
+            android:id="@+id/balanceLabel"
             style="@style/Widget.TextView.Label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="@string/remaining_quota" />
+            android:text="@string/balance" />
 
         <TextView
-            android:id="@+id/remainingQuota"
+            android:id="@+id/balanceValue"
             style="@style/Widget.TextView.Value.Time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:layout_marginStart="4dp"
-            android:textColor="@color/remainingQuota"
+            android:textColor="@color/balanceNegative"
             tools:text="@tools:sample/date/hhmm" />
     </TableRow>
 

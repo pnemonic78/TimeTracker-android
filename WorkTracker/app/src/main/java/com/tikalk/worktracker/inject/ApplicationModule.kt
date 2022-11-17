@@ -30,29 +30,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.util
+package com.tikalk.worktracker.inject
 
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.launch
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 
-fun <T> Flow<T>.toObservable(): Observable<T> {
-    val flow = this
-    val o = PublishSubject.create<T>()
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            flow
-                .onCompletion { o.onComplete() }
-                .collect {
-                    o.onNext(it)
-                }
-        } catch (e: Exception) {
-            o.onError(e)
-        }
-    }
-    return o
+@Module(includes = [DataModule::class, NetworkModule::class])
+@InstallIn(SingletonComponent::class)
+object ApplicationModule {
 }

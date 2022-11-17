@@ -34,24 +34,18 @@ package com.tikalk.app
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 open class TikalDialogFragment() : AppCompatDialogFragment() {
 
     constructor(args: Bundle) : this() {
         arguments = args
     }
 
-    protected val disposables = CompositeDisposable()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = false
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposables.dispose()
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

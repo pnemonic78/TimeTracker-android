@@ -41,7 +41,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.logging.HttpLoggingInterceptor.Level
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.net.CookieHandler
 import java.net.CookieManager
@@ -95,7 +94,6 @@ class TimeTrackerServiceFactory {
                 .baseUrl(BASE_URL)
                 .client(httpClient)
                 .addConverterFactory(ScalarsConverterFactory.create())
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build()
         }
 

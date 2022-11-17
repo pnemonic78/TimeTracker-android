@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.app
+package com.tikalk.worktracker.inject
 
 import android.content.Context
 import com.tikalk.worktracker.data.TimeTrackerRepository
@@ -38,62 +38,31 @@ import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
 import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createCookieHandler
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createHttpClient
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createRetrofit
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory.Companion.createTimeTracker
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import okhttp3.OkHttpClient
-import org.koin.dsl.module
-import retrofit2.Retrofit
-import java.net.CookieHandler
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
-val databaseModule = module {
-    fun provideDatabase(context: Context): TrackerDatabase {
-        return TrackerDatabase.getDatabase(context)
-    }
-
-    single { provideDatabase(get()) }
-}
-
-val preferencesModule = module {
-    fun providePreferences(context: Context): TimeTrackerPrefs {
+@Module
+@InstallIn(SingletonComponent::class)
+object DataModule {
+    @Provides
+    @Singleton
+    fun providePreferences(@ApplicationContext context: Context): TimeTrackerPrefs {
         return TimeTrackerPrefs(context)
     }
 
-    single { providePreferences(get()) }
-}
-
-val apiModule = module {
-    fun provideTimeTracker(retrofit: Retrofit): TimeTrackerService {
-        return createTimeTracker(retrofit)
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): TrackerDatabase {
+        return TrackerDatabase.getDatabase(context)
     }
 
-    single { provideTimeTracker(get()) }
-}
-
-val retrofitModule = module {
-    fun provideCookieHandler(context: Context? = null): CookieHandler {
-        return createCookieHandler(context)
-    }
-
-    fun provideHttpClient(
-        preferences: TimeTrackerPrefs? = null,
-        cookieHandler: CookieHandler
-    ): OkHttpClient {
-        return createHttpClient(preferences, cookieHandler)
-    }
-
-    fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
-        return createRetrofit(httpClient)
-    }
-
-    single { provideCookieHandler(get()) }
-    single { provideHttpClient(get(), get()) }
-    single { provideRetrofit(get()) }
-}
-
-val dataModule = module {
+    @Provides
+    @Singleton
     fun provideLocalDataSource(
         db: TrackerDatabase,
         preferences: TimeTrackerPrefs
@@ -101,6 +70,8 @@ val dataModule = module {
         return TimeTrackerLocalDataSource(db, preferences)
     }
 
+    @Provides
+    @Singleton
     fun provideRemoteDataSource(
         service: TimeTrackerService,
         db: TrackerDatabase,
@@ -109,14 +80,12 @@ val dataModule = module {
         return TimeTrackerRemoteDataSource(service, db, preferences)
     }
 
+    @Provides
+    @Singleton
     fun provideRepository(
         local: TimeTrackerLocalDataSource,
         remote: TimeTrackerRemoteDataSource
     ): TimeTrackerRepository {
         return TimeTrackerRepository(local, remote)
     }
-
-    single { provideLocalDataSource(get(), get()) }
-    single { provideRemoteDataSource(get(), get(), get()) }
-    single { provideRepository(get(), get()) }
 }

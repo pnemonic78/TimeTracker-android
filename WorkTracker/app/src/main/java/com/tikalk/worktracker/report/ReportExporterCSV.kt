@@ -43,7 +43,7 @@ import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.formatSystemTime
-import io.reactivex.rxjava3.core.SingleObserver
+import kotlinx.coroutines.flow.FlowCollector
 import java.io.File
 import java.io.FileWriter
 import java.io.Writer
@@ -67,9 +67,9 @@ class ReportExporterCSV(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
+        collector: FlowCollector<Uri>
     ): ReportExporterRunner {
-        return ReportExporterCSVRunner(context, records, filter, totals, observer)
+        return ReportExporterCSVRunner(context, records, filter, totals, collector)
     }
 
     private class ReportExporterCSVRunner(
@@ -77,9 +77,9 @@ class ReportExporterCSV(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
-    ) : ReportExporterRunner(context, records, filter, totals, observer) {
-        override fun writeContents(
+        collector: FlowCollector<Uri>
+    ) : ReportExporterRunner(context, records, filter, totals, collector) {
+        override suspend fun writeContents(
             context: Context,
             records: List<TimeRecord>,
             filter: ReportFilter,
@@ -98,7 +98,6 @@ class ReportExporterCSV(
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
-            out = writer
             val csvWriter: ICSVWriter = CSVWriterBuilder(writer).build()
 
             val headerRecord = ArrayList<String>()
@@ -165,7 +164,6 @@ class ReportExporterCSV(
 
             csvWriter.close()
             writer.close()
-            out = null
 
             return file
         }

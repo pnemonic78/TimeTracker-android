@@ -35,42 +35,32 @@ package com.tikalk.worktracker.report
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
-import com.github.reactivex.DefaultDisposable
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.formatSystemDate
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.core.SingleObserver
-import io.reactivex.rxjava3.disposables.Disposable
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.AbstractFlow
+import kotlinx.coroutines.flow.FlowCollector
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.Writer
 
 /**
  * Write the list of records to a file.
  */
+@OptIn(FlowPreview::class)
 abstract class ReportExporter(
     val context: Context,
     val records: List<TimeRecord>,
     val filter: ReportFilter,
     val totals: ReportTotals
-) : Single<Uri>(),
-    Disposable {
+) : AbstractFlow<Uri>() {
 
-    private var runner: ReportExporterRunner? = null
-
-    override fun subscribeActual(observer: SingleObserver<in Uri>) {
-        val r = createRunner(context, records, filter, totals, observer)
-        runner = r
-        observer.onSubscribe(r)
-        try {
-            r.run()
-        } catch (e: Throwable) {
-            observer.onError(e)
-        }
+    override suspend fun collectSafely(collector: FlowCollector<Uri>) {
+        val runner = createRunner(context, records, filter, totals, collector)
+        runner.run()
     }
 
     protected abstract fun createRunner(
@@ -78,45 +68,18 @@ abstract class ReportExporter(
         records: List<TimeRecord>,
         filter: ReportFilter,
         totals: ReportTotals,
-        observer: SingleObserver<in Uri>
+        collector: FlowCollector<Uri>
     ): ReportExporterRunner
-
-    override fun isDisposed(): Boolean {
-        return runner?.isDisposed ?: false
-    }
-
-    override fun dispose() {
-        runner?.dispose()
-    }
-
-    fun cancel() {
-        dispose()
-    }
-
-    fun isIdle(): Boolean = (runner == null) || !runner!!.running || isDisposed
 
     protected abstract class ReportExporterRunner(
         val context: Context,
         val records: List<TimeRecord>,
         val filter: ReportFilter,
         val totals: ReportTotals,
-        val observer: SingleObserver<in Uri>
-    ) : DefaultDisposable() {
+        val collector: FlowCollector<Uri>
+    ) {
 
-        var running = false
-            private set
-        protected var out: Writer? = null
-
-        override fun onDispose() {
-            out?.close()
-        }
-
-        fun run() {
-            if (isDisposed) {
-                return
-            }
-            running = true
-
+        suspend fun run() {
             val folder = File(context.filesDir, FOLDER_EXPORTS)
             folder.mkdirs()
             val filename =
@@ -124,18 +87,15 @@ abstract class ReportExporter(
             val file = writeContents(context, records, filter, totals, folder, filename)
             val fileUri: Uri? = FileProvider.getUriForFile(context, AUTHORITY, file)
 
-            running = false
-            if (!isDisposed) {
-                if (fileUri != null) {
-                    observer.onSuccess(fileUri)
-                } else {
-                    observer.onError(FileNotFoundException(file.toString()))
-                }
+            if (fileUri != null) {
+                collector.emit(fileUri)
+            } else {
+                throw FileNotFoundException(file.toString())
             }
         }
 
         @Throws(IOException::class)
-        protected abstract fun writeContents(
+        protected abstract suspend fun writeContents(
             context: Context,
             records: List<TimeRecord>,
             filter: ReportFilter,

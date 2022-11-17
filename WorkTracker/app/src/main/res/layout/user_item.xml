@@ -60,7 +60,7 @@
             app:layout_constraintEnd_toStartOf="@+id/uncompletedEntry"
             app:layout_constraintStart_toEndOf="@+id/barrier"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/project_label" />
+            tools:text="@tools:sample/full_names" />
 
         <TextView
             android:id="@+id/loginLabel"
@@ -80,7 +80,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/barrier"
             app:layout_constraintTop_toBottomOf="@+id/name"
-            tools:text="@tools:sample/lorem" />
+            tools:text="@tools:sample/first_names" />
 
         <TextView
             android:id="@+id/roleLabel"
