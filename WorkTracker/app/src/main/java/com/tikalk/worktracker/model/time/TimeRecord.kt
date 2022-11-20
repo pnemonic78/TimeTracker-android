@@ -135,7 +135,7 @@ open class TimeRecord(
         )
     }
 
-    fun copy(start: Calendar?, finish: Calendar?): TimeRecord {
+    fun copy(date: Calendar = this.date, start: Calendar?, finish: Calendar?): TimeRecord {
         return TimeRecord(
             id = id,
             project = project,
@@ -261,6 +261,7 @@ fun TimeRecord.split(): List<TimeRecord> {
         finishTime = startTime + duration
     }
 
+    var date = this.date
     val start = start ?: return results
     val finish = finish ?: return results
 
@@ -271,27 +272,31 @@ fun TimeRecord.split(): List<TimeRecord> {
         val startFirst = start
         val finishFirst = startFirst.copy()
         finishFirst.setToEndOfDay()
-        results.add(this.copy(start = startFirst, finish = finishFirst))
+        results.add(this.copy(date = date, start = startFirst, finish = finishFirst))
         duration -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
 
         // Intermediate days.
         var startDay = startFirst
         var finishDay: Calendar
         while (duration >= DateUtils.DAY_IN_MILLIS) {
+            date = date.copy()
+            date.add(Calendar.DAY_OF_MONTH, 1)  // Next day
             startDay = startDay.copy()
             startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
             startDay.setToStartOfDay()
             finishDay = startDay.copy()
             finishDay.setToEndOfDay()
-            results.add(this.copy(start = startDay, finish = finishDay))
+            results.add(this.copy(date = date, start = startDay, finish = finishDay))
             duration -= DateUtils.DAY_IN_MILLIS
         }
 
         // The last day.
+        date = date.copy()
+        date.add(Calendar.DAY_OF_MONTH, 1)  // Next day
         val startLast = finish.copy()
         val finishLast = finish
         startLast.setToStartOfDay()
-        results.add(this.copy(start = startLast, finish = finishLast))
+        results.add(this.copy(date = date, start = startLast, finish = finishLast))
     }
 
     return results
