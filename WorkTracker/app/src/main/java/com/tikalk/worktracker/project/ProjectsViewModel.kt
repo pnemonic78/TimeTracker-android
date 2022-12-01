@@ -30,57 +30,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.user
+package com.tikalk.worktracker.project
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class ProjectsViewModel @Inject constructor(
     preferences: TimeTrackerPrefs,
     db: TrackerDatabase,
     service: TimeTrackerService,
     dataSource: TimeTrackerRepository
 ) : TrackerViewModel(preferences, db, service, dataSource) {
 
-    private val profileUpdateData = MutableLiveData<ProfileData>()
-    val profileUpdate: LiveData<ProfileData> = profileUpdateData
+    private val _projectsData = MutableLiveData<TikalResult<List<Project>>>(TikalResult.Loading())
+    val projectsData: LiveData<TikalResult<List<Project>>> = _projectsData
 
-    /**
-     * Data for profile callbacks.
-     */
-    data class ProfileData(val user: User, val reason: String? = null)
-
-    /**
-     * Profile update was successful.
-     * @param user the updated user.
-     */
-    fun onProfileSuccess(user: User) {
-        notifyProfileSuccess(user)
+    suspend fun fetchProjects(firstRun: Boolean) {
+        _projectsData.postValue(TikalResult.Loading())
+        try {
+            dataSource.projectsPage(firstRun)
+                .flowOn(Dispatchers.IO)
+                .collect { page ->
+                    _projectsData.postValue(TikalResult.Success(page.projects))
+                }
+        } catch (e: Exception) {
+            Timber.e(e, "Error loading page: ${e.message}")
+            _projectsData.postValue(TikalResult.Error(e))
+        }
     }
 
-    /**
-     * Profile update failed.
-     * @param user the current user.
-     * @param reason the failure reason.
-     */
-    fun onProfileFailure(user: User, reason: String) {
-        notifyProfileFailure(user, reason)
-    }
-
-    private fun notifyProfileSuccess(user: User) {
-        profileUpdateData.postValue(ProfileData(user))
-    }
-
-    private fun notifyProfileFailure(user: User, reason: String) {
-        profileUpdateData.postValue(ProfileData(user, reason))
-    }
 }

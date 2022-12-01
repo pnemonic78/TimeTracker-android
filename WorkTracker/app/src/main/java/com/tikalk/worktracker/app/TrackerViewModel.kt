@@ -33,6 +33,17 @@
 package com.tikalk.worktracker.app
 
 import androidx.lifecycle.ViewModel
+import com.tikalk.worktracker.data.TimeTrackerRepository
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-open class TrackerViewModel : ViewModel() {
-}
+@HiltViewModel
+open class TrackerViewModel @Inject constructor(
+    val preferences: TimeTrackerPrefs,
+    val db: TrackerDatabase,
+    val service: TimeTrackerService,
+    val dataSource: TimeTrackerRepository
+) : ViewModel()

@@ -35,6 +35,7 @@ package com.tikalk.worktracker.app
 import android.os.Bundle
 import androidx.annotation.StringRes
 import com.tikalk.app.TikalFragment
+import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
@@ -76,6 +77,10 @@ abstract class TrackerFragment : TikalFragment,
 
     protected fun handleError(error: Throwable) {
         delegate.handleError(error)
+    }
+
+    protected fun handleError(result: TikalResult.Error<*>) {
+        delegate.handleError(result.exception)
     }
 
     protected open fun handleErrorMain(error: Throwable) {

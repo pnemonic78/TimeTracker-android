@@ -35,7 +35,6 @@ package com.tikalk.worktracker.auth
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -150,29 +149,38 @@ class LoginFragment : InternetDialogFragment {
         val loginValue = binding.loginInput.text.toString()
         val passwordValue = binding.passwordInput.text.toString()
 
+        val validator = LoginValidator()
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid login name.
-        if (loginValue.isEmpty()) {
-            binding.loginInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = binding.loginInput
-            cancel = true
-        } else if (!isLoginValid(loginValue)) {
-            binding.loginInput.error = getString(R.string.error_invalid_login)
-            if (focusView == null) focusView = binding.loginInput
-            cancel = true
+        when (validator.validateUsername(loginValue)) {
+            LoginValidator.ERROR_REQUIRED -> {
+                binding.loginInput.error = getString(R.string.error_field_required)
+                if (focusView == null) focusView = binding.loginInput
+                cancel = true
+            }
+            LoginValidator.ERROR_LENGTH,
+            LoginValidator.ERROR_INVALID -> {
+                binding.loginInput.error = getString(R.string.error_invalid_login)
+                if (focusView == null) focusView = binding.loginInput
+                cancel = true
+            }
         }
 
         // Check for a valid password, if the user entered one.
-        if (passwordValue.isEmpty()) {
-            binding.passwordInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = binding.passwordInput
-            cancel = true
-        } else if (!isPasswordValid(passwordValue)) {
-            binding.passwordInput.error = getString(R.string.error_invalid_password)
-            if (focusView == null) focusView = binding.passwordInput
-            cancel = true
+        when (validator.validatePassword(passwordValue)) {
+            LoginValidator.ERROR_REQUIRED -> {
+                binding.passwordInput.error = getString(R.string.error_field_required)
+                if (focusView == null) focusView = binding.passwordInput
+                cancel = true
+            }
+            LoginValidator.ERROR_LENGTH,
+            LoginValidator.ERROR_INVALID -> {
+                binding.passwordInput.error = getString(R.string.error_invalid_password)
+                if (focusView == null) focusView = binding.passwordInput
+                cancel = true
+            }
         }
 
         if (cancel) {
@@ -213,14 +221,6 @@ class LoginFragment : InternetDialogFragment {
                 }
             }
         }
-    }
-
-    private fun isLoginValid(login: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(login).matches()
-    }
-
-    private fun isPasswordValid(password: String): Boolean {
-        return password.trim().length > 4
     }
 
     override fun authenticate(submit: Boolean) = Unit

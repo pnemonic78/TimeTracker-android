@@ -39,35 +39,32 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentProjectsBinding
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.net.InternetFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ProjectsFragment : InternetFragment() {
 
+    private val viewModel by viewModels<ProjectsViewModel>()
+
     private var _binding: FragmentProjectsBinding? = null
     private val binding get() = _binding!!
 
-    private val projectsData = MutableLiveData<List<Project>>()
     private val listAdapter = ProjectsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        projectsData.observe(this) { projects ->
-            bindList(projects)
-        }
         delegate.login.observe(this) { (_, reason) ->
             if (reason == null) {
                 Timber.i("login success")
@@ -90,6 +87,20 @@ class ProjectsFragment : InternetFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.list.adapter = listAdapter
+
+        viewModel.projectsData.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is TikalResult.Loading -> showProgress(true)
+                is TikalResult.Success -> {
+                    showProgress(false)
+                    bindList(result.data ?: emptyList())
+                }
+                is TikalResult.Error -> {
+                    showProgress(false)
+                    handleError(result)
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -110,22 +121,13 @@ class ProjectsFragment : InternetFragment() {
     fun run() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
-            try {
-                dataSource.projectsPage(firstRun)
-                    .flowOn(Dispatchers.IO)
-                    .collect { page ->
-                        projectsData.value = page.projects
-                    }
-            } catch (e: Exception) {
-                Timber.e(e, "Error loading page: ${e.message}")
-                handleError(e)
-            }
+            viewModel.fetchProjects(firstRun)
         }
     }
 
     private fun bindList(projects: List<Project>) {
         listAdapter.submitList(projects)
-        if (projects === this.projectsData.value) {
+        if (projects === viewModel.projectsData.value) {
             listAdapter.notifyDataSetChanged()
         }
     }

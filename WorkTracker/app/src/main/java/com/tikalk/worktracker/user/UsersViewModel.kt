@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.auth
+package com.tikalk.worktracker.user
 
-class LoginPasswordValidator {
-    companion object {
-        const val ERROR_NONE = 0
-        const val ERROR_REQUIRED = 1
-        const val ERROR_LENGTH = 2
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.tikalk.model.TikalResult
+import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.data.TimeTrackerRepository
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import timber.log.Timber
+import javax.inject.Inject
+
+@HiltViewModel
+class UsersViewModel @Inject constructor(
+    preferences: TimeTrackerPrefs,
+    db: TrackerDatabase,
+    service: TimeTrackerService,
+    dataSource: TimeTrackerRepository
+) : TrackerViewModel(preferences, db, service, dataSource) {
+
+    private val _usersData = MutableLiveData<TikalResult<List<User>>>(TikalResult.Loading())
+    val usersData: LiveData<TikalResult<List<User>>> = _usersData
+
+    suspend fun fetchUsers(firstRun: Boolean) {
+        _usersData.postValue(TikalResult.Loading())
+        try {
+            dataSource.usersPage(firstRun)
+                .flowOn(Dispatchers.IO)
+                .collect { page ->
+                    _usersData.postValue(TikalResult.Success(page.users))
+                }
+        } catch (e: Exception) {
+            Timber.e(e, "Error loading page: ${e.message}")
+            _usersData.postValue(TikalResult.Error(e))
+        }
     }
+
 }

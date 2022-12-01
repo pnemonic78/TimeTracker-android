@@ -35,14 +35,26 @@ package com.tikalk.worktracker.time
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.data.TimeTrackerRepository
+import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.report.LocationItem
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class TimeViewModel : TrackerViewModel() {
+@HiltViewModel
+class TimeViewModel @Inject constructor(
+    preferences: TimeTrackerPrefs,
+    db: TrackerDatabase,
+    service: TimeTrackerService,
+    dataSource: TimeTrackerRepository
+) : TrackerViewModel(preferences, db, service, dataSource) {
 
     val projectsData = MutableLiveData<List<Project>>()
     var projectEmpty: Project = Project.EMPTY.copy(true)

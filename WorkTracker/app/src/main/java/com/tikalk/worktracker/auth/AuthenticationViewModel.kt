@@ -35,8 +35,20 @@ package com.tikalk.worktracker.auth
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.data.TimeTrackerRepository
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class AuthenticationViewModel : TrackerViewModel() {
+@HiltViewModel
+class AuthenticationViewModel @Inject constructor(
+    preferences: TimeTrackerPrefs,
+    db: TrackerDatabase,
+    service: TimeTrackerService,
+    dataSource: TimeTrackerRepository
+) : TrackerViewModel(preferences, db, service, dataSource) {
 
     private val _login = MutableLiveData<LoginData>()
     val login: LiveData<LoginData> = _login

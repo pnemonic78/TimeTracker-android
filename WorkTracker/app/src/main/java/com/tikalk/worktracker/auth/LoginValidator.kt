@@ -32,10 +32,36 @@
 
 package com.tikalk.worktracker.auth
 
-class LoginUsernameValidator {
+import android.util.Patterns
+
+class LoginValidator {
+
+    fun validateUsername(value: String): Int {
+        if (value.isEmpty()) return ERROR_REQUIRED
+        if (value.length < 3) return ERROR_LENGTH
+        if (!isLoginValid(value)) return ERROR_INVALID
+        return ERROR_NONE
+    }
+
+    private fun isLoginValid(login: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(login).matches()
+    }
+
+    fun validatePassword(value: String): Int {
+        if (value.isEmpty()) return ERROR_REQUIRED
+        if (value.length < 3) return ERROR_LENGTH
+        if (!isPasswordValid(value)) return ERROR_INVALID
+        return ERROR_NONE
+    }
+
+    private fun isPasswordValid(password: String): Boolean {
+        return password.trim().length > 4
+    }
+
     companion object {
         const val ERROR_NONE = 0
         const val ERROR_REQUIRED = 1
         const val ERROR_LENGTH = 2
+        const val ERROR_INVALID = 3
     }
 }
