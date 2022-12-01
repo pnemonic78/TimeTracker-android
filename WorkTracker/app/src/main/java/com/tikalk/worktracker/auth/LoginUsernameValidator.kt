@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,42 +32,10 @@
 
 package com.tikalk.worktracker.auth
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.tikalk.worktracker.app.TrackerViewModel
-
-class AuthenticationViewModel : TrackerViewModel() {
-
-    private val _login = MutableLiveData<LoginData>()
-    val login: LiveData<LoginData> = _login
-
-    /**
-     * Data for login callbacks.
-     */
-    data class LoginData(val login: String, val reason: String? = null)
-
-    /**
-     * Login was successful.
-     * @param login the user's login that was used.
-     */
-    fun onLoginSuccess(login: String) {
-        notifyLoginSuccess(login)
-    }
-
-    /**
-     * Login failed.
-     * @param login the user's login that was used.
-     * @param reason the failure reason.
-     */
-    fun onLoginFailure(login: String, reason: String) {
-        notifyLoginFailure(login, reason)
-    }
-
-    private fun notifyLoginSuccess(login: String) {
-        _login.postValue(LoginData(login))
-    }
-
-    private fun notifyLoginFailure(login: String, reason: String) {
-        _login.postValue(LoginData(login, reason))
+class LoginUsernameValidator {
+    companion object {
+        const val ERROR_NONE = 0
+        const val ERROR_REQUIRED = 1
+        const val ERROR_LENGTH = 2
     }
 }

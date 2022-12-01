@@ -43,10 +43,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.databinding.FragmentLoginBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
@@ -72,15 +69,6 @@ class LoginFragment : InternetDialogFragment {
         super.onCreate(savedInstanceState)
         showsDialog = true
         isCancelable = true
-
-        delegate.authenticationViewModel.basicRealm.observe(this) { (realm, _, reason) ->
-            if (reason == null) {
-                Timber.i("basic realm success for \"$realm\"")
-                attemptLogin()
-            } else {
-                Timber.e("basic realm failure for \"$realm\": $reason")
-            }
-        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -235,32 +223,10 @@ class LoginFragment : InternetDialogFragment {
         return password.trim().length > 4
     }
 
-    override fun authenticate(submit: Boolean) {
-        authenticateBasicRealm("", "")
-    }
+    override fun authenticate(submit: Boolean) = Unit
 
     private fun authenticate(login: String, response: Response): Boolean {
-        val challenges = response.challenges()
-        for (challenge in challenges) {
-            if (challenge.scheme == BasicCredentials.SCHEME) {
-                authenticateBasicRealm(login, challenge.realm ?: "")
-                return true
-            }
-        }
         return false
-    }
-
-    private fun authenticateBasicRealm(username: String, realm: String) {
-        val navController = findNavController()
-        Timber.i("authenticateBasicRealm realm=$realm currentDestination=${navController.currentDestination?.label}")
-
-        if (!isNavDestination(R.id.basicRealmFragment)) {
-            Bundle().apply {
-                putString(BasicRealmFragment.EXTRA_REALM, realm)
-                putString(BasicRealmFragment.EXTRA_USER, username)
-                navController.navigate(R.id.action_basicRealmLogin, this)
-            }
-        }
     }
 
     private fun notifyLoginSuccess(login: String) {

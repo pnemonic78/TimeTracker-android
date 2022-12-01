@@ -53,7 +53,6 @@ class TrackerFragmentDelegate(
 
     val authenticationViewModel by fragment.activityViewModels<AuthenticationViewModel>()
     lateinit var login: LiveData<AuthenticationViewModel.LoginData>
-    lateinit var basicRealm: LiveData<AuthenticationViewModel.BasicRealmData>
 
     var firstRun = true
         private set
@@ -61,7 +60,6 @@ class TrackerFragmentDelegate(
 
     fun onCreate(savedInstanceState: Bundle?) {
         login = authenticationViewModel.login
-        basicRealm = authenticationViewModel.basicRealm
         firstRun = (savedInstanceState == null)
     }
 
@@ -109,14 +107,6 @@ class TrackerFragmentDelegate(
 
     fun onLoginFailure(login: String, reason: String) {
         authenticationViewModel.onLoginFailure(login, reason)
-    }
-
-    fun onBasicRealmSuccess(realmName: String, username: String) {
-        authenticationViewModel.onBasicRealmSuccess(realmName, username)
-    }
-
-    fun onBasicRealmFailure(realmName: String, username: String, reason: String) {
-        authenticationViewModel.onBasicRealmFailure(realmName, username, reason)
     }
 
     interface TrackerFragmentDelegateCallback : InternetFragmentDelegate.InternetFragmentCallback
