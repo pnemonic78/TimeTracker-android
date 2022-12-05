@@ -45,9 +45,17 @@ android {
         }
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = Android.Version.composeCompiler
     }
 
     kotlinOptions {
@@ -74,6 +82,12 @@ android {
 dependencies {
     // Jetpack
     implementation(Android.Jetpack.appcompat)
+    implementation(Android.Jetpack.composeCompiler)
+    implementation(Android.Jetpack.composeMaterial)
+    implementation(Android.Jetpack.composeRuntime)
+    implementation(Android.Jetpack.composeUi)
+    implementation(Android.Jetpack.composeUiTooling)
+    implementation(Android.Jetpack.composeUiToolingPreview)
     implementation(Android.Jetpack.constraint_layout)
     implementation(Android.Jetpack.core)
     implementation(Android.Jetpack.preference)

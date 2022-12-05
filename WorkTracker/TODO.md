@@ -1,12 +1,13 @@
 To-Do List
 ====
 
+* migrate binding to Jetpack Compose
 * move logic from fragment to ViewModel
   * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
+* migrate LiveData to StateFlow
 * "model" module
 * "domain" module
 * "ui-common" module
-* migrate binding to Jetpack Compose
 * migrate Retrofit/OkHttp to ktor
 
 * Reports - group by
