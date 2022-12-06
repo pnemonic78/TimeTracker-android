@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -531,7 +532,7 @@ class ReportFormFragment : TimeFormFragment() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         Timber.i("onRestoreInstanceState")
         super.onRestoreInstanceState(savedInstanceState)
-        val filter = savedInstanceState.getParcelable<ReportFilter?>(STATE_FILTER)
+        val filter = savedInstanceState.getParcelableCompat<ReportFilter>(STATE_FILTER)
         if (filter != null) {
             filterData.value = filter
         }

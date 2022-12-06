@@ -211,7 +211,6 @@ class LoginFragment : InternetDialogFragment {
                             }
                         } else {
                             binding.passwordInput.requestFocus()
-                            authenticate(loginValue, response.raw())
                         }
                     }
                 } catch (e: Exception) {
@@ -224,10 +223,6 @@ class LoginFragment : InternetDialogFragment {
     }
 
     override fun authenticate(submit: Boolean) = Unit
-
-    private fun authenticate(login: String, response: Response): Boolean {
-        return false
-    }
 
     private fun notifyLoginSuccess(login: String) {
         dismissAllowingStateLoss()

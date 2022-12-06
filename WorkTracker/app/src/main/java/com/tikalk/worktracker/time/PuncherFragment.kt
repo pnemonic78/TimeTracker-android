@@ -50,6 +50,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
@@ -448,7 +449,7 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity?>(STATE_RECORD)
+        val recordParcel = savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
             val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)

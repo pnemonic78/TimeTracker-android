@@ -33,6 +33,11 @@
 package com.tikalk.view
 
 import android.view.View
+import com.tikalk.worktracker.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 fun View.showAnimated(visible: Boolean) {
     val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
@@ -41,4 +46,31 @@ fun View.showAnimated(visible: Boolean) {
     view.animate()
         .setDuration(shortAnimTime)
         .alpha(if (visible) 1f else 0f)
+}
+
+private const val view_coroutine_scope = R.id.composeView
+
+val View.viewScope: CoroutineScope
+    get() {
+        val storedScope = getTag() as? CoroutineScope
+        if (storedScope != null) return storedScope
+
+        val newScope = ViewCoroutineScope()
+        if (isAttachedToWindow) {
+            addOnAttachStateChangeListener(newScope)
+            setTag(view_coroutine_scope, newScope)
+        } else newScope.cancel()
+
+        return newScope
+    }
+
+private class ViewCoroutineScope : CoroutineScope, View.OnAttachStateChangeListener {
+    override val coroutineContext = SupervisorJob() + Dispatchers.Main
+
+    override fun onViewAttachedToWindow(view: View) = Unit
+
+    override fun onViewDetachedFromWindow(view: View) {
+        coroutineContext.cancel()
+        view.setTag(view_coroutine_scope, null)
+    }
 }

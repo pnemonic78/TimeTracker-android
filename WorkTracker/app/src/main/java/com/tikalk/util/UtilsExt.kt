@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,47 +30,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.user
+package com.tikalk.util
 
-import androidx.annotation.MainThread
-import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.databinding.UserItemBinding
-import com.tikalk.worktracker.model.User
+import android.os.Build
+import android.os.Bundle
 
-class UserViewHolder(val binding: UserItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
-    var user: User? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                bind(value)
-            } else {
-                clear()
-            }
-        }
-
-    @MainThread
-    private fun bind(user: User) {
-        binding.name.text = user.displayName
-        binding.login.text = user.username
-        binding.role.text = user.roles?.joinToString(", ") ?: ""
-        binding.uncompletedEntry.setImageLevel(if (user.isUncompletedEntry) LEVEL_ACTIVE else LEVEL_NORMAL)
-        binding.uncompletedEntry.contentDescription =
-            itemView.context.getString(R.string.uncompleted_entry)
+@Suppress("DEPRECATION")
+fun <T> Bundle.getParcelableCompat(key: String, clazz: Class<T>): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        this.getParcelable(key, clazz)
+    } else {
+        this.getParcelable(key)
     }
+}
 
-    @MainThread
-    private fun clear() {
-        binding.name.text = ""
-        binding.login.text = ""
-        binding.role.text = ""
-        binding.uncompletedEntry.setImageLevel(LEVEL_NORMAL)
-        binding.uncompletedEntry.contentDescription = ""
-    }
-
-    companion object {
-        private const val LEVEL_NORMAL = 0
-        private const val LEVEL_ACTIVE = 1
-    }
+inline fun <reified T> Bundle.getParcelableCompat(key: String): T? {
+    val clazz: Class<T> = T::class.java
+    return getParcelableCompat(key, clazz)
 }

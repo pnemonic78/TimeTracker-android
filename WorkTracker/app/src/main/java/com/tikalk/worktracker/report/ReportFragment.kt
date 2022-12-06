@@ -36,7 +36,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -52,6 +51,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentReportListBinding
@@ -175,6 +175,7 @@ class ReportFragment : InternetFragment() {
         }
     }
 
+    @Suppress("DEPRECATION")
     @MainThread
     fun run() {
         Timber.i("run first=$firstRun")
@@ -184,11 +185,7 @@ class ReportFragment : InternetFragment() {
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
-                val filterExtra = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    args.getParcelable(EXTRA_FILTER, ReportFilter::class.java)
-                } else {
-                    args.getParcelable(EXTRA_FILTER)
-                }
+                val filterExtra = args.getParcelableCompat<ReportFilter>(EXTRA_FILTER)
                 if (filterExtra != null) {
                     filter = filterExtra
                 }

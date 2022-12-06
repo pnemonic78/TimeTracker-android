@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,33 +32,10 @@
 
 package com.tikalk.worktracker.project
 
-import android.content.Context
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import com.tikalk.worktracker.databinding.TaskItemBinding
-import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.model.TikalResult
+import com.tikalk.worktracker.model.Project
+import kotlinx.coroutines.flow.Flow
 
-class ProjectTasksAdapter : ListAdapter<ProjectTask, ProjectTaskViewHolder>(TaskDiffer()) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectTaskViewHolder {
-        val context: Context = parent.context
-        val binding = TaskItemBinding.inflate(LayoutInflater.from(context), parent, false)
-        return ProjectTaskViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: ProjectTaskViewHolder, position: Int) {
-        holder.task = getItem(position)
-    }
-
-    private class TaskDiffer : DiffUtil.ItemCallback<ProjectTask>() {
-        override fun areItemsTheSame(oldItem: ProjectTask, newItem: ProjectTask): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: ProjectTask, newItem: ProjectTask): Boolean {
-            return oldItem == newItem
-        }
-    }
+interface ProjectsUiState {
+    val projects: Flow<TikalResult<List<Project>>>
 }

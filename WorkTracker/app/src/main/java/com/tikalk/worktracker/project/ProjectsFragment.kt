@@ -47,8 +47,7 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentProjectsBinding
-import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -57,10 +56,8 @@ class ProjectsFragment : InternetFragment() {
 
     private val viewModel by viewModels<ProjectsViewModel>()
 
-    private var _binding: FragmentProjectsBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
-
-    private val listAdapter = ProjectsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,24 +77,22 @@ class ProjectsFragment : InternetFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentProjectsBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = listAdapter
 
-        viewModel.projectsData.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is TikalResult.Loading -> showProgress(true)
-                is TikalResult.Success -> {
-                    showProgress(false)
-                    bindList(result.data ?: emptyList())
-                }
-                is TikalResult.Error -> {
-                    showProgress(false)
-                    handleError(result)
+        binding.composeView.setContent {
+            ProjectsScreen(uiState = viewModel)
+        }
+
+        lifecycleScope.launch {
+            viewModel.projects.collect { result ->
+                when (result) {
+                    is TikalResult.Error -> handleError(result)
+                    else -> Unit
                 }
             }
         }
@@ -122,13 +117,6 @@ class ProjectsFragment : InternetFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             viewModel.fetchProjects(firstRun)
-        }
-    }
-
-    private fun bindList(projects: List<Project>) {
-        listAdapter.submitList(projects)
-        if (projects === viewModel.projectsData.value) {
-            listAdapter.notifyDataSetChanged()
         }
     }
 

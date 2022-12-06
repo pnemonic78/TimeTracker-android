@@ -34,7 +34,6 @@ package com.tikalk.worktracker.time
 
 import android.app.TimePickerDialog
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
@@ -56,6 +55,7 @@ import com.tikalk.app.DateTimePickerDialog.OnDateTimeSetListener
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -737,14 +737,11 @@ class TimeEditFragment : TimeFormFragment() {
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
+    @Suppress("DEPRECATION")
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         val recordParcel: TimeRecordEntity? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
-            } else {
-                savedInstanceState.getParcelable(STATE_RECORD)
-            }
+            savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
             val projects = timeViewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)

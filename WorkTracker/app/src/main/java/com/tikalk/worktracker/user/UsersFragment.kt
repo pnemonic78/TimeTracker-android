@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.user
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -48,8 +47,7 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentUsersBinding
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -58,10 +56,8 @@ class UsersFragment : InternetFragment() {
 
     private val viewModel by viewModels<UsersViewModel>()
 
-    private var _binding: FragmentUsersBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
-
-    private val listAdapter = UsersAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,24 +77,22 @@ class UsersFragment : InternetFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUsersBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = listAdapter
 
-        viewModel.usersData.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is TikalResult.Loading -> showProgress(true)
-                is TikalResult.Success -> {
-                    showProgress(false)
-                    bindList(result.data ?: emptyList())
-                }
-                is TikalResult.Error -> {
-                    showProgress(false)
-                    handleError(result)
+        binding.composeView.setContent {
+            UsersScreen(uiState = viewModel)
+        }
+
+        lifecycleScope.launch {
+            viewModel.users.collect { result ->
+                when (result) {
+                    is TikalResult.Error -> handleError(result)
+                    else -> Unit
                 }
             }
         }
@@ -126,14 +120,6 @@ class UsersFragment : InternetFragment() {
         }
     }
 
-    private fun bindList(users: List<User>) {
-        listAdapter.submitList(users)
-        if (users === viewModel.usersData.value) {
-            listAdapter.notifyDataSetChanged()
-        }
-        bindIndex(users)
-    }
-
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
@@ -143,31 +129,5 @@ class UsersFragment : InternetFragment() {
                 navController.navigate(R.id.action_users_to_login, this)
             }
         }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun bindIndex(users: List<User>) {
-        val chars = users.filter { it.displayName?.isNotEmpty() == true }
-            .map { it.displayName!![0].uppercase() }
-            .toSet()
-        val positions = chars.associateWith { c ->
-            users.indexOfFirst { it.displayName.orEmpty().startsWith(c) }
-        }
-
-        binding.listIndex.apply {
-            setIndices(chars)
-            scrollIndexListener = object : UsersScrollerView.OnScrollIndexListener {
-                override fun onScrollIndex(index: String) {
-                    onIndexTouch(positions, index)
-                }
-            }
-        }
-    }
-
-    private fun onIndexTouch(positions: Map<String, Int>, char: String) {
-        val position = positions[char] ?: return
-        if (position < 0) return
-        val listView = binding.list
-        listView.scrollToPosition(position)
     }
 }

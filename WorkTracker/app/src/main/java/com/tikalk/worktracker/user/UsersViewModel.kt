@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,7 @@
 
 package com.tikalk.worktracker.user
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
@@ -43,7 +42,10 @@ import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -53,23 +55,32 @@ class UsersViewModel @Inject constructor(
     db: TrackerDatabase,
     service: TimeTrackerService,
     dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource) {
+) : TrackerViewModel(preferences, db, service, dataSource),
+    UsersUiState {
 
-    private val _usersData = MutableLiveData<TikalResult<List<User>>>(TikalResult.Loading())
-    val usersData: LiveData<TikalResult<List<User>>> = _usersData
+    private val _users = MutableStateFlow<TikalResult<List<User>>>(TikalResult.Loading())
+    override val users: Flow<TikalResult<List<User>>> = _users
 
     suspend fun fetchUsers(firstRun: Boolean) {
-        _usersData.postValue(TikalResult.Loading())
+        _users.emit(TikalResult.Loading())
         try {
             dataSource.usersPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->
-                    _usersData.postValue(TikalResult.Success(page.users))
+                    _users.emit(TikalResult.Success(page.users))
                 }
         } catch (e: Exception) {
             Timber.e(e, "Error loading page: ${e.message}")
-            _usersData.postValue(TikalResult.Error(e))
+            _users.emit(TikalResult.Error(e))
         }
     }
 
+    private val _userSelectedPosition = MutableStateFlow(0)
+    override val userSelectedPosition: Flow<Int> = _userSelectedPosition
+
+    override fun onScrollIndex(index: String, position: Int) {
+        viewModelScope.launch {
+            _userSelectedPosition.emit(position)
+        }
+    }
 }

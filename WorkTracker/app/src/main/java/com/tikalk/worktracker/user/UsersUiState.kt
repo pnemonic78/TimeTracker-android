@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,34 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.project
+package com.tikalk.worktracker.user
 
-import androidx.annotation.MainThread
-import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.databinding.ProjectItemBinding
-import com.tikalk.worktracker.model.Project
+import com.tikalk.model.TikalResult
+import com.tikalk.worktracker.model.User
+import kotlinx.coroutines.flow.Flow
 
-class ProjectViewHolder(val binding: ProjectItemBinding) : RecyclerView.ViewHolder(binding.root) {
+interface UsersUiState {
+    val users: Flow<TikalResult<List<User>>>
+    val userSelectedPosition: Flow<Int>
 
-    var project: Project? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                bind(value)
-            } else {
-                clear()
-            }
-        }
-
-    @MainThread
-    private fun bind(project: Project) {
-        binding.name.text = project.name
-        binding.description.text = project.description
-    }
-
-    @MainThread
-    private fun clear() {
-        binding.name.text = ""
-        binding.description.text = ""
-    }
+    fun onScrollIndex(index: String, position: Int)
 }

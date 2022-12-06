@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.data.remote
 
 import android.net.Uri
-import android.text.format.DateUtils
 import com.tikalk.html.findParentElement
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
@@ -224,7 +223,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         }
         val totals = TimeTotals()
 
-        val table = findTotalsTable(doc, parent) ?: return
+        val table = findTotalsTable(doc) ?: return
         val cells = table.getElementsByTag("td")
         for (td in cells) {
             val hasClass = td.classNames().any { it.startsWith("day-totals") }
@@ -260,7 +259,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         page.totals = totals
     }
 
-    private fun findTotalsTable(doc: Document, parent: Element?): Element? {
+    private fun findTotalsTable(doc: Document): Element? {
         val body = doc.body()
         val div = body.selectFirst("div[class='day-totals']") ?: return null
         val candidates = div.getElementsByTag("td")

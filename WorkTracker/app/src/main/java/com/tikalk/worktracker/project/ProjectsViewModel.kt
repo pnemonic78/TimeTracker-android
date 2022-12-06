@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,8 @@ import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
 import javax.inject.Inject
@@ -53,23 +55,23 @@ class ProjectsViewModel @Inject constructor(
     db: TrackerDatabase,
     service: TimeTrackerService,
     dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource) {
+) : TrackerViewModel(preferences, db, service, dataSource),
+    ProjectsUiState {
 
-    private val _projectsData = MutableLiveData<TikalResult<List<Project>>>(TikalResult.Loading())
-    val projectsData: LiveData<TikalResult<List<Project>>> = _projectsData
+    private val _projects = MutableStateFlow<TikalResult<List<Project>>>(TikalResult.Loading())
+    override val projects: Flow<TikalResult<List<Project>>> = _projects
 
     suspend fun fetchProjects(firstRun: Boolean) {
-        _projectsData.postValue(TikalResult.Loading())
+        _projects.emit(TikalResult.Loading())
         try {
             dataSource.projectsPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->
-                    _projectsData.postValue(TikalResult.Success(page.projects))
+                    _projects.emit(TikalResult.Success(page.projects))
                 }
         } catch (e: Exception) {
             Timber.e(e, "Error loading page: ${e.message}")
-            _projectsData.postValue(TikalResult.Error(e))
+            _projects.emit(TikalResult.Error(e))
         }
     }
-
 }
