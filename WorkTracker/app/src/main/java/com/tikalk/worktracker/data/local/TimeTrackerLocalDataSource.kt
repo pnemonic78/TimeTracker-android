@@ -320,7 +320,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
             totals.monthly = totalsAll[2].monthly
         }
         val quota = calculateQuota(date)
-        totals.balance = quota - totals.monthly
+        totals.balance = totals.monthly - quota
 
         return totals
     }
@@ -372,6 +372,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
     }
 
     companion object {
+        // TODO put this in settings
         private val WORK_DAYS = intArrayOf(
             Calendar.SUNDAY,
             Calendar.MONDAY,
@@ -379,6 +380,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
             Calendar.WEDNESDAY,
             Calendar.THURSDAY
         )
+        // TODO put this in settings
         private const val WORK_HOURS = 9L
     }
 }
