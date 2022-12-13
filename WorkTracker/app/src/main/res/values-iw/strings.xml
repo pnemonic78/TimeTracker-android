@@ -63,6 +63,10 @@
     <!-- Settings -->
     <string name="settings_label" msgid="1626402585530130914">"הגדרות"</string>
 
+    <!-- Settings - Work -->
+    <string name="pref_work_title">"עבודה"</string>
+    <string name="pref_hours_per_day">"שעות ליום עבודה"</string>
+
     <!-- Settings - Privacy -->
     <string name="pref_privacy_security_title">"פרטיות ואבטחה"</string>
     <string name="clear_user_data_text" msgid="355574089263023363">"פינוי שטח אחסון"</string>

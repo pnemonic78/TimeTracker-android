@@ -73,6 +73,8 @@ class TimeTrackerLocalDataSource @Inject constructor(
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
 
+    private val workHoursPerDay = preferences.workHoursPerDay
+
     override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         return flow {
             val projects = ArrayList<Project>()
@@ -332,7 +334,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
         for (dayOfMonth in 1..lastDayOfMonth) {
             day.dayOfMonth = dayOfMonth
             if (day.dayOfWeek in WORK_DAYS) {
-                quota += WORK_HOURS
+                quota += workHoursPerDay
             }
         }
         return quota * DateUtils.HOUR_IN_MILLIS
@@ -380,7 +382,5 @@ class TimeTrackerLocalDataSource @Inject constructor(
             Calendar.WEDNESDAY,
             Calendar.THURSDAY
         )
-        // TODO put this in settings
-        private const val WORK_HOURS = 9L
     }
 }

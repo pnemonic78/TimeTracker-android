@@ -30,7 +30,22 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="@string/pref_work_title">
+
+        <SeekBarPreference
+            android:defaultValue="@integer/pref_hours_per_day_defaultValue"
+            android:icon="@drawable/ic_settings_hours"
+            android:key="hours_per_day"
+            android:max="23"
+            android:title="@string/pref_hours_per_day"
+            app:min="1"
+            app:seekBarIncrement="1"
+            app:showSeekBarValue="true" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/pref_privacy_security_title">
 
         <Preference

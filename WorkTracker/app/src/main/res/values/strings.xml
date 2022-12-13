@@ -75,6 +75,10 @@
     <string name="settings_label">"Settings"</string>
     <string name="menu_settings" translatable="false">@string/settings_label</string>
 
+    <!-- Settings - Work -->
+    <string name="pref_work_title">"Work"</string>
+    <string name="pref_hours_per_day">"Hours per work day"</string>
+
     <!-- Settings - Privacy -->
     <string name="pref_privacy_security_title">"Privacy &amp; security"</string>
     <string name="clear_user_data_text">"Clear storage"</string>
