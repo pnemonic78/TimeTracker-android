@@ -73,8 +73,6 @@ class TimeTrackerLocalDataSource @Inject constructor(
     private val preferences: TimeTrackerPrefs
 ) : TimeTrackerDataSource {
 
-    private val workHoursPerDay = preferences.workHoursPerDay
-
     override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         return flow {
             val projects = ArrayList<Project>()
@@ -328,12 +326,14 @@ class TimeTrackerLocalDataSource @Inject constructor(
     }
 
     private fun calculateQuota(date: Calendar): Long {
+        val workHoursPerDay = preferences.workHoursPerDay
+        val workDays = preferences.calendarWorkDays()
         var quota = 0L
         val day = date.copy()
         val lastDayOfMonth = day.getActualMaximum(Calendar.DAY_OF_MONTH)
         for (dayOfMonth in 1..lastDayOfMonth) {
             day.dayOfMonth = dayOfMonth
-            if (day.dayOfWeek in WORK_DAYS) {
+            if (day.dayOfWeek in workDays) {
                 quota += workHoursPerDay
             }
         }
@@ -371,16 +371,5 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override suspend fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
-    }
-
-    companion object {
-        // TODO put this in settings
-        private val WORK_DAYS = intArrayOf(
-            Calendar.SUNDAY,
-            Calendar.MONDAY,
-            Calendar.TUESDAY,
-            Calendar.WEDNESDAY,
-            Calendar.THURSDAY
-        )
     }
 }

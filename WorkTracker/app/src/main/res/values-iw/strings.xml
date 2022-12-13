@@ -66,6 +66,13 @@
     <!-- Settings - Work -->
     <string name="pref_work_title">"עבודה"</string>
     <string name="pref_hours_per_day">"שעות ליום עבודה"</string>
+    <string name="friday">"יום שישי"</string>
+    <string name="monday">"יום שני"</string>
+    <string name="saturday">"שבת"</string>
+    <string name="sunday">"יום ראשון"</string>
+    <string name="thursday">"יום חמישי"</string>
+    <string name="tuesday">"יום שלישי"</string>
+    <string name="wednesday">"יום רביעי"</string>
 
     <!-- Settings - Privacy -->
     <string name="pref_privacy_security_title">"פרטיות ואבטחה"</string>

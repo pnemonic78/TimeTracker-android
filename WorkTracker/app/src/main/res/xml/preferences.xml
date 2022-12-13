@@ -44,6 +44,41 @@
             app:seekBarIncrement="1"
             app:showSeekBarValue="true" />
 
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_sunday_defaultValue"
+            android:key="work_day.sunday"
+            android:title="@string/sunday" />
+
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_monday_defaultValue"
+            android:key="work_day.monday"
+            android:title="@string/monday" />
+
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_tuesday_defaultValue"
+            android:key="work_day.tuesday"
+            android:title="@string/tuesday" />
+
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_wednesday_defaultValue"
+            android:key="work_day.wednesday"
+            android:title="@string/wednesday" />
+
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_thursday_defaultValue"
+            android:key="work_day.thursday"
+            android:title="@string/thursday" />
+
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_friday_defaultValue"
+            android:key="work_day.friday"
+            android:title="@string/friday" />
+
+        <SwitchPreference
+            android:defaultValue="@bool/pref_work_day_saturday_defaultValue"
+            android:key="work_day.saturday"
+            android:title="@string/saturday" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_privacy_security_title">

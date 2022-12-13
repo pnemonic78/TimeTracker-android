@@ -32,4 +32,11 @@
 
 <resources>
     <integer name="pref_hours_per_day_defaultValue">9</integer>
+    <bool name="pref_work_day_sunday_defaultValue">true</bool>
+    <bool name="pref_work_day_monday_defaultValue">true</bool>
+    <bool name="pref_work_day_tuesday_defaultValue">true</bool>
+    <bool name="pref_work_day_wednesday_defaultValue">true</bool>
+    <bool name="pref_work_day_thursday_defaultValue">true</bool>
+    <bool name="pref_work_day_friday_defaultValue">false</bool>
+    <bool name="pref_work_day_saturday_defaultValue">false</bool>
 </resources>

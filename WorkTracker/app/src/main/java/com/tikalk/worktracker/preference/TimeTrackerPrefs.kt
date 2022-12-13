@@ -32,6 +32,7 @@
 package com.tikalk.worktracker.preference
 
 import android.content.Context
+import android.icu.util.Calendar
 import androidx.preference.PreferenceManager
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
@@ -242,5 +243,42 @@ class TimeTrackerPrefs(context: Context) {
         set(value) {
             sharedPreferences.edit().putInt(HOURS_PER_DAY, value)
         }
+
+    private val isWorkDayDefault = listOf<Boolean>(
+        context.resources.getBoolean(R.bool.pref_work_day_sunday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_monday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_tuesday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_wednesday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_thursday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_friday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_saturday_defaultValue)
+    )
+
+    val isWorkDaySunday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.sunday", isWorkDayDefault[0])
+    val isWorkDayMonday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.monday", isWorkDayDefault[1])
+    val isWorkDayTuesday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.tuesday", isWorkDayDefault[2])
+    val isWorkDayWednesday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.wednesday", isWorkDayDefault[3])
+    val isWorkDayThursday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.thursday", isWorkDayDefault[4])
+    val isWorkDayFriday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.friday", isWorkDayDefault[5])
+    val isWorkDaySaturday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.saturday", isWorkDayDefault[6])
+
+    fun calendarWorkDays(): Collection<Int> {
+        val list = mutableListOf<Int>()
+        if (isWorkDaySunday) list.add(Calendar.SUNDAY)
+        if (isWorkDayMonday) list.add(Calendar.MONDAY)
+        if (isWorkDayTuesday) list.add(Calendar.TUESDAY)
+        if (isWorkDayWednesday) list.add(Calendar.WEDNESDAY)
+        if (isWorkDayThursday) list.add(Calendar.THURSDAY)
+        if (isWorkDayFriday) list.add(Calendar.FRIDAY)
+        if (isWorkDaySaturday) list.add(Calendar.SATURDAY)
+        return list
+    }
 
 }
