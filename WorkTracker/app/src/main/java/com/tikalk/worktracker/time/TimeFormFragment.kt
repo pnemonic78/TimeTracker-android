@@ -35,9 +35,11 @@ package com.tikalk.worktracker.time
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -49,6 +51,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 
@@ -57,17 +60,21 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     protected val timeViewModel by activityViewModels<TimeViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        timeViewModel.projectsData.observe(this) { projects ->
-            onProjectsUpdated(projects)
+        lifecycleScope.launch {
+            timeViewModel.projectsData.collect { projects ->
+                onProjectsUpdated(projects)
+            }
         }
-        delegate.login.observe(this) { (login, reason) ->
-            if (reason == null) {
-                onLoginSuccess(login)
-            } else {
-                onLoginFailure(login, reason)
+        lifecycleScope.launch {
+            delegate.login.collect { (login, reason) ->
+                if (reason == null) {
+                    onLoginSuccess(login)
+                } else {
+                    onLoginFailure(login, reason)
+                }
             }
         }
     }
@@ -77,7 +84,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     @MainThread
     abstract fun bindForm(record: TimeRecord)
 
-    fun markFavorite() {
+    protected fun markFavorite() {
         markFavorite(record)
     }
 
@@ -223,7 +230,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
             val projects = timeViewModel.projectsData.value
-            val project = projects?.find { it.id == projectFavorite } ?: record.project
+            val project = projects.find { it.id == projectFavorite } ?: record.project
             setRecordProject(project)
 
             val tasks = project.tasks

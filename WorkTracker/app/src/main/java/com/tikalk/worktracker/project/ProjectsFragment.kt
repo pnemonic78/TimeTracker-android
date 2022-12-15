@@ -62,14 +62,6 @@ class ProjectsFragment : InternetFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
-            }
-        }
     }
 
     override fun onCreateView(
@@ -88,6 +80,16 @@ class ProjectsFragment : InternetFragment() {
             ProjectsScreen(uiState = viewModel)
         }
 
+        lifecycleScope.launch {
+            delegate.login.collect { (_, reason) ->
+                if (reason == null) {
+                    Timber.i("login success")
+                    run()
+                } else {
+                    Timber.e("login failure: $reason")
+                }
+            }
+        }
         lifecycleScope.launch {
             viewModel.projects.collect { result ->
                 when (result) {

@@ -37,12 +37,12 @@ import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LiveData
 import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AuthenticationViewModel
 import com.tikalk.worktracker.net.InternetFragmentDelegate
+import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 import timber.log.Timber
 
@@ -52,14 +52,13 @@ class TrackerFragmentDelegate(
 ) {
 
     val authenticationViewModel by fragment.activityViewModels<AuthenticationViewModel>()
-    lateinit var login: LiveData<AuthenticationViewModel.LoginData>
+    internal val login: Flow<AuthenticationViewModel.LoginData> get() = authenticationViewModel.login
 
     var firstRun = true
         private set
     val internet = InternetFragmentDelegate(callback)
 
     fun onCreate(savedInstanceState: Bundle?) {
-        login = authenticationViewModel.login
         firstRun = (savedInstanceState == null)
     }
 
@@ -101,11 +100,11 @@ class TrackerFragmentDelegate(
         return internet.getResponseError(html)
     }
 
-    fun onLoginSuccess(login: String) {
+    suspend fun onLoginSuccess(login: String) {
         authenticationViewModel.onLoginSuccess(login)
     }
 
-    fun onLoginFailure(login: String, reason: String) {
+    suspend fun onLoginFailure(login: String, reason: String) {
         authenticationViewModel.onLoginFailure(login, reason)
     }
 

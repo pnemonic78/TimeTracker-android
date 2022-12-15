@@ -47,7 +47,6 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -66,6 +65,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -84,9 +84,9 @@ class TimeListFragment : TimeFormFragment(),
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
-    private val totalsData = MutableLiveData<TimeTotals?>()
+    private val totalsData = MutableStateFlow<TimeTotals?>(null)
 
-    private val recordsData = MutableLiveData<List<TimeRecord>>()
+    private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
 
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
@@ -95,25 +95,6 @@ class TimeListFragment : TimeFormFragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        recordsData.observe(this) { records ->
-            bindList(records)
-        }
-        totalsData.observe(this) { totals ->
-            if (totals != null) bindTotals(totals)
-        }
-
-        timeViewModel.deleted.observe(this) { data ->
-            onRecordEditDeleted(data.record, data.responseHtml)
-        }
-        timeViewModel.edited.observe(this) { data ->
-            onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
-        }
-        timeViewModel.editFailure.observe(this) { data ->
-            onRecordEditFailure(data.record, data.reason)
-        }
-        timeViewModel.favorite.observe(this) { record ->
-            onRecordEditFavorited(record)
-        }
     }
 
     override fun onCreateView(
@@ -147,6 +128,37 @@ class TimeListFragment : TimeFormFragment(),
             }
         })
         binding.list.setOnTouchListener { _, event -> swipeDay.onTouchEvent(event) }
+
+        lifecycleScope.launch {
+            recordsData.collect { records ->
+                bindList(records)
+            }
+        }
+        lifecycleScope.launch {
+            totalsData.collect { totals ->
+                if (totals != null) bindTotals(totals)
+            }
+        }
+        lifecycleScope.launch {
+            timeViewModel.deleted.collect { data ->
+                if (data != null) onRecordEditDeleted(data.record, data.responseHtml)
+            }
+        }
+        lifecycleScope.launch {
+            timeViewModel.edited.collect { data ->
+                if (data != null) onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
+            }
+        }
+        lifecycleScope.launch {
+            timeViewModel.editFailure.collect { data ->
+                if (data != null) onRecordEditFailure(data.record, data.reason)
+            }
+        }
+        lifecycleScope.launch {
+            timeViewModel.favorite.collect { record ->
+                if (record != null) onRecordEditFavorited(record)
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -222,14 +234,14 @@ class TimeListFragment : TimeFormFragment(),
         dataSource.savePage(page)
     }
 
-    private fun processPage(page: TimeListPage) {
-        timeViewModel.projectsData.postValue(page.projects.sortedBy { it.name })
-        recordsData.postValue(page.records)
+    private suspend fun processPage(page: TimeListPage) {
+        timeViewModel.projectsData.emit(page.projects.sortedBy { it.name })
+        recordsData.emit(page.records)
         var totals = totalsData.value
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.postValue(totals)
+        totalsData.emit(totals)
         setRecordValue(page.record)
     }
 

@@ -32,8 +32,6 @@
 
 package com.tikalk.worktracker.project
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository

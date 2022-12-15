@@ -32,14 +32,14 @@
 
 package com.tikalk.worktracker.auth
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,8 +50,8 @@ class AuthenticationViewModel @Inject constructor(
     dataSource: TimeTrackerRepository
 ) : TrackerViewModel(preferences, db, service, dataSource) {
 
-    private val _login = MutableLiveData<LoginData>()
-    val login: LiveData<LoginData> = _login
+    private val _login = MutableStateFlow(LoginData(""))
+    val login: Flow<LoginData> = _login
 
     /**
      * Data for login callbacks.
@@ -62,7 +62,7 @@ class AuthenticationViewModel @Inject constructor(
      * Login was successful.
      * @param login the user's login that was used.
      */
-    fun onLoginSuccess(login: String) {
+    suspend fun onLoginSuccess(login: String) {
         notifyLoginSuccess(login)
     }
 
@@ -71,15 +71,15 @@ class AuthenticationViewModel @Inject constructor(
      * @param login the user's login that was used.
      * @param reason the failure reason.
      */
-    fun onLoginFailure(login: String, reason: String) {
+    suspend fun onLoginFailure(login: String, reason: String) {
         notifyLoginFailure(login, reason)
     }
 
-    private fun notifyLoginSuccess(login: String) {
-        _login.postValue(LoginData(login))
+    private suspend fun notifyLoginSuccess(login: String) {
+        _login.emit(LoginData(login))
     }
 
-    private fun notifyLoginFailure(login: String, reason: String) {
-        _login.postValue(LoginData(login, reason))
+    private suspend fun notifyLoginFailure(login: String, reason: String) {
+        _login.emit(LoginData(login, reason))
     }
 }

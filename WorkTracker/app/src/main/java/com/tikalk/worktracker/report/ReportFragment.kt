@@ -47,7 +47,6 @@ import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -63,6 +62,7 @@ import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -75,32 +75,14 @@ class ReportFragment : InternetFragment() {
     private val binding get() = _binding!!
     private val bindingTotals get() = binding.totals
 
-    private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private val totalsData = MutableLiveData<ReportTotals>()
-    private val filterData = MutableLiveData<ReportFilter>()
+    private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
+    private val totalsData = MutableStateFlow<ReportTotals?>(null)
+    private val filterData = MutableStateFlow<ReportFilter?>(null)
     private var listAdapter = ReportAdapter(ReportFilter())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        recordsData.observe(this) { records ->
-            bindList(records)
-        }
-        totalsData.observe(this) { totals ->
-            bindTotals(totals)
-        }
-        filterData.observe(this) { filter ->
-            this.listAdapter = ReportAdapter(filter)
-            binding.list.adapter = listAdapter
-        }
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
-            }
-        }
     }
 
     override fun onCreateView(
@@ -115,6 +97,35 @@ class ReportFragment : InternetFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.list.adapter = listAdapter
+
+        lifecycleScope.launch {
+            recordsData.collect { records ->
+                bindList(records)
+            }
+        }
+        lifecycleScope.launch {
+            totalsData.collect { totals ->
+                if (totals != null) bindTotals(totals)
+            }
+        }
+        lifecycleScope.launch {
+            filterData.collect { filter ->
+                if (filter != null) {
+                    this@ReportFragment.listAdapter = ReportAdapter(filter)
+                    binding.list.adapter = listAdapter
+                }
+            }
+        }
+        lifecycleScope.launch {
+            delegate.login.collect { (_, reason) ->
+                if (reason == null) {
+                    Timber.i("login success")
+                    run()
+                } else {
+                    Timber.e("login failure: $reason")
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -296,7 +307,7 @@ class ReportFragment : InternetFragment() {
 
     private fun exportCSV(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
+        val records = recordsData.value
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
@@ -310,7 +321,7 @@ class ReportFragment : InternetFragment() {
 
     private fun exportHTML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
+        val records = recordsData.value
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
@@ -324,7 +335,7 @@ class ReportFragment : InternetFragment() {
 
     private fun exportODF(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
+        val records = recordsData.value
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 
@@ -338,7 +349,7 @@ class ReportFragment : InternetFragment() {
 
     private fun exportXML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
+        val records = recordsData.value
         val filter = filterData.value ?: return
         val totals = totalsData.value ?: return
 

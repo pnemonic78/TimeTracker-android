@@ -333,7 +333,7 @@ class PuncherFragment : TimeFormFragment() {
                 val locationId = args.getLong(EXTRA_LOCATION)
 
                 val projects = timeViewModel.projectsData.value
-                val project = projects?.find { it.id == projectId } ?: timeViewModel.projectEmpty
+                val project = projects.find { it.id == projectId } ?: timeViewModel.projectEmpty
                 val tasks = project.tasks
                 val task = tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty
 
@@ -367,7 +367,7 @@ class PuncherFragment : TimeFormFragment() {
             val projects = timeViewModel.projectsData.value
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            val project = projects?.find { it.id == recordStartedProjectId } ?: record.project
+            val project = projects.find { it.id == recordStartedProjectId } ?: record.project
             setRecordProject(project)
             val tasks = project.tasks
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task

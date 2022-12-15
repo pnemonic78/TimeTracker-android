@@ -36,6 +36,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
@@ -46,6 +47,7 @@ import com.tikalk.worktracker.app.TrackerActivity
 import com.tikalk.worktracker.databinding.ActivityTimeListBinding
 import com.tikalk.worktracker.user.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -82,11 +84,15 @@ class TimeListActivity : TrackerActivity() {
             }
         }
 
-        profileViewModule.profileUpdate.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("profile success")
-            } else {
-                Timber.e("profile failure: $reason")
+        lifecycleScope.launch {
+            profileViewModule.profileUpdate.collect { profile ->
+                if (profile != null) {
+                    if (profile.reason.isNullOrEmpty()) {
+                        Timber.i("profile success")
+                    } else {
+                        Timber.e("profile failure: ${profile.reason}")
+                    }
+                }
             }
         }
     }

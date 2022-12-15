@@ -62,12 +62,14 @@ class ProjectTasksFragment : InternetFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
+        lifecycleScope.launch {
+            delegate.login.collect { (_, reason) ->
+                if (reason == null) {
+                    Timber.i("login success")
+                    run()
+                } else {
+                    Timber.e("login failure: $reason")
+                }
             }
         }
     }

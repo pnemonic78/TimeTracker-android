@@ -187,7 +187,7 @@ class TimeEditFragment : TimeFormFragment() {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
                     val projects = timeViewModel.projectsData.value
-                    setRecordProject(projects?.find { it.id == projectId }
+                    setRecordProject(projects.find { it.id == projectId }
                         ?: timeViewModel.projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
@@ -646,7 +646,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
+    private suspend fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
         val errorMessage = getResponseError(html)
         Timber.i("processSubmittedPage last=$isLast err=[$errorMessage]")
         if (errorMessage.isNullOrEmpty()) {
@@ -656,7 +656,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
+    private suspend fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
         recordsToSubmit.remove(record)
         timeViewModel.onRecordEditSubmitted(record, isLast, html)
 
@@ -668,16 +668,16 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun onRecordError(record: TimeRecord, errorMessage: String) {
+    private suspend fun onRecordError(record: TimeRecord, errorMessage: String) {
         setErrorLabelMain(errorMessage)
         timeViewModel.onRecordEditFailure(record, errorMessage)
     }
 
     private fun deleteRecord() {
-        deleteRecord(record)
+        lifecycleScope.launch { deleteRecord(record) }
     }
 
-    private fun deleteRecord(record: TimeRecord) {
+    private suspend fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
             record.status = TaskRecordStatus.DELETED
@@ -707,7 +707,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun processDeletePage(record: TimeRecord, html: String) {
+    private suspend fun processDeletePage(record: TimeRecord, html: String) {
         Timber.i("processDeletePage")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
@@ -717,7 +717,7 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun onRecordDeleted(record: TimeRecord, html: String) {
+    private suspend fun onRecordDeleted(record: TimeRecord, html: String) {
         record.status = TaskRecordStatus.DELETED
         recordsToSubmit.remove(record)
         timeViewModel.onRecordEditDeleted(record, html)
@@ -752,7 +752,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun markFavorite(record: TimeRecord) {
         super.markFavorite(record)
-        timeViewModel.onRecordEditFavorited(record)
+        lifecycleScope.launch { timeViewModel.onRecordEditFavorited(record) }
     }
 
     fun editRecord(record: TimeRecord, isStop: Boolean = false) {

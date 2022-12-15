@@ -52,7 +52,7 @@ private const val view_coroutine_scope = R.id.composeView
 
 val View.viewScope: CoroutineScope
     get() {
-        val storedScope = getTag() as? CoroutineScope
+        val storedScope = tag as? CoroutineScope
         if (storedScope != null) return storedScope
 
         val newScope = ViewCoroutineScope()

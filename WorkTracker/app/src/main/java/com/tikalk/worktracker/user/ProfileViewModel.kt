@@ -32,8 +32,6 @@
 
 package com.tikalk.worktracker.user
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -41,6 +39,8 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,8 +51,8 @@ class ProfileViewModel @Inject constructor(
     dataSource: TimeTrackerRepository
 ) : TrackerViewModel(preferences, db, service, dataSource) {
 
-    private val profileUpdateData = MutableLiveData<ProfileData>()
-    val profileUpdate: LiveData<ProfileData> = profileUpdateData
+    private val profileUpdateData = MutableStateFlow<ProfileData?>(null)
+    val profileUpdate: Flow<ProfileData?> = profileUpdateData
 
     /**
      * Data for profile callbacks.
@@ -63,7 +63,7 @@ class ProfileViewModel @Inject constructor(
      * Profile update was successful.
      * @param user the updated user.
      */
-    fun onProfileSuccess(user: User) {
+    suspend fun onProfileSuccess(user: User) {
         notifyProfileSuccess(user)
     }
 
@@ -72,15 +72,15 @@ class ProfileViewModel @Inject constructor(
      * @param user the current user.
      * @param reason the failure reason.
      */
-    fun onProfileFailure(user: User, reason: String) {
+    suspend fun onProfileFailure(user: User, reason: String) {
         notifyProfileFailure(user, reason)
     }
 
-    private fun notifyProfileSuccess(user: User) {
-        profileUpdateData.postValue(ProfileData(user))
+    private suspend fun notifyProfileSuccess(user: User) {
+        profileUpdateData.emit(ProfileData(user))
     }
 
-    private fun notifyProfileFailure(user: User, reason: String) {
-        profileUpdateData.postValue(ProfileData(user, reason))
+    private suspend fun notifyProfileFailure(user: User, reason: String) {
+        profileUpdateData.emit(ProfileData(user, reason))
     }
 }

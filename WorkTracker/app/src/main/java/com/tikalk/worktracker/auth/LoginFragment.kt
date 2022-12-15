@@ -49,7 +49,6 @@ import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Response
 import timber.log.Timber
 
 /**
@@ -224,18 +223,18 @@ class LoginFragment : InternetDialogFragment {
 
     override fun authenticate(submit: Boolean) = Unit
 
-    private fun notifyLoginSuccess(login: String) {
+    private suspend fun notifyLoginSuccess(login: String) {
         dismissAllowingStateLoss()
         delegate.onLoginSuccess(login)
     }
 
-    private fun notifyLoginFailure(login: String, reason: String) {
+    private suspend fun notifyLoginFailure(login: String, reason: String) {
         delegate.onLoginFailure(login, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyLoginFailure("", REASON_CANCEL)
+        lifecycleScope.launch { notifyLoginFailure("", REASON_CANCEL) }
     }
 
     companion object {

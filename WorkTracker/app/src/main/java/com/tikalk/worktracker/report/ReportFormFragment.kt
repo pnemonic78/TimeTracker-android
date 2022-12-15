@@ -46,7 +46,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -74,6 +73,7 @@ import com.tikalk.worktracker.time.millis
 import com.tikalk.worktracker.time.month
 import com.tikalk.worktracker.time.year
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -87,7 +87,7 @@ class ReportFormFragment : TimeFormFragment() {
     private val bindingForm get() = binding.form
 
     private val date: Calendar = Calendar.getInstance()
-    private val filterData = MutableLiveData<ReportFilter?>()
+    private val filterData = MutableStateFlow(ReportFilter())
     private var startPickerDialog: DatePickerDialog? = null
     private var finishPickerDialog: DatePickerDialog? = null
     private var errorMessage: String = ""
@@ -100,13 +100,6 @@ class ReportFormFragment : TimeFormFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        filterData.value = ReportFilter()
-        filterData.observe(this) { filter ->
-            if (filter != null) {
-                setRecordValue(filter)
-                bindFilter(filter)
-            }
-        }
     }
 
     override fun onCreateView(
@@ -208,6 +201,13 @@ class ReportFormFragment : TimeFormFragment() {
         }
 
         bindingForm.actionGenerate.setOnClickListener { generateReport() }
+
+        lifecycleScope.launch {
+            filterData.collect { filter ->
+                setRecordValue(filter)
+                bindFilter(filter)
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -242,14 +242,12 @@ class ReportFormFragment : TimeFormFragment() {
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
 
         val filter = filterData.value
-        if (filter != null) {
-            bindingForm.taskInput.setSelection(findTask(options, filter.task))
-        }
+        bindingForm.taskInput.setSelection(findTask(options, filter.task))
     }
 
     private fun periodItemSelected(period: ReportTimePeriod) {
         Timber.d("periodItemSelected period=$period")
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         filter.period = period
         filter.updateDates(date)
 
@@ -298,11 +296,7 @@ class ReportFormFragment : TimeFormFragment() {
         errorMessage = page.errorMessage ?: ""
 
         val filter = filterData.value
-        if (filter != null) {
-            if (filter.status == TaskRecordStatus.DRAFT) {
-                filterData.value = page.record
-            }
-        } else {
+        if (filter.status == TaskRecordStatus.DRAFT) {
             filterData.value = page.record
         }
     }
@@ -406,7 +400,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun pickStartDate() {
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         val cal = getCalendar(filter.start)
         val year = cal.year
         val month = cal.month
@@ -442,7 +436,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun pickFinishDate() {
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         val cal = getCalendar(filter.finish)
         val year = cal.year
         val month = cal.month
@@ -490,7 +484,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun populateFilter(): ReportFilter {
         Timber.i("populateFilter")
-        val filter = filterData.value ?: ReportFilter()
+        val filter = filterData.value
         filter.updateDates(date)
         return filter
     }
@@ -567,7 +561,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun setRecordProject(project: Project): Boolean {
         if (super.setRecordProject(project)) {
-            filterData.value?.project = project
+            filterData.value.project = project
             return true
         }
         return false
@@ -575,7 +569,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun setRecordTask(task: ProjectTask): Boolean {
         if (super.setRecordTask(task)) {
-            filterData.value?.task = task
+            filterData.value.task = task
             return true
         }
         return false
@@ -583,7 +577,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun onProjectsUpdated(projects: List<Project>) {
         super.onProjectsUpdated(projects)
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         bindProjects(requireContext(), filter, projects)
     }
 
@@ -602,7 +596,7 @@ class ReportFormFragment : TimeFormFragment() {
 
     override fun setRecordLocation(location: Location): Boolean {
         if (super.setRecordLocation(location)) {
-            filterData.value?.location = location
+            filterData.value.location = location
             return true
         }
         return false

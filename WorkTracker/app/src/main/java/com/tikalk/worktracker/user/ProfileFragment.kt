@@ -41,7 +41,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -57,6 +56,7 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.set
 import com.tikalk.worktracker.net.InternetDialogFragment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -70,8 +70,8 @@ class ProfileFragment : InternetDialogFragment() {
     private val binding get() = _binding!!
 
     private val profileViewModule by activityViewModels<ProfileViewModel>()
-    private var userData = MutableLiveData<User>()
-    private var userCredentialsData = MutableLiveData<UserCredentials>()
+    private var userData = MutableStateFlow<User?>(null)
+    private var userCredentialsData = MutableStateFlow<UserCredentials?>(null)
     private var nameInputEditable = false
     private var emailInputEditable = false
     private var loginInputEditable = false
@@ -87,21 +87,6 @@ class ProfileFragment : InternetDialogFragment() {
 
         userData.value = preferences.user
         userCredentialsData.value = preferences.userCredentials
-
-        userData.observe(this) { user ->
-            bindForm(user, userCredentialsData.value)
-        }
-        userCredentialsData.observe(this) { userCredentials ->
-            bindForm(userData.value, userCredentials)
-        }
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
-            }
-        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -123,6 +108,27 @@ class ProfileFragment : InternetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.actionSave.setOnClickListener { attemptSave() }
+
+        lifecycleScope.launch {
+            userData.collect { user ->
+                bindForm(user, userCredentialsData.value)
+            }
+        }
+        lifecycleScope.launch {
+            userCredentialsData.collect { userCredentials ->
+                bindForm(userData.value, userCredentials)
+            }
+        }
+        lifecycleScope.launch {
+            delegate.login.collect { (_, reason) ->
+                if (reason == null) {
+                    Timber.i("login success")
+                    run()
+                } else {
+                    Timber.e("login failure: $reason")
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -338,16 +344,16 @@ class ProfileFragment : InternetDialogFragment() {
         return page
     }
 
-    private fun notifyProfileSuccess(user: User) {
+    private suspend fun notifyProfileSuccess(user: User) {
         dismissAllowingStateLoss()
         profileViewModule.onProfileSuccess(user)
     }
 
-    private fun notifyProfileFailure(user: User, reason: String) {
+    private suspend fun notifyProfileFailure(user: User, reason: String) {
         profileViewModule.onProfileFailure(user, reason)
     }
 
-    private fun processEdit(
+    private suspend fun processEdit(
         html: String,
         loginValue: String,
         emailValue: String,
@@ -356,8 +362,8 @@ class ProfileFragment : InternetDialogFragment() {
         confirmPasswordValue: String
     ) {
         val user = userData.value ?: User(loginValue, emailValue, nameValue)
-        val userCredentials = userCredentialsData.value
-            ?: UserCredentials(loginValue, passwordValue)
+        val userCredentials =
+            userCredentialsData.value ?: UserCredentials(loginValue, passwordValue)
         val page = processPage(html)
         val errorMessage = page.errorMessage ?: ""
         setErrorLabel(errorMessage)
@@ -381,7 +387,9 @@ class ProfileFragment : InternetDialogFragment() {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyProfileFailure(userData.value!!, REASON_CANCEL)
+        userData.value?.let { user ->
+            lifecycleScope.launch { notifyProfileFailure(user, REASON_CANCEL) }
+        }
     }
 
     private fun setErrorLabel(text: CharSequence) {
