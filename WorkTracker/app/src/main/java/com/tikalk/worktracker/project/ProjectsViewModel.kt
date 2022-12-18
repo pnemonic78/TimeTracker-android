@@ -61,15 +61,18 @@ class ProjectsViewModel @Inject constructor(
 
     suspend fun fetchProjects(firstRun: Boolean) {
         _projects.emit(TikalResult.Loading())
+        notifyLoading(true)
         try {
             dataSource.projectsPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->
                     _projects.emit(TikalResult.Success(page.projects))
+                    notifyLoading(false)
                 }
         } catch (e: Exception) {
             Timber.e(e, "Error loading page: ${e.message}")
             _projects.emit(TikalResult.Error(e))
+            notifyError(e)
         }
     }
 }

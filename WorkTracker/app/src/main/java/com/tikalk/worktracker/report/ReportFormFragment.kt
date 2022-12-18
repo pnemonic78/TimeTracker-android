@@ -45,7 +45,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -95,11 +94,6 @@ class ReportFormFragment : TimeFormFragment() {
 
     init {
         record = ReportFilter()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
     }
 
     override fun onCreateView(
@@ -292,18 +286,13 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: ReportFormPage) {
-        timeViewModel.projectsData.value = page.projects
+        viewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
 
         val filter = filterData.value
         if (filter.status == TaskRecordStatus.DRAFT) {
             filterData.value = page.record
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
     }
 
     override fun authenticate(submit: Boolean) {
@@ -323,11 +312,11 @@ class ReportFormFragment : TimeFormFragment() {
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(timeViewModel.taskEmpty)
+        val taskItems = arrayOf(viewModel.taskEmpty)
         bindingForm.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = timeViewModel.projectsData.value
+        val projects = viewModel.projectsData.value
         bindProjects(context, filter, projects)
 
         val periodList = ArrayList<String>(periods.size)
@@ -395,7 +384,7 @@ class ReportFormFragment : TimeFormFragment() {
         val items = ArrayList(super.buildLocations(context))
         val all = LocationItem(items[0].location, context.getString(R.string.location_label_all))
         items[0] = all
-        timeViewModel.locationEmpty = all
+        viewModel.locationEmpty = all
         return items
     }
 

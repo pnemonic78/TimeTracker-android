@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2022, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,15 +61,18 @@ class ProjectTasksViewModel @Inject constructor(
 
     suspend fun fetchTasks(firstRun: Boolean) {
         _tasks.emit(TikalResult.Loading())
+        notifyLoading(true)
         try {
             dataSource.tasksPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->
                     _tasks.emit(TikalResult.Success(page.tasks))
+                    notifyLoading(false)
                 }
         } catch (e: Exception) {
             Timber.e(e, "Error loading page: ${e.message}")
             _tasks.emit(TikalResult.Error(e))
+            notifyError(e)
         }
     }
 }

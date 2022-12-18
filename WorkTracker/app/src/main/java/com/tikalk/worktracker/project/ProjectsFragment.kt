@@ -40,11 +40,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentComposeBinding
@@ -54,15 +52,10 @@ import timber.log.Timber
 
 class ProjectsFragment : InternetFragment() {
 
-    private val viewModel by viewModels<ProjectsViewModel>()
+    override val viewModel by viewModels<ProjectsViewModel>()
 
     private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,25 +72,6 @@ class ProjectsFragment : InternetFragment() {
         binding.composeView.setContent {
             ProjectsScreen(uiState = viewModel)
         }
-
-        lifecycleScope.launch {
-            delegate.login.collect { (_, reason) ->
-                if (reason == null) {
-                    Timber.i("login success")
-                    run()
-                } else {
-                    Timber.e("login failure: $reason")
-                }
-            }
-        }
-        lifecycleScope.launch {
-            viewModel.projects.collect { result ->
-                when (result) {
-                    is TikalResult.Error -> handleError(result)
-                    else -> Unit
-                }
-            }
-        }
     }
 
     override fun onDestroyView() {
@@ -109,13 +83,8 @@ class ProjectsFragment : InternetFragment() {
         menu.clear()
     }
 
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             viewModel.fetchProjects(firstRun)

@@ -54,8 +54,27 @@ class LoginValidator {
         return ERROR_NONE
     }
 
+    fun validatePassword(value: String, confirmValue: String): Int {
+        var error = validateUsername(confirmValue)
+        if (error == ERROR_NONE) {
+            if (value != confirmValue) error = ERROR_CONFIRM
+        }
+        return error
+    }
+
     private fun isPasswordValid(password: String): Boolean {
         return password.trim().length > 4
+    }
+
+    fun validateEmail(value: String): Int {
+        if (value.isEmpty()) return ERROR_REQUIRED
+        if (value.length < 3) return ERROR_LENGTH
+        if (!isEmailValid(value)) return ERROR_INVALID
+        return ERROR_NONE
+    }
+
+    private fun isEmailValid(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     companion object {
@@ -63,5 +82,6 @@ class LoginValidator {
         const val ERROR_REQUIRED = 1
         const val ERROR_LENGTH = 2
         const val ERROR_INVALID = 3
+        const val ERROR_CONFIRM = 4
     }
 }

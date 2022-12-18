@@ -46,7 +46,7 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -71,6 +71,8 @@ import java.util.Locale
 
 class ReportFragment : InternetFragment() {
 
+    override val viewModel by viewModels<ReportViewModel>()
+
     private var _binding: FragmentReportListBinding? = null
     private val binding get() = _binding!!
     private val bindingTotals get() = binding.totals
@@ -79,11 +81,6 @@ class ReportFragment : InternetFragment() {
     private val totalsData = MutableStateFlow<ReportTotals?>(null)
     private val filterData = MutableStateFlow<ReportFilter?>(null)
     private var listAdapter = ReportAdapter(ReportFilter())
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -113,16 +110,6 @@ class ReportFragment : InternetFragment() {
                 if (filter != null) {
                     this@ReportFragment.listAdapter = ReportAdapter(filter)
                     binding.list.adapter = listAdapter
-                }
-            }
-        }
-        lifecycleScope.launch {
-            delegate.login.collect { (_, reason) ->
-                if (reason == null) {
-                    Timber.i("login success")
-                    run()
-                } else {
-                    Timber.e("login failure: $reason")
                 }
             }
         }
@@ -186,9 +173,8 @@ class ReportFragment : InternetFragment() {
         }
     }
 
-    @Suppress("DEPRECATION")
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
 
         var filter: ReportFilter? = null
@@ -224,11 +210,6 @@ class ReportFragment : InternetFragment() {
         filterData.value = page.filter
         recordsData.value = page.records
         totalsData.value = page.totals
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

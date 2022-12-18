@@ -58,23 +58,14 @@ import java.util.Calendar
 abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
-    protected val timeViewModel by activityViewModels<TimeViewModel>()
+    override val viewModel by activityViewModels<TimeViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launch {
-            timeViewModel.projectsData.collect { projects ->
+            viewModel.projectsData.collect { projects ->
                 onProjectsUpdated(projects)
-            }
-        }
-        lifecycleScope.launch {
-            delegate.login.collect { (login, reason) ->
-                if (reason == null) {
-                    onLoginSuccess(login)
-                } else {
-                    onLoginFailure(login, reason)
-                }
             }
         }
     }
@@ -104,15 +95,6 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         Timber.i("populateAndBind record=$record")
         populateForm(record)
         bindForm(record)
-    }
-
-    protected open fun onLoginSuccess(login: String) {
-        Timber.i("login success")
-        run()
-    }
-
-    protected open fun onLoginFailure(login: String, reason: String) {
-        Timber.e("login failure: $reason")
     }
 
     protected open fun setRecordValue(record: TimeRecord) {
@@ -229,7 +211,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     protected fun applyFavorite() {
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
-            val projects = timeViewModel.projectsData.value
+            val projects = viewModel.projectsData.value
             val project = projects.find { it.id == projectFavorite } ?: record.project
             setRecordProject(project)
 
@@ -253,7 +235,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     protected fun addEmptyProject(projects: List<Project>?): List<Project> {
         val projectEmptyFind = projects?.find { it.isEmpty() }
-        val projectEmpty = projectEmptyFind ?: timeViewModel.projectEmpty
+        val projectEmpty = projectEmptyFind ?: viewModel.projectEmpty
         projectEmpty.name = getEmptyProjectName()
         val projectsWithEmpty = if (projects != null) {
             if (projectEmptyFind != null) {
@@ -264,16 +246,16 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         } else {
             listOf(projectEmpty)
         }
-        timeViewModel.projectEmpty = projectEmpty
+        viewModel.projectEmpty = projectEmpty
 
         return projectsWithEmpty
     }
 
     protected fun addEmptyTask(tasks: List<ProjectTask>): List<ProjectTask> {
         val taskEmptyFind = tasks.find { it.isEmpty() }
-        val taskEmpty = taskEmptyFind ?: timeViewModel.taskEmpty
+        val taskEmpty = taskEmptyFind ?: viewModel.taskEmpty
         taskEmpty.name = getEmptyTaskName()
-        timeViewModel.taskEmpty = taskEmpty
+        viewModel.taskEmpty = taskEmpty
         return if (taskEmptyFind != null) {
             tasks.sortedBy { it.name }
         } else {
@@ -291,7 +273,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         val select =
             LocationItem(items[0].location, context.getString(R.string.location_label_select))
         items[0] = select
-        timeViewModel.locationEmpty = select
+        viewModel.locationEmpty = select
 
         return items
     }

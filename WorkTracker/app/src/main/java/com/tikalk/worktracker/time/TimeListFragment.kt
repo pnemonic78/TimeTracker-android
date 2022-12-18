@@ -46,7 +46,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -92,11 +91,6 @@ class TimeListFragment : TimeFormFragment(),
     private var recordForTimer = false
     private var loginAutomatic = true
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -140,22 +134,22 @@ class TimeListFragment : TimeFormFragment(),
             }
         }
         lifecycleScope.launch {
-            timeViewModel.deleted.collect { data ->
+            viewModel.deleted.collect { data ->
                 if (data != null) onRecordEditDeleted(data.record, data.responseHtml)
             }
         }
         lifecycleScope.launch {
-            timeViewModel.edited.collect { data ->
+            viewModel.edited.collect { data ->
                 if (data != null) onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
             }
         }
         lifecycleScope.launch {
-            timeViewModel.editFailure.collect { data ->
+            viewModel.editFailure.collect { data ->
                 if (data != null) onRecordEditFailure(data.record, data.reason)
             }
         }
         lifecycleScope.launch {
-            timeViewModel.favorite.collect { record ->
+            viewModel.favorite.collect { record ->
                 if (record != null) onRecordEditFavorited(record)
             }
         }
@@ -235,7 +229,7 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     private suspend fun processPage(page: TimeListPage) {
-        timeViewModel.projectsData.emit(page.projects.sortedBy { it.name })
+        viewModel.projectsData.emit(page.projects.sortedBy { it.name })
         recordsData.emit(page.records)
         var totals = totalsData.value
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
@@ -410,6 +404,7 @@ class TimeListFragment : TimeFormFragment(),
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting record: ${e.message}")
+                showProgressMain(false)
                 handleErrorMain(e)
             }
         }
@@ -490,11 +485,6 @@ class TimeListFragment : TimeFormFragment(),
                 }
             }
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
     }
 
     override fun onLoginFailure(login: String, reason: String) {

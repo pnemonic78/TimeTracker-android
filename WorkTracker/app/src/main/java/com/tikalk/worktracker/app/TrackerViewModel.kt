@@ -38,6 +38,8 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,4 +48,20 @@ open class TrackerViewModel @Inject constructor(
     val db: TrackerDatabase,
     val service: TimeTrackerService,
     val dataSource: TimeTrackerRepository
-) : ViewModel()
+) : ViewModel() {
+
+    private val _onError = MutableStateFlow<Exception?>(null)
+    val onError: Flow<Exception?> = _onError
+
+    protected suspend fun notifyError(error: Exception) {
+        notifyLoading(false)
+        _onError.emit(error)
+    }
+
+    private val _isLoading = MutableStateFlow<Boolean>(false)
+    val isLoading: Flow<Boolean> = _isLoading
+
+    protected suspend fun notifyLoading(isLoading: Boolean) {
+        _isLoading.emit(isLoading)
+    }
+}

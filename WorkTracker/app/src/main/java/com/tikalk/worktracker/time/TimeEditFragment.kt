@@ -47,7 +47,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.MainThread
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.DateTimePickerDialog
@@ -100,11 +99,6 @@ class TimeEditFragment : TimeFormFragment() {
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
     private val timeBuffer = StringBuilder(20)
     private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -186,14 +180,14 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    val projects = timeViewModel.projectsData.value
+                    val projects = viewModel.projectsData.value
                     setRecordProject(projects.find { it.id == projectId }
-                        ?: timeViewModel.projectEmpty)
+                        ?: viewModel.projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     val tasks = record.project.tasks
-                    setRecordTask(tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty)
+                    setRecordTask(tasks.find { it.id == taskId } ?: viewModel.taskEmpty)
                 }
                 if (args.containsKey(EXTRA_DATE)) {
                     val dateTime = args.getLong(EXTRA_DATE)
@@ -233,11 +227,11 @@ class TimeEditFragment : TimeFormFragment() {
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(timeViewModel.taskEmpty)
+        val taskItems = arrayOf(viewModel.taskEmpty)
         binding.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = timeViewModel.projectsData.value
+        val projects = viewModel.projectsData.value
         bindProjects(context, record, projects)
 
         bindLocation(context, record)
@@ -280,7 +274,7 @@ class TimeEditFragment : TimeFormFragment() {
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
             binding.locationInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) locations[index] else timeViewModel.locationEmpty
+            val selectedItem = if (index >= 0) locations[index] else viewModel.locationEmpty
             locationItemSelected(selectedItem)
         }
     }
@@ -507,14 +501,9 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        timeViewModel.projectsData.value = page.projects
+        viewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
     }
 
     override fun onLoginFailure(login: String, reason: String) {
@@ -585,7 +574,6 @@ class TimeEditFragment : TimeFormFragment() {
         }
 
         val dateValue = formatSystemDate(record.date)!!
-        showProgress(false)
 
         var startValue: String? = null
         var finishValue: String? = null
@@ -640,8 +628,8 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error saving record: ${e.message}")
-                handleErrorMain(e)
                 showProgressMain(false)
+                handleErrorMain(e)
             }
         }
     }
@@ -658,7 +646,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private suspend fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
         recordsToSubmit.remove(record)
-        timeViewModel.onRecordEditSubmitted(record, isLast, html)
+        viewModel.onRecordEditSubmitted(record, isLast, html)
 
         if (isLast) {
             val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
@@ -670,7 +658,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private suspend fun onRecordError(record: TimeRecord, errorMessage: String) {
         setErrorLabelMain(errorMessage)
-        timeViewModel.onRecordEditFailure(record, errorMessage)
+        viewModel.onRecordEditFailure(record, errorMessage)
     }
 
     private fun deleteRecord() {
@@ -681,7 +669,7 @@ class TimeEditFragment : TimeFormFragment() {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
             record.status = TaskRecordStatus.DELETED
-            timeViewModel.onRecordEditDeleted(record)
+            viewModel.onRecordEditDeleted(record)
             return
         }
 
@@ -701,8 +689,8 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting record: ${e.message}")
-                handleErrorMain(e)
                 showProgressMain(false)
+                handleErrorMain(e)
             }
         }
     }
@@ -720,7 +708,7 @@ class TimeEditFragment : TimeFormFragment() {
     private suspend fun onRecordDeleted(record: TimeRecord, html: String) {
         record.status = TaskRecordStatus.DELETED
         recordsToSubmit.remove(record)
-        timeViewModel.onRecordEditDeleted(record, html)
+        viewModel.onRecordEditDeleted(record, html)
 
         val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
         if (isStop) {
@@ -743,7 +731,7 @@ class TimeEditFragment : TimeFormFragment() {
         val recordParcel: TimeRecordEntity? =
             savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
-            val projects = timeViewModel.projectsData.value
+            val projects = viewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             bindForm(record)
@@ -752,7 +740,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun markFavorite(record: TimeRecord) {
         super.markFavorite(record)
-        lifecycleScope.launch { timeViewModel.onRecordEditFavorited(record) }
+        lifecycleScope.launch { viewModel.onRecordEditFavorited(record) }
     }
 
     fun editRecord(record: TimeRecord, isStop: Boolean = false) {

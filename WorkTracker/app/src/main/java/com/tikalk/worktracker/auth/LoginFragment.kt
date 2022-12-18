@@ -125,11 +125,6 @@ class LoginFragment : InternetDialogFragment {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid login, missing fields, etc.), the

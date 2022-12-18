@@ -30,60 +30,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.user
+package com.tikalk.worktracker.report
 
-import androidx.lifecycle.viewModelScope
-import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class UsersViewModel @Inject constructor(
+class ReportViewModel @Inject constructor(
     preferences: TimeTrackerPrefs,
     db: TrackerDatabase,
     service: TimeTrackerService,
     dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource),
-    UsersUiState {
-
-    private val _users = MutableStateFlow<TikalResult<List<User>>>(TikalResult.Loading())
-    override val users: Flow<TikalResult<List<User>>> = _users
-
-    suspend fun fetchUsers(firstRun: Boolean) {
-        _users.emit(TikalResult.Loading())
-        notifyLoading(true)
-        try {
-            dataSource.usersPage(firstRun)
-                .flowOn(Dispatchers.IO)
-                .collect { page ->
-                    _users.emit(TikalResult.Success(page.users))
-                    notifyLoading(false)
-                }
-        } catch (e: Exception) {
-            Timber.e(e, "Error loading page: ${e.message}")
-            _users.emit(TikalResult.Error(e))
-            notifyError(e)
-        }
-    }
-
-    private val _userSelectedPosition = MutableStateFlow(0)
-    override val userSelectedPosition: Flow<Int> = _userSelectedPosition
-
-    override fun onScrollIndex(index: String, position: Int) {
-        viewModelScope.launch {
-            _userSelectedPosition.emit(position)
-        }
-    }
-}
+) : TrackerViewModel(preferences, db, service, dataSource)
