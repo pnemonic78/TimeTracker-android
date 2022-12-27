@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.model.TikalResult
+import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.LoadingScreen
 import com.tikalk.worktracker.model.User
 import kotlinx.coroutines.launch
@@ -78,6 +79,11 @@ private fun UsersScreenList(
     position: Int = 0,
     onScrollIndex: OnScrollIndexCallback
 ) {
+    if (users.isEmpty()) {
+        EmptyListScreen()
+        return
+    }
+
     val scrollState = rememberLazyListState(initialFirstVisibleItemIndex = position)
     val scope = rememberCoroutineScope()
     scope.launch { scrollState.animateScrollToItem(position) }
@@ -104,7 +110,7 @@ private fun UsersScreenList(
 
 @Composable
 private fun UsersScreenError() {
-    Box(modifier = Modifier.fillMaxSize())
+    EmptyListScreen()
 }
 
 @Preview(showBackground = true)

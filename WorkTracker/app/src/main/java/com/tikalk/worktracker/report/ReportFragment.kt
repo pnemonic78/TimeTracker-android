@@ -127,10 +127,10 @@ class ReportFragment : InternetFragment() {
         if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
         }
-        if (records.isNotEmpty()) {
-            binding.listSwitcher.displayedChild = CHILD_LIST
-        } else {
+        if (records.isEmpty()) {
             binding.listSwitcher.displayedChild = CHILD_EMPTY
+        } else {
+            binding.listSwitcher.displayedChild = CHILD_LIST
         }
     }
 

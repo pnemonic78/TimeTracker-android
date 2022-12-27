@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.model.TikalResult
+import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.LoadingScreen
 import com.tikalk.worktracker.model.Project
 import kotlinx.coroutines.flow.Flow
@@ -68,6 +69,11 @@ fun ProjectsScreen(uiState: ProjectsUiState) {
 
 @Composable
 private fun ProjectsScreenList(projects: List<Project>) {
+    if (projects.isEmpty()) {
+        EmptyListScreen()
+        return
+    }
+
     val scrollState = rememberLazyListState()
 
     LazyColumn(
@@ -83,7 +89,7 @@ private fun ProjectsScreenList(projects: List<Project>) {
 
 @Composable
 private fun ProjectsScreenError() {
-    Box(modifier = Modifier.fillMaxSize())
+    EmptyListScreen()
 }
 
 @Preview(showBackground = true)
