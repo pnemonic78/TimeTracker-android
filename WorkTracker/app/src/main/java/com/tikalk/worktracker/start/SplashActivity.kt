@@ -33,15 +33,21 @@ package com.tikalk.worktracker.start
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import com.tikalk.app.TikalActivity
-import com.tikalk.worktracker.R
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.time.TimeListActivity
 
 class SplashActivity : TikalActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+
+        setContent {
+            TikalTheme {
+                SplashScreen()
+            }
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

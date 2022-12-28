@@ -82,6 +82,7 @@ android {
 dependencies {
     // Jetpack
     implementation(Android.Jetpack.appcompat)
+    implementation(Android.Jetpack.composeActivity)
     implementation(Android.Jetpack.composeCompiler)
     implementation(Android.Jetpack.composeMaterial)
     implementation(Android.Jetpack.composeRuntime)

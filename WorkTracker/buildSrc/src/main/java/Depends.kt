@@ -38,6 +38,7 @@ object Android {
         const val appcompat = "androidx.appcompat:appcompat:1.7.0-alpha01"
         const val material = "androidx.compose.material:material:${Version.compose}"
         const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
+        const val composeActivity = "androidx.activity:activity-compose:${Version.compose}"
         const val composeCompiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
         const val composeMaterial = "androidx.compose.material:material:${Version.compose}"
         const val composeRuntime = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
