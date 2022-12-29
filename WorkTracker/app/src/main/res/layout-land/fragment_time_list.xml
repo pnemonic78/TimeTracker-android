@@ -90,20 +90,18 @@
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/totals_divider"
         app:layout_constraintEnd_toStartOf="@+id/time_form_divider"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dateInput"
-        tools:listitem="@layout/time_item" />
+        tools:listitem="@layout/compose_item" />
 
     <View
         android:id="@+id/totals_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="@dimen/time_list_marginTop"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintBottom_toTopOf="@+id/totals" />
 
@@ -111,10 +109,8 @@
     <include
         android:id="@+id/totals"
         layout="@layout/time_totals"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
