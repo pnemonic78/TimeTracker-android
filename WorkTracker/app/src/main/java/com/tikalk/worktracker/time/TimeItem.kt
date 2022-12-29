@@ -215,7 +215,7 @@ fun TimeItem(
                         color = color
                     )
                 }
-                if (isCostFieldVisible && (record.cost != 0.0)) {
+                if (isCostFieldVisible) {
                     Spacer(modifier = Modifier.weight(1f))
                     Image(
                         modifier = Modifier

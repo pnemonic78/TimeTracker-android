@@ -54,7 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/time_item" />
+            tools:listitem="@layout/compose_item" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -68,19 +68,14 @@
         android:id="@+id/totals_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="@dimen/time_list_marginTop"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintBottom_toTopOf="@+id/totals" />
 
     <include
         android:id="@+id/totals"
-        layout="@layout/report_totals"
-        android:layout_width="0dp"
+        layout="@layout/compose_item"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

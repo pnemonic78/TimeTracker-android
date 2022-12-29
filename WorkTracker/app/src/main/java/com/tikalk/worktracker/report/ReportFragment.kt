@@ -50,6 +50,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.compose.TikalTheme
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -59,15 +60,11 @@ import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.time.formatCurrency
-import com.tikalk.worktracker.time.formatElapsedTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Formatter
-import java.util.Locale
 
 class ReportFragment : InternetFragment() {
 
@@ -75,7 +72,6 @@ class ReportFragment : InternetFragment() {
 
     private var _binding: FragmentReportListBinding? = null
     private val binding get() = _binding!!
-    private val bindingTotals get() = binding.totals
 
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
     private val totalsData = MutableStateFlow<ReportTotals?>(null)
@@ -136,29 +132,16 @@ class ReportFragment : InternetFragment() {
 
     @MainThread
     private fun bindTotals(totals: ReportTotals) {
-        val context = this.context ?: return
-        val timeBuffer = StringBuilder(20)
-        val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
-        val currencyBuffer = StringBuilder(20)
-        val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
         val filter = filterData.value
 
-        if (filter?.isDurationFieldVisible == true) {
-            timeBuffer.clear()
-            bindingTotals.durationTotalLabel.visibility = View.VISIBLE
-            bindingTotals.durationTotal.text =
-                formatElapsedTime(context, timeFormatter, totals.duration)
-        } else {
-            bindingTotals.durationTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.durationTotal.text = null
-        }
-        if (filter?.isCostFieldVisible == true) {
-            timeBuffer.clear()
-            bindingTotals.costTotalLabel.visibility = View.VISIBLE
-            bindingTotals.costTotal.text = formatCurrency(currencyFormatter, totals.cost)
-        } else {
-            bindingTotals.costTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.costTotal.text = null
+        binding.totals.composeView.setContent {
+            TikalTheme {
+                ReportTotalsFooter(
+                    totals = totals,
+                    isDurationFieldVisible = filter?.isDurationFieldVisible == true,
+                    isCostFieldVisible = filter?.isCostFieldVisible == true
+                )
+            }
         }
     }
 
