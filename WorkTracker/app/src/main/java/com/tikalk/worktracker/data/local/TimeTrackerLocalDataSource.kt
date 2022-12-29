@@ -261,12 +261,12 @@ class TimeTrackerLocalDataSource @Inject constructor(
             val totals = loadTotals(db, date)
 
             val page = TimeListPage(
-                record,
-                projects,
-                errorMessage,
-                date,
-                records,
-                totals
+                record = record,
+                projects = projects,
+                errorMessage = errorMessage,
+                date = date.copy(),
+                records = records,
+                totals = totals
             )
             emit(page)
         }

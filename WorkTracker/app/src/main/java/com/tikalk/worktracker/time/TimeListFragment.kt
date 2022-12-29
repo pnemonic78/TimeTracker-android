@@ -83,8 +83,8 @@ class TimeListFragment : TimeFormFragment(),
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
     private val listAdapter = TimeListAdapter(this)
+    private val dateData = MutableStateFlow<Calendar>(Calendar.getInstance())
     private val totalsData = MutableStateFlow<TimeTotals?>(null)
-
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
 
     /** Is the record from the "timer" or "+" FAB? */
@@ -123,6 +123,11 @@ class TimeListFragment : TimeFormFragment(),
         })
         binding.list.setOnTouchListener { _, event -> swipeDay.onTouchEvent(event) }
 
+        lifecycleScope.launch {
+            dateData.collect { date ->
+                bindDate(date)
+            }
+        }
         lifecycleScope.launch {
             recordsData.collect { records ->
                 bindList(records)
@@ -230,6 +235,9 @@ class TimeListFragment : TimeFormFragment(),
 
     private suspend fun processPage(page: TimeListPage) {
         viewModel.projectsData.emit(page.projects.sortedBy { it.name })
+
+        dateData.emit(page.date)
+
         recordsData.emit(page.records)
         var totals = totalsData.value
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
@@ -240,11 +248,13 @@ class TimeListFragment : TimeFormFragment(),
     }
 
     @MainThread
-    private fun bindList(records: List<TimeRecord>) {
-        val record = records.firstOrNull()
-        val date = record?.date ?: this.record.date
+    private fun bindDate(date: Calendar) {
         binding.dateInput.text =
             DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
+    }
+
+    @MainThread
+    private fun bindList(records: List<TimeRecord>) {
         listAdapter.submitList(records)
         if (records === recordsData.value) {
             listAdapter.notifyDataSetChanged()
@@ -499,12 +509,10 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
-            if (records != null) {
-                val recordsNew: MutableList<TimeRecord> = ArrayList(records)
-                recordsNew.add(record)
-                recordsNew.sortBy { it.startTime }
-                runOnUiThread { bindList(recordsNew) }
-            }
+            val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+            recordsNew.add(record)
+            recordsNew.sortBy { it.startTime }
+            runOnUiThread { bindList(recordsNew) }
 
             if (recordForTimer) {
                 Bundle().apply {
@@ -523,14 +531,12 @@ class TimeListFragment : TimeFormFragment(),
             // Refresh the list with the edited item.
             if (record.id != TikalEntity.ID_NONE) {
                 val records = recordsData.value
-                if (records != null) {
-                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
-                    val index = recordsNew.indexOfFirst { it.id == record.id }
-                    if (index >= 0) {
-                        recordsNew[index] = record
-                        recordsNew.sortBy { it.startTime }
-                        runOnUiThread { bindList(recordsNew) }
-                    }
+                val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+                val index = recordsNew.indexOfFirst { it.id == record.id }
+                if (index >= 0) {
+                    recordsNew[index] = record
+                    recordsNew.sortBy { it.startTime }
+                    runOnUiThread { bindList(recordsNew) }
                 }
             }
             maybeFetchPage(record.date, responseHtml)
@@ -552,10 +558,9 @@ class TimeListFragment : TimeFormFragment(),
         } else {
             showTimer()
             // Refresh the list with the deleted item.
-            recordsData.value?.let { records ->
-                val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
-                bindList(recordsActive)
-            }
+            val records = recordsData.value
+            val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
+            bindList(recordsActive)
             maybeFetchPage(record.date, responseHtml)
         }
     }

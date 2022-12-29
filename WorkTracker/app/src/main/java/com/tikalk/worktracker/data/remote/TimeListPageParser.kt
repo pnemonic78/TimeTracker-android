@@ -43,6 +43,7 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
@@ -59,12 +60,12 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
 
     override fun createPage(page: MutableTimeListPage): TimeListPage {
         return TimeListPage(
-            page.record,
-            page.projects,
-            page.errorMessage,
-            page.date,
-            page.records,
-            page.totals
+            record = page.record,
+            projects = page.projects,
+            errorMessage = page.errorMessage,
+            date = page.date,
+            records = page.records,
+            totals = page.totals
         )
     }
 
