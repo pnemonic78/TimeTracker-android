@@ -236,7 +236,7 @@ private var sElapsedFormatHMM: String? = null
 
 private const val SECONDS_FOR_MINUTE = DateUtils.MINUTE_IN_MILLIS / 2L
 
-fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): Formatter {
+fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): String {
     val hours = elapsedMs / DateUtils.HOUR_IN_MILLIS
     val seconds = elapsedMs % DateUtils.HOUR_IN_MILLIS
     var minutes = seconds / DateUtils.MINUTE_IN_MILLIS
@@ -250,11 +250,11 @@ fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): 
         format = context.getString(R.string.elapsed_time_short_format_h_mm)
         sElapsedFormatHMM = format
     }
-    return formatter.format(format, hours, minutes)
+    return formatter.format(format, hours, minutes).toString()
 }
 
-fun formatCurrency(formatter: Formatter, amount: Double): Formatter {
-    return formatter.format("%.2f", amount)
+fun formatCurrency(formatter: Formatter, amount: Double): String {
+    return formatter.format("%.2f", amount).toString()
 }
 
 fun Calendar.setToStartOfDay(): Calendar {

@@ -274,7 +274,7 @@ class TimeListFragment : TimeFormFragment(),
         } else {
             bindingTotals.dayTotalLabel.visibility = View.VISIBLE
             bindingTotals.dayTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.daily).toString()
+                formatElapsedTime(context, timeFormatter, totals.daily)
         }
         if (totals.weekly == TimeTotals.UNKNOWN) {
             bindingTotals.weekTotalLabel.visibility = View.INVISIBLE
@@ -283,7 +283,7 @@ class TimeListFragment : TimeFormFragment(),
             timeBuffer.clear()
             bindingTotals.weekTotalLabel.visibility = View.VISIBLE
             bindingTotals.weekTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.weekly).toString()
+                formatElapsedTime(context, timeFormatter, totals.weekly)
         }
         if (totals.monthly == TimeTotals.UNKNOWN) {
             bindingTotals.monthTotalLabel.visibility = View.INVISIBLE
@@ -292,7 +292,7 @@ class TimeListFragment : TimeFormFragment(),
             timeBuffer.clear()
             bindingTotals.monthTotalLabel.visibility = View.VISIBLE
             bindingTotals.monthTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.monthly).toString()
+                formatElapsedTime(context, timeFormatter, totals.monthly)
         }
         if (totals.balance == TimeTotals.UNKNOWN) {
             bindingTotals.balanceLabel.visibility = View.INVISIBLE
@@ -301,7 +301,7 @@ class TimeListFragment : TimeFormFragment(),
             timeBuffer.clear()
             bindingTotals.balanceLabel.visibility = View.VISIBLE
             bindingTotals.balanceValue.text =
-                formatElapsedTime(context, timeFormatter, totals.balance.absoluteValue).toString()
+                formatElapsedTime(context, timeFormatter, totals.balance.absoluteValue)
             if (totals.balance < 0) {
                 bindingTotals.balanceValue.setTextColor(
                     ResourcesCompat.getColor(

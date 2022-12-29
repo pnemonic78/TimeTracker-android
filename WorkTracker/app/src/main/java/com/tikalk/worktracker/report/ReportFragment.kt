@@ -147,7 +147,7 @@ class ReportFragment : InternetFragment() {
             timeBuffer.clear()
             bindingTotals.durationTotalLabel.visibility = View.VISIBLE
             bindingTotals.durationTotal.text =
-                formatElapsedTime(context, timeFormatter, totals.duration).toString()
+                formatElapsedTime(context, timeFormatter, totals.duration)
         } else {
             bindingTotals.durationTotalLabel.visibility = View.INVISIBLE
             bindingTotals.durationTotal.text = null
@@ -155,7 +155,7 @@ class ReportFragment : InternetFragment() {
         if (filter?.showCostField == true) {
             timeBuffer.clear()
             bindingTotals.costTotalLabel.visibility = View.VISIBLE
-            bindingTotals.costTotal.text = formatCurrency(currencyFormatter, totals.cost).toString()
+            bindingTotals.costTotal.text = formatCurrency(currencyFormatter, totals.cost)
         } else {
             bindingTotals.costTotalLabel.visibility = View.INVISIBLE
             bindingTotals.costTotal.text = null

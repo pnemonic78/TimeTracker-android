@@ -877,7 +877,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun bindDuration(context: Context, duration: Long) {
         binding.durationInput.text = if (duration > 0L) {
             timeBuffer.clear()
-            formatElapsedTime(context, timeFormatter, duration).toString()
+            formatElapsedTime(context, timeFormatter, duration)
         } else {
             ""
         }

@@ -97,12 +97,10 @@ open class TimeListViewHolder(
             binding.timeRange.text = formatterRange.toString()
         }
         timeBuffer.clear()
-        val formatterElapsed = formatElapsedTime(context, timeFormatter, record.duration)
-        binding.timeDuration.text = formatterElapsed.toString()
+        binding.timeDuration.text = formatElapsedTime(context, timeFormatter, record.duration)
         binding.note.text = record.note
         binding.cost.text = formatCost(record.cost)
-        binding.location.text =
-            if (record.location.id != TikalEntity.ID_NONE) record.location.toLocationItem(context).label else ""
+        binding.location.text = record.location.toLocationItem(context).label
     }
 
     @MainThread

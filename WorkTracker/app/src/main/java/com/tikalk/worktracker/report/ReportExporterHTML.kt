@@ -295,11 +295,7 @@ class ReportExporterHTML(
                             if (showDurationField) {
                                 td("time-cell subtotal-cell") {
                                     timeBuffer.clear()
-                                    +formatElapsedTime(
-                                        context,
-                                        timeFormatter,
-                                        totals.duration
-                                    ).toString()
+                                    +formatElapsedTime(context, timeFormatter, totals.duration)
                                 }
                             }
                             if (showNoteField) {
@@ -308,7 +304,7 @@ class ReportExporterHTML(
                             if (showCostField) {
                                 td("money-value-cell subtotal-cell") {
                                     timeBuffer.clear()
-                                    +formatCurrency(currencyFormatter, totals.cost).toString()
+                                    +formatCurrency(currencyFormatter, totals.cost)
                                 }
                             }
                         }
