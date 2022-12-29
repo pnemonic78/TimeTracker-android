@@ -45,13 +45,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.runOnUiThread
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
@@ -73,8 +74,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.math.absoluteValue
 
-class TimeListFragment : TimeFormFragment(),
-    TimeListAdapter.OnTimeListListener {
+class TimeListFragment : TimeFormFragment() {
 
     private var _binding: FragmentTimeListBinding? = null
     private val binding get() = _binding!!
@@ -82,7 +82,6 @@ class TimeListFragment : TimeFormFragment(),
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
-    private val listAdapter = TimeListAdapter(this)
     private val dateData = MutableStateFlow<Calendar>(Calendar.getInstance())
     private val totalsData = MutableStateFlow<TimeTotals?>(null)
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
@@ -111,7 +110,11 @@ class TimeListFragment : TimeFormFragment(),
         binding.dateInput.setOnClickListener { pickDate() }
         binding.recordAdd.setOnClickListener { addTime() }
 
-        binding.list.adapter = listAdapter
+        (binding.list as ComposeView).setContent {
+            TikalTheme {
+                TimeList(itemsFlow = recordsData, onClick = ::onRecordClick)
+            }
+        }
         val swipeDay = TimeListSwipeDay(context, object : TimeListSwipeDay.OnSwipeListener {
             override fun onSwipePreviousDay() {
                 navigatePreviousDay()
@@ -126,11 +129,6 @@ class TimeListFragment : TimeFormFragment(),
         lifecycleScope.launch {
             dateData.collect { date ->
                 bindDate(date)
-            }
-        }
-        lifecycleScope.launch {
-            recordsData.collect { records ->
-                bindList(records)
             }
         }
         lifecycleScope.launch {
@@ -165,12 +163,8 @@ class TimeListFragment : TimeFormFragment(),
         _binding = null
     }
 
-    override fun onRecordClick(record: TimeRecord) {
+    private fun onRecordClick(record: TimeRecord) {
         editRecord(record)
-    }
-
-    override fun onRecordSwipe(record: TimeRecord) {
-        deleteRecord(record)
     }
 
     /**
@@ -251,14 +245,6 @@ class TimeListFragment : TimeFormFragment(),
     private fun bindDate(date: Calendar) {
         binding.dateInput.text =
             DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
-    }
-
-    @MainThread
-    private fun bindList(records: List<TimeRecord>) {
-        listAdapter.submitList(records)
-        if (records === recordsData.value) {
-            listAdapter.notifyDataSetChanged()
-        }
     }
 
     @MainThread
@@ -512,7 +498,7 @@ class TimeListFragment : TimeFormFragment(),
             val recordsNew: MutableList<TimeRecord> = ArrayList(records)
             recordsNew.add(record)
             recordsNew.sortBy { it.startTime }
-            runOnUiThread { bindList(recordsNew) }
+            lifecycleScope.launch { recordsData.emit(recordsNew) }
 
             if (recordForTimer) {
                 Bundle().apply {
@@ -536,7 +522,7 @@ class TimeListFragment : TimeFormFragment(),
                 if (index >= 0) {
                     recordsNew[index] = record
                     recordsNew.sortBy { it.startTime }
-                    runOnUiThread { bindList(recordsNew) }
+                    lifecycleScope.launch { recordsData.emit(recordsNew) }
                 }
             }
             maybeFetchPage(record.date, responseHtml)
@@ -560,7 +546,7 @@ class TimeListFragment : TimeFormFragment(),
             // Refresh the list with the deleted item.
             val records = recordsData.value
             val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
-            bindList(recordsActive)
+            lifecycleScope.launch{ recordsData.emit(recordsActive) }
             maybeFetchPage(record.date, responseHtml)
         }
     }

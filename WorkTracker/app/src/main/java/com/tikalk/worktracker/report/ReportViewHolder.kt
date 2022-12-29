@@ -33,19 +33,24 @@
 package com.tikalk.worktracker.report
 
 import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
 import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.databinding.ComposeItemBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.TimeItem
-import com.tikalk.worktracker.time.TimeListAdapter
-import com.tikalk.worktracker.time.TimeListViewHolder
 
-class ReportViewHolder(binding: ComposeItemBinding, val filter: ReportFilter) :
-    TimeListViewHolder(binding, this) {
+class ReportViewHolder(private val binding: ComposeItemBinding, val filter: ReportFilter) :
+    RecyclerView.ViewHolder(binding.root) {
+
+    var record: TimeRecord? = null
+        set(value) {
+            field = value
+            bind(value ?: TimeRecord.EMPTY)
+        }
 
     @MainThread
-    override fun bind(record: TimeRecord) {
+    fun bind(record: TimeRecord) {
         binding.composeView.setContent {
             TikalTheme {
                 TimeItem(
@@ -58,15 +63,9 @@ class ReportViewHolder(binding: ComposeItemBinding, val filter: ReportFilter) :
                     isNoteFieldVisible = filter.isNoteFieldVisible,
                     isCostFieldVisible = filter.isCostFieldVisible,
                     isLocationFieldVisible = filter.isLocationFieldVisible,
-                    onClick = clickListener::onRecordClick
+                    onClick = { }
                 )
             }
         }
-    }
-
-    companion object : TimeListAdapter.OnTimeListListener {
-        override fun onRecordClick(record: TimeRecord) = Unit
-
-        override fun onRecordSwipe(record: TimeRecord) = Unit
     }
 }
