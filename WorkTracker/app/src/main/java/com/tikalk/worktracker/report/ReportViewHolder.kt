@@ -32,74 +32,41 @@
 
 package com.tikalk.worktracker.report
 
-import android.content.Context
-import android.text.format.DateUtils
-import android.view.View
 import androidx.annotation.MainThread
-import com.tikalk.worktracker.databinding.TimeItemBinding
+import com.tikalk.compose.TikalTheme
+import com.tikalk.worktracker.databinding.ComposeItemBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
+import com.tikalk.worktracker.time.TimeItem
+import com.tikalk.worktracker.time.TimeListAdapter
 import com.tikalk.worktracker.time.TimeListViewHolder
 
-class ReportViewHolder(val binding: TimeItemBinding, val filter: ReportFilter) :
-    TimeListViewHolder(binding) {
+class ReportViewHolder(binding: ComposeItemBinding, val filter: ReportFilter) :
+    TimeListViewHolder(binding, this) {
 
     @MainThread
     override fun bind(record: TimeRecord) {
-        super.bind(record)
-        val context: Context = binding.root.context
-        val dateTime = record.date.timeInMillis
-        val startTime = record.startTime
-        val endTime = record.finishTime
-
-        if ((startTime == NEVER) || (endTime == NEVER)) {
-            binding.timeRange.text = DateUtils.formatDateTime(context, dateTime, DateUtils.FORMAT_SHOW_DATE)
-        } else if (filter.showStartField) {
-            if (filter.showFinishField) {
-                timeBuffer.clear()
-                val formatterRange = DateUtils.formatDateRange(
-                    context,
-                    timeFormatter,
-                    startTime,
-                    endTime,
-                    FORMAT_DURATION
+        binding.composeView.setContent {
+            TikalTheme {
+                TimeItem(
+                    record = record,
+                    isProjectFieldVisible = filter.isProjectFieldVisible,
+                    isTaskFieldVisible = filter.isTaskFieldVisible,
+                    isStartFieldVisible = filter.isStartFieldVisible,
+                    isFinishFieldVisible = filter.isFinishFieldVisible,
+                    isDurationFieldVisible = filter.isDurationFieldVisible,
+                    isNoteFieldVisible = filter.isNoteFieldVisible,
+                    isCostFieldVisible = filter.isCostFieldVisible,
+                    isLocationFieldVisible = filter.isLocationFieldVisible,
+                    onClick = clickListener::onRecordClick
                 )
-                binding.timeRange.text = formatterRange.toString()
-            } else {
-                binding.timeRange.text =
-                    DateUtils.formatDateTime(context, startTime, FORMAT_DURATION)
             }
-        } else if (filter.showFinishField) {
-            binding.timeRange.text = DateUtils.formatDateTime(context, endTime, FORMAT_DURATION)
         }
-
-        bindFilter(filter)
     }
 
-    @MainThread
-    override fun clear() {
-        super.clear()
-        bindFilter(filter)
-    }
+    companion object : TimeListAdapter.OnTimeListListener {
+        override fun onRecordClick(record: TimeRecord) = Unit
 
-    @MainThread
-    private fun bindFilter(filter: ReportFilter) {
-        binding.project.visibility = if (filter.showProjectField) View.VISIBLE else View.GONE
-        binding.projectIcon.visibility = binding.project.visibility
-        binding.task.visibility = if (filter.showTaskField) View.VISIBLE else View.GONE
-        binding.taskIcon.visibility = binding.task.visibility
-        binding.timeRange.visibility =
-            if (filter.showStartField or filter.showFinishField) View.VISIBLE else View.GONE
-        binding.timeRangeIcon.visibility = binding.timeRange.visibility
-        binding.timeDuration.visibility = if (filter.showDurationField) View.VISIBLE else View.GONE
-        binding.note.visibility = if (filter.showNoteField) View.VISIBLE else View.GONE
-        binding.noteIcon.visibility = binding.note.visibility
-        binding.cost.visibility = if (filter.showCostField) View.VISIBLE else View.GONE
-        binding.costIcon.visibility = binding.cost.visibility
-    }
-
-    companion object {
-        private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_DATE
+        override fun onRecordSwipe(record: TimeRecord) = Unit
     }
 }

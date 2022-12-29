@@ -173,25 +173,25 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.finishInput.setOnClickListener { pickFinishDate() }
 
         bindingForm.showProjectField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showProjectField = isChecked
+            (record as ReportFilter).isProjectFieldVisible = isChecked
         }
         bindingForm.showTaskField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showTaskField = isChecked
+            (record as ReportFilter).isTaskFieldVisible = isChecked
         }
         bindingForm.showStartField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showStartField = isChecked
+            (record as ReportFilter).isStartFieldVisible = isChecked
         }
         bindingForm.showFinishField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showFinishField = isChecked
+            (record as ReportFilter).isFinishFieldVisible = isChecked
         }
         bindingForm.showDurationField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showDurationField = isChecked
+            (record as ReportFilter).isDurationFieldVisible = isChecked
         }
         bindingForm.showNoteField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showNoteField = isChecked
+            (record as ReportFilter).isNoteFieldVisible = isChecked
         }
         bindingForm.showLocationField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).showLocationField = isChecked
+            (record as ReportFilter).isLocationFieldVisible = isChecked
         }
 
         bindingForm.actionGenerate.setOnClickListener { generateReport() }
@@ -346,13 +346,13 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.finishInput.error = null
         finishPickerDialog = null
 
-        bindingForm.showProjectField.isChecked = filter.showProjectField
-        bindingForm.showTaskField.isChecked = filter.showTaskField
-        bindingForm.showStartField.isChecked = filter.showStartField
-        bindingForm.showFinishField.isChecked = filter.showFinishField
-        bindingForm.showDurationField.isChecked = filter.showDurationField
-        bindingForm.showNoteField.isChecked = filter.showNoteField
-        bindingForm.showLocationField.isChecked = filter.showLocationField
+        bindingForm.showProjectField.isChecked = filter.isProjectFieldVisible
+        bindingForm.showTaskField.isChecked = filter.isTaskFieldVisible
+        bindingForm.showStartField.isChecked = filter.isStartFieldVisible
+        bindingForm.showFinishField.isChecked = filter.isFinishFieldVisible
+        bindingForm.showDurationField.isChecked = filter.isDurationFieldVisible
+        bindingForm.showNoteField.isChecked = filter.isNoteFieldVisible
+        bindingForm.showLocationField.isChecked = filter.isLocationFieldVisible
 
         setErrorLabel(errorMessage)
     }

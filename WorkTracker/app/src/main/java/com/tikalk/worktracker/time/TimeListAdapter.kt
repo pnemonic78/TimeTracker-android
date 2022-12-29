@@ -36,10 +36,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil.ItemCallback
 import androidx.recyclerview.widget.ListAdapter
-import com.tikalk.worktracker.databinding.TimeItemBinding
+import com.tikalk.worktracker.databinding.ComposeItemBinding
 import com.tikalk.worktracker.model.time.TimeRecord
 
-class TimeListAdapter(private val clickListener: OnTimeListListener? = null) :
+class TimeListAdapter(private val clickListener: OnTimeListListener) :
     ListAdapter<TimeRecord, TimeListViewHolder>(TimeDiffer()) {
 
     interface OnTimeListListener {
@@ -56,7 +56,7 @@ class TimeListAdapter(private val clickListener: OnTimeListListener? = null) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeListViewHolder {
         val context: Context = parent.context
-        val binding = TimeItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        val binding = ComposeItemBinding.inflate(LayoutInflater.from(context), parent, false)
         return TimeListViewHolder(binding, clickListener)
     }
 

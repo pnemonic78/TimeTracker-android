@@ -95,14 +95,14 @@ class ReportExporterODF(
             folder: File,
             filenamePrefix: String
         ): File {
-            val showProjectField = filter.showProjectField
-            val showTaskField = filter.showTaskField
-            val showStartField = filter.showStartField
-            val showFinishField = filter.showFinishField
-            val showDurationField = filter.showDurationField
-            val showNoteField = filter.showNoteField
-            val showCostField = filter.showCostField
-            val showLocationField = filter.showLocationField
+            val showProjectField = filter.isProjectFieldVisible
+            val showTaskField = filter.isTaskFieldVisible
+            val showStartField = filter.isStartFieldVisible
+            val showFinishField = filter.isFinishFieldVisible
+            val showDurationField = filter.isDurationFieldVisible
+            val showNoteField = filter.isNoteFieldVisible
+            val showCostField = filter.isCostFieldVisible
+            val showLocationField = filter.isLocationFieldVisible
 
             val locale = Locale.getDefault()
             val currency = Currency.getInstance(locale)

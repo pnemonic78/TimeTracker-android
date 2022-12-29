@@ -31,131 +31,30 @@
  */
 package com.tikalk.worktracker.time
 
-import android.content.Context
-import android.content.res.Configuration
-import android.graphics.Color
-import android.text.format.DateUtils
-import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
-import com.tikalk.worktracker.databinding.TimeItemBinding
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.compose.TikalTheme
+import com.tikalk.worktracker.databinding.ComposeItemBinding
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
-import com.tikalk.worktracker.report.toLocationItem
-import java.util.Formatter
-import java.util.Locale
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.EMPTY
 
 open class TimeListViewHolder(
-    private val binding: TimeItemBinding,
-    private val clickListener: TimeListAdapter.OnTimeListListener? = null
-) : RecyclerView.ViewHolder(binding.root),
-    View.OnClickListener {
-
-    protected val timeBuffer = StringBuilder(20)
-    protected val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
-    protected val night =
-        (binding.root.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    protected val binding: ComposeItemBinding,
+    protected val clickListener: TimeListAdapter.OnTimeListListener
+) : RecyclerView.ViewHolder(binding.root) {
 
     var record: TimeRecord? = null
         set(value) {
             field = value
-            if (value != null) {
-                bind(value)
-                bindColors(value)
-            } else {
-                clear()
-            }
+            bind(value ?: EMPTY)
         }
-
-    init {
-        binding.root.setOnClickListener(this)
-        // CardView does not handle clicks.
-        (binding.root as ViewGroup).getChildAt(0).setOnClickListener(this)
-    }
 
     @MainThread
     protected open fun bind(record: TimeRecord) {
-        val context: Context = binding.root.context
-        binding.project.text = record.project.name
-        binding.task.text = record.task.name
-        val startTime = record.startTime
-        val endTime = record.finishTime
-        if ((startTime == NEVER) || (endTime == NEVER)) {
-            binding.timeRange.text = null
-        } else {
-            timeBuffer.clear()
-            val formatterRange =
-                DateUtils.formatDateRange(
-                    context,
-                    timeFormatter,
-                    startTime,
-                    endTime,
-                    FORMAT_DURATION
-                )
-            binding.timeRange.text = formatterRange.toString()
+        binding.composeView.setContent {
+            TikalTheme {
+                TimeItem(record = record, onClick = clickListener::onRecordClick)
+            }
         }
-        timeBuffer.clear()
-        binding.timeDuration.text = formatElapsedTime(context, timeFormatter, record.duration)
-        binding.note.text = record.note
-        binding.cost.text = formatCost(record.cost)
-        binding.location.text = record.location.toLocationItem(context).label
-    }
-
-    @MainThread
-    protected open fun clear() {
-        binding.project.text = ""
-        binding.task.text = ""
-        binding.timeRange.text = ""
-        binding.timeDuration.text = ""
-        binding.note.text = ""
-        binding.cost.text = ""
-        binding.location.text = ""
-    }
-
-    @MainThread
-    private fun bindColors(record: TimeRecord) {
-        val projectHash: Int =
-            if (record.project.id != TikalEntity.ID_NONE) record.project.id.toInt() else record.project.hashCode()
-        val taskHash: Int =
-            if (record.task.id != TikalEntity.ID_NONE) record.task.id.toInt() else record.task.hashCode()
-        val spread = (projectHash * projectHash * taskHash)
-        val spreadBits = spread.and(511)
-
-        // 512 combinations => 3 bits per color
-        val redBits = spreadBits.and(0x07)
-        val greenBits = spreadBits.shr(3).and(0x07)
-        val blueBits = spreadBits.shr(6).and(0x07)
-        val r = redBits * 24 //*32 => some colors too bright
-        val g = greenBits * 24 //*32 => some colors too bright
-        val b = blueBits * 24 //*32 => some colors too bright
-        val color = if (night) Color.rgb(255 - r, 255 - g, 255 - b) else Color.rgb(r, g, b)
-
-        bindColors(record, color)
-    }
-
-    @MainThread
-    protected open fun bindColors(record: TimeRecord, color: Int) {
-        binding.project.setTextColor(color)
-        binding.task.setTextColor(color)
-        binding.note.setTextColor(color)
-        binding.cost.setTextColor(color)
-        binding.location.setTextColor(color)
-    }
-
-    private fun formatCost(cost: Double): CharSequence {
-        return if (cost <= 0.0) "" else cost.toString()
-    }
-
-    override fun onClick(v: View) {
-        val record = this.record
-        if (record != null) {
-            clickListener?.onRecordClick(record)
-        }
-    }
-
-    companion object {
-        private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
     }
 }

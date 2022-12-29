@@ -37,7 +37,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil.ItemCallback
 import androidx.recyclerview.widget.ListAdapter
-import com.tikalk.worktracker.databinding.TimeItemBinding
+import com.tikalk.worktracker.databinding.ComposeItemBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 
@@ -46,7 +46,7 @@ class ReportAdapter(val filter: ReportFilter) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReportViewHolder {
         val context: Context = parent.context
-        val binding = TimeItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        val binding = ComposeItemBinding.inflate(LayoutInflater.from(context), parent, false)
         return ReportViewHolder(binding, filter)
     }
 
