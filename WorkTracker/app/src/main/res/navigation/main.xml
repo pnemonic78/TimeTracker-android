@@ -62,8 +62,7 @@
     <fragment
         android:id="@+id/projectsFragment"
         android:name="com.tikalk.worktracker.project.ProjectsFragment"
-        android:label="@string/projects_title"
-        tools:layout="@layout/fragment_projects">
+        android:label="@string/projects_title">
         <action
             android:id="@+id/action_projects_to_login"
             app:destination="@id/login" />
@@ -71,8 +70,7 @@
     <fragment
         android:id="@+id/tasksFragment"
         android:name="com.tikalk.worktracker.task.ProjectTasksFragment"
-        android:label="@string/tasks_title"
-        tools:layout="@layout/fragment_tasks">
+        android:label="@string/tasks_title">
         <action
             android:id="@+id/action_projectTasks_to_login"
             app:destination="@id/login" />
@@ -92,8 +90,7 @@
     <fragment
         android:id="@+id/usersFragment"
         android:name="com.tikalk.worktracker.user.UsersFragment"
-        android:label="@string/users_title"
-        tools:layout="@layout/fragment_users">
+        android:label="@string/users_title">
         <action
             android:id="@+id/action_users_to_login"
             app:destination="@id/login" />
@@ -116,4 +113,8 @@
     <action
         android:id="@+id/action_show_reportForm"
         app:destination="@id/reportFormFragment" />
+    <fragment
+        android:id="@+id/helpFragment"
+        android:name="com.tikalk.worktracker.help.HelpFragment"
+        android:label="@string/help_title" />
 </navigation>
