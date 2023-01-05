@@ -31,14 +31,22 @@
  */
 package com.tikalk.worktracker.start
 
+import android.annotation.TargetApi
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import com.tikalk.app.TikalActivity
 import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.time.TimeListActivity
+import com.tikalk.worktracker.time.TimerWorker
 
 class SplashActivity : TikalActivity() {
+
+    private var isNotificationAsked = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,12 +56,17 @@ class SplashActivity : TikalActivity() {
                 SplashScreen()
             }
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            isNotificationAsked = false
+            initNotificationPermission()
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
 
-        if (hasFocus) {
+        if (hasFocus && isNotificationAsked) {
             showList()
         }
     }
@@ -61,5 +74,40 @@ class SplashActivity : TikalActivity() {
     private fun showList() {
         startActivity(Intent(context, TimeListActivity::class.java))
         finish()
+    }
+
+    @TargetApi(Build.VERSION_CODES.TIRAMISU)
+    private fun initNotificationPermission() {
+        checkNotificationPermissions(this)
+    }
+
+    @TargetApi(Build.VERSION_CODES.TIRAMISU)
+    fun checkNotificationPermissions(activity: AppCompatActivity) {
+        val nm = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (nm.areNotificationsEnabled()) {
+            isNotificationAsked = true
+            return
+        }
+        activity.requestPermissions(TimerWorker.PERMISSIONS, ACTIVITY_PERMISSIONS)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == ACTIVITY_PERMISSIONS) {
+            isNotificationAsked = true
+            showList()
+            return
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    companion object {
+        /**
+         * Activity id for requesting notification permissions.
+         */
+        private const val ACTIVITY_PERMISSIONS = 0x6057 // "POST"
     }
 }

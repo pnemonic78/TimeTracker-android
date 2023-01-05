@@ -116,7 +116,7 @@ open class TimeRecord(
     fun isEmpty(): Boolean {
         return project.isEmpty()
             || task.isEmpty()
-            || (duration == 0L)
+            || ((duration == 0L) && (start == null))
     }
 
     open fun copy(): TimeRecord {
