@@ -306,3 +306,11 @@ fun TimeRecord.split(): List<TimeRecord> {
 inline fun TimeRecord?.isNullOrEmpty(): Boolean {
     return (this == null) || isEmpty()
 }
+
+internal operator fun TimeRecord.times(n: Int): List<TimeRecord> {
+    val list = mutableListOf<TimeRecord>()
+    for (i in 0 until n) {
+        list.add(this)
+    }
+    return list
+}

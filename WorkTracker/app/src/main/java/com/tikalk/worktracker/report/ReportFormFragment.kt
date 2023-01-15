@@ -83,7 +83,6 @@ class ReportFormFragment : TimeFormFragment() {
 
     private var _binding: FragmentReportFormBinding? = null
     private val binding get() = _binding!!
-    private val bindingForm get() = binding.form
 
     private val date: Calendar = Calendar.getInstance()
     private val filterData = MutableStateFlow(ReportFilter())
@@ -108,6 +107,7 @@ class ReportFormFragment : TimeFormFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val bindingForm = binding.form
         bindingForm.projectInput.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(adapterView: AdapterView<*>) {
@@ -230,7 +230,7 @@ class ReportFormFragment : TimeFormFragment() {
     private fun filterTasks(project: Project) {
         Timber.d("filterTasks project=$project")
         val context = this.context ?: return
-        if (!isVisible) return
+        val bindingForm = _binding?.form ?: return
         val options = addEmptyTask(project.tasks)
         bindingForm.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
@@ -245,7 +245,7 @@ class ReportFormFragment : TimeFormFragment() {
         filter.period = period
         filter.updateDates(date)
 
-        if (!isVisible) return
+        val bindingForm = _binding?.form ?: return
 
         val startTime = filter.startTime
         bindingForm.startInput.text = if (startTime != TimeRecord.NEVER)
@@ -309,7 +309,7 @@ class ReportFormFragment : TimeFormFragment() {
     private fun bindFilter(filter: ReportFilter) {
         Timber.i("bindFilter filter=$filter")
         val context = this.context ?: return
-        if (!isVisible) return
+        val bindingForm = _binding?.form ?: return
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(viewModel.taskEmpty)
@@ -360,6 +360,7 @@ class ReportFormFragment : TimeFormFragment() {
     private fun bindProjects(context: Context, filter: ReportFilter, projects: List<Project>?) {
         Timber.i("bindProjects filter=$filter projects=$projects")
         val options = addEmptyProject(projects).toTypedArray()
+        val bindingForm = _binding?.form ?: return
         bindingForm.projectInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
         if (options.isNotEmpty()) {
@@ -372,6 +373,7 @@ class ReportFormFragment : TimeFormFragment() {
     private fun bindLocation(context: Context, filter: ReportFilter) {
         Timber.i("bindLocation filter=$filter")
         val locations = buildLocations(context)
+        val bindingForm = _binding?.form ?: return
         bindingForm.locationInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
         if (locations.isNotEmpty()) {
@@ -396,7 +398,8 @@ class ReportFormFragment : TimeFormFragment() {
         val dayOfMonth = cal.dayOfMonth
         var picker = startPickerDialog
         if (picker == null) {
-            val context = requireContext()
+            val context = getContext() ?: return
+            val bindingForm = _binding?.form ?: return
             val listener =
                 DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
                     cal.year = pickedYear
@@ -432,7 +435,8 @@ class ReportFormFragment : TimeFormFragment() {
         val dayOfMonth = cal.dayOfMonth
         var picker = finishPickerDialog
         if (picker == null) {
-            val context = requireContext()
+            val context = getContext() ?: return
+            val bindingForm = _binding?.form ?: return
             val listener =
                 DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
                     cal.year = pickedYear
@@ -537,6 +541,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun setErrorLabel(text: CharSequence) {
+        val bindingForm = _binding?.form ?: return
         bindingForm.errorLabel.text = text
         bindingForm.errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
     }

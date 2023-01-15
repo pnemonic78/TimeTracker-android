@@ -75,8 +75,7 @@ class ReportFragment : InternetFragment() {
 
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
     private val totalsData = MutableStateFlow<ReportTotals?>(null)
-    private val filterData = MutableStateFlow<ReportFilter?>(null)
-    private var listAdapter = ReportAdapter(ReportFilter())
+    private val filterData = MutableStateFlow<ReportFilter>(ReportFilter())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,7 +88,11 @@ class ReportFragment : InternetFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = listAdapter
+        binding.list.setContent {
+            TikalTheme {
+                ReportList(itemsFlow = recordsData, filterFlow = filterData)
+            }
+        }
 
         lifecycleScope.launch {
             recordsData.collect { records ->
@@ -99,14 +102,6 @@ class ReportFragment : InternetFragment() {
         lifecycleScope.launch {
             totalsData.collect { totals ->
                 if (totals != null) bindTotals(totals)
-            }
-        }
-        lifecycleScope.launch {
-            filterData.collect { filter ->
-                if (filter != null) {
-                    this@ReportFragment.listAdapter = ReportAdapter(filter)
-                    binding.list.adapter = listAdapter
-                }
             }
         }
     }
@@ -119,10 +114,6 @@ class ReportFragment : InternetFragment() {
     @MainThread
     private fun bindList(records: List<TimeRecord>) {
         if (!isVisible) return
-        listAdapter.submitList(records)
-        if (records === recordsData.value) {
-            listAdapter.notifyDataSetChanged()
-        }
         if (records.isEmpty()) {
             binding.listSwitcher.displayedChild = CHILD_EMPTY
         } else {
@@ -138,8 +129,8 @@ class ReportFragment : InternetFragment() {
             TikalTheme {
                 ReportTotalsFooter(
                     totals = totals,
-                    isDurationFieldVisible = filter?.isDurationFieldVisible == true,
-                    isCostFieldVisible = filter?.isCostFieldVisible == true
+                    isDurationFieldVisible = filter.isDurationFieldVisible,
+                    isCostFieldVisible = filter.isCostFieldVisible
                 )
             }
         }
@@ -172,7 +163,7 @@ class ReportFragment : InternetFragment() {
             }
         }
         if (filter == null) {
-            filter = filterData.value ?: ReportFilter()
+            filter = filterData.value
         }
 
         lifecycleScope.launch {
@@ -189,10 +180,10 @@ class ReportFragment : InternetFragment() {
         }
     }
 
-    private fun processPage(page: ReportPage) {
-        filterData.value = page.filter
-        recordsData.value = page.records
-        totalsData.value = page.totals
+    private suspend fun processPage(page: ReportPage) {
+        filterData.emit(page.filter)
+        recordsData.emit(page.records)
+        totalsData.emit(page.totals)
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -272,7 +263,7 @@ class ReportFragment : InternetFragment() {
     private fun exportCSV(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(
@@ -286,7 +277,7 @@ class ReportFragment : InternetFragment() {
     private fun exportHTML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(
@@ -300,7 +291,7 @@ class ReportFragment : InternetFragment() {
     private fun exportODF(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(
@@ -314,7 +305,7 @@ class ReportFragment : InternetFragment() {
     private fun exportXML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
-        val filter = filterData.value ?: return
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(

@@ -107,6 +107,7 @@ class TimeListFragment : TimeFormFragment() {
         formNavHostFragment =
             childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
 
+        val binding = this.binding
         binding.dateInput.setOnClickListener { pickDate() }
         binding.recordAdd.setOnClickListener { addTime() }
 

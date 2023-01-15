@@ -74,6 +74,8 @@ private val timeBuffer = StringBuilder(20)
 private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
 
+typealias OnRecordCallback = ((TimeRecord) -> Unit)
+
 @Composable
 fun TimeItem(
     record: TimeRecord,
@@ -85,7 +87,7 @@ fun TimeItem(
     isNoteFieldVisible: Boolean = true,
     isCostFieldVisible: Boolean = false,
     isLocationFieldVisible: Boolean = true,
-    onClick: ((TimeRecord) -> Unit)
+    onClick: OnRecordCallback
 ) {
     val context: Context = LocalContext.current
     val iconSize = dimensionResource(id = R.dimen.icon_item)
