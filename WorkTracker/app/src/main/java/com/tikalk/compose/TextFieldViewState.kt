@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.help
+package com.tikalk.compose
 
-interface HelpUiState {
-}
+data class TextFieldViewState(
+    var value: String,
+    val isEnabled: Boolean = true,
+    val isReadOnly: Boolean = false,
+    val isError: Boolean = false
+)

@@ -30,12 +30,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.task
+package com.tikalk.worktracker.user
 
-import com.tikalk.model.TikalResult
-import com.tikalk.worktracker.model.ProjectTask
-import kotlinx.coroutines.flow.Flow
+import com.tikalk.compose.TextFieldViewState
+import com.tikalk.compose.UnitCallback
 
-interface ProjectTasksUiState {
-    val tasks: Flow<TikalResult<List<ProjectTask>>>
+interface ProfileViewState {
+    val userDisplayName: TextFieldViewState
+    val userEmail: TextFieldViewState
+    val credentialsLogin: TextFieldViewState
+    val credentialsPassword: TextFieldViewState
+    val credentialsPasswordConfirmation: TextFieldViewState
+    val errorMessage: String
+    val onConfirmClick: UnitCallback
 }

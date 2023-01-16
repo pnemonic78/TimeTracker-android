@@ -53,8 +53,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun ProjectsScreen(uiState: ProjectsUiState) {
-    val resultState = uiState.projects.collectAsState(initial = TikalResult.Loading())
+fun ProjectsScreen(viewState: ProjectsViewState) {
+    val resultState = viewState.projects.collectAsState(initial = TikalResult.Loading())
     val result: TikalResult<List<Project>> = resultState.value
 
     when (result) {
@@ -95,12 +95,12 @@ private fun ProjectsScreenError() {
 @Preview(showBackground = true)
 @Composable
 private fun ThisPreview() {
-    val uiState: ProjectsUiState = object : ProjectsUiState {
+    val viewState: ProjectsViewState = object : ProjectsViewState {
         override val projects: Flow<TikalResult<List<Project>>> =
             MutableStateFlow(TikalResult.Success(listOf(Project.EMPTY)))
     }
 
     TikalTheme {
-        ProjectsScreen(uiState)
+        ProjectsScreen(viewState)
     }
 }

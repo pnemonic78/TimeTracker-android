@@ -36,6 +36,6 @@ import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.model.Project
 import kotlinx.coroutines.flow.Flow
 
-interface ProjectsUiState {
+interface ProjectsViewState {
     val projects: Flow<TikalResult<List<Project>>>
 }

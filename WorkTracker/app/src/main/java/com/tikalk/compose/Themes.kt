@@ -5,6 +5,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 
 typealias ComposableContent = @Composable (() -> Unit)
+typealias UnitCallback = (() -> Unit)
 
 @Composable
 fun TikalTheme(

@@ -84,6 +84,7 @@ dependencies {
     implementation(Android.Jetpack.appcompat)
     implementation(Android.Jetpack.composeActivity)
     implementation(Android.Jetpack.composeCompiler)
+    implementation(Android.Jetpack.composeIcons)
     implementation(Android.Jetpack.composeMaterial)
     implementation(Android.Jetpack.composeRuntime)
     implementation(Android.Jetpack.composeUi)

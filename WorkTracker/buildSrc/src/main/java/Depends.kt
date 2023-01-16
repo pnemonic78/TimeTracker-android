@@ -40,6 +40,7 @@ object Android {
         const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeActivity = "androidx.activity:activity-compose:${Version.compose}"
         const val composeCompiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
+        const val composeIcons = "androidx.compose.material:material-icons-extended:${Version.compose}"
         const val composeMaterial = "androidx.compose.material:material:${Version.compose}"
         const val composeRuntime = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeUi = "androidx.compose.ui:ui:${Version.compose}"

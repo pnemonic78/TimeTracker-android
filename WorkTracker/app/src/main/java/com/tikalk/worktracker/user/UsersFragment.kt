@@ -70,7 +70,7 @@ class UsersFragment : InternetFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.composeView.setContent {
-            UsersScreen(uiState = viewModel)
+            UsersScreen(viewState = viewModel)
         }
     }
 

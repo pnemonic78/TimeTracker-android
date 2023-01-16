@@ -33,46 +33,9 @@
 package com.tikalk.worktracker.task
 
 import com.tikalk.model.TikalResult
-import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOn
-import timber.log.Timber
-import javax.inject.Inject
 
-@HiltViewModel
-class ProjectTasksViewModel @Inject constructor(
-    preferences: TimeTrackerPrefs,
-    db: TrackerDatabase,
-    service: TimeTrackerService,
-    dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource),
-    ProjectTasksViewState {
-
-    private val _tasks = MutableStateFlow<TikalResult<List<ProjectTask>>>(TikalResult.Loading())
-    override val tasks: Flow<TikalResult<List<ProjectTask>>> = _tasks
-
-    suspend fun fetchTasks(firstRun: Boolean) {
-        _tasks.emit(TikalResult.Loading())
-        notifyLoading(true)
-        try {
-            dataSource.tasksPage(firstRun)
-                .flowOn(Dispatchers.IO)
-                .collect { page ->
-                    _tasks.emit(TikalResult.Success(page.tasks))
-                    notifyLoading(false)
-                }
-        } catch (e: Exception) {
-            Timber.e(e, "Error loading page: ${e.message}")
-            _tasks.emit(TikalResult.Error(e))
-            notifyError(e)
-        }
-    }
+interface ProjectTasksViewState {
+    val tasks: Flow<TikalResult<List<ProjectTask>>>
 }

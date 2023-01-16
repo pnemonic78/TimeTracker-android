@@ -70,7 +70,7 @@ class ProjectTasksFragment : InternetFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.composeView.setContent {
-            ProjectTasksScreen(uiState = viewModel)
+            ProjectTasksScreen(viewState = viewModel)
         }
     }
 

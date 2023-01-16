@@ -36,7 +36,7 @@ import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.model.User
 import kotlinx.coroutines.flow.Flow
 
-interface UsersUiState {
+interface UsersViewState {
     val users: Flow<TikalResult<List<User>>>
     val userSelectedPosition: Flow<Int>
 

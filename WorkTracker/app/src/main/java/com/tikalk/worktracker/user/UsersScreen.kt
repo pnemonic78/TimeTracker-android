@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.user
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -55,13 +54,13 @@ import com.tikalk.worktracker.model.User
 import kotlinx.coroutines.launch
 
 @Composable
-fun UsersScreen(uiState: UsersUiState) {
-    val resultState = uiState.users.collectAsState(initial = TikalResult.Loading())
+fun UsersScreen(viewState: UsersViewState) {
+    val resultState = viewState.users.collectAsState(initial = TikalResult.Loading())
     val result: TikalResult<List<User>> = resultState.value
 
-    val positionState = uiState.userSelectedPosition.collectAsState(initial = 0)
+    val positionState = viewState.userSelectedPosition.collectAsState(initial = 0)
     val position = positionState.value
-    val onScrollIndex: OnScrollIndexCallback = uiState::onScrollIndex
+    val onScrollIndex: OnScrollIndexCallback = viewState::onScrollIndex
 
     when (result) {
         is TikalResult.Loading -> LoadingScreen()

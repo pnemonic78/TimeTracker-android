@@ -56,7 +56,7 @@ class UsersViewModel @Inject constructor(
     service: TimeTrackerService,
     dataSource: TimeTrackerRepository
 ) : TrackerViewModel(preferences, db, service, dataSource),
-    UsersUiState {
+    UsersViewState {
 
     private val _users = MutableStateFlow<TikalResult<List<User>>>(TikalResult.Loading())
     override val users: Flow<TikalResult<List<User>>> = _users

@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.task
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -53,8 +52,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun ProjectTasksScreen(uiState: ProjectTasksUiState) {
-    val resultState = uiState.tasks.collectAsState(initial = TikalResult.Loading())
+fun ProjectTasksScreen(viewState: ProjectTasksViewState) {
+    val resultState = viewState.tasks.collectAsState(initial = TikalResult.Loading())
     val result: TikalResult<List<ProjectTask>> = resultState.value
 
     when (result) {
@@ -95,12 +94,12 @@ private fun ProjectTasksScreenError() {
 @Preview(showBackground = true)
 @Composable
 private fun ThisPreview() {
-    val uiState: ProjectTasksUiState = object : ProjectTasksUiState {
+    val viewState: ProjectTasksViewState = object : ProjectTasksViewState {
         override val tasks: Flow<TikalResult<List<ProjectTask>>> =
             MutableStateFlow(TikalResult.Success(listOf(ProjectTask.EMPTY)))
     }
 
     TikalTheme {
-        ProjectTasksScreen(uiState)
+        ProjectTasksScreen(viewState)
     }
 }

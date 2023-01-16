@@ -181,15 +181,15 @@ private fun UserEntriesDot(modifier: Modifier = Modifier, color: Color) {
 @Preview(showBackground = true)
 @Composable
 private fun ThisPreview() {
-    val user = User(
-        username = "demo",
-        email = "demo@tikalk.com",
-        displayName = "Demo",
-        roles = listOf("User", "Manager"),
-        isUncompletedEntry = false
-    )
-
     TikalTheme {
-        UserItem(user)
+        UserItem(user = UserDemo)
     }
 }
+
+internal val UserDemo = User(
+    username = "demo",
+    email = "demo@tikalk.com",
+    displayName = "Demo",
+    roles = listOf("User", "Manager"),
+    isUncompletedEntry = false
+)
