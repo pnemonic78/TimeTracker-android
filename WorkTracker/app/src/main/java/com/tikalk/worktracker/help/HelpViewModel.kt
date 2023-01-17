@@ -32,20 +32,13 @@
 
 package com.tikalk.worktracker.help
 
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class HelpViewModel @Inject constructor(
-    preferences: TimeTrackerPrefs,
-    db: TrackerDatabase,
-    service: TimeTrackerService,
-    dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource),
-    HelpViewState {
-}
+    services: TrackerServices
+) : TrackerViewModel(services),
+    HelpViewState

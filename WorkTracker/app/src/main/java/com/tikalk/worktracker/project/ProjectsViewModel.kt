@@ -33,12 +33,9 @@
 package com.tikalk.worktracker.project
 
 import com.tikalk.model.TikalResult
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -49,11 +46,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProjectsViewModel @Inject constructor(
-    preferences: TimeTrackerPrefs,
-    db: TrackerDatabase,
-    service: TimeTrackerService,
-    dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource),
+    services: TrackerServices
+) : TrackerViewModel(services),
     ProjectsViewState {
 
     private val _projects = MutableStateFlow<TikalResult<List<Project>>>(TikalResult.Loading())
@@ -63,7 +57,7 @@ class ProjectsViewModel @Inject constructor(
         _projects.emit(TikalResult.Loading())
         notifyLoading(true)
         try {
-            dataSource.projectsPage(firstRun)
+            services.dataSource.projectsPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->
                     _projects.emit(TikalResult.Success(page.projects))

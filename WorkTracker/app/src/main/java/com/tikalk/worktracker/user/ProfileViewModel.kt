@@ -32,12 +32,9 @@
 
 package com.tikalk.worktracker.user
 
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,11 +42,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    preferences: TimeTrackerPrefs,
-    db: TrackerDatabase,
-    service: TimeTrackerService,
-    dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource) {
+    services: TrackerServices
+) : TrackerViewModel(services) {
 
     private val profileUpdateData = MutableStateFlow<ProfileData?>(null)
     val profileUpdate: Flow<ProfileData?> = profileUpdateData

@@ -32,18 +32,12 @@
 
 package com.tikalk.worktracker.report
 
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ReportViewModel @Inject constructor(
-    preferences: TimeTrackerPrefs,
-    db: TrackerDatabase,
-    service: TimeTrackerService,
-    dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource)
+    services: TrackerServices
+) : TrackerViewModel(services)

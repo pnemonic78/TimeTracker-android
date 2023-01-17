@@ -32,16 +32,13 @@
 
 package com.tikalk.worktracker.time
 
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.report.LocationItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -50,11 +47,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TimeViewModel @Inject constructor(
-    preferences: TimeTrackerPrefs,
-    db: TrackerDatabase,
-    service: TimeTrackerService,
-    dataSource: TimeTrackerRepository
-) : TrackerViewModel(preferences, db, service, dataSource) {
+    services: TrackerServices
+) : TrackerViewModel(services) {
 
     val projectsData = MutableStateFlow<List<Project>>(emptyList())
     var projectEmpty: Project = Project.EMPTY.copy(true)

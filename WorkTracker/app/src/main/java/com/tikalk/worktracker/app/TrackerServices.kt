@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,50 +30,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.auth
+package com.tikalk.worktracker.app
 
-import com.tikalk.worktracker.app.TrackerServices
-import com.tikalk.worktracker.app.TrackerViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
+import com.tikalk.worktracker.data.TimeTrackerRepository
+import com.tikalk.worktracker.db.TrackerDatabase
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
-@HiltViewModel
-class AuthenticationViewModel @Inject constructor(
-    services: TrackerServices
-) : TrackerViewModel(services) {
-
-    private val _login = MutableStateFlow(LoginData(""))
-    val login: Flow<LoginData> = _login
-
-    /**
-     * Data for login callbacks.
-     */
-    data class LoginData(val login: String, val reason: String? = null)
-
-    /**
-     * Login was successful.
-     * @param login the user's login that was used.
-     */
-    suspend fun onLoginSuccess(login: String) {
-        notifyLoginSuccess(login)
-    }
-
-    /**
-     * Login failed.
-     * @param login the user's login that was used.
-     * @param reason the failure reason.
-     */
-    suspend fun onLoginFailure(login: String, reason: String) {
-        notifyLoginFailure(login, reason)
-    }
-
-    private suspend fun notifyLoginSuccess(login: String) {
-        _login.emit(LoginData(login))
-    }
-
-    private suspend fun notifyLoginFailure(login: String, reason: String) {
-        _login.emit(LoginData(login, reason))
-    }
-}
+class TrackerServices(
+    val preferences: TimeTrackerPrefs,
+    val db: TrackerDatabase,
+    val service: TimeTrackerService,
+    val dataSource: TimeTrackerRepository
+)
