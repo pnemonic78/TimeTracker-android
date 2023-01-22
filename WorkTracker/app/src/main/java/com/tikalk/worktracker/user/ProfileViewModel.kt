@@ -32,21 +32,32 @@
 
 package com.tikalk.worktracker.user
 
+import com.tikalk.compose.TextFieldViewState
+import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     services: TrackerServices
-) : TrackerViewModel(services) {
+) : TrackerViewModel(services),
+    ProfileViewState {
+
+    private val _user = MutableStateFlow(User.EMPTY)
+    val user: StateFlow<User> = _user
+
+    private val _userCredentials = MutableStateFlow(UserCredentials.EMPTY)
+    val userCredentials: StateFlow<UserCredentials> = _userCredentials
 
     private val profileUpdateData = MutableStateFlow<ProfileData?>(null)
-    val profileUpdate: Flow<ProfileData?> = profileUpdateData
+    val profileUpdate: StateFlow<ProfileData?> = profileUpdateData
 
     /**
      * Data for profile callbacks.
@@ -76,5 +87,75 @@ class ProfileViewModel @Inject constructor(
 
     private suspend fun notifyProfileFailure(user: User, reason: String) {
         profileUpdateData.emit(ProfileData(user, reason))
+    }
+
+    private val _userDisplayName = MutableStateFlow(TextFieldViewState())
+    override val userDisplayName: StateFlow<TextFieldViewState> = _userDisplayName
+    private val _userEmail = MutableStateFlow(TextFieldViewState())
+    override val userEmail: StateFlow<TextFieldViewState> = _userEmail
+    private val _credentialsLogin = MutableStateFlow(TextFieldViewState())
+    override val credentialsLogin: StateFlow<TextFieldViewState> = _credentialsLogin
+    private val _credentialsPassword = MutableStateFlow(TextFieldViewState())
+    override val credentialsPassword: StateFlow<TextFieldViewState> = _credentialsPassword
+    private val _credentialsPasswordConfirmation = MutableStateFlow(TextFieldViewState())
+    override val credentialsPasswordConfirmation: StateFlow<TextFieldViewState> =
+        _credentialsPasswordConfirmation
+    private var _errorMessage = MutableStateFlow("")
+    override val errorMessage: StateFlow<String> = _errorMessage
+    override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
+
+    init {
+        val user = services.preferences.user
+        val userCredentials = services.preferences.userCredentials
+
+        var email = user.email
+        if (email.isNullOrEmpty()) email = userCredentials.login
+
+        _userDisplayName.value.value = user.displayName ?: ""
+        _userEmail.value.value = email
+        _credentialsLogin.value.value = userCredentials.login
+        _credentialsPassword.value.value = userCredentials.password
+    }
+
+    private fun onDialogConfirmClick() {
+        TODO("Not yet implemented")
+    }
+
+    suspend fun setPage(page: ProfilePage) {
+        var email = page.user.email
+        if (email.isNullOrEmpty()) email = page.userCredentials.login
+
+        _userDisplayName.emit(
+            _userDisplayName.value.copy(
+                value = page.user.displayName ?: "",
+                isReadOnly = page.nameInputEditable
+            )
+        )
+        _userEmail.emit(
+            _userEmail.value.copy(
+                value = email,
+                isReadOnly = page.emailInputEditable
+            )
+        )
+        _credentialsLogin.emit(
+            _credentialsLogin.value.copy(
+                value = page.userCredentials.login,
+                isReadOnly = page.loginInputEditable
+            )
+        )
+        _credentialsPassword.emit(
+            _credentialsPassword.value.copy(
+                value = page.userCredentials.password
+            )
+        )
+        _credentialsPasswordConfirmation.emit(
+            _credentialsPasswordConfirmation.value.copy(
+                value = page.passwordConfirm ?: ""
+            )
+        )
+        _errorMessage.emit(page.errorMessage ?: "")
+
+        _user.emit(page.user)
+        _userCredentials.emit(page.userCredentials)
     }
 }

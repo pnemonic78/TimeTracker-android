@@ -39,7 +39,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.fragment.app.activityViewModels
+import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -56,7 +57,6 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.set
 import com.tikalk.worktracker.net.InternetDialogFragment
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -69,24 +69,12 @@ class ProfileFragment : InternetDialogFragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    private val profileViewModule by activityViewModels<ProfileViewModel>()
-    private var userData = MutableStateFlow<User?>(null)
-    private var userCredentialsData = MutableStateFlow<UserCredentials?>(null)
-    private var nameInputEditable = false
-    private var emailInputEditable = false
-    private var loginInputEditable = false
-
-    @Transient
-    private var password2 = ""
-    private var errorMessage: String = ""
+    private val profileViewModule by viewModels<ProfileViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showsDialog = true
         isCancelable = true
-
-        userData.value = preferences.user
-        userCredentialsData.value = preferences.userCredentials
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -110,13 +98,13 @@ class ProfileFragment : InternetDialogFragment() {
         binding.actionSave.setOnClickListener { attemptSave() }
 
         lifecycleScope.launch {
-            userData.collect { user ->
-                bindForm(user, userCredentialsData.value)
+            profileViewModule.user.collect {
+                bindForm(viewState = profileViewModule)
             }
         }
         lifecycleScope.launch {
-            userCredentialsData.collect { userCredentials ->
-                bindForm(userData.value, userCredentials)
+            profileViewModule.userCredentials.collect {
+                bindForm(viewState = profileViewModule)
             }
         }
     }
@@ -127,7 +115,7 @@ class ProfileFragment : InternetDialogFragment() {
     }
 
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
@@ -143,37 +131,37 @@ class ProfileFragment : InternetDialogFragment() {
         }
     }
 
-    private fun processPage(page: ProfilePage) {
+    private suspend fun processPage(page: ProfilePage) {
         preferences.user = page.user
-        userData.value = page.user
-        userCredentialsData.value = page.userCredentials
-        nameInputEditable = page.nameInputEditable
-        emailInputEditable = page.emailInputEditable
-        loginInputEditable = page.loginInputEditable
-        password2 = page.passwordConfirm ?: ""
-        errorMessage = page.errorMessage ?: ""
+        profileViewModule.setPage(page)
     }
 
     @MainThread
-    private fun bindForm(
-        user: User? = User.EMPTY,
-        credentials: UserCredentials? = UserCredentials.EMPTY
-    ) {
-        var emailValue = user?.email
-        if (emailValue.isNullOrBlank()) {
-            emailValue = credentials?.login
-        }
+    private fun bindForm(viewState: ProfileViewState) {
+        val userDisplayNameState = viewState.userDisplayName
+        val userEmailState = viewState.userEmail
+        val credentialsLoginState = viewState.credentialsLogin
+        val credentialsPasswordState = viewState.credentialsPassword
+        val credentialsPasswordConfirmationState = viewState.credentialsPasswordConfirmation
+        val errorMessageState = viewState.errorMessage
 
-        binding.nameInput.setText(user?.displayName)
-        binding.emailInput.setText(emailValue)
-        binding.loginInput.setText(credentials?.login)
-        binding.passwordInput.setText(credentials?.password)
-        binding.confirmPasswordInput.setText(password2)
+        val userDisplayName = userDisplayNameState.value
+        val userEmail = userEmailState.value
+        val credentialsLogin = credentialsLoginState.value
+        val credentialsPassword = credentialsPasswordState.value
+        val credentialsPasswordConfirmation = credentialsPasswordConfirmationState.value
+        val errorMessage = errorMessageState.value
+
+        binding.nameInput.setText(userDisplayName.value)
+        binding.emailInput.setText(userEmail.value)
+        binding.loginInput.setText(credentialsLogin.value)
+        binding.passwordInput.setText(credentialsPassword.value)
+        binding.confirmPasswordInput.setText(credentialsPasswordConfirmation.value)
         setErrorLabel(errorMessage)
 
-        binding.nameInput.isEnabled = nameInputEditable
-        binding.emailInput.isEnabled = emailInputEditable
-        binding.loginInput.isEnabled = loginInputEditable
+        binding.nameInput.isEnabled = userDisplayName.isReadOnly
+        binding.emailInput.isEnabled = userEmail.isReadOnly
+        binding.loginInput.isEnabled = credentialsLogin.isReadOnly
     }
 
     /**
@@ -329,7 +317,7 @@ class ProfileFragment : InternetDialogFragment() {
         }
     }
 
-    private fun processPage(html: String): ProfilePage {
+    private suspend fun processPage(html: String): ProfilePage {
         val page = ProfilePageParser().parse(html)
         processPage(page)
         return page
@@ -352,9 +340,8 @@ class ProfileFragment : InternetDialogFragment() {
         passwordValue: String,
         confirmPasswordValue: String
     ) {
-        val user = userData.value ?: User(loginValue, emailValue, nameValue)
-        val userCredentials =
-            userCredentialsData.value ?: UserCredentials(loginValue, passwordValue)
+        val user = User(loginValue, emailValue, nameValue)
+        val userCredentials = UserCredentials(loginValue, passwordValue)
         val page = processPage(html)
         val errorMessage = page.errorMessage ?: ""
         setErrorLabel(errorMessage)
@@ -368,7 +355,7 @@ class ProfileFragment : InternetDialogFragment() {
                 page.userCredentials.set(userCredentials)
             }
             ProfilePageSaver(preferences).save(page)
-            password2 = confirmPasswordValue
+            //TODO password2 = confirmPasswordValue
 
             notifyProfileSuccess(user)
         } else {
@@ -378,14 +365,15 @@ class ProfileFragment : InternetDialogFragment() {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        userData.value?.let { user ->
-            lifecycleScope.launch { notifyProfileFailure(user, REASON_CANCEL) }
+        lifecycleScope.launch {
+            val user = profileViewModule.user.value
+            notifyProfileFailure(user, REASON_CANCEL)
         }
     }
 
     private fun setErrorLabel(text: CharSequence) {
         binding.errorLabel.text = text
-        binding.errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+        binding.errorLabel.isVisible = text.isNotBlank()
     }
 
     companion object {

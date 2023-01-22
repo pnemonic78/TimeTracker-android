@@ -108,7 +108,7 @@ class LoginFragment : InternetDialogFragment {
     }
 
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run")
         val args = this.arguments ?: return
 

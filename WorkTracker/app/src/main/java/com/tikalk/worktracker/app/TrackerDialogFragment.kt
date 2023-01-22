@@ -43,7 +43,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 abstract class TrackerDialogFragment : TikalDialogFragment,
-    TrackerFragmentDelegate.TrackerFragmentDelegateCallback {
+    TrackerFragmentDelegate.TrackerFragmentDelegateCallback,
+    Runnable {
 
     constructor() : super()
 
@@ -76,5 +77,10 @@ abstract class TrackerDialogFragment : TikalDialogFragment,
 
     override fun showError(@StringRes messageId: Int) {
         delegate.showError(messageId)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        run()
     }
 }
