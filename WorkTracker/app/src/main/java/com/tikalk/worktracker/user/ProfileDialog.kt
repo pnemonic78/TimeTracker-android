@@ -44,6 +44,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -62,10 +63,27 @@ import com.tikalk.compose.TikalTheme
 import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun ProfileDialog(viewState: ProfileViewState) {
     val marginTop = dimensionResource(id = R.dimen.form_marginTop)
+
+    val userDisplayNameState = viewState.userDisplayName.collectAsState()
+    val userEmailState = viewState.userEmail.collectAsState()
+    val credentialsLoginState = viewState.credentialsLogin.collectAsState()
+    val credentialsPasswordState = viewState.credentialsPassword.collectAsState()
+    val credentialsPasswordConfirmationState =
+        viewState.credentialsPasswordConfirmation.collectAsState()
+    val errorMessageState = viewState.errorMessage.collectAsState()
+
+    val userDisplayName = userDisplayNameState.value
+    val userEmail = userEmailState.value
+    val credentialsLogin = credentialsLoginState.value
+    val credentialsPassword = credentialsPasswordState.value
+    val credentialsPasswordConfirmation = credentialsPasswordConfirmationState.value
+    val errorMessage = errorMessageState.value
+    val onConfirmClick = viewState.onConfirmClick
 
     Column(
         modifier = Modifier
@@ -84,7 +102,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
                     fontWeight = FontWeight.Medium
                 )
             },
-            value = viewState.userDisplayName.value,
+            value = userDisplayName.value,
             trailingIcon = {
                 Icon(
                     painter = rememberVectorPainter(
@@ -97,12 +115,12 @@ fun ProfileDialog(viewState: ProfileViewState) {
             },
             singleLine = true,
             onValueChange = { value: String ->
-                viewState.userDisplayName.value = value
+                userDisplayName.value = value
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            readOnly = viewState.userDisplayName.isReadOnly,
-            isError = viewState.userDisplayName.isError
+            readOnly = userDisplayName.isReadOnly,
+            isError = userDisplayName.isError
         )
         OutlinedTextField(
             modifier = Modifier
@@ -117,7 +135,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
                     fontWeight = FontWeight.Medium
                 )
             },
-            value = viewState.userEmail.value,
+            value = userEmail.value,
             trailingIcon = {
                 Icon(
                     painter = rememberVectorPainter(
@@ -130,12 +148,12 @@ fun ProfileDialog(viewState: ProfileViewState) {
             },
             singleLine = true,
             onValueChange = { value: String ->
-                viewState.userEmail.value = value
+                userEmail.value = value
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            readOnly = viewState.userEmail.isReadOnly,
-            isError = viewState.userEmail.isError
+            readOnly = userEmail.isReadOnly,
+            isError = userEmail.isError
         )
         OutlinedTextField(
             modifier = Modifier
@@ -150,7 +168,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
                     fontWeight = FontWeight.Medium
                 )
             },
-            value = viewState.credentialsLogin.value,
+            value = credentialsLogin.value,
             trailingIcon = {
                 Icon(
                     painter = rememberVectorPainter(
@@ -163,43 +181,43 @@ fun ProfileDialog(viewState: ProfileViewState) {
             },
             singleLine = true,
             onValueChange = { value: String ->
-                viewState.credentialsLogin.value = value
+                credentialsLogin.value = value
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-            readOnly = viewState.credentialsLogin.isReadOnly,
-            isError = viewState.credentialsLogin.isError
+            readOnly = credentialsLogin.isReadOnly,
+            isError = credentialsLogin.isError
         )
         PasswordTextField(
             modifier = Modifier
                 .padding(top = marginTop)
                 .fillMaxWidth(),
             label = stringResource(id = R.string.prompt_password),
-            value = viewState.credentialsPassword.value,
+            value = credentialsPassword.value,
             onValueChange = { value: String ->
-                viewState.credentialsPassword.value = value
+                credentialsPassword.value = value
             },
-            readOnly = viewState.credentialsPassword.isReadOnly,
-            isError = viewState.credentialsPassword.isError
+            readOnly = credentialsPassword.isReadOnly,
+            isError = credentialsPassword.isError
         )
         PasswordTextField(
             modifier = Modifier
                 .padding(top = marginTop)
                 .fillMaxWidth(),
             label = stringResource(id = R.string.prompt_confirmPassword),
-            value = viewState.credentialsPasswordConfirmation.value,
+            value = credentialsPasswordConfirmation.value,
             onValueChange = { value: String ->
-                viewState.credentialsPasswordConfirmation.value = value
+                credentialsPasswordConfirmation.value = value
             },
-            readOnly = viewState.credentialsPasswordConfirmation.isReadOnly,
-            isError = viewState.credentialsPasswordConfirmation.isError
+            readOnly = credentialsPasswordConfirmation.isReadOnly,
+            isError = credentialsPasswordConfirmation.isError
         )
-        if (viewState.errorMessage.isNotEmpty()) {
+        if (errorMessage.isNotEmpty()) {
             Text(
                 modifier = Modifier
                     .padding(top = marginTop)
                     .fillMaxWidth(),
-                text = viewState.errorMessage,
+                text = errorMessage,
                 style = MaterialTheme.typography.body1,
                 color = Color.Red,
                 textAlign = TextAlign.Center
@@ -209,7 +227,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
             modifier = Modifier
                 .padding(top = marginTop)
                 .fillMaxWidth(),
-            onClick = viewState.onConfirmClick
+            onClick = onConfirmClick
         ) {
             Text(text = stringResource(id = R.string.action_submit))
             Icon(
@@ -231,15 +249,14 @@ private fun ThisPreview() {
     )
 
     val viewState = object : ProfileViewState {
-        override val userDisplayName: TextFieldViewState =
-            TextFieldViewState(user.displayName ?: "")
-        override val userEmail: TextFieldViewState = TextFieldViewState(user.email ?: "")
-        override val credentialsLogin: TextFieldViewState = TextFieldViewState(credentials.login)
-        override val credentialsPassword: TextFieldViewState =
-            TextFieldViewState(credentials.password)
-        override val credentialsPasswordConfirmation: TextFieldViewState =
-            TextFieldViewState("", isError = true)
-        override val errorMessage: String = "Error!"
+        override val userDisplayName = MutableStateFlow(TextFieldViewState(user.displayName ?: ""))
+        override val userEmail = MutableStateFlow(TextFieldViewState(user.email ?: ""))
+        override val credentialsLogin = MutableStateFlow(TextFieldViewState(credentials.login))
+        override val credentialsPassword =
+            MutableStateFlow(TextFieldViewState(credentials.password))
+        override val credentialsPasswordConfirmation =
+            MutableStateFlow(TextFieldViewState("", isError = true))
+        override val errorMessage = MutableStateFlow("Error!")
         override var onConfirmClick: UnitCallback = { println("Button clicked") }
     }
 

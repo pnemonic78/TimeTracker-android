@@ -34,13 +34,14 @@ package com.tikalk.worktracker.user
 
 import com.tikalk.compose.TextFieldViewState
 import com.tikalk.compose.UnitCallback
+import kotlinx.coroutines.flow.StateFlow
 
 interface ProfileViewState {
-    val userDisplayName: TextFieldViewState
-    val userEmail: TextFieldViewState
-    val credentialsLogin: TextFieldViewState
-    val credentialsPassword: TextFieldViewState
-    val credentialsPasswordConfirmation: TextFieldViewState
-    val errorMessage: String
+    val userDisplayName: StateFlow<TextFieldViewState>
+    val userEmail: StateFlow<TextFieldViewState>
+    val credentialsLogin: StateFlow<TextFieldViewState>
+    val credentialsPassword: StateFlow<TextFieldViewState>
+    val credentialsPasswordConfirmation: StateFlow<TextFieldViewState>
+    val errorMessage: StateFlow<String>
     val onConfirmClick: UnitCallback
 }
