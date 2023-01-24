@@ -114,10 +114,10 @@ interface TimeTrackerService {
     @Headers("Referer: ${BASE_URL}${PHP_PROFILE}")
     suspend fun editProfile(
         @Field("name") name: String,
+        @Field("email") email: String,
         @Field("login") login: String,
         @Field("password1") password1: String,
         @Field("password2") password2: String,
-        @Field("email") email: String,
         @Field("btn_save") submit: String = "Save"
     ): Response<String>
 

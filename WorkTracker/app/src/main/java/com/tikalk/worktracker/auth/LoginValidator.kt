@@ -55,7 +55,7 @@ class LoginValidator {
     }
 
     fun validatePassword(value: String, confirmValue: String): Int {
-        var error = validateUsername(confirmValue)
+        var error = validatePassword(confirmValue)
         if (error == ERROR_NONE) {
             if (value != confirmValue) error = ERROR_CONFIRM
         }

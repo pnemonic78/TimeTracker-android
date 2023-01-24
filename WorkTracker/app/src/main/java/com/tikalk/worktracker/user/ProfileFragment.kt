@@ -40,13 +40,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.compose.TextFieldViewState
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.auth.LoginValidator
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.auth.model.set
 import com.tikalk.worktracker.data.remote.ProfilePageParser
@@ -71,12 +72,6 @@ class ProfileFragment : InternetDialogFragment() {
 
     private val profileViewModule by viewModels<ProfileViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        showsDialog = true
-        isCancelable = true
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setTitle(R.string.profile_title)
@@ -94,17 +89,64 @@ class ProfileFragment : InternetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val viewState: ProfileViewState = profileViewModule
 
-        binding.actionSave.setOnClickListener { attemptSave() }
+        binding.nameInput.doAfterTextChanged {
+            val state = viewState.userDisplayName
+            val userDisplayName = state.value
+            userDisplayName.value = it.toString()
+        }
+        binding.emailInput.doAfterTextChanged {
+            val state = viewState.userEmail
+            val userEmail = state.value
+            userEmail.value = it.toString()
+        }
+        binding.loginInput.doAfterTextChanged {
+            val state = viewState.credentialsLogin
+            val credentialsLogin = state.value
+            credentialsLogin.value = it.toString()
+        }
+        binding.passwordInput.doAfterTextChanged {
+            val state = viewState.credentialsPassword
+            val credentialsPassword = state.value
+            credentialsPassword.value = it.toString()
+        }
+        binding.confirmPasswordInput.doAfterTextChanged {
+            val state = viewState.credentialsPasswordConfirmation
+            val credentialsPasswordConfirmation = state.value
+            credentialsPasswordConfirmation.value = it.toString()
+        }
+
+        binding.actionSave.setOnClickListener { lifecycleScope.launch { attemptSave() } }
 
         lifecycleScope.launch {
-            profileViewModule.user.collect {
-                bindForm(viewState = profileViewModule)
+            profileViewModule.userDisplayName.collect {
+                bindUserName(it)
             }
         }
         lifecycleScope.launch {
-            profileViewModule.userCredentials.collect {
-                bindForm(viewState = profileViewModule)
+            profileViewModule.userEmail.collect {
+                bindUserEmail(it)
+            }
+        }
+        lifecycleScope.launch {
+            profileViewModule.credentialsLogin.collect {
+                bindCredentialsLogin(it)
+            }
+        }
+        lifecycleScope.launch {
+            profileViewModule.credentialsPassword.collect {
+                bindCredentialsPassword(it)
+            }
+        }
+        lifecycleScope.launch {
+            profileViewModule.credentialsPasswordConfirmation.collect {
+                bindCredentialsPasswordConfirmation(it)
+            }
+        }
+        lifecycleScope.launch {
+            profileViewModule.errorMessage.collect {
+                setErrorLabel(it)
             }
         }
     }
@@ -137,171 +179,106 @@ class ProfileFragment : InternetDialogFragment() {
     }
 
     @MainThread
-    private fun bindForm(viewState: ProfileViewState) {
+    private fun bindUserName(state: TextFieldViewState) {
+        binding.nameInput.setText(state.value)
+        binding.nameInput.setSelection(state.value.length)
+        binding.nameInput.isEnabled = !state.isReadOnly
+        binding.nameInput.error = if (state.isError) "" else null
+    }
+
+    @MainThread
+    private fun bindUserEmail(state: TextFieldViewState) {
+        binding.emailInput.setText(state.value)
+        binding.emailInput.setSelection(state.value.length)
+        binding.emailInput.isEnabled = !state.isReadOnly
+        binding.emailInput.error = if (state.isError) "" else null
+    }
+
+    @MainThread
+    private fun bindCredentialsLogin(state: TextFieldViewState) {
+        binding.loginInput.setText(state.value)
+        binding.loginInput.setSelection(state.value.length)
+        binding.loginInput.isEnabled = !state.isReadOnly
+        binding.loginInput.error = if (state.isError) "" else null
+    }
+
+    @MainThread
+    private fun bindCredentialsPassword(state: TextFieldViewState) {
+        binding.passwordInput.setText(state.value)
+        binding.passwordInput.setSelection(state.value.length)
+        binding.passwordInput.isEnabled = !state.isReadOnly
+        binding.passwordInput.error = if (state.isError) "" else null
+    }
+
+    @MainThread
+    private fun bindCredentialsPasswordConfirmation(state: TextFieldViewState) {
+        binding.confirmPasswordInput.setText(state.value)
+        binding.confirmPasswordInput.setSelection(state.value.length)
+        binding.confirmPasswordInput.isEnabled = !state.isReadOnly
+        binding.confirmPasswordInput.error = if (state.isError) "" else null
+    }
+
+    /**
+     * Attempts to save any changes.
+     */
+    @MainThread
+    private suspend fun attemptSave() {
+        if (!binding.actionSave.isEnabled) {
+            return
+        }
+        if (!profileViewModule.validateForm(resources)) return
+
+        val viewState: ProfileViewState = profileViewModule
+
         val userDisplayNameState = viewState.userDisplayName
         val userEmailState = viewState.userEmail
         val credentialsLoginState = viewState.credentialsLogin
         val credentialsPasswordState = viewState.credentialsPassword
         val credentialsPasswordConfirmationState = viewState.credentialsPasswordConfirmation
-        val errorMessageState = viewState.errorMessage
 
         val userDisplayName = userDisplayNameState.value
         val userEmail = userEmailState.value
         val credentialsLogin = credentialsLoginState.value
         val credentialsPassword = credentialsPasswordState.value
         val credentialsPasswordConfirmation = credentialsPasswordConfirmationState.value
-        val errorMessage = errorMessageState.value
-
-        binding.nameInput.setText(userDisplayName.value)
-        binding.emailInput.setText(userEmail.value)
-        binding.loginInput.setText(credentialsLogin.value)
-        binding.passwordInput.setText(credentialsPassword.value)
-        binding.confirmPasswordInput.setText(credentialsPasswordConfirmation.value)
-        setErrorLabel(errorMessage)
-
-        binding.nameInput.isEnabled = userDisplayName.isReadOnly
-        binding.emailInput.isEnabled = userEmail.isReadOnly
-        binding.loginInput.isEnabled = credentialsLogin.isReadOnly
-    }
-
-    /**
-     * Attempts to save any changes.
-     */
-    private fun attemptSave() {
-        if (!binding.actionSave.isEnabled) {
-            return
-        }
-
-        // Reset errors.
-        binding.nameInput.error = null
-        binding.emailInput.error = null
-        binding.loginInput.error = null
-        binding.passwordInput.error = null
-        binding.confirmPasswordInput.error = null
-        binding.errorLabel.text = ""
 
         // Store values at the time of the submission attempt.
-        val nameValue = binding.nameInput.text.toString()
-        val emailValue = binding.emailInput.text.toString()
-        val loginValue = binding.loginInput.text.toString()
-        val passwordValue = binding.passwordInput.text.toString()
-        val confirmPasswordValue = binding.confirmPasswordInput.text.toString()
+        val nameValue = userDisplayName.value
+        val emailValue = userEmail.value
+        val loginValue = credentialsLogin.value
+        val passwordValue = credentialsPassword.value
+        val confirmPasswordValue = credentialsPasswordConfirmation.value
 
-        val validator = LoginValidator()
-        var cancel = false
-        var focusView: View? = null
+        showProgress(true)
 
-        // Check for a valid name, if the user entered one.
-        if (nameValue.isEmpty()) {
-            binding.nameInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = binding.nameInput
-            cancel = true
-        }
-
-        // Check for a valid email address.
-        when (validator.validateEmail(emailValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                binding.emailInput.error = getString(R.string.error_field_required)
-                if (focusView == null) focusView = binding.emailInput
-                cancel = true
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                binding.emailInput.error = getString(R.string.error_invalid_email)
-                if (focusView == null) focusView = binding.emailInput
-                cancel = true
-            }
-        }
-
-        // Check for a valid login name.
-        when (validator.validateUsername(loginValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                binding.loginInput.error = getString(R.string.error_field_required)
-                if (focusView == null) focusView = binding.loginInput
-                cancel = true
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                binding.loginInput.error = getString(R.string.error_invalid_login)
-                if (focusView == null) focusView = binding.loginInput
-                cancel = true
-            }
-        }
-
-        // Check for a valid password, if the user entered one.
-        when (validator.validatePassword(passwordValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                binding.passwordInput.error = getString(R.string.error_field_required)
-                if (focusView == null) focusView = binding.passwordInput
-                cancel = true
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                binding.passwordInput.error = getString(R.string.error_invalid_password)
-                if (focusView == null) focusView = binding.passwordInput
-                cancel = true
-            }
-        }
-
-        when (validator.validatePassword(passwordValue, confirmPasswordValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                binding.confirmPasswordInput.error = getString(R.string.error_field_required)
-                if (focusView == null) focusView = binding.confirmPasswordInput
-                cancel = true
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                binding.confirmPasswordInput.error = getString(R.string.error_invalid_password)
-                if (focusView == null) focusView = binding.confirmPasswordInput
-                cancel = true
-            }
-            LoginValidator.ERROR_CONFIRM -> {
-                binding.confirmPasswordInput.error = getString(R.string.error_match_password)
-                if (focusView == null) focusView = binding.confirmPasswordInput
-                cancel = true
-            }
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView?.requestFocus()
-        } else {
-            showProgress(true)
-            binding.actionSave.isEnabled = false
-
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    val response = service.editProfile(
-                        nameValue,
-                        loginValue,
-                        passwordValue,
-                        confirmPasswordValue,
-                        emailValue
-                    )
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        binding.actionSave.isEnabled = true
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = service.editProfile(
+                    name = nameValue,
+                    email = emailValue,
+                    login = loginValue,
+                    password1 = passwordValue,
+                    password2 = confirmPasswordValue
+                )
+                lifecycleScope.launch(Dispatchers.Main) main@{
+                    if (isValidResponse(response)) {
+                        val html = response.body() ?: return@main
+                        processEdit(
+                            html,
+                            loginValue,
+                            emailValue,
+                            nameValue,
+                            passwordValue
+                        )
                         showProgress(false)
-
-                        if (isValidResponse(response)) {
-                            val html = response.body()!!
-                            processEdit(
-                                html,
-                                loginValue,
-                                emailValue,
-                                nameValue,
-                                passwordValue,
-                                confirmPasswordValue
-                            )
-                        } else {
-                            authenticate(true)
-                        }
+                    } else {
+                        showProgress(false)
+                        authenticate(true)
                     }
-                } catch (e: Exception) {
-                    Timber.e(e, "Error updating profile: ${e.message}")
-                    handleErrorMain(e)
-                    binding.actionSave.isEnabled = true
                 }
+            } catch (e: Exception) {
+                Timber.e(e, "Error updating profile: ${e.message}")
+                handleErrorMain(e)
             }
         }
     }
@@ -337,8 +314,7 @@ class ProfileFragment : InternetDialogFragment() {
         loginValue: String,
         emailValue: String,
         nameValue: String,
-        passwordValue: String,
-        confirmPasswordValue: String
+        passwordValue: String
     ) {
         val user = User(loginValue, emailValue, nameValue)
         val userCredentials = UserCredentials(loginValue, passwordValue)
@@ -355,7 +331,6 @@ class ProfileFragment : InternetDialogFragment() {
                 page.userCredentials.set(userCredentials)
             }
             ProfilePageSaver(preferences).save(page)
-            //TODO password2 = confirmPasswordValue
 
             notifyProfileSuccess(user)
         } else {
