@@ -32,31 +32,23 @@
 
 package com.tikalk.worktracker.user
 
-import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
-import com.tikalk.compose.TextFieldViewState
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.auth.model.set
-import com.tikalk.worktracker.data.remote.ProfilePageParser
-import com.tikalk.worktracker.data.remote.ProfilePageSaver
-import com.tikalk.worktracker.databinding.FragmentProfileBinding
-import com.tikalk.worktracker.model.ProfilePage
-import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.set
-import com.tikalk.worktracker.net.InternetDialogFragment
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
+import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -65,88 +57,38 @@ import timber.log.Timber
 /**
  * User's profile screen.
  */
-class ProfileFragment : InternetDialogFragment() {
+class ProfileFragment : InternetFragment() {
 
-    private var _binding: FragmentProfileBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
-    private val profileViewModule by viewModels<ProfileViewModel>()
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setTitle(R.string.profile_title)
-        return dialog
-    }
+    override val viewModel by viewModels<ProfileViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val viewState: ProfileViewState = profileViewModule
+        val viewState: ProfileViewState = viewModel
 
-        binding.nameInput.doAfterTextChanged {
-            val state = viewState.userDisplayName
-            val userDisplayName = state.value
-            userDisplayName.value = it.toString()
-        }
-        binding.emailInput.doAfterTextChanged {
-            val state = viewState.userEmail
-            val userEmail = state.value
-            userEmail.value = it.toString()
-        }
-        binding.loginInput.doAfterTextChanged {
-            val state = viewState.credentialsLogin
-            val credentialsLogin = state.value
-            credentialsLogin.value = it.toString()
-        }
-        binding.passwordInput.doAfterTextChanged {
-            val state = viewState.credentialsPassword
-            val credentialsPassword = state.value
-            credentialsPassword.value = it.toString()
-        }
-        binding.confirmPasswordInput.doAfterTextChanged {
-            val state = viewState.credentialsPasswordConfirmation
-            val credentialsPasswordConfirmation = state.value
-            credentialsPasswordConfirmation.value = it.toString()
+        binding.composeView.setContent {
+            TikalTheme {
+                ProfileForm(viewState = viewState)
+            }
         }
 
-        binding.actionSave.setOnClickListener { lifecycleScope.launch { attemptSave() } }
-
         lifecycleScope.launch {
-            profileViewModule.userDisplayName.collect {
-                bindUserName(it)
-            }
-        }
-        lifecycleScope.launch {
-            profileViewModule.userEmail.collect {
-                bindUserEmail(it)
-            }
-        }
-        lifecycleScope.launch {
-            profileViewModule.credentialsLogin.collect {
-                bindCredentialsLogin(it)
-            }
-        }
-        lifecycleScope.launch {
-            profileViewModule.credentialsPassword.collect {
-                bindCredentialsPassword(it)
-            }
-        }
-        lifecycleScope.launch {
-            profileViewModule.credentialsPasswordConfirmation.collect {
-                bindCredentialsPasswordConfirmation(it)
-            }
-        }
-        lifecycleScope.launch {
-            profileViewModule.errorMessage.collect {
-                setErrorLabel(it)
+            viewModel.onDialogConfirmClick.collect {
+                if (it) {
+                    viewModel.clearEvents()
+                    attemptSave()
+                }
             }
         }
     }
@@ -164,7 +106,7 @@ class ProfileFragment : InternetDialogFragment() {
                 dataSource.profilePage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
-                        processPage(page)
+                        viewModel.processPage(page)
                     }
             } catch (e: Exception) {
                 Timber.e(e, "Error loading page: ${e.message}")
@@ -173,62 +115,14 @@ class ProfileFragment : InternetDialogFragment() {
         }
     }
 
-    private suspend fun processPage(page: ProfilePage) {
-        preferences.user = page.user
-        profileViewModule.setPage(page)
-    }
-
-    @MainThread
-    private fun bindUserName(state: TextFieldViewState) {
-        binding.nameInput.setText(state.value)
-        binding.nameInput.setSelection(state.value.length)
-        binding.nameInput.isEnabled = !state.isReadOnly
-        binding.nameInput.error = if (state.isError) "" else null
-    }
-
-    @MainThread
-    private fun bindUserEmail(state: TextFieldViewState) {
-        binding.emailInput.setText(state.value)
-        binding.emailInput.setSelection(state.value.length)
-        binding.emailInput.isEnabled = !state.isReadOnly
-        binding.emailInput.error = if (state.isError) "" else null
-    }
-
-    @MainThread
-    private fun bindCredentialsLogin(state: TextFieldViewState) {
-        binding.loginInput.setText(state.value)
-        binding.loginInput.setSelection(state.value.length)
-        binding.loginInput.isEnabled = !state.isReadOnly
-        binding.loginInput.error = if (state.isError) "" else null
-    }
-
-    @MainThread
-    private fun bindCredentialsPassword(state: TextFieldViewState) {
-        binding.passwordInput.setText(state.value)
-        binding.passwordInput.setSelection(state.value.length)
-        binding.passwordInput.isEnabled = !state.isReadOnly
-        binding.passwordInput.error = if (state.isError) "" else null
-    }
-
-    @MainThread
-    private fun bindCredentialsPasswordConfirmation(state: TextFieldViewState) {
-        binding.confirmPasswordInput.setText(state.value)
-        binding.confirmPasswordInput.setSelection(state.value.length)
-        binding.confirmPasswordInput.isEnabled = !state.isReadOnly
-        binding.confirmPasswordInput.error = if (state.isError) "" else null
-    }
-
     /**
      * Attempts to save any changes.
      */
     @MainThread
     private suspend fun attemptSave() {
-        if (!binding.actionSave.isEnabled) {
-            return
-        }
-        if (!profileViewModule.validateForm(resources)) return
+        if (!viewModel.validateForm(resources)) return
 
-        val viewState: ProfileViewState = profileViewModule
+        val viewState: ProfileViewState = viewModel
 
         val userDisplayNameState = viewState.userDisplayName
         val userEmailState = viewState.userEmail
@@ -263,7 +157,7 @@ class ProfileFragment : InternetDialogFragment() {
                 lifecycleScope.launch(Dispatchers.Main) main@{
                     if (isValidResponse(response)) {
                         val html = response.body() ?: return@main
-                        processEdit(
+                        viewModel.processEdit(
                             html,
                             loginValue,
                             emailValue,
@@ -294,64 +188,22 @@ class ProfileFragment : InternetDialogFragment() {
         }
     }
 
-    private suspend fun processPage(html: String): ProfilePage {
-        val page = ProfilePageParser().parse(html)
-        processPage(page)
-        return page
-    }
-
-    private suspend fun notifyProfileSuccess(user: User) {
-        dismissAllowingStateLoss()
-        profileViewModule.onProfileSuccess(user)
-    }
-
-    private suspend fun notifyProfileFailure(user: User, reason: String) {
-        profileViewModule.onProfileFailure(user, reason)
-    }
-
-    private suspend fun processEdit(
-        html: String,
-        loginValue: String,
-        emailValue: String,
-        nameValue: String,
-        passwordValue: String
-    ) {
-        val user = User(loginValue, emailValue, nameValue)
-        val userCredentials = UserCredentials(loginValue, passwordValue)
-        val page = processPage(html)
-        val errorMessage = page.errorMessage ?: ""
-        setErrorLabel(errorMessage)
-
-        if (errorMessage.isEmpty()) {
-            userCredentials.password = passwordValue
-            if (page.user.isEmpty()) {
-                page.user.set(user)
-            }
-            if (page.userCredentials.isEmpty()) {
-                page.userCredentials.set(userCredentials)
-            }
-            ProfilePageSaver(preferences).save(page)
-
-            notifyProfileSuccess(user)
-        } else {
-            notifyProfileFailure(user, errorMessage)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        if (view?.visibility == View.VISIBLE) {
+            menuInflater.inflate(R.menu.profile, menu)
         }
     }
 
-    override fun onCancel(dialog: DialogInterface) {
-        super.onCancel(dialog)
-        lifecycleScope.launch {
-            val user = profileViewModule.user.value
-            notifyProfileFailure(user, REASON_CANCEL)
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (view?.visibility != View.VISIBLE) {
+            return false
         }
-    }
-
-    private fun setErrorLabel(text: CharSequence) {
-        binding.errorLabel.text = text
-        binding.errorLabel.isVisible = text.isNotBlank()
-    }
-
-    companion object {
-        const val REASON_CANCEL = "onCancel"
+        when (menuItem.itemId) {
+            R.id.menu_submit -> {
+                lifecycleScope.launch { attemptSave() }
+                return true
+            }
+        }
+        return super.onMenuItemSelected(menuItem)
     }
 }

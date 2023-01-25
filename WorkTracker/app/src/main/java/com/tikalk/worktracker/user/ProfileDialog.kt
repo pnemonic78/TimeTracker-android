@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.user
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -45,10 +46,11 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -57,6 +59,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.tikalk.compose.PasswordTextField
 import com.tikalk.compose.TextFieldViewState
 import com.tikalk.compose.TikalTheme
@@ -64,10 +67,19 @@ import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileDialog(viewState: ProfileViewState) {
+    Dialog(onDismissRequest = {}) {
+        ProfileForm(viewState)
+    }
+}
+
+@Composable
+fun ProfileForm(viewState: ProfileViewState) {
     val marginTop = dimensionResource(id = R.dimen.form_marginTop)
+    val coroutineScope = rememberCoroutineScope()
 
     val userDisplayNameState = viewState.userDisplayName.collectAsState()
     val userEmailState = viewState.userEmail.collectAsState()
@@ -87,6 +99,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
 
     Column(
         modifier = Modifier
+            .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))
             .padding(8.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -115,7 +128,9 @@ fun ProfileDialog(viewState: ProfileViewState) {
             },
             singleLine = true,
             onValueChange = { value: String ->
-                userDisplayName.value = value
+                coroutineScope.launch {
+                    viewState.userDisplayName.emit(userDisplayName.copy(value = value))
+                }
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -148,7 +163,9 @@ fun ProfileDialog(viewState: ProfileViewState) {
             },
             singleLine = true,
             onValueChange = { value: String ->
-                userEmail.value = value
+                coroutineScope.launch {
+                    viewState.userEmail.emit(userEmail.copy(value = value))
+                }
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -181,7 +198,9 @@ fun ProfileDialog(viewState: ProfileViewState) {
             },
             singleLine = true,
             onValueChange = { value: String ->
-                credentialsLogin.value = value
+                coroutineScope.launch {
+                    viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
+                }
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
@@ -195,7 +214,9 @@ fun ProfileDialog(viewState: ProfileViewState) {
             label = stringResource(id = R.string.prompt_password),
             value = credentialsPassword.value,
             onValueChange = { value: String ->
-                credentialsPassword.value = value
+                coroutineScope.launch {
+                    viewState.credentialsPassword.emit(credentialsPassword.copy(value = value))
+                }
             },
             readOnly = credentialsPassword.isReadOnly,
             isError = credentialsPassword.isError
@@ -207,7 +228,11 @@ fun ProfileDialog(viewState: ProfileViewState) {
             label = stringResource(id = R.string.prompt_confirmPassword),
             value = credentialsPasswordConfirmation.value,
             onValueChange = { value: String ->
-                credentialsPasswordConfirmation.value = value
+                coroutineScope.launch {
+                    viewState.credentialsPasswordConfirmation.emit(
+                        credentialsPasswordConfirmation.copy(value = value)
+                    )
+                }
             },
             readOnly = credentialsPasswordConfirmation.isReadOnly,
             isError = credentialsPasswordConfirmation.isError
@@ -219,7 +244,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
                     .fillMaxWidth(),
                 text = errorMessage,
                 style = MaterialTheme.typography.body1,
-                color = Color.Red,
+                color = colorResource(id = R.color.error),
                 textAlign = TextAlign.Center
             )
         }
@@ -239,7 +264,7 @@ fun ProfileDialog(viewState: ProfileViewState) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 350, heightDp = 600)
 @Composable
 private fun ThisPreview() {
     val user = UserDemo
@@ -261,6 +286,6 @@ private fun ThisPreview() {
     }
 
     TikalTheme {
-        ProfileDialog(viewState = viewState)
+        ProfileForm(viewState = viewState)
     }
 }

@@ -33,17 +33,24 @@
 package com.tikalk.worktracker.user
 
 import android.content.res.Resources
+import androidx.lifecycle.viewModelScope
 import com.tikalk.compose.TextFieldViewState
 import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.auth.LoginValidator
+import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.auth.model.set
+import com.tikalk.worktracker.data.remote.ProfilePageParser
+import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.set
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,20 +62,24 @@ class ProfileViewModel @Inject constructor(
     private val _user = MutableStateFlow(User.EMPTY)
     val user: StateFlow<User> = _user
 
-    private val profileUpdateData = MutableStateFlow<ProfileData?>(null)
-    val profileUpdate: StateFlow<ProfileData?> = profileUpdateData
+    private val _profileUpdate = MutableStateFlow<ProfileData?>(null)
+    val profileUpdate: StateFlow<ProfileData?> = _profileUpdate
 
     /**
      * Data for profile callbacks.
      */
     data class ProfileData(val user: User, val reason: String? = null)
 
+    suspend fun onProfileFailure(user: User, reason: String) {
+        notifyProfileFailure(user, reason)
+    }
+
     /**
      * Profile update was successful.
      * @param user the updated user.
      */
-    suspend fun onProfileSuccess(user: User) {
-        notifyProfileSuccess(user)
+    private suspend fun notifyProfileSuccess(user: User) {
+        _profileUpdate.emit(ProfileData(user))
     }
 
     /**
@@ -76,29 +87,15 @@ class ProfileViewModel @Inject constructor(
      * @param user the current user.
      * @param reason the failure reason.
      */
-    suspend fun onProfileFailure(user: User, reason: String) {
-        notifyProfileFailure(user, reason)
-    }
-
-    private suspend fun notifyProfileSuccess(user: User) {
-        profileUpdateData.emit(ProfileData(user))
-    }
-
     private suspend fun notifyProfileFailure(user: User, reason: String) {
-        profileUpdateData.emit(ProfileData(user, reason))
+        _profileUpdate.emit(ProfileData(user, reason))
     }
 
-    private val _userDisplayName = MutableStateFlow(TextFieldViewState())
-    override val userDisplayName: StateFlow<TextFieldViewState> = _userDisplayName
-    private val _userEmail = MutableStateFlow(TextFieldViewState())
-    override val userEmail: StateFlow<TextFieldViewState> = _userEmail
-    private val _credentialsLogin = MutableStateFlow(TextFieldViewState())
-    override val credentialsLogin: StateFlow<TextFieldViewState> = _credentialsLogin
-    private val _credentialsPassword = MutableStateFlow(TextFieldViewState())
-    override val credentialsPassword: StateFlow<TextFieldViewState> = _credentialsPassword
-    private val _credentialsPasswordConfirmation = MutableStateFlow(TextFieldViewState())
-    override val credentialsPasswordConfirmation: StateFlow<TextFieldViewState> =
-        _credentialsPasswordConfirmation
+    override val userDisplayName = MutableStateFlow(TextFieldViewState())
+    override val userEmail = MutableStateFlow(TextFieldViewState())
+    override val credentialsLogin = MutableStateFlow(TextFieldViewState())
+    override val credentialsPassword = MutableStateFlow(TextFieldViewState())
+    override val credentialsPasswordConfirmation = MutableStateFlow(TextFieldViewState())
     private var _errorMessage = MutableStateFlow("")
     override val errorMessage: StateFlow<String> = _errorMessage
     override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
@@ -110,45 +107,48 @@ class ProfileViewModel @Inject constructor(
         var email = user.email
         if (email.isNullOrEmpty()) email = userCredentials.login
 
-        _userDisplayName.value.value = user.displayName ?: ""
-        _userEmail.value.value = email
-        _credentialsLogin.value.value = userCredentials.login
-        _credentialsPassword.value.value = userCredentials.password
+        userDisplayName.value.value = user.displayName ?: ""
+        userEmail.value.value = email
+        credentialsLogin.value.value = userCredentials.login
+        credentialsPassword.value.value = userCredentials.password
     }
+
+    private val _onDialogConfirmClick = MutableStateFlow(false)
+    val onDialogConfirmClick: StateFlow<Boolean> = _onDialogConfirmClick
 
     private fun onDialogConfirmClick() {
-        TODO("Not yet implemented")
+        viewModelScope.launch { _onDialogConfirmClick.emit(true) }
     }
 
-    suspend fun setPage(page: ProfilePage) {
+    private suspend fun setPage(page: ProfilePage) {
         var email = page.user.email
         if (email.isNullOrEmpty()) email = page.userCredentials.login
 
-        _userDisplayName.emit(
-            _userDisplayName.value.copy(
+        userDisplayName.emit(
+            userDisplayName.value.copy(
                 value = page.user.displayName ?: "",
                 isReadOnly = !page.nameInputEditable
             )
         )
-        _userEmail.emit(
-            _userEmail.value.copy(
+        userEmail.emit(
+            userEmail.value.copy(
                 value = email,
                 isReadOnly = !page.emailInputEditable
             )
         )
-        _credentialsLogin.emit(
-            _credentialsLogin.value.copy(
+        credentialsLogin.emit(
+            credentialsLogin.value.copy(
                 value = page.userCredentials.login,
                 isReadOnly = !page.loginInputEditable
             )
         )
-        _credentialsPassword.emit(
-            _credentialsPassword.value.copy(
+        credentialsPassword.emit(
+            credentialsPassword.value.copy(
                 value = page.userCredentials.password
             )
         )
-        _credentialsPasswordConfirmation.emit(
-            _credentialsPasswordConfirmation.value.copy(
+        credentialsPasswordConfirmation.emit(
+            credentialsPasswordConfirmation.value.copy(
                 value = page.passwordConfirm ?: ""
             )
         )
@@ -163,22 +163,24 @@ class ProfileViewModel @Inject constructor(
     suspend fun validateForm(resources: Resources): Boolean {
         val viewState: ProfileViewState = this
 
+        val userDisplayNameState = viewState.userDisplayName
         val userEmailState = viewState.userEmail
         val credentialsLoginState = viewState.credentialsLogin
         val credentialsPasswordState = viewState.credentialsPassword
         val credentialsPasswordConfirmationState = viewState.credentialsPasswordConfirmation
 
+        val userDisplayName = userDisplayNameState.value
         val userEmail = userEmailState.value
         val credentialsLogin = credentialsLoginState.value
         val credentialsPassword = credentialsPasswordState.value
         val credentialsPasswordConfirmation = credentialsPasswordConfirmationState.value
 
         // Reset errors.
-        _userDisplayName.emit(_userDisplayName.value.copy(isError = false))
-        _userEmail.emit(_userEmail.value.copy(isError = false))
-        _credentialsLogin.emit(_credentialsLogin.value.copy(isError = false))
-        _credentialsPassword.emit(_credentialsPassword.value.copy(isError = false))
-        _credentialsPasswordConfirmation.emit(_credentialsPasswordConfirmation.value.copy(isError = false))
+        userDisplayNameState.emit(userDisplayName.copy(isError = false))
+        userEmailState.emit(userEmail.copy(isError = false))
+        credentialsLoginState.emit(credentialsLogin.copy(isError = false))
+        credentialsPasswordState.emit(credentialsPassword.copy(isError = false))
+        credentialsPasswordConfirmationState.emit(credentialsPasswordConfirmation.copy(isError = false))
         _errorMessage.emit("")
 
         // Store values at the time of the submission attempt.
@@ -192,12 +194,12 @@ class ProfileViewModel @Inject constructor(
         // Check for a valid email address.
         when (validator.validateEmail(emailValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(_userEmail, resources.getString(R.string.error_field_required))
+                notifyError(userEmailState, resources.getString(R.string.error_field_required))
                 return false
             }
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(_userEmail, resources.getString(R.string.error_invalid_email))
+                notifyError(userEmailState, resources.getString(R.string.error_invalid_email))
                 return false
             }
         }
@@ -205,12 +207,12 @@ class ProfileViewModel @Inject constructor(
         // Check for a valid login name.
         when (validator.validateUsername(loginValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(_credentialsLogin, resources.getString(R.string.error_field_required))
+                notifyError(credentialsLoginState, resources.getString(R.string.error_field_required))
                 return false
             }
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(_credentialsLogin, resources.getString(R.string.error_invalid_login))
+                notifyError(credentialsLoginState, resources.getString(R.string.error_invalid_login))
                 return false
             }
         }
@@ -219,7 +221,7 @@ class ProfileViewModel @Inject constructor(
         when (validator.validatePassword(passwordValue)) {
             LoginValidator.ERROR_REQUIRED -> {
                 notifyError(
-                    _credentialsPassword,
+                    credentialsPasswordState,
                     resources.getString(R.string.error_field_required)
                 )
                 return false
@@ -227,7 +229,7 @@ class ProfileViewModel @Inject constructor(
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
                 notifyError(
-                    _credentialsPassword,
+                    credentialsPasswordState,
                     resources.getString(R.string.error_invalid_password)
                 )
                 return false
@@ -237,7 +239,7 @@ class ProfileViewModel @Inject constructor(
         when (validator.validatePassword(passwordValue, confirmPasswordValue)) {
             LoginValidator.ERROR_REQUIRED -> {
                 notifyError(
-                    _credentialsPasswordConfirmation,
+                    credentialsPasswordConfirmationState,
                     resources.getString(R.string.error_field_required)
                 )
                 return false
@@ -245,14 +247,14 @@ class ProfileViewModel @Inject constructor(
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
                 notifyError(
-                    _credentialsPasswordConfirmation,
+                    credentialsPasswordConfirmationState,
                     resources.getString(R.string.error_invalid_password)
                 )
                 return false
             }
             LoginValidator.ERROR_CONFIRM -> {
                 notifyError(
-                    _credentialsPasswordConfirmation,
+                    credentialsPasswordConfirmationState,
                     resources.getString(R.string.error_match_password)
                 )
                 return false
@@ -265,5 +267,54 @@ class ProfileViewModel @Inject constructor(
     private suspend fun notifyError(state: MutableStateFlow<TextFieldViewState>, message: String) {
         state.emit(state.value.copy(isError = true))
         _errorMessage.emit(message)
+    }
+
+    suspend fun processEdit(
+        html: String,
+        loginValue: String,
+        emailValue: String,
+        nameValue: String,
+        passwordValue: String
+    ) {
+        val user = User(loginValue, emailValue, nameValue)
+        val userCredentials = UserCredentials(loginValue, passwordValue)
+        val page = processPage(html)
+        val errorMessage = page.errorMessage ?: ""
+        _errorMessage.emit(errorMessage)
+
+        if (errorMessage.isEmpty()) {
+            userCredentials.password = passwordValue
+            if (page.user.isEmpty()) {
+                page.user.set(user)
+            }
+            if (page.userCredentials.isEmpty()) {
+                page.userCredentials.set(userCredentials)
+            }
+            ProfilePageSaver(services.preferences).save(page)
+
+            notifyProfileSuccess(user)
+        } else {
+            notifyProfileFailure(user, errorMessage)
+        }
+    }
+
+    private suspend fun processPage(html: String): ProfilePage {
+        val page = ProfilePageParser().parse(html)
+        processPage(page)
+        return page
+    }
+
+    internal suspend fun processPage(page: ProfilePage) {
+        services.preferences.user = page.user
+        setPage(page)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearEvents()
+    }
+
+    fun clearEvents() {
+        _onDialogConfirmClick.value = false
     }
 }

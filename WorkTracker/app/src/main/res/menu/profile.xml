@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_submit"
+        android:icon="@drawable/ic_menu_save"
+        android:orderInCategory="10"
+        android:title="@string/action_submit"
+        app:showAsAction="always|withText" />
+</menu>

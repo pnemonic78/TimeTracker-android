@@ -50,15 +50,15 @@
         android:id="@+id/timeSettingsFragment"
         android:name="com.tikalk.worktracker.preference.TimeSettingsFragment"
         android:label="@string/settings_label" />
-    <dialog
+    <fragment
         android:id="@+id/profileFragment"
         android:name="com.tikalk.worktracker.user.ProfileFragment"
         android:label="@string/profile_title"
-        tools:layout="@layout/fragment_profile">
+        tools:layout="@layout/fragment_compose">
         <action
             android:id="@+id/action_profile_to_login"
             app:destination="@id/login" />
-    </dialog>
+    </fragment>
     <fragment
         android:id="@+id/projectsFragment"
         android:name="com.tikalk.worktracker.project.ProjectsFragment"

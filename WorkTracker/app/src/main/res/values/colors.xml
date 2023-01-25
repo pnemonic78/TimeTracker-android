@@ -4,7 +4,7 @@
     <color name="colorAccent">#FF6E40</color>
     <color name="colorButtonNormal">#FFCC80</color>
 
-    <color name="error">@color/red</color>
+    <color name="error">@color/maroon_xF0</color>
 
     <color name="ic_launcher_background">@color/white</color>
 
