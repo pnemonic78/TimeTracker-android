@@ -56,7 +56,7 @@ import timber.log.Timber
 import java.util.Calendar
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
-
+    
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     override val viewModel by activityViewModels<TimeViewModel>()
 
@@ -98,12 +98,12 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordValue(record: TimeRecord) {
-        Timber.d("${javaClass.simpleName} setRecordValue record=$record")
+        Timber.d("setRecordValue record=$record")
         this.record = record
     }
 
     protected open fun setRecordProject(project: Project): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordProject project=$project")
+        Timber.d("setRecordProject project=$project")
         if (record.project != project) {
             record.project = project
             return true
@@ -112,7 +112,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordTask(task: ProjectTask): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordTask task=$task")
+        Timber.d("setRecordTask task=$task")
         if (record.task != task) {
             record.task = task
             return true
@@ -121,7 +121,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordLocation(location: Location): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordLocation location=$location")
+        Timber.d("setRecordLocation location=$location")
         if (record.location != location) {
             record.location = location
             return true
@@ -130,7 +130,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordStart(time: Calendar): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordStart time=$time")
+        Timber.d("setRecordStart time=$time")
         if (record.start != time) {
             record.date = time
             record.start = time
@@ -146,7 +146,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         hourOfDay: Int,
         minute: Int
     ): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordStart date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        Timber.d("setRecordStart date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
         val time = Calendar.getInstance()
         time.year = year
         time.month = month
@@ -157,7 +157,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordFinish(time: Calendar): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordFinish time=$time")
+        Timber.d("setRecordFinish time=$time")
         if (record.finish != time) {
             record.finish = time
             return true
@@ -172,7 +172,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         hourOfDay: Int,
         minute: Int
     ): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordFinish date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        Timber.d("setRecordFinish date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
         val time = Calendar.getInstance()
         time.year = year
         time.month = month
@@ -182,8 +182,11 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return setRecordFinish(time)
     }
 
-    protected open fun setRecordDuration(time: Long): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordDuration time=$time")
+    protected open fun setRecordDuration(date: Calendar): Boolean {
+        Timber.d("setRecordDuration date=$date")
+        record.date = date
+        val time =
+            (date.hourOfDay * DateUtils.HOUR_IN_MILLIS) + (date.minute * DateUtils.MINUTE_IN_MILLIS)
         if (record.duration != time) {
             record.start = null
             record.finish = null
@@ -194,12 +197,20 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected fun setRecordDuration(
+        year: Int,
+        month: Int,
+        dayOfMonth: Int,
         hourOfDay: Int,
         minute: Int
     ): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordDuration $hourOfDay:$minute")
-        val time = ((hourOfDay * 60) + minute) * DateUtils.MINUTE_IN_MILLIS
-        return setRecordDuration(time)
+        Timber.d("setRecordDuration date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
+        val date = Calendar.getInstance()
+        date.year = year
+        date.month = month
+        date.dayOfMonth = dayOfMonth
+        date.hourOfDay = hourOfDay
+        date.minute = minute
+        return setRecordDuration(date)
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {

@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -94,7 +93,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
-    private var durationPickerDialog: TimePickerDialog? = null
+    private var durationPickerDialog: DateTimePickerDialog? = null
     private var errorMessage: String = ""
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
     private val timeBuffer = StringBuilder(20)
@@ -886,33 +885,49 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickDuration() {
         val elapsedMs = record.duration
-        val hours = (elapsedMs / DateUtils.HOUR_IN_MILLIS).toInt()
-        val minutes = ((elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
+        val cal = getCalendar(record.date)
+        // Server granularity is seconds.
+        cal.second = 0
+        cal.millis = 0
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
+        val hour = (elapsedMs / DateUtils.HOUR_IN_MILLIS).toInt()
+        val minute = ((elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
         var picker = durationPickerDialog
         if (picker == null) {
             val context = requireContext()
-            val listener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
-                setRecordDuration(
-                    hourOfDay,
-                    minute
-                )
+            val listener = object : OnDateTimeSetListener {
+                override fun onDateTimeSet(
+                    view: DateTimePicker,
+                    year: Int,
+                    month: Int,
+                    dayOfMonth: Int,
+                    hourOfDay: Int,
+                    minute: Int
+                ) {
+                    setRecordDuration(year, month, dayOfMonth, hourOfDay, minute)
+                }
             }
-            picker = TimePickerDialog(
+            picker = DateTimePickerDialog(
                 context,
                 listener,
-                hours,
-                minutes,
+                year,
+                month,
+                dayOfMonth,
+                hour,
+                minute,
                 true
             )
             durationPickerDialog = picker
         } else {
-            picker.updateTime(hours, minutes)
+            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
         }
         picker.show()
     }
 
-    override fun setRecordDuration(time: Long): Boolean {
-        if (super.setRecordDuration(time)) {
+    override fun setRecordDuration(date: Calendar): Boolean {
+        if (super.setRecordDuration(date)) {
             val context = requireContext()
             bindStartTime(context, record.start)
             bindFinishTime(context, record.finish)
