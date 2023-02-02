@@ -232,7 +232,7 @@
         app:layout_constraintStart_toEndOf="@+id/guideline_x50"
         app:layout_constraintTop_toTopOf="@+id/showDurationField" />
 
-    <CheckBox
+    <!--CheckBox
         android:id="@+id/showLocationField"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -241,7 +241,7 @@
         android:text="@string/location_label"
         app:layout_constraintEnd_toStartOf="@+id/guideline_x50"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/showDurationField" />
+        app:layout_constraintTop_toBottomOf="@+id/showDurationField" /-->
 
     <TextView
         android:id="@+id/errorLabel"
@@ -250,7 +250,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/form_marginTop"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/showLocationField"
+        app:layout_constraintTop_toBottomOf="@+id/showNoteField"
         tools:text="@tools:sample/lorem"
         tools:visibility="visible" />
 

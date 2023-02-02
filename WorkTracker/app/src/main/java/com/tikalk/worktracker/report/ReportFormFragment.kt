@@ -190,9 +190,9 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.showNoteField.setOnCheckedChangeListener { _, isChecked ->
             (record as ReportFilter).isNoteFieldVisible = isChecked
         }
-        bindingForm.showLocationField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isLocationFieldVisible = isChecked
-        }
+//        bindingForm.showLocationField.setOnCheckedChangeListener { _, isChecked ->
+//            (record as ReportFilter).isLocationFieldVisible = isChecked
+//        }
 
         bindingForm.actionGenerate.setOnClickListener { generateReport() }
 
@@ -352,7 +352,7 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.showFinishField.isChecked = filter.isFinishFieldVisible
         bindingForm.showDurationField.isChecked = filter.isDurationFieldVisible
         bindingForm.showNoteField.isChecked = filter.isNoteFieldVisible
-        bindingForm.showLocationField.isChecked = filter.isLocationFieldVisible
+//        bindingForm.showLocationField.isChecked = filter.isLocationFieldVisible
 
         setErrorLabel(errorMessage)
     }

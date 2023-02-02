@@ -62,7 +62,7 @@ class ReportFilter(
     var isDurationFieldVisible: Boolean = true,
     var isNoteFieldVisible: Boolean = true,
     var isCostFieldVisible: Boolean = false,
-    var isLocationFieldVisible: Boolean = true
+    var isLocationFieldVisible: Boolean = false
 ) : TimeRecord(
     id = ID_NONE,
     project = Project.EMPTY,
@@ -85,7 +85,7 @@ class ReportFilter(
         isDurationFieldVisible: Boolean = true,
         isNoteFieldVisible: Boolean = true,
         isCostFieldVisible: Boolean = false,
-        isLocationFieldVisible: Boolean = true
+        isLocationFieldVisible: Boolean = false
     ) : this(
         period = period,
         favorite = favorite,
