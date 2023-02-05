@@ -34,7 +34,6 @@ package com.tikalk.worktracker.auth
 
 import android.app.Dialog
 import android.content.DialogInterface
-import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -42,24 +41,21 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.tikalk.compose.TextFieldViewState
-import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.databinding.FragmentLoginBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
  * A login screen that offers login via login/password.
  */
-class LoginFragment : InternetDialogFragment, LoginViewState {
+class LoginFragment : InternetDialogFragment {
 
     constructor() : super()
 
@@ -68,19 +64,14 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val viewState: LoginViewState = this
-
-    override val credentialsLogin = MutableStateFlow(TextFieldViewState())
-    override val credentialsPassword = MutableStateFlow(TextFieldViewState())
-    private var _errorMessage = MutableStateFlow("")
-    override val errorMessage: StateFlow<String> = _errorMessage
-    override val onConfirmClick: UnitCallback = { lifecycleScope.launch { attemptLogin() } }
+    private val viewModel by viewModels<LoginViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
             lifecycleScope.launch {
+                val viewState: LoginViewState = viewModel
                 val loginState = viewState.credentialsLogin.value
                 val passwordState = viewState.credentialsPassword.value
 
@@ -110,6 +101,7 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val viewState: LoginViewState = viewModel
 
         binding.loginInput.doAfterTextChanged {
             val state = viewState.credentialsLogin.value
@@ -151,6 +143,14 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
                 }
             }
         }
+        lifecycleScope.launch {
+            viewModel.onDialogConfirmClick.collect {
+                if (it) {
+                    viewModel.clearEvents()
+                    attemptLogin()
+                }
+            }
+        }
         binding.actionSignIn.setOnClickListener { viewState.onConfirmClick() }
     }
 
@@ -166,6 +166,7 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
 
         if (args.containsKey(EXTRA_LOGIN)) {
             lifecycleScope.launch {
+                val viewState: LoginViewState = viewModel
                 val loginState = viewState.credentialsLogin.value
                 val passwordState = viewState.credentialsPassword.value
 
@@ -177,7 +178,7 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
             }
         }
         if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
-            viewState.onConfirmClick()
+            viewModel.onConfirmClick()
         }
     }
 
@@ -190,7 +191,9 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
         if (!binding.actionSignIn.isEnabled) {
             return
         }
-        if (!validateForm(resources)) return
+        if (!viewModel.validateForm(resources)) return
+
+        val viewState: LoginViewState = viewModel
 
         val loginState = viewState.credentialsLogin.value
         val passwordState = viewState.credentialsPassword.value
@@ -220,7 +223,7 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
                             preferences.userCredentials = UserCredentials(loginValue, passwordValue)
                             notifyLoginSuccess(loginValue)
                         } else {
-                            _errorMessage.emit(errorMessage)
+                            showError(errorMessage)
                             notifyLoginFailure(loginValue, errorMessage)
                         }
                     } else {
@@ -252,70 +255,8 @@ class LoginFragment : InternetDialogFragment, LoginViewState {
         lifecycleScope.launch { notifyLoginFailure("", REASON_CANCEL) }
     }
 
-    private suspend fun validateForm(resources: Resources): Boolean {
-        val viewState: LoginViewState = this.viewState
-
-        val credentialsLoginState = viewState.credentialsLogin
-        val credentialsPasswordState = viewState.credentialsPassword
-
-        val credentialsLogin = credentialsLoginState.value
-        val credentialsPassword = credentialsPasswordState.value
-
-        // Reset errors.
-        credentialsLoginState.emit(credentialsLogin.copy(isError = false))
-        credentialsPasswordState.emit(credentialsPassword.copy(isError = false))
-        _errorMessage.emit("")
-
-        // Store values at the time of the submission attempt.
-        val loginValue = credentialsLogin.value
-        val passwordValue = credentialsPassword.value
-
-        val validator = LoginValidator()
-
-        // Check for a valid login name.
-        when (validator.validateUsername(loginValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsLoginState,
-                    resources.getString(R.string.error_field_required)
-                )
-                return false
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsLoginState,
-                    resources.getString(R.string.error_invalid_login)
-                )
-                return false
-            }
-        }
-
-        // Check for a valid password, if the user entered one.
-        when (validator.validatePassword(passwordValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsPasswordState,
-                    resources.getString(R.string.error_field_required)
-                )
-                return false
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsPasswordState,
-                    resources.getString(R.string.error_invalid_password)
-                )
-                return false
-            }
-        }
-
-        return true
-    }
-
-    private suspend fun notifyError(state: MutableStateFlow<TextFieldViewState>, message: String) {
-        state.emit(state.value.copy(isError = true))
-        _errorMessage.emit(message)
+    private suspend fun showError(message: String) {
+        viewModel.showError(message)
     }
 
     companion object {
