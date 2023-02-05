@@ -124,22 +124,22 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
         filter.finish = parseSystemDate(finishValue)
 
         val inputShowProject = form.selectByName("chproject")
-        filter.showProjectField = inputShowProject?.isChecked() ?: filter.showProjectField
+        filter.isProjectFieldVisible = inputShowProject?.isChecked() ?: filter.isProjectFieldVisible
 
         val inputShowTask = form.selectByName("chtask")
-        filter.showTaskField = inputShowTask?.isChecked() ?: filter.showTaskField
+        filter.isTaskFieldVisible = inputShowTask?.isChecked() ?: filter.isTaskFieldVisible
 
         val inputShowStart = form.selectByName("chstart")
-        filter.showStartField = inputShowStart?.isChecked() ?: filter.showStartField
+        filter.isStartFieldVisible = inputShowStart?.isChecked() ?: filter.isStartFieldVisible
 
         val inputShowFinish = form.selectByName("chfinish")
-        filter.showFinishField = inputShowFinish?.isChecked() ?: filter.showFinishField
+        filter.isFinishFieldVisible = inputShowFinish?.isChecked() ?: filter.isFinishFieldVisible
 
         val inputShowDuration = form.selectByName("chduration")
-        filter.showDurationField = inputShowDuration?.isChecked() ?: filter.showDurationField
+        filter.isDurationFieldVisible = inputShowDuration?.isChecked() ?: filter.isDurationFieldVisible
 
         val inputShowNote = form.selectByName("chnote")
-        filter.showNoteField = inputShowNote?.isChecked() ?: filter.showNoteField
+        filter.isNoteFieldVisible = inputShowNote?.isChecked() ?: filter.isNoteFieldVisible
 
         filter.status = TaskRecordStatus.CURRENT
     }

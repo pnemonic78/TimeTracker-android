@@ -45,15 +45,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.runOnUiThread
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
@@ -66,6 +65,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -74,8 +74,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.math.absoluteValue
 
-class TimeListFragment : TimeFormFragment(),
-    TimeListAdapter.OnTimeListListener {
+class TimeListFragment : TimeFormFragment() {
 
     private var _binding: FragmentTimeListBinding? = null
     private val binding get() = _binding!!
@@ -83,38 +82,13 @@ class TimeListFragment : TimeFormFragment(),
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
-    private val listAdapter = TimeListAdapter(this)
-    private val totalsData = MutableLiveData<TimeTotals?>()
-
-    private val recordsData = MutableLiveData<List<TimeRecord>>()
+    private val dateData = MutableStateFlow<Calendar>(Calendar.getInstance())
+    private val totalsData = MutableStateFlow<TimeTotals?>(null)
+    private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
 
     /** Is the record from the "timer" or "+" FAB? */
     private var recordForTimer = false
     private var loginAutomatic = true
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        recordsData.observe(this) { records ->
-            bindList(records)
-        }
-        totalsData.observe(this) { totals ->
-            if (totals != null) bindTotals(totals)
-        }
-
-        timeViewModel.deleted.observe(this) { data ->
-            onRecordEditDeleted(data.record, data.responseHtml)
-        }
-        timeViewModel.edited.observe(this) { data ->
-            onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
-        }
-        timeViewModel.editFailure.observe(this) { data ->
-            onRecordEditFailure(data.record, data.reason)
-        }
-        timeViewModel.favorite.observe(this) { record ->
-            onRecordEditFavorited(record)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -133,10 +107,15 @@ class TimeListFragment : TimeFormFragment(),
         formNavHostFragment =
             childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
 
+        val binding = this.binding
         binding.dateInput.setOnClickListener { pickDate() }
         binding.recordAdd.setOnClickListener { addTime() }
 
-        binding.list.adapter = listAdapter
+        (binding.list as ComposeView).setContent {
+            TikalTheme {
+                TimeList(itemsFlow = recordsData, onClick = ::onRecordClick)
+            }
+        }
         val swipeDay = TimeListSwipeDay(context, object : TimeListSwipeDay.OnSwipeListener {
             override fun onSwipePreviousDay() {
                 navigatePreviousDay()
@@ -147,6 +126,37 @@ class TimeListFragment : TimeFormFragment(),
             }
         })
         binding.list.setOnTouchListener { _, event -> swipeDay.onTouchEvent(event) }
+
+        lifecycleScope.launch {
+            dateData.collect { date ->
+                bindDate(date)
+            }
+        }
+        lifecycleScope.launch {
+            totalsData.collect { totals ->
+                if (totals != null) bindTotals(totals)
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.deleted.collect { data ->
+                if (data != null) onRecordEditDeleted(data.record, data.responseHtml)
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.edited.collect { data ->
+                if (data != null) onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.editFailure.collect { data ->
+                if (data != null) onRecordEditFailure(data.record, data.reason)
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.favorite.collect { record ->
+                if (record != null) onRecordEditFavorited(record)
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -154,12 +164,8 @@ class TimeListFragment : TimeFormFragment(),
         _binding = null
     }
 
-    override fun onRecordClick(record: TimeRecord) {
+    private fun onRecordClick(record: TimeRecord) {
         editRecord(record)
-    }
-
-    override fun onRecordSwipe(record: TimeRecord) {
-        deleteRecord(record)
     }
 
     /**
@@ -222,27 +228,24 @@ class TimeListFragment : TimeFormFragment(),
         dataSource.savePage(page)
     }
 
-    private fun processPage(page: TimeListPage) {
-        timeViewModel.projectsData.postValue(page.projects.sortedBy { it.name })
-        recordsData.postValue(page.records)
+    private suspend fun processPage(page: TimeListPage) {
+        viewModel.projectsData.emit(page.projects.sortedBy { it.name })
+
+        dateData.emit(page.date)
+
+        recordsData.emit(page.records)
         var totals = totalsData.value
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.postValue(totals)
+        totalsData.emit(totals)
         setRecordValue(page.record)
     }
 
     @MainThread
-    private fun bindList(records: List<TimeRecord>) {
-        val record = records.firstOrNull()
-        val date = record?.date ?: this.record.date
+    private fun bindDate(date: Calendar) {
         binding.dateInput.text =
             DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
-        listAdapter.submitList(records)
-        if (records === recordsData.value) {
-            listAdapter.notifyDataSetChanged()
-        }
     }
 
     @MainThread
@@ -258,7 +261,7 @@ class TimeListFragment : TimeFormFragment(),
         } else {
             bindingTotals.dayTotalLabel.visibility = View.VISIBLE
             bindingTotals.dayTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.daily).toString()
+                formatElapsedTime(context, timeFormatter, totals.daily)
         }
         if (totals.weekly == TimeTotals.UNKNOWN) {
             bindingTotals.weekTotalLabel.visibility = View.INVISIBLE
@@ -267,7 +270,7 @@ class TimeListFragment : TimeFormFragment(),
             timeBuffer.clear()
             bindingTotals.weekTotalLabel.visibility = View.VISIBLE
             bindingTotals.weekTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.weekly).toString()
+                formatElapsedTime(context, timeFormatter, totals.weekly)
         }
         if (totals.monthly == TimeTotals.UNKNOWN) {
             bindingTotals.monthTotalLabel.visibility = View.INVISIBLE
@@ -276,7 +279,7 @@ class TimeListFragment : TimeFormFragment(),
             timeBuffer.clear()
             bindingTotals.monthTotalLabel.visibility = View.VISIBLE
             bindingTotals.monthTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.monthly).toString()
+                formatElapsedTime(context, timeFormatter, totals.monthly)
         }
         if (totals.balance == TimeTotals.UNKNOWN) {
             bindingTotals.balanceLabel.visibility = View.INVISIBLE
@@ -285,7 +288,7 @@ class TimeListFragment : TimeFormFragment(),
             timeBuffer.clear()
             bindingTotals.balanceLabel.visibility = View.VISIBLE
             bindingTotals.balanceValue.text =
-                formatElapsedTime(context, timeFormatter, totals.balance.absoluteValue).toString()
+                formatElapsedTime(context, timeFormatter, totals.balance.absoluteValue)
             if (totals.balance < 0) {
                 bindingTotals.balanceValue.setTextColor(
                     ResourcesCompat.getColor(
@@ -398,6 +401,7 @@ class TimeListFragment : TimeFormFragment(),
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting record: ${e.message}")
+                showProgressMain(false)
                 handleErrorMain(e)
             }
         }
@@ -480,11 +484,6 @@ class TimeListFragment : TimeFormFragment(),
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-
     override fun onLoginFailure(login: String, reason: String) {
         super.onLoginFailure(login, reason)
         loginAutomatic = false
@@ -497,12 +496,10 @@ class TimeListFragment : TimeFormFragment(),
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
-            if (records != null) {
-                val recordsNew: MutableList<TimeRecord> = ArrayList(records)
-                recordsNew.add(record)
-                recordsNew.sortBy { it.startTime }
-                runOnUiThread { bindList(recordsNew) }
-            }
+            val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+            recordsNew.add(record)
+            recordsNew.sortBy { it.startTime }
+            lifecycleScope.launch { recordsData.emit(recordsNew) }
 
             if (recordForTimer) {
                 Bundle().apply {
@@ -521,14 +518,12 @@ class TimeListFragment : TimeFormFragment(),
             // Refresh the list with the edited item.
             if (record.id != TikalEntity.ID_NONE) {
                 val records = recordsData.value
-                if (records != null) {
-                    val recordsNew: MutableList<TimeRecord> = ArrayList(records)
-                    val index = recordsNew.indexOfFirst { it.id == record.id }
-                    if (index >= 0) {
-                        recordsNew[index] = record
-                        recordsNew.sortBy { it.startTime }
-                        runOnUiThread { bindList(recordsNew) }
-                    }
+                val recordsNew: MutableList<TimeRecord> = ArrayList(records)
+                val index = recordsNew.indexOfFirst { it.id == record.id }
+                if (index >= 0) {
+                    recordsNew[index] = record
+                    recordsNew.sortBy { it.startTime }
+                    lifecycleScope.launch { recordsData.emit(recordsNew) }
                 }
             }
             maybeFetchPage(record.date, responseHtml)
@@ -550,10 +545,9 @@ class TimeListFragment : TimeFormFragment(),
         } else {
             showTimer()
             // Refresh the list with the deleted item.
-            recordsData.value?.let { records ->
-                val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
-                bindList(recordsActive)
-            }
+            val records = recordsData.value
+            val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
+            lifecycleScope.launch{ recordsData.emit(recordsActive) }
             maybeFetchPage(record.date, responseHtml)
         }
     }

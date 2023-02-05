@@ -63,10 +63,23 @@
     <!-- Settings -->
     <string name="settings_label" msgid="1626402585530130914">"הגדרות"</string>
 
+    <!-- Settings - Work -->
+    <string name="pref_work_title">"עבודה"</string>
+    <string name="pref_hours_per_day">"שעות ליום עבודה"</string>
+    <string name="friday">"יום שישי"</string>
+    <string name="monday">"יום שני"</string>
+    <string name="saturday">"שבת"</string>
+    <string name="sunday">"יום ראשון"</string>
+    <string name="thursday">"יום חמישי"</string>
+    <string name="tuesday">"יום שלישי"</string>
+    <string name="wednesday">"יום רביעי"</string>
+
     <!-- Settings - Privacy -->
     <string name="pref_privacy_security_title">"פרטיות ואבטחה"</string>
     <string name="clear_user_data_text" msgid="355574089263023363">"פינוי שטח אחסון"</string>
     <string name="pref_logout_title">"התנתק"</string>
+    <string name="pref_logout_toast">"התנתק מהמכשיר"</string>
+    <string name="clear_user_data_toast">"האחסון פונה"</string>
 
     <!-- Settings - About -->
     <string name="pref_about_title">"אודות"</string>
@@ -130,4 +143,55 @@
     <string name="error_accessDenied">"לא ניתן לגשת לדף המבוקש."</string>
     <string name="error_unknown">"אירעה שגיאה לא ידועה."</string>
     <string name="error_export">"שגיאה בייצוא הדוח!"</string>
+
+    <!-- Help -->
+    <string name="help">"עזרה"</string>
+    <string name="help_summary">"חשוב לזכור למלא שעות כרגיל גם בימי חופשה, מחלה או מילואים, ולציין את סוג הפעילות הספציפית."</string>
+    <string name="help_consulting">"Tikal – Consulting"</string>
+    <string name="help_consulting_1">"שירות ללקוח: תחת שם הלקוח – לפי סוג המשימה"</string>
+    <string name="help_development">"Tikal – Development"</string>
+    <string name="help_development_1">"שירות ללקוח: תחת שם הלקוח – לפי סוג המשימה"</string>
+    <string name="help_development_2">"מעבדה"</string>
+    <string name="help_army">"Tikal – Army Service"</string>
+    <string name="help_army_1">"מילואים"</string>
+    <string name="help_illness">"Tikal – Illness"</string>
+    <string name="help_illness_1">"מחלה"</string>
+    <string name="help_vacation">"Tikal – Vacation"</string>
+    <string name="help_vacation_1">"חופש"</string>
+    <string name="help_absence">"Tikal – Personal Absence"</string>
+    <string name="help_absence_1">"היעדרויות חריגות"</string>
+    <string name="help_absence_1_1">"לידה"</string>
+    <string name="help_absence_1_2">"חתונה"</string>
+    <string name="help_absence_1_3">"אבל של קרוב מדרגה ראשונה"</string>
+    <string name="help_meeting">"Tikal – Meeting"</string>
+    <string name="help_meeting_1">"מפגשי חברה"</string>
+    <string name="help_meeting_2">"ימי כיף"</string>
+    <string name="help_meeting_3">"סטטוסים"</string>
+    <string name="help_meeting_4">"מפגשי קבוצה"</string>
+    <string name="help_meeting_5">"מפגשי קהילה"</string>
+    <string name="help_meeting_6">"פגישות עם לקוחות לבחירת משימה"</string>
+    <string name="help_meeting_7">"יום קליטה בטיקל"</string>
+    <string name="help_training">"Tikal – Training"</string>
+    <string name="help_training_1">"הדרכה והכשרות מקצועיות"</string>
+    <string name="help_training_2">"פיתוח חומרי הדרכה"</string>
+    <string name="help_training_2_1">"עבודה על קורסים"</string>
+    <string name="help_training_2_2">"עבודה על וורקשופים"</string>
+    <string name="help_training_2_3">"עבודה על הרצאות"</string>
+    <string name="help_training_3">"קורסים"</string>
+    <string name="help_training_4">"וורקשופים"</string>
+    <string name="help_training_5">"פיוז דיי"</string>
+    <string name="help_training_6">"האקתון בטיקל"</string>
+    <string name="help_training_7">"עבודה על משימה טיקלית"</string>
+    <string name="help_general">"Tikal – General"</string>
+    <string name="help_general_1">"זמן טיקל – עבודה ממשרדי טיקל בין משימות"</string>
+    <string name="help_hr">"Tikal – HR"</string>
+    <string name="help_hr_1">"עבודה מול מש״א"</string>
+    <string name="help_hr_2">"ראיונות למועמדים"</string>
+    <string name="help_hr_3">"שיחות עם עובדים (למובילי קבוצות)"</string>
+    <string name="help_sales">"Tikal – Sales"</string>
+    <string name="help_sales_1">"עבודה מול מכירות"</string>
+    <string name="help_sales_2">"הרצאות אצל לקוחות"</string>
+    <string name="help_sales_3">"פגישות פריסייל"</string>
+    <string name="help_transport">"Tikal – Transport"</string>
+    <string name="help_transport_1">"נסיעות בין לקוחות"</string>
 </resources>

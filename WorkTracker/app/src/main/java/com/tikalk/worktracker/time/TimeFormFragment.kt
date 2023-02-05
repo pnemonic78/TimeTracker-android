@@ -35,9 +35,11 @@ package com.tikalk.worktracker.time
 import android.content.Context
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -49,25 +51,21 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Calendar
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
-
+    
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
-    protected val timeViewModel by activityViewModels<TimeViewModel>()
+    override val viewModel by activityViewModels<TimeViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        timeViewModel.projectsData.observe(this) { projects ->
-            onProjectsUpdated(projects)
-        }
-        delegate.login.observe(this) { (login, reason) ->
-            if (reason == null) {
-                onLoginSuccess(login)
-            } else {
-                onLoginFailure(login, reason)
+        lifecycleScope.launch {
+            viewModel.projectsData.collect { projects ->
+                onProjectsUpdated(projects)
             }
         }
     }
@@ -77,7 +75,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     @MainThread
     abstract fun bindForm(record: TimeRecord)
 
-    fun markFavorite() {
+    protected fun markFavorite() {
         markFavorite(record)
     }
 
@@ -99,22 +97,13 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         bindForm(record)
     }
 
-    protected open fun onLoginSuccess(login: String) {
-        Timber.i("login success")
-        run()
-    }
-
-    protected open fun onLoginFailure(login: String, reason: String) {
-        Timber.e("login failure: $reason")
-    }
-
     protected open fun setRecordValue(record: TimeRecord) {
-        Timber.d("${javaClass.simpleName} setRecordValue record=$record")
+        Timber.d("setRecordValue record=$record")
         this.record = record
     }
 
     protected open fun setRecordProject(project: Project): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordProject project=$project")
+        Timber.d("setRecordProject project=$project")
         if (record.project != project) {
             record.project = project
             return true
@@ -123,7 +112,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordTask(task: ProjectTask): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordTask task=$task")
+        Timber.d("setRecordTask task=$task")
         if (record.task != task) {
             record.task = task
             return true
@@ -132,7 +121,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordLocation(location: Location): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordLocation location=$location")
+        Timber.d("setRecordLocation location=$location")
         if (record.location != location) {
             record.location = location
             return true
@@ -141,7 +130,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordStart(time: Calendar): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordStart time=$time")
+        Timber.d("setRecordStart time=$time")
         if (record.start != time) {
             record.date = time
             record.start = time
@@ -157,7 +146,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         hourOfDay: Int,
         minute: Int
     ): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordStart date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        Timber.d("setRecordStart date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
         val time = Calendar.getInstance()
         time.year = year
         time.month = month
@@ -168,7 +157,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun setRecordFinish(time: Calendar): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordFinish time=$time")
+        Timber.d("setRecordFinish time=$time")
         if (record.finish != time) {
             record.finish = time
             return true
@@ -183,7 +172,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         hourOfDay: Int,
         minute: Int
     ): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordFinish date=$year-$month-$dayOfMonth $hourOfDay:$minute")
+        Timber.d("setRecordFinish date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
         val time = Calendar.getInstance()
         time.year = year
         time.month = month
@@ -193,8 +182,11 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return setRecordFinish(time)
     }
 
-    protected open fun setRecordDuration(time: Long): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordDuration time=$time")
+    protected open fun setRecordDuration(date: Calendar): Boolean {
+        Timber.d("setRecordDuration date=$date")
+        record.date = date
+        val time =
+            (date.hourOfDay * DateUtils.HOUR_IN_MILLIS) + (date.minute * DateUtils.MINUTE_IN_MILLIS)
         if (record.duration != time) {
             record.start = null
             record.finish = null
@@ -205,12 +197,20 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected fun setRecordDuration(
+        year: Int,
+        month: Int,
+        dayOfMonth: Int,
         hourOfDay: Int,
         minute: Int
     ): Boolean {
-        Timber.d("${javaClass.simpleName} setRecordDuration $hourOfDay:$minute")
-        val time = ((hourOfDay * 60) + minute) * DateUtils.MINUTE_IN_MILLIS
-        return setRecordDuration(time)
+        Timber.d("setRecordDuration date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
+        val date = Calendar.getInstance()
+        date.year = year
+        date.month = month
+        date.dayOfMonth = dayOfMonth
+        date.hourOfDay = hourOfDay
+        date.minute = minute
+        return setRecordDuration(date)
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
@@ -222,8 +222,8 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     protected fun applyFavorite() {
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
-            val projects = timeViewModel.projectsData.value
-            val project = projects?.find { it.id == projectFavorite } ?: record.project
+            val projects = viewModel.projectsData.value
+            val project = projects.find { it.id == projectFavorite } ?: record.project
             setRecordProject(project)
 
             val tasks = project.tasks
@@ -246,7 +246,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     protected fun addEmptyProject(projects: List<Project>?): List<Project> {
         val projectEmptyFind = projects?.find { it.isEmpty() }
-        val projectEmpty = projectEmptyFind ?: timeViewModel.projectEmpty
+        val projectEmpty = projectEmptyFind ?: viewModel.projectEmpty
         projectEmpty.name = getEmptyProjectName()
         val projectsWithEmpty = if (projects != null) {
             if (projectEmptyFind != null) {
@@ -257,16 +257,16 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         } else {
             listOf(projectEmpty)
         }
-        timeViewModel.projectEmpty = projectEmpty
+        viewModel.projectEmpty = projectEmpty
 
         return projectsWithEmpty
     }
 
     protected fun addEmptyTask(tasks: List<ProjectTask>): List<ProjectTask> {
         val taskEmptyFind = tasks.find { it.isEmpty() }
-        val taskEmpty = taskEmptyFind ?: timeViewModel.taskEmpty
+        val taskEmpty = taskEmptyFind ?: viewModel.taskEmpty
         taskEmpty.name = getEmptyTaskName()
-        timeViewModel.taskEmpty = taskEmpty
+        viewModel.taskEmpty = taskEmpty
         return if (taskEmptyFind != null) {
             tasks.sortedBy { it.name }
         } else {
@@ -284,7 +284,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         val select =
             LocationItem(items[0].location, context.getString(R.string.location_label_select))
         items[0] = select
-        timeViewModel.locationEmpty = select
+        viewModel.locationEmpty = select
 
         return items
     }

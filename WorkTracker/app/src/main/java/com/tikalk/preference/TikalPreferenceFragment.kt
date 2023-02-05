@@ -32,7 +32,6 @@
 
 package com.tikalk.preference
 
-import android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import timber.log.Timber
@@ -40,18 +39,16 @@ import timber.log.Timber
 abstract class TikalPreferenceFragment : PreferenceFragmentCompat() {
 
     protected fun validateIntent(key: String) {
-        validateIntent(findPreference<Preference>(key))
+        validateIntent(findPreference(key))
     }
 
     protected fun validateIntent(preference: Preference?) {
-        if (preference == null) {
-            return
-        }
+        if (preference == null) return
         val intent = preference.intent ?: return
         val context = preference.context
         val pm = context.packageManager
-        val info = pm.resolveActivity(intent, MATCH_DEFAULT_ONLY)
-        if (info != null) {
+        val name = intent.resolveActivity(pm)
+        if (name != null) {
             preference.onPreferenceClickListener = Preference.OnPreferenceClickListener {
                 try {
                     context.startActivity(intent)

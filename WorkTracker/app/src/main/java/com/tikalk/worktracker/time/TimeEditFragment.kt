@@ -32,9 +32,7 @@
 
 package com.tikalk.worktracker.time
 
-import android.app.TimePickerDialog
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.DateUtils
@@ -48,7 +46,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.MainThread
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.DateTimePickerDialog
@@ -56,6 +53,7 @@ import com.tikalk.app.DateTimePickerDialog.OnDateTimeSetListener
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
@@ -95,16 +93,11 @@ class TimeEditFragment : TimeFormFragment() {
 
     private var startPickerDialog: DateTimePickerDialog? = null
     private var finishPickerDialog: DateTimePickerDialog? = null
-    private var durationPickerDialog: TimePickerDialog? = null
+    private var durationPickerDialog: DateTimePickerDialog? = null
     private var errorMessage: String = ""
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
     private val timeBuffer = StringBuilder(20)
     private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -186,14 +179,14 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    val projects = timeViewModel.projectsData.value
-                    setRecordProject(projects?.find { it.id == projectId }
-                        ?: timeViewModel.projectEmpty)
+                    val projects = viewModel.projectsData.value
+                    setRecordProject(projects.find { it.id == projectId }
+                        ?: viewModel.projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     val tasks = record.project.tasks
-                    setRecordTask(tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty)
+                    setRecordTask(tasks.find { it.id == taskId } ?: viewModel.taskEmpty)
                 }
                 if (args.containsKey(EXTRA_DATE)) {
                     val dateTime = args.getLong(EXTRA_DATE)
@@ -233,11 +226,11 @@ class TimeEditFragment : TimeFormFragment() {
         if (!isVisible) return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(timeViewModel.taskEmpty)
+        val taskItems = arrayOf(viewModel.taskEmpty)
         binding.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = timeViewModel.projectsData.value
+        val projects = viewModel.projectsData.value
         bindProjects(context, record, projects)
 
         bindLocation(context, record)
@@ -280,7 +273,7 @@ class TimeEditFragment : TimeFormFragment() {
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
             binding.locationInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) locations[index] else timeViewModel.locationEmpty
+            val selectedItem = if (index >= 0) locations[index] else viewModel.locationEmpty
             locationItemSelected(selectedItem)
         }
     }
@@ -507,14 +500,9 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: TimeEditPage) {
-        timeViewModel.projectsData.value = page.projects
+        viewModel.projectsData.value = page.projects
         errorMessage = page.errorMessage ?: ""
         setRecordValue(page.record)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
     }
 
     override fun onLoginFailure(login: String, reason: String) {
@@ -585,7 +573,6 @@ class TimeEditFragment : TimeFormFragment() {
         }
 
         val dateValue = formatSystemDate(record.date)!!
-        showProgress(false)
 
         var startValue: String? = null
         var finishValue: String? = null
@@ -640,13 +627,13 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error saving record: ${e.message}")
-                handleErrorMain(e)
                 showProgressMain(false)
+                handleErrorMain(e)
             }
         }
     }
 
-    private fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
+    private suspend fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
         val errorMessage = getResponseError(html)
         Timber.i("processSubmittedPage last=$isLast err=[$errorMessage]")
         if (errorMessage.isNullOrEmpty()) {
@@ -656,9 +643,9 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
+    private suspend fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
         recordsToSubmit.remove(record)
-        timeViewModel.onRecordEditSubmitted(record, isLast, html)
+        viewModel.onRecordEditSubmitted(record, isLast, html)
 
         if (isLast) {
             val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
@@ -668,20 +655,20 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun onRecordError(record: TimeRecord, errorMessage: String) {
+    private suspend fun onRecordError(record: TimeRecord, errorMessage: String) {
         setErrorLabelMain(errorMessage)
-        timeViewModel.onRecordEditFailure(record, errorMessage)
+        viewModel.onRecordEditFailure(record, errorMessage)
     }
 
     private fun deleteRecord() {
-        deleteRecord(record)
+        lifecycleScope.launch { deleteRecord(record) }
     }
 
-    private fun deleteRecord(record: TimeRecord) {
+    private suspend fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
             record.status = TaskRecordStatus.DELETED
-            timeViewModel.onRecordEditDeleted(record)
+            viewModel.onRecordEditDeleted(record)
             return
         }
 
@@ -701,13 +688,13 @@ class TimeEditFragment : TimeFormFragment() {
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting record: ${e.message}")
-                handleErrorMain(e)
                 showProgressMain(false)
+                handleErrorMain(e)
             }
         }
     }
 
-    private fun processDeletePage(record: TimeRecord, html: String) {
+    private suspend fun processDeletePage(record: TimeRecord, html: String) {
         Timber.i("processDeletePage")
         val errorMessage = getResponseError(html)
         if (errorMessage.isNullOrEmpty()) {
@@ -717,10 +704,10 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun onRecordDeleted(record: TimeRecord, html: String) {
+    private suspend fun onRecordDeleted(record: TimeRecord, html: String) {
         record.status = TaskRecordStatus.DELETED
         recordsToSubmit.remove(record)
-        timeViewModel.onRecordEditDeleted(record, html)
+        viewModel.onRecordEditDeleted(record, html)
 
         val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
         if (isStop) {
@@ -737,16 +724,13 @@ class TimeEditFragment : TimeFormFragment() {
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
+    @Suppress("DEPRECATION")
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         val recordParcel: TimeRecordEntity? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                savedInstanceState.getParcelable(STATE_RECORD, TimeRecordEntity::class.java)
-            } else {
-                savedInstanceState.getParcelable(STATE_RECORD)
-            }
+            savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
-            val projects = timeViewModel.projectsData.value
+            val projects = viewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             bindForm(record)
@@ -755,7 +739,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun markFavorite(record: TimeRecord) {
         super.markFavorite(record)
-        timeViewModel.onRecordEditFavorited(record)
+        lifecycleScope.launch { viewModel.onRecordEditFavorited(record) }
     }
 
     fun editRecord(record: TimeRecord, isStop: Boolean = false) {
@@ -892,7 +876,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun bindDuration(context: Context, duration: Long) {
         binding.durationInput.text = if (duration > 0L) {
             timeBuffer.clear()
-            formatElapsedTime(context, timeFormatter, duration).toString()
+            formatElapsedTime(context, timeFormatter, duration)
         } else {
             ""
         }
@@ -901,33 +885,49 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun pickDuration() {
         val elapsedMs = record.duration
-        val hours = (elapsedMs / DateUtils.HOUR_IN_MILLIS).toInt()
-        val minutes = ((elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
+        val cal = getCalendar(record.date)
+        // Server granularity is seconds.
+        cal.second = 0
+        cal.millis = 0
+        val year = cal.year
+        val month = cal.month
+        val dayOfMonth = cal.dayOfMonth
+        val hour = (elapsedMs / DateUtils.HOUR_IN_MILLIS).toInt()
+        val minute = ((elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
         var picker = durationPickerDialog
         if (picker == null) {
             val context = requireContext()
-            val listener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
-                setRecordDuration(
-                    hourOfDay,
-                    minute
-                )
+            val listener = object : OnDateTimeSetListener {
+                override fun onDateTimeSet(
+                    view: DateTimePicker,
+                    year: Int,
+                    month: Int,
+                    dayOfMonth: Int,
+                    hourOfDay: Int,
+                    minute: Int
+                ) {
+                    setRecordDuration(year, month, dayOfMonth, hourOfDay, minute)
+                }
             }
-            picker = TimePickerDialog(
+            picker = DateTimePickerDialog(
                 context,
                 listener,
-                hours,
-                minutes,
+                year,
+                month,
+                dayOfMonth,
+                hour,
+                minute,
                 true
             )
             durationPickerDialog = picker
         } else {
-            picker.updateTime(hours, minutes)
+            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
         }
         picker.show()
     }
 
-    override fun setRecordDuration(time: Long): Boolean {
-        if (super.setRecordDuration(time)) {
+    override fun setRecordDuration(date: Calendar): Boolean {
+        if (super.setRecordDuration(date)) {
             val context = requireContext()
             bindStartTime(context, record.start)
             bindFinishTime(context, record.finish)

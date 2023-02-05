@@ -36,6 +36,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.preference.Preference
 import com.tikalk.preference.TikalPreferenceFragment
 import com.tikalk.worktracker.R
@@ -43,8 +44,10 @@ import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class TimeSettingsFragment : TikalPreferenceFragment() {
 
     @Inject
@@ -57,17 +60,13 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
 
         val clearUser = findPreference<Preference>("clear_user")
         clearUser?.setOnPreferenceClickListener { preference ->
-            preference.isEnabled = false
-            deleteUser()
-            preference.isEnabled = true
+            onClearUserClicked(preference)
             true
         }
 
         val clearAppData = findPreference<Preference>("clear_data")
         clearAppData?.setOnPreferenceClickListener { preference ->
-            preference.isEnabled = false
-            deleteAppData()
-            preference.isEnabled = true
+            onClearDataClicked(preference)
             true
         }
 
@@ -85,11 +84,27 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
         validateIntent("about.issue")
     }
 
+    private fun onClearUserClicked(preference: Preference) {
+        preference.isEnabled = false
+        deleteUser()
+        preference.isEnabled = true
+    }
+
     private fun deleteUser() {
         preferences.user = User.EMPTY
         preferences.userCredentials = UserCredentials.EMPTY
         preferences.basicCredentials = BasicCredentials.EMPTY
         TimeTrackerServiceFactory.clearCookies()
+
+        val context = this.context ?: return
+        Toast.makeText(context, context.getString(R.string.pref_logout_toast), Toast.LENGTH_LONG)
+            .show()
+    }
+
+    private fun onClearDataClicked(preference: Preference) {
+        preference.isEnabled = false
+        deleteAppData()
+        preference.isEnabled = true
     }
 
     /**
@@ -99,5 +114,11 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
         val context = this.context ?: return
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         am.clearApplicationUserData()
+
+        Toast.makeText(
+            context,
+            context.getString(R.string.clear_user_data_toast),
+            Toast.LENGTH_LONG
+        ).show()
     }
 }

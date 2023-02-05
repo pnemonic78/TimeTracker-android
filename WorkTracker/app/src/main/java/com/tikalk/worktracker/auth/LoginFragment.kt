@@ -35,25 +35,20 @@ package com.tikalk.worktracker.auth
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.databinding.FragmentLoginBinding
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Response
 import timber.log.Timber
 
 /**
@@ -65,20 +60,25 @@ class LoginFragment : InternetDialogFragment {
 
     constructor(args: Bundle) : super(args)
 
-    private var _binding: FragmentLoginBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel by viewModels<LoginViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        showsDialog = true
-        isCancelable = true
 
-        delegate.authenticationViewModel.basicRealm.observe(this) { (realm, _, reason) ->
-            if (reason == null) {
-                Timber.i("basic realm success for \"$realm\"")
-                attemptLogin()
-            } else {
-                Timber.e("basic realm failure for \"$realm\": $reason")
+        if (savedInstanceState == null) {
+            lifecycleScope.launch {
+                val viewState: LoginViewState = viewModel
+                val loginState = viewState.credentialsLogin.value
+                val passwordState = viewState.credentialsPassword.value
+
+                val loginValue = preferences.userCredentials.login
+                val passwordValue = preferences.userCredentials.password
+
+                viewState.credentialsLogin.emit(loginState.copy(value = loginValue))
+                viewState.credentialsPassword.emit(passwordState.copy(value = passwordValue))
             }
         }
     }
@@ -94,26 +94,36 @@ class LoginFragment : InternetDialogFragment {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val viewState: LoginViewState = viewModel
 
-        binding.loginInput.setText(preferences.userCredentials.login)
-
-        val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        binding.passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
-            if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
-                attemptLogin()
-                return@OnEditorActionListener true
+        binding.composeView.setContent {
+            TikalTheme {
+                LoginForm(viewState = viewState)
             }
-            false
-        })
-        binding.passwordInput.setText(preferences.userCredentials.password)
+        }
 
-        binding.actionSignIn.setOnClickListener { attemptLogin() }
+        lifecycleScope.launch {
+            viewModel.onDialogConfirmClick.collect {
+                if (it) {
+                    viewModel.clearEvents()
+                    attemptLogin()
+                }
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.onDialogDismiss.collect {
+                if (it) {
+                    viewModel.clearEvents()
+                    onDismiss()
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -122,26 +132,26 @@ class LoginFragment : InternetDialogFragment {
     }
 
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run")
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_LOGIN)) {
-            binding.loginInput.setText(args.getString(EXTRA_LOGIN))
-            binding.passwordInput.text = null
+            lifecycleScope.launch {
+                val viewState: LoginViewState = viewModel
+                val loginState = viewState.credentialsLogin.value
+                val passwordState = viewState.credentialsPassword.value
 
-            if (args.containsKey(EXTRA_PASSWORD)) {
-                binding.passwordInput.setText(args.getString(EXTRA_PASSWORD))
+                val loginValue = args.getString(EXTRA_LOGIN) ?: ""
+                val passwordValue = args.getString(EXTRA_PASSWORD) ?: ""
+
+                viewState.credentialsLogin.emit(loginState.copy(value = loginValue))
+                viewState.credentialsPassword.emit(passwordState.copy(value = passwordValue))
             }
         }
         if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
-            attemptLogin()
+            viewModel.onConfirmClick()
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
     }
 
     /**
@@ -149,132 +159,72 @@ class LoginFragment : InternetDialogFragment {
      * If there are form errors (invalid login, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private fun attemptLogin() {
-        if (!binding.actionSignIn.isEnabled) {
-            return
-        }
+    private suspend fun attemptLogin() {
+        if (!viewModel.validateForm(resources)) return
 
-        // Reset errors.
-        binding.loginInput.error = null
-        binding.passwordInput.error = null
+        val viewState: LoginViewState = viewModel
+
+        val loginState = viewState.credentialsLogin.value
+        val passwordState = viewState.credentialsPassword.value
 
         // Store values at the time of the login attempt.
-        val loginValue = binding.loginInput.text.toString()
-        val passwordValue = binding.passwordInput.text.toString()
+        val loginValue = loginState.value
+        val passwordValue = passwordState.value
 
-        var cancel = false
-        var focusView: View? = null
+        showProgress(true)
 
-        // Check for a valid login name.
-        if (loginValue.isEmpty()) {
-            binding.loginInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = binding.loginInput
-            cancel = true
-        } else if (!isLoginValid(loginValue)) {
-            binding.loginInput.error = getString(R.string.error_invalid_login)
-            if (focusView == null) focusView = binding.loginInput
-            cancel = true
-        }
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val today = formatSystemDate()
+                val response = service.login(
+                    name = loginValue,
+                    password = passwordValue,
+                    date = today
+                )
+                lifecycleScope.launch(Dispatchers.Main) {
+                    showProgress(false)
 
-        // Check for a valid password, if the user entered one.
-        if (passwordValue.isEmpty()) {
-            binding.passwordInput.error = getString(R.string.error_field_required)
-            if (focusView == null) focusView = binding.passwordInput
-            cancel = true
-        } else if (!isPasswordValid(passwordValue)) {
-            binding.passwordInput.error = getString(R.string.error_invalid_password)
-            if (focusView == null) focusView = binding.passwordInput
-            cancel = true
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView?.requestFocus()
-        } else {
-            binding.actionSignIn.isEnabled = false
-            showProgress(true)
-
-            preferences.userCredentials = UserCredentials(loginValue, passwordValue)
-
-            val today = formatSystemDate()
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    val response = service.login(loginValue, passwordValue, today)
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        binding.actionSignIn.isEnabled = true
-                        showProgress(false)
-
-                        if (isValidResponse(response)) {
-                            val errorMessage = getResponseError(response)
-                            if (errorMessage.isNullOrEmpty()) {
-                                notifyLoginSuccess(loginValue)
-                            } else {
-                                binding.loginInput.error = errorMessage
-                                notifyLoginFailure(loginValue, errorMessage)
-                            }
+                    if (isValidResponse(response)) {
+                        val errorMessage = getResponseError(response)
+                        if (errorMessage.isNullOrEmpty()) {
+                            preferences.userCredentials = UserCredentials(loginValue, passwordValue)
+                            notifyLoginSuccess(loginValue)
                         } else {
-                            binding.passwordInput.requestFocus()
-                            authenticate(loginValue, response.raw())
+                            showError(errorMessage)
+                            notifyLoginFailure(loginValue, errorMessage)
                         }
                     }
-                } catch (e: Exception) {
-                    Timber.e(e, "Error signing in: ${e.message}")
-                    handleErrorMain(e)
-                    binding.actionSignIn.isEnabled = true
                 }
+            } catch (e: Exception) {
+                Timber.e(e, "Error signing in: ${e.message}")
+                showProgressMain(false)
+                handleErrorMain(e)
             }
         }
     }
 
-    private fun isLoginValid(login: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(login).matches()
-    }
+    override fun authenticate(submit: Boolean) = Unit
 
-    private fun isPasswordValid(password: String): Boolean {
-        return password.trim().length > 4
-    }
-
-    override fun authenticate(submit: Boolean) {
-        authenticateBasicRealm("", "")
-    }
-
-    private fun authenticate(login: String, response: Response): Boolean {
-        val challenges = response.challenges()
-        for (challenge in challenges) {
-            if (challenge.scheme == BasicCredentials.SCHEME) {
-                authenticateBasicRealm(login, challenge.realm ?: "")
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun authenticateBasicRealm(username: String, realm: String) {
-        val navController = findNavController()
-        Timber.i("authenticateBasicRealm realm=$realm currentDestination=${navController.currentDestination?.label}")
-
-        if (!isNavDestination(R.id.basicRealmFragment)) {
-            Bundle().apply {
-                putString(BasicRealmFragment.EXTRA_REALM, realm)
-                putString(BasicRealmFragment.EXTRA_USER, username)
-                navController.navigate(R.id.action_basicRealmLogin, this)
-            }
-        }
-    }
-
-    private fun notifyLoginSuccess(login: String) {
+    private suspend fun notifyLoginSuccess(login: String) {
         dismissAllowingStateLoss()
         delegate.onLoginSuccess(login)
     }
 
-    private fun notifyLoginFailure(login: String, reason: String) {
+    private suspend fun notifyLoginFailure(login: String, reason: String) {
         delegate.onLoginFailure(login, reason)
     }
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        notifyLoginFailure("", REASON_CANCEL)
+        onDismiss()
+    }
+
+    private fun onDismiss() {
+        lifecycleScope.launch { notifyLoginFailure("", REASON_CANCEL) }
+    }
+
+    private suspend fun showError(message: String) {
+        viewModel.showError(message)
     }
 
     companion object {

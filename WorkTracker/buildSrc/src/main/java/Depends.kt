@@ -4,7 +4,8 @@ object Android {
         const val minSdk = 23
         const val targetSdk = 33
 
-        const val compose = "1.2.1"
+        const val compose = "1.3.1"
+        const val composeCompiler = "1.3.2"
         const val hilt = "2.42"
         const val koin = "3.1.5"
         const val navigation = "2.5.0"
@@ -37,8 +38,14 @@ object Android {
         const val appcompat = "androidx.appcompat:appcompat:1.7.0-alpha01"
         const val material = "androidx.compose.material:material:${Version.compose}"
         const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
-        const val composeTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
-        const val compose = "androidx.compose.ui:ui:${Version.compose}"
+        const val composeActivity = "androidx.activity:activity-compose:${Version.compose}"
+        const val composeCompiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
+        const val composeIcons = "androidx.compose.material:material-icons-extended:${Version.compose}"
+        const val composeMaterial = "androidx.compose.material:material:${Version.compose}"
+        const val composeRuntime = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
+        const val composeUi = "androidx.compose.ui:ui:${Version.compose}"
+        const val composeUiTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
+        const val composeUiToolingPreview = "androidx.compose.ui:ui-tooling-preview:${Version.compose}"
         const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.4"
         const val core = "androidx.core:core-ktx:1.9.0"
         const val navigationCompose = "androidx.navigation:navigation-compose:${Version.navigation}"
@@ -54,6 +61,7 @@ object Android {
     }
 
     object Logging {
+        const val crashlytics = "com.google.firebase:firebase-crashlytics:18.3.3"
         const val timber = "com.jakewharton.timber:timber:5.0.1"
     }
 
@@ -103,7 +111,7 @@ object Kotlin {
     object Version {
         const val coroutines = "1.6.2"
         const val html = "0.8.0"
-        const val kotlin = "1.7.10"
+        const val kotlin = "1.7.20"
         const val serialization = "1.3.33"
     }
 

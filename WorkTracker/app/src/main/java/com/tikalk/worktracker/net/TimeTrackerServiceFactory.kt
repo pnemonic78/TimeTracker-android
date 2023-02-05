@@ -35,7 +35,6 @@ import android.content.Context
 import com.tikalk.net.PersistentCookieStore
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.net.TimeTrackerService.Companion.BASE_URL
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -73,7 +72,6 @@ class TimeTrackerServiceFactory {
         }
 
         fun createHttpClient(
-            preferences: TimeTrackerPrefs? = null,
             cookieHandler: CookieHandler
         ): OkHttpClient {
             val httpClientBuilder = OkHttpClient.Builder()

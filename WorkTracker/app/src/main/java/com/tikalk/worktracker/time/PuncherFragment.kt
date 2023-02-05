@@ -46,10 +46,10 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
@@ -83,11 +83,6 @@ class PuncherFragment : TimeFormFragment() {
     private val binding get() = _binding!!
 
     private var timer: Job? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -164,11 +159,11 @@ class PuncherFragment : TimeFormFragment() {
         val binding = _binding ?: return
 
         // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(timeViewModel.taskEmpty)
+        val taskItems = arrayOf(viewModel.taskEmpty)
         binding.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = timeViewModel.projectsData.value
+        val projects = viewModel.projectsData.value
         bindProjects(context, record, projects)
 
         bindLocation(context, record)
@@ -213,7 +208,7 @@ class PuncherFragment : TimeFormFragment() {
         if (locations.isNotEmpty()) {
             val index = findLocation(locations, record.location)
             binding.locationInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) locations[index] else timeViewModel.locationEmpty
+            val selectedItem = if (index >= 0) locations[index] else viewModel.locationEmpty
             locationItemSelected(selectedItem)
         }
     }
@@ -331,10 +326,10 @@ class PuncherFragment : TimeFormFragment() {
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
                 val locationId = args.getLong(EXTRA_LOCATION)
 
-                val projects = timeViewModel.projectsData.value
-                val project = projects?.find { it.id == projectId } ?: timeViewModel.projectEmpty
+                val projects = viewModel.projectsData.value
+                val project = projects.find { it.id == projectId } ?: viewModel.projectEmpty
                 val tasks = project.tasks
-                val task = tasks.find { it.id == taskId } ?: timeViewModel.taskEmpty
+                val task = tasks.find { it.id == taskId } ?: viewModel.taskEmpty
 
                 val record = TimeRecord(
                     id = TikalEntity.ID_NONE,
@@ -363,10 +358,10 @@ class PuncherFragment : TimeFormFragment() {
         if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
             applyFavorite()
         } else if (!recordStarted.isEmpty()) {
-            val projects = timeViewModel.projectsData.value
+            val projects = viewModel.projectsData.value
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
-            val project = projects?.find { it.id == recordStartedProjectId } ?: record.project
+            val project = projects.find { it.id == recordStartedProjectId } ?: record.project
             setRecordProject(project)
             val tasks = project.tasks
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
@@ -415,7 +410,7 @@ class PuncherFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: PuncherPage) {
-        timeViewModel.projectsData.value = page.projects
+        viewModel.projectsData.value = page.projects
         setRecordValue(page.record)
     }
 
@@ -436,11 +431,6 @@ class PuncherFragment : TimeFormFragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
@@ -448,9 +438,9 @@ class PuncherFragment : TimeFormFragment() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        val recordParcel = savedInstanceState.getParcelable<TimeRecordEntity?>(STATE_RECORD)
+        val recordParcel = savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
-            val projects = timeViewModel.projectsData.value
+            val projects = viewModel.projectsData.value
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             populateForm(record)

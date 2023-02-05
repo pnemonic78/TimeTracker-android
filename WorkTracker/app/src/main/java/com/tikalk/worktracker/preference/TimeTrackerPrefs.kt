@@ -32,6 +32,10 @@
 package com.tikalk.worktracker.preference
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.icu.util.Calendar
+import androidx.preference.PreferenceManager
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Location
@@ -49,7 +53,16 @@ import com.tikalk.worktracker.time.toCalendar
  */
 class TimeTrackerPrefs(context: Context) {
 
-    private val prefs = SecurePreferences.getDefaultSharedPreferences(context)
+    private val securePreferences: SharedPreferences
+    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+    init {
+        securePreferences = try {
+            SecurePreferences.getDefaultSharedPreferences(context)
+        } catch (e: Exception) {
+            PreferenceManager.getDefaultSharedPreferences(context)
+        }
+    }
 
     companion object {
         private const val BASIC_CREDENTIALS_REALM = "credentials.basic.realm"
@@ -70,20 +83,22 @@ class TimeTrackerPrefs(context: Context) {
         private const val TASK_NAME = "task.name"
         private const val TASK_FAVORITE = "task.favorite"
         private const val START_TIME = "start.time"
+
+        private const val HOURS_PER_DAY = "hours_per_day"
     }
 
     var basicCredentials: BasicCredentials = BasicCredentials.EMPTY.copy()
         get() {
-            field.realm = prefs.getString(BASIC_CREDENTIALS_REALM, null) ?: ""
-            field.username = prefs.getString(BASIC_CREDENTIALS_USER, null) ?: ""
-            field.password = prefs.getString(BASIC_CREDENTIALS_PASSWORD, null) ?: ""
+            field.realm = securePreferences.getString(BASIC_CREDENTIALS_REALM, null) ?: ""
+            field.username = securePreferences.getString(BASIC_CREDENTIALS_USER, null) ?: ""
+            field.password = securePreferences.getString(BASIC_CREDENTIALS_PASSWORD, null) ?: ""
             return field
         }
         set(value) {
             field.realm = value.realm
             field.username = value.username
             field.password = value.password
-            prefs.edit()
+            securePreferences.edit()
                 .putString(BASIC_CREDENTIALS_REALM, value.realm)
                 .putString(BASIC_CREDENTIALS_USER, value.username)
                 .putString(BASIC_CREDENTIALS_PASSWORD, value.password)
@@ -92,14 +107,14 @@ class TimeTrackerPrefs(context: Context) {
 
     var userCredentials: UserCredentials = UserCredentials.EMPTY.copy()
         get() {
-            field.login = prefs.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
-            field.password = prefs.getString(USER_CREDENTIALS_PASSWORD, null) ?: ""
+            field.login = securePreferences.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
+            field.password = securePreferences.getString(USER_CREDENTIALS_PASSWORD, null) ?: ""
             return field
         }
         set(value) {
             field.login = value.login
             field.password = value.password
-            prefs.edit()
+            securePreferences.edit()
                 .putString(USER_CREDENTIALS_LOGIN, value.login)
                 .putString(USER_CREDENTIALS_PASSWORD, value.password)
                 .apply()
@@ -113,7 +128,7 @@ class TimeTrackerPrefs(context: Context) {
         startTime: Long,
         remoteId: Long
     ) {
-        prefs.edit()
+        securePreferences.edit()
             .putLong(PROJECT_ID, projectId)
             .putString(PROJECT_NAME, projectName)
             .putLong(TASK_ID, taskId)
@@ -135,17 +150,17 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun getStartedRecord(): TimeRecord? {
-        val projectId = prefs.getLong(PROJECT_ID, TikalEntity.ID_NONE)
+        val projectId = securePreferences.getLong(PROJECT_ID, TikalEntity.ID_NONE)
         if (projectId == TikalEntity.ID_NONE) return null
 
-        val projectName = prefs.getString(PROJECT_NAME, null) ?: return null
+        val projectName = securePreferences.getString(PROJECT_NAME, null) ?: return null
 
-        val taskId = prefs.getLong(TASK_ID, TikalEntity.ID_NONE)
+        val taskId = securePreferences.getLong(TASK_ID, TikalEntity.ID_NONE)
         if (taskId == TikalEntity.ID_NONE) return null
 
-        val taskName = prefs.getString(TASK_NAME, null) ?: return null
+        val taskName = securePreferences.getString(TASK_NAME, null) ?: return null
 
-        val startTime = prefs.getLong(START_TIME, TimeRecord.NEVER)
+        val startTime = securePreferences.getLong(START_TIME, TimeRecord.NEVER)
         if (startTime <= TimeRecord.NEVER) return null
 
         val project = Project(name = projectName)
@@ -155,7 +170,7 @@ class TimeTrackerPrefs(context: Context) {
         project.addTask(task)
         val start = startTime.toCalendar()
 
-        val locationId = prefs.getLong(LOCATION, TikalEntity.ID_NONE)
+        val locationId = securePreferences.getLong(LOCATION, TikalEntity.ID_NONE)
         val location = Location.valueOf(locationId)
 
         return TimeRecord(
@@ -169,7 +184,7 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun stopRecord() {
-        prefs.edit()
+        securePreferences.edit()
             .remove(PROJECT_ID)
             .remove(PROJECT_NAME)
             .remove(TASK_ID)
@@ -187,7 +202,7 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun setFavorite(projectId: Long, taskId: Long, remoteId: Long = TikalEntity.ID_NONE) {
-        prefs.edit()
+        securePreferences.edit()
             .putLong(PROJECT_FAVORITE, projectId)
             .putLong(TASK_FAVORITE, taskId)
             .putLong(LOCATION_FAVORITE, remoteId)
@@ -195,15 +210,15 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun getFavoriteProject(): Long {
-        return prefs.getLong(PROJECT_FAVORITE, TikalEntity.ID_NONE)
+        return securePreferences.getLong(PROJECT_FAVORITE, TikalEntity.ID_NONE)
     }
 
     fun getFavoriteTask(): Long {
-        return prefs.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
+        return securePreferences.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
     }
 
     fun getFavoriteLocation(): Long {
-        return prefs.getLong(LOCATION_FAVORITE, TikalEntity.ID_NONE)
+        return securePreferences.getLong(LOCATION_FAVORITE, TikalEntity.ID_NONE)
     }
 
     private var _user: User? = null
@@ -211,9 +226,9 @@ class TimeTrackerPrefs(context: Context) {
     var user: User = User.EMPTY
         get() {
             if (_user == null) {
-                val username = prefs.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
-                val email = prefs.getString(USER_EMAIL, username)
-                val displayName = prefs.getString(USER_DISPLAY_NAME, null)
+                val username = securePreferences.getString(USER_CREDENTIALS_LOGIN, null) ?: ""
+                val email = securePreferences.getString(USER_EMAIL, username)
+                val displayName = securePreferences.getString(USER_DISPLAY_NAME, null)
                 val user = User(username, email, displayName)
                 _user = user
                 field = user
@@ -222,10 +237,57 @@ class TimeTrackerPrefs(context: Context) {
         }
         set(value) {
             field = value
-            prefs.edit()
+            securePreferences.edit()
                 .putString(USER_CREDENTIALS_LOGIN, value.username)
                 .putString(USER_EMAIL, value.email)
                 .putString(USER_DISPLAY_NAME, value.displayName)
                 .apply()
         }
+
+    private val hoursPerDayDefault =
+        context.resources.getInteger(R.integer.pref_hours_per_day_defaultValue)
+
+    var workHoursPerDay: Int
+        get() = sharedPreferences.getInt(HOURS_PER_DAY, hoursPerDayDefault)
+        set(value) {
+            sharedPreferences.edit().putInt(HOURS_PER_DAY, value)
+        }
+
+    private val isWorkDayDefault = listOf<Boolean>(
+        context.resources.getBoolean(R.bool.pref_work_day_sunday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_monday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_tuesday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_wednesday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_thursday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_friday_defaultValue),
+        context.resources.getBoolean(R.bool.pref_work_day_saturday_defaultValue)
+    )
+
+    val isWorkDaySunday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.sunday", isWorkDayDefault[0])
+    val isWorkDayMonday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.monday", isWorkDayDefault[1])
+    val isWorkDayTuesday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.tuesday", isWorkDayDefault[2])
+    val isWorkDayWednesday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.wednesday", isWorkDayDefault[3])
+    val isWorkDayThursday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.thursday", isWorkDayDefault[4])
+    val isWorkDayFriday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.friday", isWorkDayDefault[5])
+    val isWorkDaySaturday: Boolean
+        get() = sharedPreferences.getBoolean("work_day.saturday", isWorkDayDefault[6])
+
+    fun calendarWorkDays(): Collection<Int> {
+        val list = mutableListOf<Int>()
+        if (isWorkDaySunday) list.add(Calendar.SUNDAY)
+        if (isWorkDayMonday) list.add(Calendar.MONDAY)
+        if (isWorkDayTuesday) list.add(Calendar.TUESDAY)
+        if (isWorkDayWednesday) list.add(Calendar.WEDNESDAY)
+        if (isWorkDayThursday) list.add(Calendar.THURSDAY)
+        if (isWorkDayFriday) list.add(Calendar.FRIDAY)
+        if (isWorkDaySaturday) list.add(Calendar.SATURDAY)
+        return list
+    }
+
 }

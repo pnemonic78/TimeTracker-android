@@ -33,18 +33,26 @@
 package com.tikalk.worktracker.app
 
 import android.os.Bundle
+import android.view.View
 import androidx.annotation.StringRes
+import androidx.lifecycle.lifecycleScope
 import com.tikalk.app.TikalFragment
+import com.tikalk.app.runOnUiThread
+import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
 abstract class TrackerFragment : TikalFragment,
-    TrackerFragmentDelegate.TrackerFragmentDelegateCallback {
+    TrackerFragmentDelegate.TrackerFragmentDelegateCallback,
+    Runnable {
 
     constructor() : super()
 
@@ -62,12 +70,22 @@ abstract class TrackerFragment : TikalFragment,
     @Inject
     lateinit var dataSource: TimeTrackerRepository
 
+    protected abstract val viewModel: TrackerViewModel
     protected val delegate = TrackerFragmentDelegate(this, this)
     protected val firstRun: Boolean get() = delegate.firstRun
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         delegate.onCreate(savedInstanceState)
+    }
+
+    protected open fun onLoginSuccess(login: String) {
+        Timber.i("login success")
+        run()
+    }
+
+    protected open fun onLoginFailure(login: String, reason: String) {
+        Timber.e("login failure: $reason")
     }
 
     protected fun authenticateMain(submit: Boolean = true) {
@@ -78,11 +96,56 @@ abstract class TrackerFragment : TikalFragment,
         delegate.handleError(error)
     }
 
+    protected fun handleError(result: TikalResult.Error<*>) {
+        delegate.handleError(result.exception)
+    }
+
     protected open fun handleErrorMain(error: Throwable) {
         delegate.handleErrorMain(error)
     }
 
     override fun showError(@StringRes messageId: Int) {
         delegate.showError(messageId)
+    }
+
+    override fun showProgress(show: Boolean) {
+        (activity as? TrackerActivity)?.showProgress(show)
+    }
+
+    /**
+     * Shows the progress UI and hides the login form, on the main thread.
+     * @param show is visible?
+     */
+    protected fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        lifecycleScope.launch {
+            viewModel.isLoading.collect { isLoading ->
+                showProgress(show = isLoading)
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.onError.collect { error ->
+                if (error != null) handleError(error)
+            }
+        }
+        lifecycleScope.launch {
+            delegate.login.collect { (login, reason) ->
+                if (reason == null) {
+                    onLoginSuccess(login)
+                } else {
+                    onLoginFailure(login, reason)
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        run()
     }
 }

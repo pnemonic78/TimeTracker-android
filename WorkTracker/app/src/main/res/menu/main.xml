@@ -78,6 +78,12 @@
 
     <group android:id="@+id/menu_group_other">
         <item
+            android:id="@+id/helpFragment"
+            android:icon="@drawable/ic_menu_help"
+            android:orderInCategory="990"
+            android:title="@string/menu_help"
+            app:showAsAction="ifRoom" />
+        <item
             android:id="@+id/timeSettingsFragment"
             android:icon="@drawable/ic_menu_settings"
             android:orderInCategory="999"

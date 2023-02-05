@@ -75,19 +75,32 @@
     <string name="settings_label">"Settings"</string>
     <string name="menu_settings" translatable="false">@string/settings_label</string>
 
-    <!-- Settings - Privacy -->
+    <!-- Settings – Work -->
+    <string name="pref_work_title">"Work"</string>
+    <string name="pref_hours_per_day">"Hours per work day"</string>
+    <string name="friday">"Friday"</string>
+    <string name="monday">"Monday"</string>
+    <string name="saturday">"Saturday"</string>
+    <string name="sunday">"Sunday"</string>
+    <string name="thursday">"Thursday"</string>
+    <string name="tuesday">"Tuesday"</string>
+    <string name="wednesday">"Wednesday"</string>
+
+    <!-- Settings – Privacy -->
     <string name="pref_privacy_security_title">"Privacy &amp; security"</string>
     <string name="clear_user_data_text">"Clear storage"</string>
     <string name="pref_clear_user_data" translatable="false">@string/clear_user_data_text</string>
     <string name="pref_logout_title">"Sign out"</string>
+    <string name="pref_logout_toast">"Signed out of device"</string>
+    <string name="clear_user_data_toast">"Storage cleared"</string>
 
-    <!-- Settings - About -->
+    <!-- Settings – About -->
     <string name="pref_about_title">"About"</string>
     <string name="pref_version_title">"Application version"</string>
-    <string name="support_url" translatable="false">"http://pnemonic78.github.io/TimeTracker-android"</string>
+    <string name="support_url" translatable="false">"https://pnemonic78.github.io/TimeTracker-android"</string>
     <string name="pref_issue_title">"Issues"</string>
     <string name="pref_issue_summary">"Report a problem, or request a new feature."</string>
-    <string name="pref_issue_url" translatable="false">"mailto:moshe.waisberg@tikalk.com?subject=Tikal+Time+Tracker"</string>
+    <string name="pref_issue_url" translatable="false">"mailto:moshe.waisberg@tikalk.com?subject=Tikal Time Tracker"</string>
 
     <!-- Profile -->
     <string name="profile">"Profile"</string>
@@ -122,7 +135,7 @@
     <string name="reports">"Reports"</string>
     <string name="menu_reports" translatable="false">@string/reports</string>
     <string name="reports_title" translatable="false">@string/reports</string>
-    <string name="reports_header">"Report: %1$s - %2$s"</string>
+    <string name="reports_header">"Report: %1$s – %2$s"</string>
     <string name="start_date_label">"Start Date"</string>
     <string name="finish_date_label">"Finish Date"</string>
     <string name="action_generate">"Generate"</string>
@@ -176,4 +189,57 @@
     <string name="error_unknown">"An unknown error occurred."</string>
     <string name="error_connection">"Cannot connect to the remote server."</string>
     <string name="error_export">"Error exporting report!"</string>
+
+    <!-- Help -->
+    <string name="help">"Help"</string>
+    <string name="help_title" translatable="false">@string/help</string>
+    <string name="menu_help" translatable="false">@string/help</string>
+    <string name="help_summary">"It is important to remember to fill in hours as usual even on vacation, sick or reserve days, and to indicate the specific type of activity."</string>
+    <string name="help_consulting">"Tikal – Consulting"</string>
+    <string name="help_consulting_1">"Customer service: under the customer's name – according to the type of task"</string>
+    <string name="help_development">"Tikal – Development"</string>
+    <string name="help_development_1">"Customer service: under the customer's name – according to the type of task"</string>
+    <string name="help_development_2">"Laboratory"</string>
+    <string name="help_army">"Tikal – Army Service"</string>
+    <string name="help_army_1">"Reserves"</string>
+    <string name="help_illness">"Tikal – Illness"</string>
+    <string name="help_illness_1">"Sickness"</string>
+    <string name="help_vacation">"Tikal – Vacation"</string>
+    <string name="help_vacation_1">"Vacation"</string>
+    <string name="help_absence">"Tikal – Personal Absence"</string>
+    <string name="help_absence_1">"Unusual absences"</string>
+    <string name="help_absence_1_1">"Birth"</string>
+    <string name="help_absence_1_2">"Wedding"</string>
+    <string name="help_absence_1_3">"Death of a first degree relative"</string>
+    <string name="help_meeting">"Tikal – Meeting"</string>
+    <string name="help_meeting_1">"Company gatherings"</string>
+    <string name="help_meeting_2">"Fun days"</string>
+    <string name="help_meeting_3">"Statuses"</string>
+    <string name="help_meeting_4">"Group meetings"</string>
+    <string name="help_meeting_5">"Community meetings"</string>
+    <string name="help_meeting_6">"Meetings with clients to select a task"</string>
+    <string name="help_meeting_7">"Reception day in Tikal"</string>
+    <string name="help_training">"Tikal – Training"</string>
+    <string name="help_training_1">"Professional guidance and training"</string>
+    <string name="help_training_2">"Development of training materials"</string>
+    <string name="help_training_2_1">"Work on courses"</string>
+    <string name="help_training_2_2">"Work on workshops"</string>
+    <string name="help_training_2_3">"Work on lectures"</string>
+    <string name="help_training_3">"Courses"</string>
+    <string name="help_training_4">"Workshops"</string>
+    <string name="help_training_5">"Fuse Day"</string>
+    <string name="help_training_6">"Tikal Hackathon"</string>
+    <string name="help_training_7">"Work on a Tikal task"</string>
+    <string name="help_general">"Tikal – General"</string>
+    <string name="help_general_1">"Tikal time – work from Tikal offices between tasks"</string>
+    <string name="help_hr">"Tikal – HR"</string>
+    <string name="help_hr_1">"Work with human resources"</string>
+    <string name="help_hr_2">"Interviews for candidates"</string>
+    <string name="help_hr_3">"Conversations with employees (for group leaders)"</string>
+    <string name="help_sales">"Tikal – Sales"</string>
+    <string name="help_sales_1">"Work with sales"</string>
+    <string name="help_sales_2">"Lectures at clients"</string>
+    <string name="help_sales_3">"Presale meetings"</string>
+    <string name="help_transport">"Tikal – Transport"</string>
+    <string name="help_transport_1">"Travel between clients"</string>
 </resources>

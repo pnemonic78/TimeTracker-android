@@ -55,14 +55,14 @@ import java.util.Calendar
 class ReportFilter(
     var period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
     var favorite: String? = null,
-    var showProjectField: Boolean = true,
-    var showTaskField: Boolean = true,
-    var showStartField: Boolean = true,
-    var showFinishField: Boolean = true,
-    var showDurationField: Boolean = true,
-    var showNoteField: Boolean = true,
-    var showCostField: Boolean = false,
-    var showLocationField: Boolean = true
+    var isProjectFieldVisible: Boolean = true,
+    var isTaskFieldVisible: Boolean = true,
+    var isStartFieldVisible: Boolean = true,
+    var isFinishFieldVisible: Boolean = true,
+    var isDurationFieldVisible: Boolean = true,
+    var isNoteFieldVisible: Boolean = true,
+    var isCostFieldVisible: Boolean = false,
+    var isLocationFieldVisible: Boolean = false
 ) : TimeRecord(
     id = ID_NONE,
     project = Project.EMPTY,
@@ -78,25 +78,25 @@ class ReportFilter(
         period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
         favorite: String? = null,
         location: Location = Location.EMPTY,
-        showProjectField: Boolean = true,
-        showTaskField: Boolean = true,
-        showStartField: Boolean = true,
-        showFinishField: Boolean = true,
-        showDurationField: Boolean = true,
-        showNoteField: Boolean = true,
-        showCostField: Boolean = false,
-        showLocationField: Boolean = true
+        isProjectFieldVisible: Boolean = true,
+        isTaskFieldVisible: Boolean = true,
+        isStartFieldVisible: Boolean = true,
+        isFinishFieldVisible: Boolean = true,
+        isDurationFieldVisible: Boolean = true,
+        isNoteFieldVisible: Boolean = true,
+        isCostFieldVisible: Boolean = false,
+        isLocationFieldVisible: Boolean = false
     ) : this(
         period = period,
         favorite = favorite,
-        showProjectField = showProjectField,
-        showTaskField = showTaskField,
-        showStartField = showStartField,
-        showFinishField = showFinishField,
-        showDurationField = showDurationField,
-        showNoteField = showNoteField,
-        showCostField = showCostField,
-        showLocationField = showLocationField
+        isProjectFieldVisible = isProjectFieldVisible,
+        isTaskFieldVisible = isTaskFieldVisible,
+        isStartFieldVisible = isStartFieldVisible,
+        isFinishFieldVisible = isFinishFieldVisible,
+        isDurationFieldVisible = isDurationFieldVisible,
+        isNoteFieldVisible = isNoteFieldVisible,
+        isCostFieldVisible = isCostFieldVisible,
+        isLocationFieldVisible = isLocationFieldVisible
     ) {
         this.project = project
         this.task = task
@@ -121,15 +121,15 @@ class ReportFilter(
             put("chstart", "1")
             put("chfinish", "1")
 
-            if (showNoteField) {
+            if (isNoteFieldVisible) {
                 put("chnote", "1")
             }
-            if (showDurationField) {
+            if (isDurationFieldVisible) {
                 put("chduration", "1")
             }
             //put("chcost", "1")
             //put("chtotalsonly", "1")
-            if (showLocationField) {
+            if (isLocationFieldVisible) {
                 put("show_time_field_5", "1")
             }
 
@@ -212,14 +212,14 @@ class ReportFilter(
 
     private fun toShowString(): CharSequence {
         val s = StringBuffer()
-        if (showProjectField) s.append('P')
-        if (showTaskField) s.append('T')
-        if (showStartField) s.append('S')
-        if (showFinishField) s.append('F')
-        if (showDurationField) s.append('D')
-        if (showNoteField) s.append('N')
-        if (showCostField) s.append('C')
-        if (showLocationField) s.append('R')
+        if (isProjectFieldVisible) s.append('P')
+        if (isTaskFieldVisible) s.append('T')
+        if (isStartFieldVisible) s.append('S')
+        if (isFinishFieldVisible) s.append('F')
+        if (isDurationFieldVisible) s.append('D')
+        if (isNoteFieldVisible) s.append('N')
+        if (isCostFieldVisible) s.append('C')
+        if (isLocationFieldVisible) s.append('R')
         return s
     }
 }

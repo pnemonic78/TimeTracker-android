@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.inject
 
 import android.content.Context
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
 import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
@@ -87,5 +88,16 @@ object DataModule {
         remote: TimeTrackerRemoteDataSource
     ): TimeTrackerRepository {
         return TimeTrackerRepository(local, remote)
+    }
+
+    @Provides
+    @Singleton
+    fun provideServices(
+        preferences: TimeTrackerPrefs,
+        db: TrackerDatabase,
+        service: TimeTrackerService,
+        dataSource: TimeTrackerRepository
+    ): TrackerServices {
+        return TrackerServices(preferences, db, service, dataSource)
     }
 }

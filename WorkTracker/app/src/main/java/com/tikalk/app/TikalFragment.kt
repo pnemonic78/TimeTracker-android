@@ -38,11 +38,17 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 
 open class TikalFragment() : Fragment(), MenuProvider {
 
     constructor(args: Bundle) : this() {
         arguments = args
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

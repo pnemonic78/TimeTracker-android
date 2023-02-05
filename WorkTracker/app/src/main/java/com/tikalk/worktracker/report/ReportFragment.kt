@@ -36,7 +36,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -47,11 +46,12 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.compose.TikalTheme
+import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentReportListBinding
@@ -60,48 +60,22 @@ import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.time.formatCurrency
-import com.tikalk.worktracker.time.formatElapsedTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Formatter
-import java.util.Locale
 
 class ReportFragment : InternetFragment() {
 
+    override val viewModel by viewModels<ReportViewModel>()
+
     private var _binding: FragmentReportListBinding? = null
     private val binding get() = _binding!!
-    private val bindingTotals get() = binding.totals
 
-    private val recordsData = MutableLiveData<List<TimeRecord>>()
-    private val totalsData = MutableLiveData<ReportTotals>()
-    private val filterData = MutableLiveData<ReportFilter>()
-    private var listAdapter = ReportAdapter(ReportFilter())
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        recordsData.observe(this) { records ->
-            bindList(records)
-        }
-        totalsData.observe(this) { totals ->
-            bindTotals(totals)
-        }
-        filterData.observe(this) { filter ->
-            this.listAdapter = ReportAdapter(filter)
-            binding.list.adapter = listAdapter
-        }
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
-            }
-        }
-    }
+    private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
+    private val totalsData = MutableStateFlow<ReportTotals?>(null)
+    private val filterData = MutableStateFlow<ReportFilter>(ReportFilter())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -114,7 +88,22 @@ class ReportFragment : InternetFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = listAdapter
+        binding.list.setContent {
+            TikalTheme {
+                ReportList(itemsFlow = recordsData, filterFlow = filterData)
+            }
+        }
+
+        lifecycleScope.launch {
+            recordsData.collect { records ->
+                bindList(records)
+            }
+        }
+        lifecycleScope.launch {
+            totalsData.collect { totals ->
+                if (totals != null) bindTotals(totals)
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -125,42 +114,25 @@ class ReportFragment : InternetFragment() {
     @MainThread
     private fun bindList(records: List<TimeRecord>) {
         if (!isVisible) return
-        listAdapter.submitList(records)
-        if (records === recordsData.value) {
-            listAdapter.notifyDataSetChanged()
-        }
-        if (records.isNotEmpty()) {
-            binding.listSwitcher.displayedChild = CHILD_LIST
-        } else {
+        if (records.isEmpty()) {
             binding.listSwitcher.displayedChild = CHILD_EMPTY
+        } else {
+            binding.listSwitcher.displayedChild = CHILD_LIST
         }
     }
 
     @MainThread
     private fun bindTotals(totals: ReportTotals) {
-        val context = this.context ?: return
-        val timeBuffer = StringBuilder(20)
-        val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
-        val currencyBuffer = StringBuilder(20)
-        val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
         val filter = filterData.value
 
-        if (filter?.showDurationField == true) {
-            timeBuffer.clear()
-            bindingTotals.durationTotalLabel.visibility = View.VISIBLE
-            bindingTotals.durationTotal.text =
-                formatElapsedTime(context, timeFormatter, totals.duration).toString()
-        } else {
-            bindingTotals.durationTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.durationTotal.text = null
-        }
-        if (filter?.showCostField == true) {
-            timeBuffer.clear()
-            bindingTotals.costTotalLabel.visibility = View.VISIBLE
-            bindingTotals.costTotal.text = formatCurrency(currencyFormatter, totals.cost).toString()
-        } else {
-            bindingTotals.costTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.costTotal.text = null
+        binding.totals.composeView.setContent {
+            TikalTheme {
+                ReportTotalsFooter(
+                    totals = totals,
+                    isDurationFieldVisible = filter.isDurationFieldVisible,
+                    isCostFieldVisible = filter.isCostFieldVisible
+                )
+            }
         }
     }
 
@@ -176,7 +148,7 @@ class ReportFragment : InternetFragment() {
     }
 
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
 
         var filter: ReportFilter? = null
@@ -184,18 +156,14 @@ class ReportFragment : InternetFragment() {
         val args = arguments
         if (args != null) {
             if (args.containsKey(EXTRA_FILTER)) {
-                val filterExtra = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    args.getParcelable(EXTRA_FILTER, ReportFilter::class.java)
-                } else {
-                    args.getParcelable(EXTRA_FILTER)
-                }
+                val filterExtra = args.getParcelableCompat<ReportFilter>(EXTRA_FILTER)
                 if (filterExtra != null) {
                     filter = filterExtra
                 }
             }
         }
         if (filter == null) {
-            filter = filterData.value ?: ReportFilter()
+            filter = filterData.value
         }
 
         lifecycleScope.launch {
@@ -212,15 +180,10 @@ class ReportFragment : InternetFragment() {
         }
     }
 
-    private fun processPage(page: ReportPage) {
-        filterData.value = page.filter
-        recordsData.value = page.records
-        totalsData.value = page.totals
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
+    private suspend fun processPage(page: ReportPage) {
+        filterData.emit(page.filter)
+        recordsData.emit(page.records)
+        totalsData.emit(page.totals)
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -299,8 +262,8 @@ class ReportFragment : InternetFragment() {
 
     private fun exportCSV(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
-        val filter = filterData.value ?: return
+        val records = recordsData.value
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(
@@ -313,8 +276,8 @@ class ReportFragment : InternetFragment() {
 
     private fun exportHTML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
-        val filter = filterData.value ?: return
+        val records = recordsData.value
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(
@@ -327,8 +290,8 @@ class ReportFragment : InternetFragment() {
 
     private fun exportODF(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
-        val filter = filterData.value ?: return
+        val records = recordsData.value
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(
@@ -341,8 +304,8 @@ class ReportFragment : InternetFragment() {
 
     private fun exportXML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
-        val records = recordsData.value ?: return
-        val filter = filterData.value ?: return
+        val records = recordsData.value
+        val filter = filterData.value
         val totals = totalsData.value ?: return
 
         export(

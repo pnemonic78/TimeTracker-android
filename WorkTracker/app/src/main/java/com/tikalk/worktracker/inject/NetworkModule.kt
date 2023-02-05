@@ -35,7 +35,6 @@ package com.tikalk.worktracker.inject
 import android.content.Context
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,11 +56,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideHttpClient(
-        preferences: TimeTrackerPrefs? = null,
-        cookieHandler: CookieHandler
-    ): OkHttpClient {
-        return TimeTrackerServiceFactory.createHttpClient(preferences, cookieHandler)
+    fun provideHttpClient(cookieHandler: CookieHandler): OkHttpClient {
+        return TimeTrackerServiceFactory.createHttpClient(cookieHandler)
     }
 
     @Provides

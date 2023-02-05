@@ -32,17 +32,20 @@
 
 package com.tikalk.worktracker.auth
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
-class AuthenticationViewModel : TrackerViewModel() {
+@HiltViewModel
+class AuthenticationViewModel @Inject constructor(
+    services: TrackerServices
+) : TrackerViewModel(services) {
 
-    private val _login = MutableLiveData<LoginData>()
-    val login: LiveData<LoginData> = _login
-
-    private val _basicRealm = MutableLiveData<BasicRealmData>()
-    val basicRealm: LiveData<BasicRealmData> = _basicRealm
+    private val _login = MutableStateFlow(LoginData(""))
+    val login: Flow<LoginData> = _login
 
     /**
      * Data for login callbacks.
@@ -53,7 +56,7 @@ class AuthenticationViewModel : TrackerViewModel() {
      * Login was successful.
      * @param login the user's login that was used.
      */
-    fun onLoginSuccess(login: String) {
+    suspend fun onLoginSuccess(login: String) {
         notifyLoginSuccess(login)
     }
 
@@ -62,47 +65,15 @@ class AuthenticationViewModel : TrackerViewModel() {
      * @param login the user's login that was used.
      * @param reason the failure reason.
      */
-    fun onLoginFailure(login: String, reason: String) {
+    suspend fun onLoginFailure(login: String, reason: String) {
         notifyLoginFailure(login, reason)
     }
 
-    private fun notifyLoginSuccess(login: String) {
-        _login.postValue(LoginData(login))
+    private suspend fun notifyLoginSuccess(login: String) {
+        _login.emit(LoginData(login))
     }
 
-    private fun notifyLoginFailure(login: String, reason: String) {
-        _login.postValue(LoginData(login, reason))
-    }
-
-    /**
-     * Data for basic realm login callbacks.
-     */
-    data class BasicRealmData(val realm: String, val username: String, val reason: String? = null)
-
-    /**
-     * Login was successful.
-     * @param realm the realm name that was used.
-     * @param username the user's name that was used.
-     */
-    fun onBasicRealmSuccess(realm: String, username: String) {
-        notifyLoginSuccess(realm, username)
-    }
-
-    /**
-     * Login failed.
-     * @param realm the realm name that was used.
-     * @param username the user's name that was used.
-     * @param reason the failure reason.
-     */
-    fun onBasicRealmFailure(realm: String, username: String, reason: String) {
-        notifyLoginFailure(realm, username, reason)
-    }
-
-    private fun notifyLoginSuccess(realmName: String, username: String) {
-        _basicRealm.postValue(BasicRealmData(realmName, username))
-    }
-
-    private fun notifyLoginFailure(realmName: String, username: String, reason: String) {
-        _basicRealm.postValue(BasicRealmData(realmName, username, reason))
+    private suspend fun notifyLoginFailure(login: String, reason: String) {
+        _login.emit(LoginData(login, reason))
     }
 }

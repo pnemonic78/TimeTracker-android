@@ -116,7 +116,7 @@ open class TimeRecord(
     fun isEmpty(): Boolean {
         return project.isEmpty()
             || task.isEmpty()
-            || (duration == 0L)
+            || ((duration == 0L) && (start == null))
     }
 
     open fun copy(): TimeRecord {
@@ -305,4 +305,12 @@ fun TimeRecord.split(): List<TimeRecord> {
 @Suppress("NOTHING_TO_INLINE")
 inline fun TimeRecord?.isNullOrEmpty(): Boolean {
     return (this == null) || isEmpty()
+}
+
+internal operator fun TimeRecord.times(n: Int): List<TimeRecord> {
+    val list = mutableListOf<TimeRecord>()
+    for (i in 0 until n) {
+        list.add(this)
+    }
+    return list
 }

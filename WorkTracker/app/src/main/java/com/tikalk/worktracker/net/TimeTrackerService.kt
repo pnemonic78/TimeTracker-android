@@ -52,7 +52,7 @@ interface TimeTrackerService {
     @FormUrlEncoded
     @POST(PHP_LOGIN)
     suspend fun login(
-        @Field("login") email: String,
+        @Field("login") name: String,
         @Field("password") password: String,
         @Field("browser_today") date: String,
         @Field("btn_login") button: String = "Login"
@@ -114,10 +114,10 @@ interface TimeTrackerService {
     @Headers("Referer: ${BASE_URL}${PHP_PROFILE}")
     suspend fun editProfile(
         @Field("name") name: String,
+        @Field("email") email: String,
         @Field("login") login: String,
         @Field("password1") password1: String,
         @Field("password2") password2: String,
-        @Field("email") email: String,
         @Field("btn_save") submit: String = "Save"
     ): Response<String>
 

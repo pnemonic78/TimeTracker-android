@@ -53,27 +53,5 @@
             android:name="submit"
             android:defaultValue="false"
             app:argType="boolean" />
-        <action
-            android:id="@+id/action_basicRealmLogin"
-            app:destination="@id/basicRealmFragment" />
-    </dialog>
-    <dialog
-        android:id="@+id/basicRealmFragment"
-        android:name="com.tikalk.worktracker.auth.BasicRealmFragment"
-        android:label="@string/activity_basic_realm"
-        tools:layout="@layout/fragment_basic_realm">
-        <argument
-            android:name="callerId"
-            app:argType="string" />
-        <argument
-            android:name="username"
-            app:argType="string" />
-        <argument
-            android:name="password"
-            app:argType="string" />
-        <argument
-            android:name="submit"
-            android:defaultValue="false"
-            app:argType="boolean" />
     </dialog>
 </navigation>

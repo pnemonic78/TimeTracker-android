@@ -43,11 +43,6 @@ open class TikalDialogFragment() : AppCompatDialogFragment() {
         arguments = args
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        showsDialog = false
-    }
-
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         if (savedInstanceState != null) {

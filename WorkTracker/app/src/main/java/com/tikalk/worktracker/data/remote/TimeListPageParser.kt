@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.data.remote
 
 import android.net.Uri
-import android.text.format.DateUtils
 import com.tikalk.html.findParentElement
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
@@ -44,6 +43,7 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
@@ -60,12 +60,12 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
 
     override fun createPage(page: MutableTimeListPage): TimeListPage {
         return TimeListPage(
-            page.record,
-            page.projects,
-            page.errorMessage,
-            page.date,
-            page.records,
-            page.totals
+            record = page.record,
+            projects = page.projects,
+            errorMessage = page.errorMessage,
+            date = page.date,
+            records = page.records,
+            totals = page.totals
         )
     }
 
@@ -224,7 +224,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         }
         val totals = TimeTotals()
 
-        val table = findTotalsTable(doc, parent) ?: return
+        val table = findTotalsTable(doc) ?: return
         val cells = table.getElementsByTag("td")
         for (td in cells) {
             val hasClass = td.classNames().any { it.startsWith("day-totals") }
@@ -260,7 +260,7 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
         page.totals = totals
     }
 
-    private fun findTotalsTable(doc: Document, parent: Element?): Element? {
+    private fun findTotalsTable(doc: Document): Element? {
         val body = doc.body()
         val div = body.selectFirst("div[class='day-totals']") ?: return null
         val candidates = div.getElementsByTag("td")

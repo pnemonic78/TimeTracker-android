@@ -32,7 +32,6 @@
 
 package com.tikalk.worktracker.user
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -40,57 +39,39 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentUsersBinding
-import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class UsersFragment : InternetFragment() {
 
-    private var _binding: FragmentUsersBinding? = null
+    override val viewModel by viewModels<UsersViewModel>()
+
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
-
-    private val usersData = MutableLiveData<List<User>>()
-    private val listAdapter = UsersAdapter()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        usersData.observe(this) { users ->
-            bindList(users)
-        }
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
-            }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUsersBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = listAdapter
+
+        binding.composeView.setContent {
+            UsersScreen(viewState = viewModel)
+        }
     }
 
     override fun onDestroyView() {
@@ -102,34 +83,12 @@ class UsersFragment : InternetFragment() {
         menu.clear()
     }
 
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
-            try {
-                dataSource.usersPage(firstRun)
-                    .flowOn(Dispatchers.IO)
-                    .collect { page ->
-                        usersData.value = page.users
-                    }
-            } catch (e: Exception) {
-                Timber.e(e, "Error loading page: ${e.message}")
-                handleError(e)
-            }
+            viewModel.fetchUsers(firstRun)
         }
-    }
-
-    private fun bindList(users: List<User>) {
-        listAdapter.submitList(users)
-        if (users === this.usersData.value) {
-            listAdapter.notifyDataSetChanged()
-        }
-        bindIndex(users)
     }
 
     override fun authenticate(submit: Boolean) {
@@ -141,31 +100,5 @@ class UsersFragment : InternetFragment() {
                 navController.navigate(R.id.action_users_to_login, this)
             }
         }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun bindIndex(users: List<User>) {
-        val chars = users.filter { it.displayName?.isNotEmpty() == true }
-            .map { it.displayName!![0].uppercase() }
-            .toSet()
-        val positions = chars.associateWith { c ->
-            users.indexOfFirst { it.displayName.orEmpty().startsWith(c) }
-        }
-
-        binding.listIndex.apply {
-            setIndices(chars)
-            scrollIndexListener = object : UsersScrollerView.OnScrollIndexListener {
-                override fun onScrollIndex(index: String) {
-                    onIndexTouch(positions, index)
-                }
-            }
-        }
-    }
-
-    private fun onIndexTouch(positions: Map<String, Int>, char: String) {
-        val position = positions[char] ?: return
-        if (position < 0) return
-        val listView = binding.list
-        listView.scrollToPosition(position)
     }
 }

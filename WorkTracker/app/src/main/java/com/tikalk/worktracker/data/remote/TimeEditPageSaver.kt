@@ -37,16 +37,15 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.Calendar
 
 class TimeEditPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeEditPage>(db) {
 
     override suspend fun savePage(db: TrackerDatabase, page: TimeEditPage) {
         super.savePage(db, page)
-        saveRecord(db, page.date, page.record)
+        saveRecord(db, page.record)
     }
 
-    private suspend fun saveRecord(db: TrackerDatabase, date: Calendar, record: TimeRecord) {
+    private suspend fun saveRecord(db: TrackerDatabase, record: TimeRecord) {
         val recordDao = db.timeRecordDao()
         val entity = record.toTimeRecordEntity()
         if (record.id == TikalEntity.ID_NONE) {

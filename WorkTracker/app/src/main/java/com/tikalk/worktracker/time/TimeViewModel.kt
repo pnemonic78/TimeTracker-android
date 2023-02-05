@@ -32,8 +32,7 @@
 
 package com.tikalk.worktracker.time
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
@@ -41,10 +40,17 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.LocationItem
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
-class TimeViewModel : TrackerViewModel() {
+@HiltViewModel
+class TimeViewModel @Inject constructor(
+    services: TrackerServices
+) : TrackerViewModel(services) {
 
-    val projectsData = MutableLiveData<List<Project>>()
+    val projectsData = MutableStateFlow<List<Project>>(emptyList())
     var projectEmpty: Project = Project.EMPTY.copy(true)
     var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
         ?: ProjectTask.EMPTY.copy()
@@ -56,8 +62,8 @@ class TimeViewModel : TrackerViewModel() {
         val responseHtml: String = ""
     )
 
-    private val _edited = MutableLiveData<RecordEditData>()
-    val edited: LiveData<RecordEditData> = _edited
+    private val _edited = MutableStateFlow<RecordEditData?>(null)
+    val edited: Flow<RecordEditData?> = _edited
 
     /**
      * The record was submitted.
@@ -65,46 +71,46 @@ class TimeViewModel : TrackerViewModel() {
      * @param last is this the last record in a series that was submitted?
      * @param responseHtml the response HTML.
      */
-    fun onRecordEditSubmitted(record: TimeRecord, last: Boolean = true, responseHtml: String = "") {
-        _edited.postValue(RecordEditData(record, last, responseHtml))
+    suspend fun onRecordEditSubmitted(record: TimeRecord, last: Boolean = true, responseHtml: String = "") {
+        _edited.emit(RecordEditData(record, last, responseHtml))
     }
 
     data class RecordDeletedData(val record: TimeRecord, val responseHtml: String = "")
 
-    private val _deleted = MutableLiveData<RecordDeletedData>()
-    val deleted: LiveData<RecordDeletedData> = _deleted
+    private val _deleted = MutableStateFlow<RecordDeletedData?>(null)
+    val deleted: Flow<RecordDeletedData?> = _deleted
 
     /**
      * The record was deleted.
      * @param record the record.
      * @param responseHtml the response HTML.
      */
-    fun onRecordEditDeleted(record: TimeRecord, responseHtml: String = "") {
-        _deleted.postValue(RecordDeletedData(record, responseHtml))
+    suspend fun onRecordEditDeleted(record: TimeRecord, responseHtml: String = "") {
+        _deleted.emit(RecordDeletedData(record, responseHtml))
     }
 
-    private val _favorite = MutableLiveData<TimeRecord>()
-    val favorite: LiveData<TimeRecord> = _favorite
+    private val _favorite = MutableStateFlow<TimeRecord?>(null)
+    val favorite: Flow<TimeRecord?> = _favorite
 
     /**
      * The record was marked as favorite.
      * @param record the record.
      */
-    fun onRecordEditFavorited(record: TimeRecord) {
-        _favorite.postValue(record)
+    suspend fun onRecordEditFavorited(record: TimeRecord) {
+        _favorite.emit(record)
     }
 
     data class RecordEditFailureData(val record: TimeRecord, val reason: String)
 
-    private val _editFailure = MutableLiveData<RecordEditFailureData>()
-    val editFailure: LiveData<RecordEditFailureData> = _editFailure
+    private val _editFailure = MutableStateFlow<RecordEditFailureData?>(null)
+    val editFailure: Flow<RecordEditFailureData?> = _editFailure
 
     /**
      * Editing record failed.
      * @param record the record.
      * @param reason the failure reason.
      */
-    fun onRecordEditFailure(record: TimeRecord, reason: String) {
-        _editFailure.postValue(RecordEditFailureData(record, reason))
+    suspend fun onRecordEditFailure(record: TimeRecord, reason: String) {
+        _editFailure.emit(RecordEditFailureData(record, reason))
     }
 }

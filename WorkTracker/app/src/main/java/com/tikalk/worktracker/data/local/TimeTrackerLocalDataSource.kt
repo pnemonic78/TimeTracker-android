@@ -261,12 +261,12 @@ class TimeTrackerLocalDataSource @Inject constructor(
             val totals = loadTotals(db, date)
 
             val page = TimeListPage(
-                record,
-                projects,
-                errorMessage,
-                date,
-                records,
-                totals
+                record = record,
+                projects = projects,
+                errorMessage = errorMessage,
+                date = date.copy(),
+                records = records,
+                totals = totals
             )
             emit(page)
         }
@@ -320,19 +320,21 @@ class TimeTrackerLocalDataSource @Inject constructor(
             totals.monthly = totalsAll[2].monthly
         }
         val quota = calculateQuota(date)
-        totals.balance = quota - totals.monthly
+        totals.balance = totals.monthly - quota
 
         return totals
     }
 
     private fun calculateQuota(date: Calendar): Long {
+        val workHoursPerDay = preferences.workHoursPerDay
+        val workDays = preferences.calendarWorkDays()
         var quota = 0L
         val day = date.copy()
         val lastDayOfMonth = day.getActualMaximum(Calendar.DAY_OF_MONTH)
         for (dayOfMonth in 1..lastDayOfMonth) {
             day.dayOfMonth = dayOfMonth
-            if (day.dayOfWeek in WORK_DAYS) {
-                quota += WORK_HOURS
+            if (day.dayOfWeek in workDays) {
+                quota += workHoursPerDay
             }
         }
         return quota * DateUtils.HOUR_IN_MILLIS
@@ -369,16 +371,5 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override suspend fun savePage(page: TimeListPage) {
         TimeListPageSaver(db).save(page)
-    }
-
-    companion object {
-        private val WORK_DAYS = intArrayOf(
-            Calendar.SUNDAY,
-            Calendar.MONDAY,
-            Calendar.TUESDAY,
-            Calendar.WEDNESDAY,
-            Calendar.THURSDAY
-        )
-        private const val WORK_HOURS = 9L
     }
 }

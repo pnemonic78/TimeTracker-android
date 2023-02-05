@@ -39,58 +39,39 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentTasksBinding
-import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.project.ProjectTasksAdapter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ProjectTasksFragment : InternetFragment() {
 
-    private var _binding: FragmentTasksBinding? = null
+    override val viewModel by viewModels<ProjectTasksViewModel>()
+
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
-
-    private val tasksData = MutableLiveData<List<ProjectTask>>()
-    private val listAdapter = ProjectTasksAdapter()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
-        tasksData.observe(this) { tasks ->
-            bindList(tasks)
-        }
-        delegate.login.observe(this) { (_, reason) ->
-            if (reason == null) {
-                Timber.i("login success")
-                run()
-            } else {
-                Timber.e("login failure: $reason")
-            }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentTasksBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = listAdapter
+
+        binding.composeView.setContent {
+            ProjectTasksScreen(viewState = viewModel)
+        }
     }
 
     override fun onDestroyView() {
@@ -102,32 +83,11 @@ class ProjectTasksFragment : InternetFragment() {
         menu.clear()
     }
 
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-
     @MainThread
-    fun run() {
+    override fun run() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
-            try {
-                dataSource.tasksPage(firstRun)
-                    .flowOn(Dispatchers.IO)
-                    .collect { page ->
-                        tasksData.value = page.tasks
-                    }
-            } catch (e: Exception) {
-                Timber.e(e, "Error loading page: ${e.message}")
-                handleError(e)
-            }
-        }
-    }
-
-    private fun bindList(tasks: List<ProjectTask>) {
-        listAdapter.submitList(tasks)
-        if (tasks === this.tasksData.value) {
-            listAdapter.notifyDataSetChanged()
+            viewModel.fetchTasks(firstRun)
         }
     }
 
