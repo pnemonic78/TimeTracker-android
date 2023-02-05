@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.user
+package com.tikalk.worktracker.auth
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
@@ -70,30 +70,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileDialog(viewState: ProfileViewState) {
+fun LoginDialog(viewState: LoginViewState) {
     Dialog(onDismissRequest = viewState.onDismiss) {
-        ProfileForm(viewState)
+        LoginForm(viewState)
     }
 }
 
 @Composable
-fun ProfileForm(viewState: ProfileViewState) {
+fun LoginForm(viewState: LoginViewState) {
     val marginTop = dimensionResource(id = R.dimen.form_marginTop)
     val coroutineScope = rememberCoroutineScope()
 
-    val userDisplayNameState = viewState.userDisplayName.collectAsState()
-    val userEmailState = viewState.userEmail.collectAsState()
     val credentialsLoginState = viewState.credentialsLogin.collectAsState()
     val credentialsPasswordState = viewState.credentialsPassword.collectAsState()
-    val credentialsPasswordConfirmationState =
-        viewState.credentialsPasswordConfirmation.collectAsState()
     val errorMessageState = viewState.errorMessage.collectAsState()
 
-    val userDisplayName = userDisplayNameState.value
-    val userEmail = userEmailState.value
     val credentialsLogin = credentialsLoginState.value
     val credentialsPassword = credentialsPasswordState.value
-    val credentialsPasswordConfirmation = credentialsPasswordConfirmationState.value
     val errorMessage = errorMessageState.value
     val onConfirmClick = viewState.onConfirmClick
 
@@ -103,75 +96,6 @@ fun ProfileForm(viewState: ProfileViewState) {
             .padding(8.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth(),
-            label = {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.prompt_name),
-                    style = MaterialTheme.typography.subtitle1,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            value = userDisplayName.value,
-            trailingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(
-                        image = ImageVector.vectorResource(
-                            id = R.drawable.ic_person
-                        )
-                    ),
-                    contentDescription = ""
-                )
-            },
-            singleLine = true,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.userDisplayName.emit(userDisplayName.copy(value = value))
-                }
-            },
-            textStyle = MaterialTheme.typography.body1,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            readOnly = userDisplayName.isReadOnly,
-            isError = userDisplayName.isError
-        )
-        OutlinedTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.prompt_email),
-                    style = MaterialTheme.typography.subtitle1,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            value = userEmail.value,
-            trailingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(
-                        image = ImageVector.vectorResource(
-                            id = R.drawable.ic_email
-                        )
-                    ),
-                    contentDescription = ""
-                )
-            },
-            singleLine = true,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.userEmail.emit(userEmail.copy(value = value))
-                }
-            },
-            textStyle = MaterialTheme.typography.body1,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            readOnly = userEmail.isReadOnly,
-            isError = userEmail.isError
-        )
         OutlinedTextField(
             modifier = Modifier
                 .padding(top = marginTop)
@@ -221,22 +145,6 @@ fun ProfileForm(viewState: ProfileViewState) {
             readOnly = credentialsPassword.isReadOnly,
             isError = credentialsPassword.isError
         )
-        PasswordTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = stringResource(id = R.string.prompt_confirmPassword),
-            value = credentialsPasswordConfirmation.value,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.credentialsPasswordConfirmation.emit(
-                        credentialsPasswordConfirmation.copy(value = value)
-                    )
-                }
-            },
-            readOnly = credentialsPasswordConfirmation.isReadOnly,
-            isError = credentialsPasswordConfirmation.isError
-        )
         if (errorMessage.isNotEmpty()) {
             Text(
                 modifier = Modifier
@@ -254,10 +162,10 @@ fun ProfileForm(viewState: ProfileViewState) {
                 .fillMaxWidth(),
             onClick = onConfirmClick
         ) {
-            Text(text = stringResource(id = R.string.action_submit))
+            Text(text = stringResource(id = R.string.action_sign_in))
             Icon(
                 modifier = Modifier.padding(start = 8.dp),
-                painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_save)),
+                painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_lock_open)),
                 contentDescription = ""
             )
         }
@@ -267,26 +175,21 @@ fun ProfileForm(viewState: ProfileViewState) {
 @Preview(showBackground = true, widthDp = 350, heightDp = 600)
 @Composable
 private fun ThisPreview() {
-    val user = UserDemo
     val credentials = UserCredentials(
-        login = user.email ?: "",
+        login = "demo@tikalk.com",
         password = "demo"
     )
 
-    val viewState = object : ProfileViewState {
-        override val userDisplayName = MutableStateFlow(TextFieldViewState(user.displayName ?: ""))
-        override val userEmail = MutableStateFlow(TextFieldViewState(user.email ?: ""))
+    val viewState = object : LoginViewState {
         override val credentialsLogin = MutableStateFlow(TextFieldViewState(credentials.login))
         override val credentialsPassword =
             MutableStateFlow(TextFieldViewState(credentials.password))
-        override val credentialsPasswordConfirmation =
-            MutableStateFlow(TextFieldViewState("", isError = true))
         override val errorMessage = MutableStateFlow("Error!")
-        override var onConfirmClick: UnitCallback = { println("Button clicked") }
+        override val onConfirmClick: UnitCallback = { println("Button clicked") }
         override val onDismiss: UnitCallback = { println("Dismissed") }
     }
 
     TikalTheme {
-        ProfileDialog(viewState = viewState)
+        LoginDialog(viewState = viewState)
     }
 }

@@ -45,4 +45,5 @@ interface ProfileViewState {
     val credentialsPasswordConfirmation: MutableStateFlow<TextFieldViewState>
     val errorMessage: StateFlow<String>
     val onConfirmClick: UnitCallback
+    val onDismiss: UnitCallback
 }

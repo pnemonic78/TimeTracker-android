@@ -39,13 +39,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.databinding.FragmentLoginBinding
+import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +60,7 @@ class LoginFragment : InternetDialogFragment {
 
     constructor(args: Bundle) : super(args)
 
-    private var _binding: FragmentLoginBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel by viewModels<LoginViewModel>()
@@ -95,7 +94,7 @@ class LoginFragment : InternetDialogFragment {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -103,46 +102,12 @@ class LoginFragment : InternetDialogFragment {
         super.onViewCreated(view, savedInstanceState)
         val viewState: LoginViewState = viewModel
 
-        binding.loginInput.doAfterTextChanged {
-            val state = viewState.credentialsLogin.value
-            lifecycleScope.launch {
-                viewState.credentialsLogin.value = state.copy(value = it.toString())
+        binding.composeView.setContent {
+            TikalTheme {
+                LoginForm(viewState = viewState)
             }
         }
-        binding.passwordInput.doAfterTextChanged {
-            val state = viewState.credentialsPassword.value
-            lifecycleScope.launch {
-                viewState.credentialsPassword.value = state.copy(value = it.toString())
-            }
-        }
-        lifecycleScope.launch {
-            viewState.credentialsLogin.collect { state ->
-                binding.loginInput.setText(state.value)
-                binding.loginInput.setSelection(state.value.length)
-                binding.loginInput.error = if (state.isError) "!" else null
-                binding.loginInput.isEnabled = state.isEnabled
-                if (state.isError) binding.loginInput.requestFocus()
-            }
-        }
-        lifecycleScope.launch {
-            viewState.credentialsPassword.collect { state ->
-                binding.passwordInput.setText(state.value)
-                binding.passwordInput.setSelection(state.value.length)
-                binding.passwordInput.error = if (state.isError) "!" else null
-                binding.passwordInput.isEnabled = state.isEnabled
-                if (state.isError) binding.passwordInput.requestFocus()
-            }
-        }
-        lifecycleScope.launch {
-            viewState.errorMessage.collect { errorMessage ->
-                if (errorMessage.isEmpty()) {
-                    binding.errorLabel.isVisible = false
-                } else {
-                    binding.errorLabel.isVisible = true
-                    binding.errorLabel.text = errorMessage
-                }
-            }
-        }
+
         lifecycleScope.launch {
             viewModel.onDialogConfirmClick.collect {
                 if (it) {
@@ -151,7 +116,14 @@ class LoginFragment : InternetDialogFragment {
                 }
             }
         }
-        binding.actionSignIn.setOnClickListener { viewState.onConfirmClick() }
+        lifecycleScope.launch {
+            viewModel.onDialogDismiss.collect {
+                if (it) {
+                    viewModel.clearEvents()
+                    onDismiss()
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -188,9 +160,6 @@ class LoginFragment : InternetDialogFragment {
      * errors are presented and no actual login attempt is made.
      */
     private suspend fun attemptLogin() {
-        if (!binding.actionSignIn.isEnabled) {
-            return
-        }
         if (!viewModel.validateForm(resources)) return
 
         val viewState: LoginViewState = viewModel
@@ -202,7 +171,6 @@ class LoginFragment : InternetDialogFragment {
         val loginValue = loginState.value
         val passwordValue = passwordState.value
 
-        binding.actionSignIn.isEnabled = false
         showProgress(true)
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -214,7 +182,6 @@ class LoginFragment : InternetDialogFragment {
                     date = today
                 )
                 lifecycleScope.launch(Dispatchers.Main) {
-                    binding.actionSignIn.isEnabled = true
                     showProgress(false)
 
                     if (isValidResponse(response)) {
@@ -226,15 +193,12 @@ class LoginFragment : InternetDialogFragment {
                             showError(errorMessage)
                             notifyLoginFailure(loginValue, errorMessage)
                         }
-                    } else {
-                        binding.passwordInput.requestFocus()
                     }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error signing in: ${e.message}")
                 showProgressMain(false)
                 handleErrorMain(e)
-                binding.actionSignIn.isEnabled = true
             }
         }
     }
@@ -252,6 +216,10 @@ class LoginFragment : InternetDialogFragment {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
+        onDismiss()
+    }
+
+    private fun onDismiss() {
         lifecycleScope.launch { notifyLoginFailure("", REASON_CANCEL) }
     }
 

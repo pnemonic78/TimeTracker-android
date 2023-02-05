@@ -92,6 +92,7 @@ class ProfileViewModel @Inject constructor(
     private var _errorMessage = MutableStateFlow("")
     override val errorMessage: StateFlow<String> = _errorMessage
     override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
+    override val onDismiss: UnitCallback = {}
 
     init {
         val user = services.preferences.user
@@ -195,12 +196,18 @@ class ProfileViewModel @Inject constructor(
         // Check for a valid login name.
         when (validator.validateUsername(loginValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(credentialsLoginState, resources.getString(R.string.error_field_required))
+                notifyError(
+                    credentialsLoginState,
+                    resources.getString(R.string.error_field_required)
+                )
                 return false
             }
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(credentialsLoginState, resources.getString(R.string.error_invalid_login))
+                notifyError(
+                    credentialsLoginState,
+                    resources.getString(R.string.error_invalid_login)
+                )
                 return false
             }
         }

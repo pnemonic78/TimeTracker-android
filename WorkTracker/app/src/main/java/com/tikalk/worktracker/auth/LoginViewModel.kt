@@ -56,6 +56,7 @@ class LoginViewModel @Inject constructor(
     private var _errorMessage = MutableStateFlow("")
     override val errorMessage: StateFlow<String> = _errorMessage
     override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
+    override val onDismiss: UnitCallback = ::onDialogDismiss
 
     init {
         val userCredentials = services.preferences.userCredentials
@@ -68,6 +69,13 @@ class LoginViewModel @Inject constructor(
     val onDialogConfirmClick: StateFlow<Boolean> = _onDialogConfirmClick
 
     private fun onDialogConfirmClick() {
+        viewModelScope.launch { _onDialogConfirmClick.emit(true) }
+    }
+
+    private val _onDialogDismiss = MutableStateFlow(false)
+    val onDialogDismiss: StateFlow<Boolean> = _onDialogDismiss
+
+    private fun onDialogDismiss() {
         viewModelScope.launch { _onDialogConfirmClick.emit(true) }
     }
 
@@ -94,12 +102,18 @@ class LoginViewModel @Inject constructor(
         // Check for a valid login name.
         when (validator.validateUsername(loginValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(credentialsLoginState, resources.getString(R.string.error_field_required))
+                notifyError(
+                    credentialsLoginState,
+                    resources.getString(R.string.error_field_required)
+                )
                 return false
             }
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(credentialsLoginState, resources.getString(R.string.error_invalid_login))
+                notifyError(
+                    credentialsLoginState,
+                    resources.getString(R.string.error_invalid_login)
+                )
                 return false
             }
         }
@@ -138,6 +152,7 @@ class LoginViewModel @Inject constructor(
 
     fun clearEvents() {
         _onDialogConfirmClick.value = false
+        _onDialogDismiss.value = false
     }
 
     suspend fun showError(message: String) {
