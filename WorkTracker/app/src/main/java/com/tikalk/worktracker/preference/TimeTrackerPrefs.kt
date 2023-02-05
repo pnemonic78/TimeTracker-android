@@ -32,6 +32,7 @@
 package com.tikalk.worktracker.preference
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.icu.util.Calendar
 import androidx.preference.PreferenceManager
 import com.tikalk.worktracker.R
@@ -52,8 +53,16 @@ import com.tikalk.worktracker.time.toCalendar
  */
 class TimeTrackerPrefs(context: Context) {
 
-    private val securePreferences = SecurePreferences.getDefaultSharedPreferences(context)
+    private val securePreferences: SharedPreferences
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+    init {
+        securePreferences = try {
+            SecurePreferences.getDefaultSharedPreferences(context)
+        } catch (e: Exception) {
+            PreferenceManager.getDefaultSharedPreferences(context)
+        }
+    }
 
     companion object {
         private const val BASIC_CREDENTIALS_REALM = "credentials.basic.realm"

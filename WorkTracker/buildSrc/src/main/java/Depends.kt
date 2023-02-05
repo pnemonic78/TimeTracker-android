@@ -61,6 +61,7 @@ object Android {
     }
 
     object Logging {
+        const val crashlytics = "com.google.firebase:firebase-crashlytics:18.3.3"
         const val timber = "com.jakewharton.timber:timber:5.0.1"
     }
 
