@@ -114,7 +114,7 @@ dependencies {
 
     // Logging
     implementation(Android.Logging.timber)
-    implementation("com.google.firebase:firebase-crashlytics:18.2.12")
+    implementation(Android.Logging.crashlytics)
 
     // Navigation
     implementation(Android.Navigation.navigation_fragment)
