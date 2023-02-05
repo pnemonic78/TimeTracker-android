@@ -34,27 +34,32 @@ package com.tikalk.worktracker.auth
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
+import com.tikalk.compose.TextFieldViewState
+import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.databinding.FragmentLoginBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
  * A login screen that offers login via login/password.
  */
-class LoginFragment : InternetDialogFragment {
+class LoginFragment : InternetDialogFragment, LoginViewState {
 
     constructor() : super()
 
@@ -62,6 +67,31 @@ class LoginFragment : InternetDialogFragment {
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
+
+    private val viewState: LoginViewState = this
+
+    override val credentialsLogin = MutableStateFlow(TextFieldViewState())
+    override val credentialsPassword = MutableStateFlow(TextFieldViewState())
+    private var _errorMessage = MutableStateFlow("")
+    override val errorMessage: StateFlow<String> = _errorMessage
+    override val onConfirmClick: UnitCallback = { lifecycleScope.launch { attemptLogin() } }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState == null) {
+            lifecycleScope.launch {
+                val loginState = viewState.credentialsLogin.value
+                val passwordState = viewState.credentialsPassword.value
+
+                val loginValue = preferences.userCredentials.login
+                val passwordValue = preferences.userCredentials.password
+
+                viewState.credentialsLogin.emit(loginState.copy(value = loginValue))
+                viewState.credentialsPassword.emit(passwordState.copy(value = passwordValue))
+            }
+        }
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -81,19 +111,47 @@ class LoginFragment : InternetDialogFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.loginInput.setText(preferences.userCredentials.login)
-
-        val passwordImeActionId = resources.getInteger(R.integer.password_imeActionId)
-        binding.passwordInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
-            if (id == passwordImeActionId || id == EditorInfo.IME_NULL) {
-                attemptLogin()
-                return@OnEditorActionListener true
+        binding.loginInput.doAfterTextChanged {
+            val state = viewState.credentialsLogin.value
+            lifecycleScope.launch {
+                viewState.credentialsLogin.value = state.copy(value = it.toString())
             }
-            false
-        })
-        binding.passwordInput.setText(preferences.userCredentials.password)
-
-        binding.actionSignIn.setOnClickListener { attemptLogin() }
+        }
+        binding.passwordInput.doAfterTextChanged {
+            val state = viewState.credentialsPassword.value
+            lifecycleScope.launch {
+                viewState.credentialsPassword.value = state.copy(value = it.toString())
+            }
+        }
+        lifecycleScope.launch {
+            viewState.credentialsLogin.collect { state ->
+                binding.loginInput.setText(state.value)
+                binding.loginInput.setSelection(state.value.length)
+                binding.loginInput.error = if (state.isError) "!" else null
+                binding.loginInput.isEnabled = state.isEnabled
+                if (state.isError) binding.loginInput.requestFocus()
+            }
+        }
+        lifecycleScope.launch {
+            viewState.credentialsPassword.collect { state ->
+                binding.passwordInput.setText(state.value)
+                binding.passwordInput.setSelection(state.value.length)
+                binding.passwordInput.error = if (state.isError) "!" else null
+                binding.passwordInput.isEnabled = state.isEnabled
+                if (state.isError) binding.passwordInput.requestFocus()
+            }
+        }
+        lifecycleScope.launch {
+            viewState.errorMessage.collect { errorMessage ->
+                if (errorMessage.isEmpty()) {
+                    binding.errorLabel.isVisible = false
+                } else {
+                    binding.errorLabel.isVisible = true
+                    binding.errorLabel.text = errorMessage
+                }
+            }
+        }
+        binding.actionSignIn.setOnClickListener { viewState.onConfirmClick() }
     }
 
     override fun onDestroyView() {
@@ -107,15 +165,19 @@ class LoginFragment : InternetDialogFragment {
         val args = this.arguments ?: return
 
         if (args.containsKey(EXTRA_LOGIN)) {
-            binding.loginInput.setText(args.getString(EXTRA_LOGIN))
-            binding.passwordInput.text = null
+            lifecycleScope.launch {
+                val loginState = viewState.credentialsLogin.value
+                val passwordState = viewState.credentialsPassword.value
 
-            if (args.containsKey(EXTRA_PASSWORD)) {
-                binding.passwordInput.setText(args.getString(EXTRA_PASSWORD))
+                val loginValue = args.getString(EXTRA_LOGIN) ?: ""
+                val passwordValue = args.getString(EXTRA_PASSWORD) ?: ""
+
+                viewState.credentialsLogin.emit(loginState.copy(value = loginValue))
+                viewState.credentialsPassword.emit(passwordState.copy(value = passwordValue))
             }
         }
         if (args.containsKey(EXTRA_SUBMIT) && args.getBoolean(EXTRA_SUBMIT)) {
-            attemptLogin()
+            viewState.onConfirmClick()
         }
     }
 
@@ -124,88 +186,52 @@ class LoginFragment : InternetDialogFragment {
      * If there are form errors (invalid login, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private fun attemptLogin() {
+    private suspend fun attemptLogin() {
         if (!binding.actionSignIn.isEnabled) {
             return
         }
+        if (!validateForm(resources)) return
 
-        // Reset errors.
-        binding.loginInput.error = null
-        binding.passwordInput.error = null
+        val loginState = viewState.credentialsLogin.value
+        val passwordState = viewState.credentialsPassword.value
 
         // Store values at the time of the login attempt.
-        val loginValue = binding.loginInput.text.toString()
-        val passwordValue = binding.passwordInput.text.toString()
+        val loginValue = loginState.value
+        val passwordValue = passwordState.value
 
-        val validator = LoginValidator()
-        var cancel = false
-        var focusView: View? = null
+        binding.actionSignIn.isEnabled = false
+        showProgress(true)
 
-        // Check for a valid login name.
-        when (validator.validateUsername(loginValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                binding.loginInput.error = getString(R.string.error_field_required)
-                if (focusView == null) focusView = binding.loginInput
-                cancel = true
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                binding.loginInput.error = getString(R.string.error_invalid_login)
-                if (focusView == null) focusView = binding.loginInput
-                cancel = true
-            }
-        }
-
-        // Check for a valid password, if the user entered one.
-        when (validator.validatePassword(passwordValue)) {
-            LoginValidator.ERROR_REQUIRED -> {
-                binding.passwordInput.error = getString(R.string.error_field_required)
-                if (focusView == null) focusView = binding.passwordInput
-                cancel = true
-            }
-            LoginValidator.ERROR_LENGTH,
-            LoginValidator.ERROR_INVALID -> {
-                binding.passwordInput.error = getString(R.string.error_invalid_password)
-                if (focusView == null) focusView = binding.passwordInput
-                cancel = true
-            }
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView?.requestFocus()
-        } else {
-            binding.actionSignIn.isEnabled = false
-            showProgress(true)
-
-            preferences.userCredentials = UserCredentials(loginValue, passwordValue)
-
-            val today = formatSystemDate()
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    val response = service.login(loginValue, passwordValue, today)
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        binding.actionSignIn.isEnabled = true
-                        showProgress(false)
-
-                        if (isValidResponse(response)) {
-                            val errorMessage = getResponseError(response)
-                            if (errorMessage.isNullOrEmpty()) {
-                                notifyLoginSuccess(loginValue)
-                            } else {
-                                binding.loginInput.error = errorMessage
-                                notifyLoginFailure(loginValue, errorMessage)
-                            }
-                        } else {
-                            binding.passwordInput.requestFocus()
-                        }
-                    }
-                } catch (e: Exception) {
-                    Timber.e(e, "Error signing in: ${e.message}")
-                    handleErrorMain(e)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val today = formatSystemDate()
+                val response = service.login(
+                    name = loginValue,
+                    password = passwordValue,
+                    date = today
+                )
+                lifecycleScope.launch(Dispatchers.Main) {
                     binding.actionSignIn.isEnabled = true
+                    showProgress(false)
+
+                    if (isValidResponse(response)) {
+                        val errorMessage = getResponseError(response)
+                        if (errorMessage.isNullOrEmpty()) {
+                            preferences.userCredentials = UserCredentials(loginValue, passwordValue)
+                            notifyLoginSuccess(loginValue)
+                        } else {
+                            _errorMessage.emit(errorMessage)
+                            notifyLoginFailure(loginValue, errorMessage)
+                        }
+                    } else {
+                        binding.passwordInput.requestFocus()
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.e(e, "Error signing in: ${e.message}")
+                showProgressMain(false)
+                handleErrorMain(e)
+                binding.actionSignIn.isEnabled = true
             }
         }
     }
@@ -224,6 +250,72 @@ class LoginFragment : InternetDialogFragment {
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         lifecycleScope.launch { notifyLoginFailure("", REASON_CANCEL) }
+    }
+
+    private suspend fun validateForm(resources: Resources): Boolean {
+        val viewState: LoginViewState = this.viewState
+
+        val credentialsLoginState = viewState.credentialsLogin
+        val credentialsPasswordState = viewState.credentialsPassword
+
+        val credentialsLogin = credentialsLoginState.value
+        val credentialsPassword = credentialsPasswordState.value
+
+        // Reset errors.
+        credentialsLoginState.emit(credentialsLogin.copy(isError = false))
+        credentialsPasswordState.emit(credentialsPassword.copy(isError = false))
+        _errorMessage.emit("")
+
+        // Store values at the time of the submission attempt.
+        val loginValue = credentialsLogin.value
+        val passwordValue = credentialsPassword.value
+
+        val validator = LoginValidator()
+
+        // Check for a valid login name.
+        when (validator.validateUsername(loginValue)) {
+            LoginValidator.ERROR_REQUIRED -> {
+                notifyError(
+                    credentialsLoginState,
+                    resources.getString(R.string.error_field_required)
+                )
+                return false
+            }
+            LoginValidator.ERROR_LENGTH,
+            LoginValidator.ERROR_INVALID -> {
+                notifyError(
+                    credentialsLoginState,
+                    resources.getString(R.string.error_invalid_login)
+                )
+                return false
+            }
+        }
+
+        // Check for a valid password, if the user entered one.
+        when (validator.validatePassword(passwordValue)) {
+            LoginValidator.ERROR_REQUIRED -> {
+                notifyError(
+                    credentialsPasswordState,
+                    resources.getString(R.string.error_field_required)
+                )
+                return false
+            }
+            LoginValidator.ERROR_LENGTH,
+            LoginValidator.ERROR_INVALID -> {
+                notifyError(
+                    credentialsPasswordState,
+                    resources.getString(R.string.error_invalid_password)
+                )
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private suspend fun notifyError(state: MutableStateFlow<TextFieldViewState>, message: String) {
+        state.emit(state.value.copy(isError = true))
+        _errorMessage.emit(message)
     }
 
     companion object {

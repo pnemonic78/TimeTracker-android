@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.net
 
 import android.os.Bundle
+import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.app.TrackerActivity
 import com.tikalk.worktracker.app.TrackerDialogFragment
 import retrofit2.Response
@@ -61,5 +62,13 @@ abstract class InternetDialogFragment : TrackerDialogFragment {
 
     override fun showProgress(show: Boolean) {
         (activity as? TrackerActivity)?.showProgress(show)
+    }
+
+    /**
+     * Shows the progress UI and hides the login form, on the main thread.
+     * @param show is visible?
+     */
+    protected fun showProgressMain(show: Boolean) {
+        runOnUiThread { showProgress(show) }
     }
 }

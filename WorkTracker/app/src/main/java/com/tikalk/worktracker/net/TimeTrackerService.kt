@@ -52,7 +52,7 @@ interface TimeTrackerService {
     @FormUrlEncoded
     @POST(PHP_LOGIN)
     suspend fun login(
-        @Field("login") email: String,
+        @Field("login") name: String,
         @Field("password") password: String,
         @Field("browser_today") date: String,
         @Field("btn_login") button: String = "Login"

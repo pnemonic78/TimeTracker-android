@@ -59,9 +59,6 @@ class ProfileViewModel @Inject constructor(
 ) : TrackerViewModel(services),
     ProfileViewState {
 
-    private val _user = MutableStateFlow(User.EMPTY)
-    val user: StateFlow<User> = _user
-
     private val _profileUpdate = MutableStateFlow<ProfileData?>(null)
     val profileUpdate: StateFlow<ProfileData?> = _profileUpdate
 
@@ -69,10 +66,6 @@ class ProfileViewModel @Inject constructor(
      * Data for profile callbacks.
      */
     data class ProfileData(val user: User, val reason: String? = null)
-
-    suspend fun onProfileFailure(user: User, reason: String) {
-        notifyProfileFailure(user, reason)
-    }
 
     /**
      * Profile update was successful.
@@ -153,13 +146,8 @@ class ProfileViewModel @Inject constructor(
             )
         )
         _errorMessage.emit(page.errorMessage ?: "")
-
-        _user.emit(page.user)
     }
 
-    /**
-     * Attempts to save any changes.
-     */
     suspend fun validateForm(resources: Resources): Boolean {
         val viewState: ProfileViewState = this
 

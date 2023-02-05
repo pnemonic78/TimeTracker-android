@@ -172,6 +172,7 @@ class ProfileFragment : InternetFragment() {
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error updating profile: ${e.message}")
+                showProgressMain(false)
                 handleErrorMain(e)
             }
         }
