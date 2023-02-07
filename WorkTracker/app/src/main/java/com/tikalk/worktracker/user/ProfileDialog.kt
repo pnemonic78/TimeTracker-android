@@ -214,7 +214,7 @@ fun ProfileForm(viewState: ProfileViewState) {
             modifier = Modifier
                 .padding(top = marginTop)
                 .fillMaxWidth(),
-            label = stringResource(id = R.string.prompt_password),
+            label = stringResource(id = R.string.prompt_newPassword),
             value = credentialsPassword.value,
             onValueChange = { value: String ->
                 coroutineScope.launch {

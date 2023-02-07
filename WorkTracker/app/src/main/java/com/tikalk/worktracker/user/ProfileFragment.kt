@@ -41,7 +41,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.compose.material.Surface
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
@@ -63,7 +63,7 @@ class ProfileFragment : InternetFragment() {
     private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
-    override val viewModel by viewModels<ProfileViewModel>()
+    override val viewModel by activityViewModels<ProfileViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

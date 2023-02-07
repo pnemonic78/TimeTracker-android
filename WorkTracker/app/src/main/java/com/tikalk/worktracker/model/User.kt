@@ -102,16 +102,6 @@ data class User(
     }
 }
 
-fun User.set(that: User) {
-    this.username = that.username
-    this.email = that.email
-    this.displayName = that.displayName
-    this.telephone = that.telephone
-    this.photograph = that.photograph
-    this.roles = that.roles
-    this.isUncompletedEntry = that.isUncompletedEntry
-}
-
 class UserConverters : Converters() {
     @TypeConverter
     fun fromStringList(value: List<String>?): String? {

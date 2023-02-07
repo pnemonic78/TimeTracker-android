@@ -89,6 +89,7 @@ class TimeListActivity : TrackerActivity() {
                 if (profile != null) {
                     if (profile.reason.isNullOrEmpty()) {
                         Timber.i("profile success")
+                        hideProfile()
                     } else {
                         Timber.e("profile failure: ${profile.reason}")
                     }
@@ -158,6 +159,14 @@ class TimeListActivity : TrackerActivity() {
             return true
         }
         return super.onSupportNavigateUp()
+    }
+
+    private fun hideProfile() {
+        val navController = findNavController()
+        if (navController.navigateUp()) {
+            return
+        }
+        navController.popBackStack()
     }
 
     companion object {

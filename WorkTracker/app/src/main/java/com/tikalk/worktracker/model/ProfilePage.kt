@@ -40,16 +40,16 @@ class ProfilePage(
     val nameInputEditable: Boolean,
     val emailInputEditable: Boolean,
     val loginInputEditable: Boolean,
-    val passwordConfirm: String? = null,
-    val errorMessage: String? = null
+    val passwordConfirm: String?,
+    val errorMessage: String?
 )
 
-class MutableProfilePage {
-    var user: User = User.EMPTY.copy()
-    var userCredentials: UserCredentials = UserCredentials.EMPTY.copy()
-    var nameInputEditable: Boolean = false
-    var emailInputEditable: Boolean = false
-    var loginInputEditable: Boolean = false
-    var passwordConfirm: String? = null
+class MutableProfilePage(
+    var user: User = User.EMPTY.copy(),
+    var userCredentials: UserCredentials = UserCredentials.EMPTY.copy(),
+    var nameInputEditable: Boolean = false,
+    var emailInputEditable: Boolean = false,
+    var loginInputEditable: Boolean = false,
+    var passwordConfirm: String? = null,
     var errorMessage: String? = null
-}
+)

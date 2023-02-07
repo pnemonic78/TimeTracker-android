@@ -90,6 +90,7 @@
     <!-- Profile -->
     <string name="profile">"פרופיל"</string>
     <string name="name">"שם"</string>
+    <string name="prompt_newPassword">"סיסמה חדשה"</string>
     <string name="prompt_confirmPassword">"אשר סיסמה"</string>
     <string name="error_match_password">"סיסמאות אינן זהות"</string>
     <string name="uncompleted_entry">"משתמש עם הזנת זמן לא הושלמה"</string>

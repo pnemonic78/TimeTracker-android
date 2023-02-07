@@ -42,8 +42,3 @@ data class UserCredentials(var login: String, var password: String) {
         val EMPTY = UserCredentials("", "")
     }
 }
-
-fun UserCredentials.set(that: UserCredentials) {
-    this.login = that.login
-    this.password = that.password
-}
