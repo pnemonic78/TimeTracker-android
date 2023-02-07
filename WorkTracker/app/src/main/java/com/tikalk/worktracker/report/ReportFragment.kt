@@ -76,7 +76,7 @@ class ReportFragment : InternetFragment() {
 
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
     private val totalsData = MutableStateFlow<ReportTotals?>(null)
-    private val filterData = MutableStateFlow<ReportFilter>(ReportFilter())
+    private val filterData = MutableStateFlow(ReportFilter())
 
     override fun onCreateView(
         inflater: LayoutInflater,
