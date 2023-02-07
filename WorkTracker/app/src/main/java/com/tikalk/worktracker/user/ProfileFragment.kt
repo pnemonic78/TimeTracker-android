@@ -40,6 +40,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.compose.material.Surface
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -79,7 +80,9 @@ class ProfileFragment : InternetFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                ProfileForm(viewState = viewState)
+                Surface {
+                    ProfileForm(viewState = viewState)
+                }
             }
         }
 

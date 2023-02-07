@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -51,8 +52,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import java.util.Formatter
-import java.util.Locale
+import java.util.*
 
 private val timeBuffer = StringBuilder(20)
 private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
@@ -108,6 +108,8 @@ fun ReportTotalsFooter(
 private fun ThisPreview() {
     val totals = ReportTotals(DateUtils.WEEK_IN_MILLIS, 1.23)
     TikalTheme {
-        ReportTotalsFooter(totals, isCostFieldVisible = true)
+        Surface {
+            ReportTotalsFooter(totals, isCostFieldVisible = true)
+        }
     }
 }

@@ -78,7 +78,6 @@ class TimeListFragment : TimeFormFragment() {
 
     private var _binding: FragmentTimeListBinding? = null
     private val binding get() = _binding!!
-    private val bindingTotals get() = binding.totals
 
     private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
@@ -244,6 +243,7 @@ class TimeListFragment : TimeFormFragment() {
 
     @MainThread
     private fun bindDate(date: Calendar) {
+        val binding = _binding ?: return
         binding.dateInput.text =
             DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
     }
@@ -252,6 +252,9 @@ class TimeListFragment : TimeFormFragment() {
     private fun bindTotals(totals: TimeTotals) {
         val context = this.context ?: return
         val res = context.resources ?: return
+        val binding = _binding ?: return
+        val bindingTotals = binding.totals
+
         val timeBuffer = StringBuilder(20)
         val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
 
@@ -547,7 +550,7 @@ class TimeListFragment : TimeFormFragment() {
             // Refresh the list with the deleted item.
             val records = recordsData.value
             val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
-            lifecycleScope.launch{ recordsData.emit(recordsActive) }
+            lifecycleScope.launch { recordsData.emit(recordsActive) }
             maybeFetchPage(record.date, responseHtml)
         }
     }

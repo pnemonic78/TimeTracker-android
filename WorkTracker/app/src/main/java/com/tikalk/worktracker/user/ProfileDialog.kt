@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.user
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,6 +44,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -50,7 +52,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -72,7 +73,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileDialog(viewState: ProfileViewState) {
     Dialog(onDismissRequest = viewState.onDismiss) {
-        ProfileForm(viewState)
+        Surface {
+            ProfileForm(viewState)
+        }
     }
 }
 
@@ -100,7 +103,7 @@ fun ProfileForm(viewState: ProfileViewState) {
     Column(
         modifier = Modifier
             .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))
-            .padding(8.dp)
+            .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         OutlinedTextField(
@@ -244,7 +247,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                     .fillMaxWidth(),
                 text = errorMessage,
                 style = MaterialTheme.typography.body1,
-                color = colorResource(id = R.color.error),
+                color = MaterialTheme.colors.error,
                 textAlign = TextAlign.Center
             )
         }
@@ -257,14 +260,21 @@ fun ProfileForm(viewState: ProfileViewState) {
             Text(text = stringResource(id = R.string.action_submit))
             Icon(
                 modifier = Modifier.padding(start = 8.dp),
-                painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_save)),
+                painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_done)),
                 contentDescription = ""
             )
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 350, heightDp = 600)
+@Preview(name = "default", showBackground = true, widthDp = 350, heightDp = 450)
+@Preview(
+    name = "dark",
+    showBackground = true,
+    widthDp = 350,
+    heightDp = 450,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ThisPreview() {
     val user = UserDemo
