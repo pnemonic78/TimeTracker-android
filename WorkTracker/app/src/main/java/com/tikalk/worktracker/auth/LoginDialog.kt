@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.auth
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,6 +44,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -50,7 +52,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -90,89 +91,98 @@ fun LoginForm(viewState: LoginViewState) {
     val errorMessage = errorMessageState.value
     val onConfirmClick = viewState.onConfirmClick
 
-    Column(
-        modifier = Modifier
-            .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))
-            .padding(8.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        OutlinedTextField(
+    Surface {
+        Column(
             modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.prompt_login),
-                    style = MaterialTheme.typography.subtitle1,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            value = credentialsLogin.value,
-            trailingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(
-                        image = ImageVector.vectorResource(
-                            id = R.drawable.ic_lock_open
-                        )
-                    ),
-                    contentDescription = ""
-                )
-            },
-            singleLine = true,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
-                }
-            },
-            textStyle = MaterialTheme.typography.body1,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-            readOnly = credentialsLogin.isReadOnly,
-            isError = credentialsLogin.isError
-        )
-        PasswordTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = stringResource(id = R.string.prompt_password),
-            value = credentialsPassword.value,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.credentialsPassword.emit(credentialsPassword.copy(value = value))
-                }
-            },
-            readOnly = credentialsPassword.isReadOnly,
-            isError = credentialsPassword.isError
-        )
-        if (errorMessage.isNotEmpty()) {
-            Text(
+                .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))
+                .padding(8.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            OutlinedTextField(
                 modifier = Modifier
                     .padding(top = marginTop)
                     .fillMaxWidth(),
-                text = errorMessage,
-                style = MaterialTheme.typography.body1,
-                color = colorResource(id = R.color.error),
-                textAlign = TextAlign.Center
+                label = {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.prompt_login),
+                        style = MaterialTheme.typography.subtitle1,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                value = credentialsLogin.value,
+                trailingIcon = {
+                    Icon(
+                        painter = rememberVectorPainter(
+                            image = ImageVector.vectorResource(
+                                id = R.drawable.ic_lock_open
+                            )
+                        ),
+                        contentDescription = ""
+                    )
+                },
+                singleLine = true,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
+                    }
+                },
+                textStyle = MaterialTheme.typography.body1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                readOnly = credentialsLogin.isReadOnly,
+                isError = credentialsLogin.isError
             )
-        }
-        Button(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            onClick = onConfirmClick
-        ) {
-            Text(text = stringResource(id = R.string.action_sign_in))
-            Icon(
-                modifier = Modifier.padding(start = 8.dp),
-                painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_lock_open)),
-                contentDescription = ""
+            PasswordTextField(
+                modifier = Modifier
+                    .padding(top = marginTop)
+                    .fillMaxWidth(),
+                label = stringResource(id = R.string.prompt_password),
+                value = credentialsPassword.value,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.credentialsPassword.emit(credentialsPassword.copy(value = value))
+                    }
+                },
+                readOnly = credentialsPassword.isReadOnly,
+                isError = credentialsPassword.isError
             )
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    modifier = Modifier
+                        .padding(top = marginTop)
+                        .fillMaxWidth(),
+                    text = errorMessage,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.error,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .padding(top = marginTop)
+                    .fillMaxWidth(),
+                onClick = onConfirmClick
+            ) {
+                Text(text = stringResource(id = R.string.action_sign_in))
+                Icon(
+                    modifier = Modifier.padding(start = 8.dp),
+                    painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_lock_open)),
+                    contentDescription = ""
+                )
+            }
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 350, heightDp = 600)
+@Preview(name = "default", showBackground = true, widthDp = 350, heightDp = 400)
+@Preview(
+    name = "dark",
+    showBackground = true,
+    widthDp = 350,
+    heightDp = 400,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ThisPreview() {
     val credentials = UserCredentials(

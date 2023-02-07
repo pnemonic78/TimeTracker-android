@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.task
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -77,6 +78,7 @@ private fun ProjectTasksScreenList(tasks: List<ProjectTask>) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
         state = scrollState
     ) {
         items(tasks) {

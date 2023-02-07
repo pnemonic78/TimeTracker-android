@@ -39,10 +39,12 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.compose.material.Surface
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentComposeBinding
@@ -70,7 +72,9 @@ class ProjectsFragment : InternetFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.composeView.setContent {
-            ProjectsScreen(viewState = viewModel)
+            TikalTheme {
+                ProjectsScreen(viewState = viewModel)
+            }
         }
     }
 

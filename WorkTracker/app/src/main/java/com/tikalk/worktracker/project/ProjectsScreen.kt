@@ -32,7 +32,8 @@
 
 package com.tikalk.worktracker.project
 
-import androidx.compose.foundation.layout.Box
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -78,6 +79,7 @@ private fun ProjectsScreenList(projects: List<Project>) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
         state = scrollState
     ) {
         items(projects) {
@@ -92,15 +94,17 @@ private fun ProjectsScreenError() {
     EmptyListScreen()
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
+    val items = listOf(Project("Tikal"))
     val viewState: ProjectsViewState = object : ProjectsViewState {
         override val projects: Flow<TikalResult<List<Project>>> =
-            MutableStateFlow(TikalResult.Success(listOf(Project.EMPTY)))
+            MutableStateFlow(TikalResult.Success(items))
     }
 
     TikalTheme {
-        ProjectsScreen(viewState)
+        ProjectsScreenList(items)
     }
 }

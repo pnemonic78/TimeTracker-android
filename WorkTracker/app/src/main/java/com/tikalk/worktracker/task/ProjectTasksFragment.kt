@@ -43,6 +43,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
+import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentComposeBinding
@@ -70,7 +71,9 @@ class ProjectTasksFragment : InternetFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.composeView.setContent {
-            ProjectTasksScreen(viewState = viewModel)
+            TikalTheme {
+                ProjectTasksScreen(viewState = viewModel)
+            }
         }
     }
 

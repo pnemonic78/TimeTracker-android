@@ -45,6 +45,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.material.Surface
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -75,7 +76,7 @@ class ReportFragment : InternetFragment() {
 
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
     private val totalsData = MutableStateFlow<ReportTotals?>(null)
-    private val filterData = MutableStateFlow<ReportFilter>(ReportFilter())
+    private val filterData = MutableStateFlow(ReportFilter())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -127,11 +128,13 @@ class ReportFragment : InternetFragment() {
 
         binding.totals.composeView.setContent {
             TikalTheme {
-                ReportTotalsFooter(
-                    totals = totals,
-                    isDurationFieldVisible = filter.isDurationFieldVisible,
-                    isCostFieldVisible = filter.isCostFieldVisible
-                )
+                Surface {
+                    ReportTotalsFooter(
+                        totals = totals,
+                        isDurationFieldVisible = filter.isDurationFieldVisible,
+                        isCostFieldVisible = filter.isCostFieldVisible
+                    )
+                }
             }
         }
     }

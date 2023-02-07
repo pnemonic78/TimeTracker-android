@@ -41,12 +41,10 @@ import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.auth.LoginValidator
 import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.auth.model.set
 import com.tikalk.worktracker.data.remote.ProfilePageParser
 import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.model.set
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -271,20 +269,22 @@ class ProfileViewModel @Inject constructor(
         nameValue: String,
         passwordValue: String
     ) {
-        val user = User(loginValue, emailValue, nameValue)
-        val userCredentials = UserCredentials(loginValue, passwordValue)
-        val page = processPage(html)
-        val errorMessage = page.errorMessage ?: ""
+        val user = User(username = loginValue, email = emailValue, displayName = nameValue)
+        val pageWithError = parsePage(html)
+        val errorMessage = pageWithError.errorMessage ?: ""
         _errorMessage.emit(errorMessage)
 
         if (errorMessage.isEmpty()) {
-            userCredentials.password = passwordValue
-            if (page.user.isEmpty()) {
-                page.user.set(user)
-            }
-            if (page.userCredentials.isEmpty()) {
-                page.userCredentials.set(userCredentials)
-            }
+            val userCredentials = UserCredentials(loginValue, passwordValue)
+            val page = ProfilePage(
+                user = user,
+                userCredentials = userCredentials,
+                nameInputEditable = false,
+                emailInputEditable = false,
+                loginInputEditable = false,
+                passwordConfirm = null,
+                errorMessage = null
+            )
             ProfilePageSaver(services.preferences).save(page)
 
             notifyProfileSuccess(user)
@@ -293,10 +293,8 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    private suspend fun processPage(html: String): ProfilePage {
-        val page = ProfilePageParser().parse(html)
-        processPage(page)
-        return page
+    private fun parsePage(html: String): ProfilePage {
+        return ProfilePageParser().parse(html)
     }
 
     internal suspend fun processPage(page: ProfilePage) {

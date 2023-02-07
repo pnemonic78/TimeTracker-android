@@ -107,6 +107,7 @@
     <string name="profile_title" translatable="false">@string/profile</string>
     <string name="name">"Name"</string>
     <string name="prompt_name" translatable="false">@string/name</string>
+    <string name="prompt_newPassword">"New Password"</string>
     <string name="prompt_confirmPassword">"Confirm Password"</string>
     <string name="menu_profile" translatable="false">@string/profile</string>
     <string name="error_match_password">"Passwords are not the same"</string>

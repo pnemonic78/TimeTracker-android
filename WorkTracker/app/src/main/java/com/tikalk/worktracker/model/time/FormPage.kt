@@ -41,8 +41,7 @@ open class FormPage<R : TimeRecord>(
 )
 
 open class MutableFormPage<R : TimeRecord>(
-    var record: R
-) {
-    var projects: List<Project> = emptyList()
+    var record: R,
+    var projects: List<Project> = emptyList(),
     var errorMessage: String? = null
-}
+)

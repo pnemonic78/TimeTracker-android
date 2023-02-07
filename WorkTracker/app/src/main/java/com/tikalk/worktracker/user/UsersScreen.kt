@@ -32,6 +32,9 @@
 
 package com.tikalk.worktracker.user
 
+import android.annotation.SuppressLint
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -40,6 +43,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -72,6 +76,7 @@ fun UsersScreen(viewState: UsersViewState) {
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 private fun UsersScreenList(
     users: List<User>,
@@ -87,11 +92,15 @@ private fun UsersScreenList(
     val scope = rememberCoroutineScope()
     scope.launch { scrollState.animateScrollToItem(position) }
 
-    Row(modifier = Modifier.fillMaxSize()) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp),
             state = scrollState
         ) {
             items(users) {
@@ -100,7 +109,7 @@ private fun UsersScreenList(
             }
         }
         UsersScroller(
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = 8.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
             users = users,
             onScrollIndex = onScrollIndex
         )
@@ -112,7 +121,8 @@ private fun UsersScreenError() {
     EmptyListScreen()
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val user1 = User(
@@ -130,8 +140,11 @@ private fun ThisPreview() {
         isUncompletedEntry = false
     )
     val onScrollIndex: OnScrollIndexCallback = { _, _ -> }
+    val items = listOf(User.EMPTY, user1, user2)
 
     TikalTheme {
-        UsersScreenList(users = listOf(User.EMPTY, user1, user2), onScrollIndex = onScrollIndex)
+        Surface {
+            UsersScreenList(users = items, onScrollIndex = onScrollIndex)
+        }
     }
 }

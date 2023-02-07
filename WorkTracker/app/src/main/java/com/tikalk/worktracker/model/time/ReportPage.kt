@@ -40,8 +40,9 @@ class ReportPage(
     val totals: ReportTotals
 )
 
-class MutableReportPage(val filter: ReportFilter) {
-    var records: List<TimeRecord> = emptyList()
-    var totals: ReportTotals = ReportTotals()
-    var projects: MutableCollection<Project> = ArrayList()
-}
+class MutableReportPage(
+    val filter: ReportFilter,
+    var records: List<TimeRecord> = emptyList(),
+    var totals: ReportTotals = ReportTotals(),
+    var projects: MutableCollection<Project> = mutableListOf()
+)
