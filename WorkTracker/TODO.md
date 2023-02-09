@@ -9,6 +9,11 @@ To-Do List
   5 generate not showing results
 
 * migrate binding to Jetpack Compose
+  * swipe time list yesterday/tomorrow
+  * date-time picker dialog
+  * puncher form
+  * record edit form
+  * report form
 * move logic from fragment to ViewModel
     * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * "model" module
