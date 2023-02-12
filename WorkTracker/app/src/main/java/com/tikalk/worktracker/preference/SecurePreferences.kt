@@ -46,6 +46,7 @@ import java.util.UUID
  * @author moshe on 2018/07/17.
  */
 @SuppressLint("HardwareIds")
+@Deprecated("Google protobuf is buggy", ReplaceWith("SharedPreferences"))
 class SecurePreferences(context: Context, name: String, mode: Int) : SharedPreferences {
 
     private val delegate: SharedPreferences = context.getSharedPreferences(name, mode)

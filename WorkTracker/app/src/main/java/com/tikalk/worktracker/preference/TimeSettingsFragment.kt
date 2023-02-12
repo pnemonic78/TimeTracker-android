@@ -93,7 +93,6 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
     private fun deleteUser() {
         preferences.user = User.EMPTY
         preferences.userCredentials = UserCredentials.EMPTY
-        preferences.basicCredentials = BasicCredentials.EMPTY
         TimeTrackerServiceFactory.clearCookies()
 
         val context = this.context ?: return
