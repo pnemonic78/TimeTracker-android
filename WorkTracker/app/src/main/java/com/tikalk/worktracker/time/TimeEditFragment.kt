@@ -363,7 +363,11 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun getCalendar(cal: Calendar?): Calendar {
-        return cal ?: Calendar.getInstance().apply { timeInMillis = record.date.timeInMillis }
+        return cal ?: Calendar.getInstance().apply {
+            year = record.date.year
+            month = record.date.month
+            dayOfMonth = record.date.dayOfMonth
+        }
     }
 
     private fun validateForm(record: TimeRecord): Boolean {
