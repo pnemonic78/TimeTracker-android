@@ -497,7 +497,8 @@ class ReportFormFragment : TimeFormFragment() {
                 childFragmentManager.findFragmentById(R.id.nav_host_report) as NavHostFragment?
             if (reportFragment != null) {
                 // Existing view means ready - avoid "NavController is not available before onCreate()"
-                if (reportFragment.view != null) {
+                val reportFragmentView = reportFragment.view
+                if ((reportFragmentView != null) && (reportFragmentView.parent != null)) {
                     reportFragmentController = reportFragment.navController
                 }
             }

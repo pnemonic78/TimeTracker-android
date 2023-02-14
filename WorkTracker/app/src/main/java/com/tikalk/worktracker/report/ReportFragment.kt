@@ -177,7 +177,11 @@ class ReportFragment : InternetFragment() {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menu.clear()
+        val parentView = view?.parent as? View
+        if (parentView?.parent == null) return
+        if (parentView.id != R.id.nav_host_report) {
+            menu.clear()
+        }
         menuInflater.inflate(R.menu.report, menu)
     }
 
