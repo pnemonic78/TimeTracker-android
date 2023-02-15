@@ -45,7 +45,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
@@ -63,16 +62,16 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import java.util.Calendar
+import java.util.Formatter
+import java.util.Locale
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Formatter
-import java.util.Locale
-import kotlin.math.absoluteValue
 
 class TimeListFragment : TimeFormFragment() {
 
@@ -110,22 +109,15 @@ class TimeListFragment : TimeFormFragment() {
         binding.dateInput.setOnClickListener { pickDate() }
         binding.recordAdd.setOnClickListener { addTime() }
 
-        (binding.list as ComposeView).setContent {
+        binding.list.setContent {
             TikalTheme {
-                TimeList(itemsFlow = recordsData, onClick = ::onRecordClick)
+                TimeList(
+                    itemsFlow = recordsData,
+                    onClick = ::onRecordClick,
+                    onSwipe = swipeDayListener
+                )
             }
         }
-        val swipeDay = TimeListSwipeDay(context, object : TimeListSwipeDay.OnSwipeListener {
-            override fun onSwipePreviousDay() {
-                navigatePreviousDay()
-            }
-
-            override fun onSwipeNextDay() {
-                navigateNextDay()
-            }
-        })
-        binding.list.setOnTouchListener { _, event -> swipeDay.onTouchEvent(event) }
-
         lifecycleScope.launch {
             dateData.collect { date ->
                 bindDate(date)
@@ -617,6 +609,16 @@ class TimeListFragment : TimeFormFragment() {
             CoroutineScope(Dispatchers.IO).launch {
                 processPage(responseHtml, date)
             }
+        }
+    }
+
+    private val swipeDayListener = object : OnSwipeDayListener {
+        override fun onSwipePreviousDay() {
+            navigatePreviousDay()
+        }
+
+        override fun onSwipeNextDay() {
+            navigateNextDay()
         }
     }
 

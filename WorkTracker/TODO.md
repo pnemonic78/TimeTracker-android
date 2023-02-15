@@ -2,7 +2,6 @@ To-Do List
 ====
 
 * migrate binding to Jetpack Compose
-  * swipe time list yesterday/tomorrow
   * puncher form
   * record edit form
   * report form

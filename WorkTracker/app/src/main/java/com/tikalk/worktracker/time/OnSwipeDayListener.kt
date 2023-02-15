@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,34 +29,9 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package com.tikalk.worktracker.time
 
-package com.tikalk.util
-
-import android.os.Build
-import android.os.Bundle
-
-@Suppress("DEPRECATION")
-fun <T> Bundle.getParcelableCompat(key: String, clazz: Class<T>): T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        this.getParcelable(key, clazz)
-    } else {
-        this.getParcelable(key)
-    }
-}
-
-inline fun <reified T> Bundle.getParcelableCompat(key: String): T? {
-    val clazz: Class<T> = T::class.java
-    return getParcelableCompat(key, clazz)
-}
-
-fun isLocaleRTL(language: String): Boolean {
-    return (language == "he") || (language == "iw") || (language == "ar")
-}
-
-fun isLocaleRTL(locale: java.util.Locale): Boolean {
-    return isLocaleRTL(locale.language)
-}
-
-fun isLocaleRTL(locale: androidx.compose.ui.text.intl.Locale): Boolean {
-    return isLocaleRTL(locale.language)
+interface OnSwipeDayListener {
+    fun onSwipePreviousDay()
+    fun onSwipeNextDay()
 }
