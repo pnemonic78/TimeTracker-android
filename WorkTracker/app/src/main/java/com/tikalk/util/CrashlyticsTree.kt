@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2020, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,17 +32,37 @@
 package com.tikalk.util
 
 import android.util.Log
-
-import timber.log.Timber
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import java.util.*
 
 /**
- * Logger tree for Timber.
+ * Crashlytics logger tree for Timber.
  *
  * @author Moshe Waisberg
  */
-open class LogTree(private val debug: Boolean) : Timber.DebugTree() {
+class CrashlyticsTree(debug: Boolean) : LogTree(debug) {
 
-    override fun isLoggable(tag: String?, priority: Int): Boolean {
-        return (debug || priority >= Log.INFO) && super.isLoggable(tag, priority)
+    private val crashlytics: FirebaseCrashlytics = FirebaseCrashlytics.getInstance()
+
+    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+        super.log(priority, tag, message, t)
+        val logMessage = priorityChar[priority] + "/" + tag + ": " + message
+        crashlytics.log(logMessage)
+        if (t != null) {
+            crashlytics.recordException(t)
+        }
+    }
+
+    companion object {
+        private val priorityChar: MutableMap<Int, String> = HashMap()
+
+        init {
+            priorityChar[Log.ASSERT] = "A"
+            priorityChar[Log.ERROR] = "E"
+            priorityChar[Log.DEBUG] = "D"
+            priorityChar[Log.INFO] = "I"
+            priorityChar[Log.VERBOSE] = "V"
+            priorityChar[Log.WARN] = "W"
+        }
     }
 }
