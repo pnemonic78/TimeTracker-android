@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.report
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -40,7 +41,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
+import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -71,10 +74,16 @@ fun ReportList(
     items: List<TimeRecord>,
     filter: ReportFilter
 ) {
+    if (items.isEmpty()) {
+        EmptyListScreen()
+        return
+    }
+
     val onClick: OnRecordCallback = {}
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
         state = rememberLazyListState()
     ) {
         items(count = items.size) { index ->

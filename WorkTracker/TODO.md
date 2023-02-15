@@ -1,14 +1,11 @@
 To-Do List
 ====
 
-* fix bug:
-  1 Reports
-  2 rotate landscape
-  3 generate
-  4 rotate portrait
-  5 generate not showing results
-
 * migrate binding to Jetpack Compose
+  * puncher form
+  * record edit form
+  * report form
+  * date-time picker dialog
 * move logic from fragment to ViewModel
     * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * "model" module

@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,24 +29,9 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.net
+package com.tikalk.worktracker.time
 
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import okhttp3.Interceptor
-import okhttp3.Response
-
-/**
- * Authentication interceptor.
- * @author moshe on 2018/05/13.
- * @see https://futurestud.io/tutorials/android-basic-authentication-with-retrofit
- */
-class AuthenticationInterceptor(private val preferences: TimeTrackerPrefs) : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val authToken = preferences.basicCredentials.authToken()
-        val original = chain.request()
-        val request = original.newBuilder()
-            .header("Authorization", authToken)
-            .build()
-        return chain.proceed(request)
-    }
+interface OnSwipeDayListener {
+    fun onSwipePreviousDay()
+    fun onSwipeNextDay()
 }

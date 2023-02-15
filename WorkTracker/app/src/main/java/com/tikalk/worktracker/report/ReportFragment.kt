@@ -91,15 +91,12 @@ class ReportFragment : InternetFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.list.setContent {
             TikalTheme {
-                ReportList(itemsFlow = recordsData, filterFlow = filterData)
+                Surface {
+                    ReportList(itemsFlow = recordsData, filterFlow = filterData)
+                }
             }
         }
 
-        lifecycleScope.launch {
-            recordsData.collect { records ->
-                bindList(records)
-            }
-        }
         lifecycleScope.launch {
             totalsData.collect { totals ->
                 if (totals != null) bindTotals(totals)
@@ -110,16 +107,6 @@ class ReportFragment : InternetFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    @MainThread
-    private fun bindList(records: List<TimeRecord>) {
-        if (!isVisible) return
-        if (records.isEmpty()) {
-            binding.listSwitcher.displayedChild = CHILD_EMPTY
-        } else {
-            binding.listSwitcher.displayedChild = CHILD_LIST
-        }
     }
 
     @MainThread
@@ -190,7 +177,11 @@ class ReportFragment : InternetFragment() {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menu.clear()
+        val parentView = view?.parent as? View
+        if (parentView?.parent == null) return
+        if (parentView.id != R.id.nav_host_report) {
+            menu.clear()
+        }
         menuInflater.inflate(R.menu.report, menu)
     }
 
@@ -370,8 +361,5 @@ class ReportFragment : InternetFragment() {
 
     companion object {
         const val EXTRA_FILTER = "filter"
-
-        private const val CHILD_LIST = 0
-        private const val CHILD_EMPTY = 1
     }
 }

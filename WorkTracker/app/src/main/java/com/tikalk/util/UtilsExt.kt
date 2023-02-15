@@ -48,3 +48,15 @@ inline fun <reified T> Bundle.getParcelableCompat(key: String): T? {
     val clazz: Class<T> = T::class.java
     return getParcelableCompat(key, clazz)
 }
+
+fun isLocaleRTL(language: String): Boolean {
+    return (language == "he") || (language == "iw") || (language == "ar")
+}
+
+fun isLocaleRTL(locale: java.util.Locale): Boolean {
+    return isLocaleRTL(locale.language)
+}
+
+fun isLocaleRTL(locale: androidx.compose.ui.text.intl.Locale): Boolean {
+    return isLocaleRTL(locale.language)
+}
