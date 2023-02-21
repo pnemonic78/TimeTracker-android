@@ -154,10 +154,15 @@ open class TimeRecord(
     override fun equals(other: Any?): Boolean {
         if (other is TimeRecord) {
             return (this.id == other.id)
-                && (this.project == other.project)
-                && (this.task == other.task)
-                && (this.startTime == other.startTime)
+                && (this.cost == other.cost)
+                && (this.date == other.date)
                 && (this.duration == other.duration)
+                && (this.location == other.location)
+                && (this.note == other.note)
+                && (this.project == other.project)
+                && (this.startTime == other.startTime)
+                && (this.status == other.status)
+                && (this.task == other.task)
         }
         return super.equals(other)
     }
@@ -170,6 +175,7 @@ open class TimeRecord(
     override fun hashCode(): Int {
         var result = project.hashCode()
         result = 31 * result + task.hashCode()
+        result = 31 * result + date.hashCode()
         result = 31 * result + startTime.hashCode()
         return result
     }
