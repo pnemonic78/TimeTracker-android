@@ -13,6 +13,7 @@ val versionMinor = project.properties["APP_VERSION_MINOR"].toString().toInt()
 
 android {
     compileSdk = Android.Version.compileSdk
+    namespace = "com.tikalk.worktracker"
 
     defaultConfig {
         applicationId = "com.tikalk.worktracker"
