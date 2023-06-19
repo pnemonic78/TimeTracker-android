@@ -332,7 +332,8 @@ class ReportFragment : InternetFragment() {
 
     private fun showError(error: Throwable) {
         Timber.e(error)
-        AlertDialog.Builder(requireContext())
+        val activity = activity ?: return
+        AlertDialog.Builder(activity)
             .setTitle(R.string.error_title)
             .setIcon(R.drawable.ic_dialog)
             .setMessage(R.string.error_export)

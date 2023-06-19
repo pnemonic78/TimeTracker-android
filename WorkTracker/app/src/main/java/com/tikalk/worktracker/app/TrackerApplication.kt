@@ -56,11 +56,10 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         super.onCreate()
 
         // Logging
-        val enableDebugLogging = BuildConfig.DEBUG
-        if (enableDebugLogging) {
-            Timber.plant(LogTree(enableDebugLogging))
+        if (BuildConfig.DEBUG) {
+            Timber.plant(LogTree(true))
         } else {
-            Timber.plant(CrashlyticsTree(enableDebugLogging))
+            Timber.plant(CrashlyticsTree(false))
         }
 
         registerActivityLifecycleCallbacks(this)

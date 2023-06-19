@@ -1,5 +1,5 @@
 # Testing
 
 For development and testing purposes, you can use the following credentials:
-- username: demo@tikalk.com
+- username: demo1@tikalk.com
 - password: &pLAYnhF
