@@ -84,7 +84,8 @@ class TrackerFragmentDelegate(
     }
 
     fun showError(@StringRes messageId: Int) {
-        AlertDialog.Builder(fragment.requireContext())
+        val activity = fragment.activity ?: return
+        AlertDialog.Builder(activity)
             .setTitle(R.string.error_title)
             .setMessage(messageId)
             .setIcon(R.drawable.ic_report_problem)
