@@ -25,6 +25,7 @@ android {
         vectorDrawables.useSupportLibrary = true
 
         buildConfigField("String", "API_URL", "\"https://time.infra.tikalk.dev/\"")
+        buildConfigField("Boolean", "LOCATION", "false")
     }
 
     signingConfigs {
@@ -50,6 +51,7 @@ android {
 
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 
     compileOptions {
@@ -75,10 +77,6 @@ android {
             pickFirsts += "META-INF/sisu/*"
             pickFirsts += "plugin.properties"
         }
-    }
-
-    buildFeatures {
-        viewBinding = true
     }
 }
 

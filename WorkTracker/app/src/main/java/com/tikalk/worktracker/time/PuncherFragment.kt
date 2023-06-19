@@ -46,6 +46,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
@@ -166,7 +167,9 @@ class PuncherFragment : TimeFormFragment() {
         val projects = viewModel.projectsData.value
         bindProjects(context, record, projects)
 
-        bindLocation(context, record)
+        if (BuildConfig.LOCATION) {
+            bindLocation(context, record)
+        }
 
         val startTime = record.startTime
         if (startTime <= TimeRecord.NEVER) {
@@ -202,6 +205,8 @@ class PuncherFragment : TimeFormFragment() {
     private fun bindLocation(context: Context, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
         val binding = _binding ?: return
+        binding.locationIcon.isVisible = true
+        binding.locationInput.isVisible = true
         val locations = buildLocations(context)
         binding.locationInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)

@@ -45,6 +45,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -328,7 +329,9 @@ class ReportFormFragment : TimeFormFragment() {
             ArrayAdapter(context, android.R.layout.simple_list_item_1, periodItems)
         bindingForm.periodInput.setSelection(filter.period.ordinal)
 
-        bindLocation(context, filter)
+        if (BuildConfig.LOCATION) {
+            bindLocation(context, filter)
+        }
 
         val startTime = filter.startTime
         bindingForm.startInput.text = if (startTime != TimeRecord.NEVER)
@@ -372,8 +375,10 @@ class ReportFormFragment : TimeFormFragment() {
 
     private fun bindLocation(context: Context, filter: ReportFilter) {
         Timber.i("bindLocation filter=$filter")
-        val locations = buildLocations(context)
         val bindingForm = _binding?.form ?: return
+        bindingForm.locationIcon.isVisible = true
+        bindingForm.locationInput.isVisible = true
+        val locations = buildLocations(context)
         bindingForm.locationInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
         if (locations.isNotEmpty()) {

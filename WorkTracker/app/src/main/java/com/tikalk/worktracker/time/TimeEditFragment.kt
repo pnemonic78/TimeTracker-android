@@ -46,6 +46,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.DateTimePickerDialog
@@ -55,6 +56,7 @@ import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.DateTimePicker
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.TimeFormBinding
@@ -233,7 +235,9 @@ class TimeEditFragment : TimeFormFragment() {
         val projects = viewModel.projectsData.value
         bindProjects(context, record, projects)
 
-        bindLocation(context, record)
+        if (BuildConfig.LOCATION) {
+            bindLocation(context, record)
+        }
 
         bindStartTime(context, record.start)
         startPickerDialog = null
@@ -267,6 +271,8 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindLocation(context: Context, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
+        binding.locationIcon.isVisible = true
+        binding.locationInput.isVisible = true
         val locations = buildLocations(context)
         binding.locationInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
@@ -373,7 +379,7 @@ class TimeEditFragment : TimeFormFragment() {
     private fun validateForm(record: TimeRecord): Boolean {
         val projectInputView = binding.projectInput.selectedView as TextView
         val taskInputView = binding.taskInput.selectedView as TextView
-        val locationInputView = binding.locationInput.selectedView as TextView
+        val locationInputView = binding.locationInput.selectedView as? TextView
 
         projectInputView.error = null
         projectInputView.isFocusableInTouchMode = false
@@ -385,8 +391,8 @@ class TimeEditFragment : TimeFormFragment() {
         binding.finishInput.isFocusableInTouchMode = false
         binding.durationInput.error = null
         binding.durationInput.isFocusableInTouchMode = false
-        locationInputView.error = null
-        locationInputView.isFocusableInTouchMode = false
+        locationInputView?.error = null
+        locationInputView?.isFocusableInTouchMode = false
         setErrorLabel("")
 
         if (record.project.id == TikalEntity.ID_NONE) {
@@ -403,7 +409,8 @@ class TimeEditFragment : TimeFormFragment() {
             taskInputView.post { taskInputView.requestFocus() }
             return false
         }
-        if (record.location.id == TikalEntity.ID_NONE) {
+        if (BuildConfig.LOCATION && (record.location.id == TikalEntity.ID_NONE)) {
+            val locationInputView = locationInputView!!
             locationInputView.error = getText(R.string.error_location_field_required)
             setErrorLabel(getText(R.string.error_location_field_required))
             locationInputView.isFocusableInTouchMode = true
