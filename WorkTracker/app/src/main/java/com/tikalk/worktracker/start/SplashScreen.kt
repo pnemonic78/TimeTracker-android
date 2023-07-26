@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.start
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -105,7 +106,8 @@ fun SplashScreen() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     TikalTheme {

@@ -100,7 +100,6 @@ class TimeListFragment : TimeFormFragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val context: Context = view.context
 
         formNavHostFragment =
             childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment

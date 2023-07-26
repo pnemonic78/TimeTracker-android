@@ -45,7 +45,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
-import androidx.compose.material.Surface
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -91,9 +90,7 @@ class ReportFragment : InternetFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.list.setContent {
             TikalTheme {
-                Surface {
-                    ReportList(itemsFlow = recordsData, filterFlow = filterData)
-                }
+                ReportList(itemsFlow = recordsData, filterFlow = filterData)
             }
         }
 
@@ -115,13 +112,11 @@ class ReportFragment : InternetFragment() {
 
         binding.totals.composeView.setContent {
             TikalTheme {
-                Surface {
-                    ReportTotalsFooter(
-                        totals = totals,
-                        isDurationFieldVisible = filter.isDurationFieldVisible,
-                        isCostFieldVisible = filter.isCostFieldVisible
-                    )
-                }
+                ReportTotalsFooter(
+                    totals = totals,
+                    isDurationFieldVisible = filter.isDurationFieldVisible,
+                    isCostFieldVisible = filter.isCostFieldVisible
+                )
             }
         }
     }
@@ -191,30 +186,37 @@ class ReportFragment : InternetFragment() {
                 exportCSV(menuItem, false)
                 return true
             }
+
             R.id.menu_export_html -> {
                 exportHTML(menuItem, false)
                 return true
             }
+
             R.id.menu_export_odf -> {
                 exportODF(menuItem)
                 return true
             }
+
             R.id.menu_export_xml -> {
                 exportXML(menuItem)
                 return true
             }
+
             R.id.menu_preview_csv -> {
                 exportCSV(menuItem, preview = true)
                 return true
             }
+
             R.id.menu_preview_html -> {
                 exportHTML(menuItem, preview = true)
                 return true
             }
+
             R.id.menu_preview_odf -> {
                 exportODF(menuItem, preview = true)
                 return true
             }
+
             R.id.menu_preview_xml -> {
                 exportXML(menuItem, preview = true)
                 return true

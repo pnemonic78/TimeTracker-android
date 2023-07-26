@@ -33,12 +33,12 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
+import android.content.res.Configuration
 import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -52,12 +52,11 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import java.util.*
+import java.util.Formatter
+import java.util.Locale
 
 private val timeBuffer = StringBuilder(20)
-private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
 private val currencyBuffer = StringBuilder(20)
-private val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
 
 @Composable
 fun ReportTotalsFooter(
@@ -66,8 +65,7 @@ fun ReportTotalsFooter(
     isCostFieldVisible: Boolean = false
 ) {
     val context: Context = LocalContext.current
-    timeBuffer.clear()
-    currencyBuffer.clear()
+    val textColor = MaterialTheme.colors.onBackground
 
     Row(
         modifier = Modifier
@@ -75,41 +73,48 @@ fun ReportTotalsFooter(
             .padding(top = 8.dp, bottom = 8.dp, end = 16.dp)
     ) {
         if (isDurationFieldVisible) {
+            timeBuffer.clear()
+            val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
             Text(
                 modifier = Modifier.padding(start = 16.dp),
                 text = stringResource(id = R.string.duration_total),
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body2,
+                color = textColor
             )
             Text(
                 modifier = Modifier.padding(start = 4.dp),
                 text = formatElapsedTime(context, timeFormatter, totals.duration),
                 style = MaterialTheme.typography.body2,
+                color = textColor,
                 fontWeight = FontWeight.Medium
             )
         }
         if (isCostFieldVisible) {
+            currencyBuffer.clear()
+            val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
             Text(
                 modifier = Modifier.padding(start = 16.dp),
                 text = stringResource(id = R.string.cost_total),
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body2,
+                color = textColor
             )
             Text(
                 modifier = Modifier.padding(start = 4.dp),
                 text = formatCurrency(currencyFormatter, totals.cost),
                 style = MaterialTheme.typography.body2,
+                color = textColor,
                 fontWeight = FontWeight.Medium
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val totals = ReportTotals(DateUtils.WEEK_IN_MILLIS, 1.23)
     TikalTheme {
-        Surface {
-            ReportTotalsFooter(totals, isCostFieldVisible = true)
-        }
+        ReportTotalsFooter(totals, isCostFieldVisible = true)
     }
 }

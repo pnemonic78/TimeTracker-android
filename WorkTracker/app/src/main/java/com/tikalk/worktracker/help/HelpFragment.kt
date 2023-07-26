@@ -39,7 +39,6 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.compose.material.Surface
 import androidx.fragment.app.viewModels
 import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.databinding.FragmentComposeBinding
@@ -67,9 +66,7 @@ class HelpFragment : InternetFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                Surface {
-                    HelpScreen()
-                }
+                HelpScreen()
             }
         }
     }

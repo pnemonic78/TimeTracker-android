@@ -39,7 +39,6 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.compose.material.Surface
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -73,9 +72,7 @@ class UsersFragment : InternetFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                Surface {
-                    UsersScreen(viewState = viewModel)
-                }
+                UsersScreen(viewState = viewModel)
             }
         }
     }

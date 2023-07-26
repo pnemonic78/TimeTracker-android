@@ -32,6 +32,7 @@
 
 package com.tikalk.compose
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
@@ -95,7 +96,8 @@ fun PasswordTextField(
     )
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     TikalTheme {
