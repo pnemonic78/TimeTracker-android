@@ -5,15 +5,14 @@ object Android {
         const val targetSdk = 33
 
         const val compose = "1.3.3"
-        const val composeCompiler = "1.3.2"
+        const val composeCompiler = "1.4.8"
         const val composeMaterial = "1.3.1"
-        const val hilt = "2.42"
-        const val koin = "3.1.5"
+        const val hilt = "2.47"
         const val navigation = "2.5.0"
-        const val okhttp = "4.9.3"
+        const val okhttp = "4.11.0"
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
-        const val room = "2.4.3"
+        const val room = "2.5.2"
         const val security = "1.1.0-alpha03"
         const val test = "1.4.0"
     }
@@ -24,7 +23,7 @@ object Android {
     }
 
     object Image {
-        const val coil = "io.coil-kt:coil-compose:1.3.2"
+        const val coil = "io.coil-kt:coil-compose:2.4.0"
         const val ratingbar = "io.github.a914-gowtham:compose-ratingbar:1.2.2"
     }
 
@@ -32,11 +31,10 @@ object Android {
     object Inject {
         const val hilt = "com.google.dagger:hilt-android:${Version.hilt}"
         const val hiltCompiler = "com.google.dagger:hilt-android-compiler:${Version.hilt}"
-        const val koin = "io.insert-koin:koin-android:${Version.koin}"
     }
 
     object Jetpack {
-        const val appcompat = "androidx.appcompat:appcompat:1.7.0-alpha01"
+        const val appcompat = "androidx.appcompat:appcompat:1.7.0-alpha02"
         const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeActivity = "androidx.activity:activity-compose:1.6.1"
         const val composeCompiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
@@ -47,7 +45,7 @@ object Android {
         const val composeUiTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
         const val composeUiToolingPreview = "androidx.compose.ui:ui-tooling-preview:${Version.compose}"
         const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.4"
-        const val core = "androidx.core:core-ktx:1.9.0"
+        const val core = "androidx.core:core-ktx:1.10.1"
         const val navigationCompose = "androidx.navigation:navigation-compose:${Version.navigation}"
         const val navigationFragment = "androidx.navigation:navigation-fragment-ktx:${Version.navigation}"
         const val navigationUI = "androidx.navigation:navigation-ui-ktx:${Version.navigation}"
@@ -57,11 +55,11 @@ object Android {
 
     object JSON {
         const val kotlin = Kotlin.JSON.json
-        const val retrofit = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
+        const val retrofit = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0"
     }
 
     object Logging {
-        const val crashlytics = "com.google.firebase:firebase-crashlytics:18.3.3"
+        const val crashlytics = "com.google.firebase:firebase-crashlytics:18.3.7"
         const val timber = "com.jakewharton.timber:timber:5.0.1"
     }
 
@@ -109,10 +107,10 @@ object Java {
 
 object Kotlin {
     object Version {
-        const val coroutines = "1.6.2"
-        const val html = "0.8.0"
-        const val kotlin = "1.7.20"
-        const val serialization = "1.3.33"
+        const val coroutines = "1.7.3"
+        const val html = "0.9.1"
+        const val kotlin = "1.8.22"
+        const val serialization = "1.5.1"
     }
 
     object Document {

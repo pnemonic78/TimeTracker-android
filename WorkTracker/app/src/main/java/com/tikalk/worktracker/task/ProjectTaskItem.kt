@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.task
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -88,7 +89,8 @@ fun ProjectTaskItem(task: ProjectTask) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val task = ProjectTask("Task", "Some description")

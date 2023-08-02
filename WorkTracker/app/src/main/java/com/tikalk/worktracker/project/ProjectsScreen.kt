@@ -42,29 +42,35 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.model.TikalResult
+import com.tikalk.util.set
 import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.LoadingScreen
 import com.tikalk.worktracker.model.Project
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun ProjectsScreen(viewState: ProjectsViewState) {
     val resultState = viewState.projects.collectAsState(initial = TikalResult.Loading())
     val result: TikalResult<List<Project>> = resultState.value
+    val resultsSuccess = remember { mutableListOf<Project>() }
 
     when (result) {
         is TikalResult.Loading -> LoadingScreen()
+
         is TikalResult.Success -> {
             val projects = result.data ?: emptyList()
+            resultsSuccess.set(projects)
             ProjectsScreenList(projects = projects)
         }
-        is TikalResult.Error -> ProjectsScreenError()
+
+        is TikalResult.Error -> {
+            ProjectsScreenError(projects = resultsSuccess)
+        }
     }
 }
 
@@ -90,8 +96,12 @@ private fun ProjectsScreenList(projects: List<Project>) {
 }
 
 @Composable
-private fun ProjectsScreenError() {
-    EmptyListScreen()
+private fun ProjectsScreenError(projects: List<Project>? = null) {
+    if (projects.isNullOrEmpty()) {
+        EmptyListScreen()
+    } else {
+        ProjectsScreenList(projects = projects)
+    }
 }
 
 @Preview(name = "default", showBackground = true)
@@ -99,10 +109,6 @@ private fun ProjectsScreenError() {
 @Composable
 private fun ThisPreview() {
     val items = listOf(Project("Tikal"))
-    val viewState: ProjectsViewState = object : ProjectsViewState {
-        override val projects: Flow<TikalResult<List<Project>>> =
-            MutableStateFlow(TikalResult.Success(items))
-    }
 
     TikalTheme {
         ProjectsScreenList(items)

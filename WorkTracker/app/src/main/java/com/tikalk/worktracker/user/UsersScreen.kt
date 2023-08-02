@@ -43,7 +43,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,15 +69,16 @@ fun UsersScreen(viewState: UsersViewState) {
         is TikalResult.Loading -> LoadingScreen()
         is TikalResult.Success -> {
             val users = result.data ?: emptyList()
-            UsersScreenList(users = users, position = position, onScrollIndex = onScrollIndex)
+            UsersScreen(users = users, position = position, onScrollIndex = onScrollIndex)
         }
+
         is TikalResult.Error -> UsersScreenError()
     }
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-private fun UsersScreenList(
+private fun UsersScreen(
     users: List<User>,
     position: Int = 0,
     onScrollIndex: OnScrollIndexCallback
@@ -88,6 +88,16 @@ private fun UsersScreenList(
         return
     }
 
+    UsersScreenList(users = users, position = position, onScrollIndex = onScrollIndex)
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+private fun UsersScreenList(
+    users: List<User>,
+    position: Int = 0,
+    onScrollIndex: OnScrollIndexCallback
+) {
     val scrollState = rememberLazyListState(initialFirstVisibleItemIndex = position)
     val scope = rememberCoroutineScope()
     scope.launch { scrollState.animateScrollToItem(position) }
@@ -143,8 +153,6 @@ private fun ThisPreview() {
     val items = listOf(User.EMPTY, user1, user2)
 
     TikalTheme {
-        Surface {
-            UsersScreenList(users = items, onScrollIndex = onScrollIndex)
-        }
+        UsersScreenList(users = items, onScrollIndex = onScrollIndex)
     }
 }

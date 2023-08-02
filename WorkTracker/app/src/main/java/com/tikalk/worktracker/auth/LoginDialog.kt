@@ -41,6 +41,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
@@ -91,7 +92,7 @@ fun LoginForm(viewState: LoginViewState) {
     val errorMessage = errorMessageState.value
     val onConfirmClick = viewState.onConfirmClick
 
-    Surface {
+    Card {
         Column(
             modifier = Modifier
                 .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))

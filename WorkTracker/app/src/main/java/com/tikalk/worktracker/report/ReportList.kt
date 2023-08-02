@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.report
 
+import android.content.res.Configuration
 import android.text.format.DateUtils
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -104,7 +105,8 @@ fun ReportList(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val record = TimeRecord(

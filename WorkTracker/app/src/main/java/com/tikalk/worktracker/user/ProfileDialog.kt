@@ -41,10 +41,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -73,9 +73,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileDialog(viewState: ProfileViewState) {
     Dialog(onDismissRequest = viewState.onDismiss) {
-        Surface {
-            ProfileForm(viewState)
-        }
+        ProfileForm(viewState)
     }
 }
 
@@ -100,169 +98,171 @@ fun ProfileForm(viewState: ProfileViewState) {
     val errorMessage = errorMessageState.value
     val onConfirmClick = viewState.onConfirmClick
 
-    Column(
-        modifier = Modifier
-            .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        OutlinedTextField(
+    Card {
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            label = {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.prompt_name),
-                    style = MaterialTheme.typography.subtitle1,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            value = userDisplayName.value,
-            trailingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(
-                        image = ImageVector.vectorResource(
-                            id = R.drawable.ic_person
-                        )
-                    ),
-                    contentDescription = ""
-                )
-            },
-            singleLine = true,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.userDisplayName.emit(userDisplayName.copy(value = value))
-                }
-            },
-            textStyle = MaterialTheme.typography.body1,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            readOnly = userDisplayName.isReadOnly,
-            isError = userDisplayName.isError
-        )
-        OutlinedTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.prompt_email),
-                    style = MaterialTheme.typography.subtitle1,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            value = userEmail.value,
-            trailingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(
-                        image = ImageVector.vectorResource(
-                            id = R.drawable.ic_email
-                        )
-                    ),
-                    contentDescription = ""
-                )
-            },
-            singleLine = true,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.userEmail.emit(userEmail.copy(value = value))
-                }
-            },
-            textStyle = MaterialTheme.typography.body1,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            readOnly = userEmail.isReadOnly,
-            isError = userEmail.isError
-        )
-        OutlinedTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.prompt_login),
-                    style = MaterialTheme.typography.subtitle1,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            value = credentialsLogin.value,
-            trailingIcon = {
-                Icon(
-                    painter = rememberVectorPainter(
-                        image = ImageVector.vectorResource(
-                            id = R.drawable.ic_lock_open
-                        )
-                    ),
-                    contentDescription = ""
-                )
-            },
-            singleLine = true,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
-                }
-            },
-            textStyle = MaterialTheme.typography.body1,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-            readOnly = credentialsLogin.isReadOnly,
-            isError = credentialsLogin.isError
-        )
-        PasswordTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = stringResource(id = R.string.prompt_newPassword),
-            value = credentialsPassword.value,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.credentialsPassword.emit(credentialsPassword.copy(value = value))
-                }
-            },
-            readOnly = credentialsPassword.isReadOnly,
-            isError = credentialsPassword.isError
-        )
-        PasswordTextField(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            label = stringResource(id = R.string.prompt_confirmPassword),
-            value = credentialsPasswordConfirmation.value,
-            onValueChange = { value: String ->
-                coroutineScope.launch {
-                    viewState.credentialsPasswordConfirmation.emit(
-                        credentialsPasswordConfirmation.copy(value = value)
+                .defaultMinSize(minWidth = dimensionResource(id = R.dimen.dialog_form_minWidth))
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                label = {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.prompt_name),
+                        style = MaterialTheme.typography.subtitle1,
+                        fontWeight = FontWeight.Medium
                     )
-                }
-            },
-            readOnly = credentialsPasswordConfirmation.isReadOnly,
-            isError = credentialsPasswordConfirmation.isError
-        )
-        if (errorMessage.isNotEmpty()) {
-            Text(
+                },
+                value = userDisplayName.value,
+                trailingIcon = {
+                    Icon(
+                        painter = rememberVectorPainter(
+                            image = ImageVector.vectorResource(
+                                id = R.drawable.ic_person
+                            )
+                        ),
+                        contentDescription = ""
+                    )
+                },
+                singleLine = true,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.userDisplayName.emit(userDisplayName.copy(value = value))
+                    }
+                },
+                textStyle = MaterialTheme.typography.body1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                readOnly = userDisplayName.isReadOnly,
+                isError = userDisplayName.isError
+            )
+            OutlinedTextField(
                 modifier = Modifier
                     .padding(top = marginTop)
                     .fillMaxWidth(),
-                text = errorMessage,
-                style = MaterialTheme.typography.body1,
-                color = MaterialTheme.colors.error,
-                textAlign = TextAlign.Center
+                label = {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.prompt_email),
+                        style = MaterialTheme.typography.subtitle1,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                value = userEmail.value,
+                trailingIcon = {
+                    Icon(
+                        painter = rememberVectorPainter(
+                            image = ImageVector.vectorResource(
+                                id = R.drawable.ic_email
+                            )
+                        ),
+                        contentDescription = ""
+                    )
+                },
+                singleLine = true,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.userEmail.emit(userEmail.copy(value = value))
+                    }
+                },
+                textStyle = MaterialTheme.typography.body1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                readOnly = userEmail.isReadOnly,
+                isError = userEmail.isError
             )
-        }
-        Button(
-            modifier = Modifier
-                .padding(top = marginTop)
-                .fillMaxWidth(),
-            onClick = onConfirmClick
-        ) {
-            Text(text = stringResource(id = R.string.action_submit))
-            Icon(
-                modifier = Modifier.padding(start = 8.dp),
-                painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_done)),
-                contentDescription = ""
+            OutlinedTextField(
+                modifier = Modifier
+                    .padding(top = marginTop)
+                    .fillMaxWidth(),
+                label = {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.prompt_login),
+                        style = MaterialTheme.typography.subtitle1,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                value = credentialsLogin.value,
+                trailingIcon = {
+                    Icon(
+                        painter = rememberVectorPainter(
+                            image = ImageVector.vectorResource(
+                                id = R.drawable.ic_lock_open
+                            )
+                        ),
+                        contentDescription = ""
+                    )
+                },
+                singleLine = true,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
+                    }
+                },
+                textStyle = MaterialTheme.typography.body1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                readOnly = credentialsLogin.isReadOnly,
+                isError = credentialsLogin.isError
             )
+            PasswordTextField(
+                modifier = Modifier
+                    .padding(top = marginTop)
+                    .fillMaxWidth(),
+                label = stringResource(id = R.string.prompt_newPassword),
+                value = credentialsPassword.value,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.credentialsPassword.emit(credentialsPassword.copy(value = value))
+                    }
+                },
+                readOnly = credentialsPassword.isReadOnly,
+                isError = credentialsPassword.isError
+            )
+            PasswordTextField(
+                modifier = Modifier
+                    .padding(top = marginTop)
+                    .fillMaxWidth(),
+                label = stringResource(id = R.string.prompt_confirmPassword),
+                value = credentialsPasswordConfirmation.value,
+                onValueChange = { value: String ->
+                    coroutineScope.launch {
+                        viewState.credentialsPasswordConfirmation.emit(
+                            credentialsPasswordConfirmation.copy(value = value)
+                        )
+                    }
+                },
+                readOnly = credentialsPasswordConfirmation.isReadOnly,
+                isError = credentialsPasswordConfirmation.isError
+            )
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    modifier = Modifier
+                        .padding(top = marginTop)
+                        .fillMaxWidth(),
+                    text = errorMessage,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.error,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .padding(top = marginTop)
+                    .fillMaxWidth(),
+                onClick = onConfirmClick
+            ) {
+                Text(text = stringResource(id = R.string.action_submit))
+                Icon(
+                    modifier = Modifier.padding(start = 8.dp),
+                    painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_done)),
+                    contentDescription = ""
+                )
+            }
         }
     }
 }

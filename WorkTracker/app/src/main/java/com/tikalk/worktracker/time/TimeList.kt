@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.time
 
+import android.content.res.Configuration
 import android.text.format.DateUtils
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -124,7 +125,8 @@ private suspend fun PointerInputScope.detectHorizontalFling(onSwipe: OnSwipeDayL
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val record = TimeRecord(

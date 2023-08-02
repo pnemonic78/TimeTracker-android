@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.user
 
+import android.content.res.Configuration
 import android.graphics.RectF
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -41,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -77,6 +79,7 @@ fun UsersScroller(
     var indexBottom: Float
     val textSize =
         with(LocalDensity.current) { dimensionResource(id = R.dimen.index_textSize).toSp() }
+    val textColor = MaterialTheme.colors.onBackground
 
     Column(
         modifier = modifier
@@ -118,7 +121,8 @@ fun UsersScroller(
                     },
                 text = index,
                 textAlign = TextAlign.Center,
-                fontSize = textSize
+                fontSize = textSize,
+                color = textColor
             )
         }
     }
@@ -133,7 +137,8 @@ private fun findIndex(indicesBounds: Map<String, RectF>, y: Float): String? {
     return null
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val user1 = User(

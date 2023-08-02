@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.time
 
 import android.content.Context
+import android.content.res.Configuration
 import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -68,10 +69,8 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.toLocationItem
 import java.util.Calendar
 import java.util.Formatter
-import java.util.Locale
 
 private val timeBuffer = StringBuilder(20)
-private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
 
 typealias OnRecordCallback = ((TimeRecord) -> Unit)
@@ -86,7 +85,7 @@ fun TimeItem(
     isDurationFieldVisible: Boolean = true,
     isNoteFieldVisible: Boolean = true,
     isCostFieldVisible: Boolean = false,
-    isLocationFieldVisible: Boolean = true,
+    isLocationFieldVisible: Boolean = false,
     onClick: OnRecordCallback
 ) {
     val context: Context = LocalContext.current
@@ -104,6 +103,7 @@ fun TimeItem(
     } else if (isStartFieldVisible) {
         if (isFinishFieldVisible) {
             timeBuffer.clear()
+            val timeFormatter = Formatter(timeBuffer)
             val formatterRange = DateUtils.formatDateRange(
                 context,
                 timeFormatter,
@@ -189,6 +189,7 @@ fun TimeItem(
                 }
                 if (isDurationFieldVisible) {
                     timeBuffer.clear()
+                    val timeFormatter = Formatter(timeBuffer)
                     val duration = formatElapsedTime(context, timeFormatter, record.duration)
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -282,7 +283,8 @@ private fun calculateColor(record: TimeRecord, isDark: Boolean): Color {
     return if (isDark) Color(255 - r, 255 - g, 255 - b) else Color(r, g, b)
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val record = TimeRecord(

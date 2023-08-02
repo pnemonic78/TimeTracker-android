@@ -60,3 +60,8 @@ fun isLocaleRTL(locale: java.util.Locale): Boolean {
 fun isLocaleRTL(locale: androidx.compose.ui.text.intl.Locale): Boolean {
     return isLocaleRTL(locale.language)
 }
+
+fun <T> MutableCollection<T>.set(elements: Iterable<T>) {
+    clear()
+    addAll(elements)
+}

@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.task
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,13 +42,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.model.TikalResult
+import com.tikalk.util.set
 import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.LoadingScreen
+import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,14 +60,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 fun ProjectTasksScreen(viewState: ProjectTasksViewState) {
     val resultState = viewState.tasks.collectAsState(initial = TikalResult.Loading())
     val result: TikalResult<List<ProjectTask>> = resultState.value
+    val resultsSuccess = remember { mutableListOf<ProjectTask>() }
 
     when (result) {
         is TikalResult.Loading -> LoadingScreen()
+
         is TikalResult.Success -> {
             val tasks = result.data ?: emptyList()
+            resultsSuccess.set(tasks)
             ProjectTasksScreenList(tasks = tasks)
         }
-        is TikalResult.Error -> ProjectTasksScreenError()
+
+        is TikalResult.Error -> {
+            ProjectTasksScreenError(tasks = resultsSuccess)
+        }
     }
 }
 
@@ -89,11 +99,16 @@ private fun ProjectTasksScreenList(tasks: List<ProjectTask>) {
 }
 
 @Composable
-private fun ProjectTasksScreenError() {
-    EmptyListScreen()
+private fun ProjectTasksScreenError(tasks: List<ProjectTask>? = null) {
+    if (tasks.isNullOrEmpty()) {
+        EmptyListScreen()
+    } else {
+        ProjectTasksScreenList(tasks = tasks)
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "default", showBackground = true)
+@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
     val viewState: ProjectTasksViewState = object : ProjectTasksViewState {

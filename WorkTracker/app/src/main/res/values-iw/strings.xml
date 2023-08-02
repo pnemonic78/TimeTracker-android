@@ -110,7 +110,7 @@
     <string name="start_date_label">"תאריך התחלה"</string>
     <string name="finish_date_label">"תאריך סיום"</string>
     <string name="action_generate">"ליצור"</string>
-    <string name="error_no_results">"אין תוצאות"</string>
+    <string name="error_no_items">"אין פריטים"</string>
     <string name="period_label">"תקופת זמן"</string>
     <string name="period_custom">"מותאם אישית"</string>
     <string name="period_this_week">"השבוע"</string>
