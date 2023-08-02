@@ -44,9 +44,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.compose.TikalTheme
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.launch
 import timber.log.Timber

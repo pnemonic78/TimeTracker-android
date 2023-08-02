@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@ import android.view.View
 import android.widget.TabHost
 import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
+import com.tikalk.core.R
 import com.tikalk.widget.DateTimePicker
-import com.tikalk.worktracker.R
 import java.util.Calendar
 
 class DateTimePickerDialog private constructor(

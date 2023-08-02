@@ -39,7 +39,7 @@ import android.view.LayoutInflater
 import android.widget.DatePicker
 import android.widget.FrameLayout
 import android.widget.TimePicker
-import com.tikalk.worktracker.R
+import com.tikalk.core.R
 
 /**
  * Provides a widget for selecting a date and time.

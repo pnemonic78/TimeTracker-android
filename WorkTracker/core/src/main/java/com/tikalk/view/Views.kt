@@ -30,27 +30,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.app
+package com.tikalk.view
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatDialogFragment
-import dagger.hilt.android.AndroidEntryPoint
+import android.view.View
+import com.tikalk.core.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
-@AndroidEntryPoint
-open class TikalDialogFragment() : AppCompatDialogFragment() {
+fun View.showAnimated(visible: Boolean) {
+    val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
+    val view = this
+    view.visibility = if (visible) View.VISIBLE else View.GONE
+    view.animate()
+        .setDuration(shortAnimTime)
+        .alpha(if (visible) 1f else 0f)
+}
 
-    constructor(args: Bundle) : this() {
-        arguments = args
+private val view_coroutine_scope = R.id.composeView
+
+val View.viewScope: CoroutineScope
+    get() {
+        val storedScope = tag as? CoroutineScope
+        if (storedScope != null) return storedScope
+
+        val newScope = ViewCoroutineScope()
+        if (isAttachedToWindow) {
+            addOnAttachStateChangeListener(newScope)
+            setTag(view_coroutine_scope, newScope)
+        } else newScope.cancel()
+
+        return newScope
     }
 
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        if (savedInstanceState != null) {
-            onRestoreInstanceState(savedInstanceState)
-        }
+private class ViewCoroutineScope : CoroutineScope, View.OnAttachStateChangeListener {
+    override val coroutineContext = SupervisorJob() + Dispatchers.Main
+
+    override fun onViewAttachedToWindow(view: View) = Unit
+
+    override fun onViewDetachedFromWindow(view: View) {
+        coroutineContext.cancel()
+        view.setTag(view_coroutine_scope, null)
     }
-
-    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) = Unit
-
-    open fun onBackPressed(): Boolean = false
 }

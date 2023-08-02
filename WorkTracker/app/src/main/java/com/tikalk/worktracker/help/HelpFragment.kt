@@ -41,7 +41,7 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.fragment.app.viewModels
 import com.tikalk.compose.TikalTheme
-import com.tikalk.worktracker.databinding.FragmentComposeBinding
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetFragment
 import timber.log.Timber
 
