@@ -81,6 +81,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
+
     // Jetpack
     implementation(Android.Jetpack.appcompat)
     implementation(Android.Jetpack.composeActivity)

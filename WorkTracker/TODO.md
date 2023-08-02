@@ -9,7 +9,6 @@ To-Do List
   * date-time picker dialog
 * move logic from fragment to ViewModel
     * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
-* "core" module
 * "model" module
 * "domain" module
 * "ui-common" module
