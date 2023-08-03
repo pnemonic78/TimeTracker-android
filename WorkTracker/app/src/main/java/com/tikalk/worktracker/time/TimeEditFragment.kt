@@ -54,6 +54,7 @@ import com.tikalk.app.DateTimePickerDialog.OnDateTimeSetListener
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
 import com.tikalk.app.runOnUiThread
+import com.tikalk.util.TikalFormatter
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.BuildConfig
@@ -98,8 +99,7 @@ class TimeEditFragment : TimeFormFragment() {
     private var durationPickerDialog: DateTimePickerDialog? = null
     private var errorMessage: String = ""
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
-    private val timeBuffer = StringBuilder(20)
-    private val timeFormatter: Formatter = Formatter(timeBuffer, Locale.getDefault())
+    private val timeFormatter = TikalFormatter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -886,7 +886,6 @@ class TimeEditFragment : TimeFormFragment() {
 
     private fun bindDuration(context: Context, duration: Long) {
         binding.durationInput.text = if (duration > 0L) {
-            timeBuffer.clear()
             formatElapsedTime(context, timeFormatter, duration)
         } else {
             ""

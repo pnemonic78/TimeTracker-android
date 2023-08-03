@@ -34,6 +34,7 @@ package com.tikalk.worktracker.time
 import android.content.Context
 import android.text.format.DateFormat
 import android.text.format.DateUtils
+import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -105,7 +106,6 @@ fun parseSystemTime(date: Calendar, time: String?): Calendar? {
     return null
 }
 
-@Suppress("DEPRECATION")
 fun parseSystemDate(date: String?): Calendar? {
     if (date.isNullOrEmpty()) {
         return null
@@ -236,7 +236,7 @@ private var sElapsedFormatHMM: String? = null
 
 private const val SECONDS_FOR_MINUTE = DateUtils.MINUTE_IN_MILLIS / 2L
 
-fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): String {
+fun formatElapsedTime(context: Context, formatter: TikalFormatter, elapsedMs: Long): String {
     val hours = elapsedMs / DateUtils.HOUR_IN_MILLIS
     val seconds = elapsedMs % DateUtils.HOUR_IN_MILLIS
     var minutes = seconds / DateUtils.MINUTE_IN_MILLIS
@@ -250,11 +250,11 @@ fun formatElapsedTime(context: Context, formatter: Formatter, elapsedMs: Long): 
         format = context.getString(R.string.elapsed_time_short_format_h_mm)
         sElapsedFormatHMM = format
     }
-    return formatter.format(format, hours, minutes).toString()
+    return formatter.format(format, hours, minutes)
 }
 
-fun formatCurrency(formatter: Formatter, amount: Double): String {
-    return formatter.format("%.2f", amount).toString()
+fun formatCurrency(formatter: TikalFormatter, amount: Double): String {
+    return formatter.format("%.2f", amount)
 }
 
 fun Calendar.setToStartOfDay(): Calendar {

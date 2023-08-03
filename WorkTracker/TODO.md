@@ -2,7 +2,6 @@ To-Do List
 ====
 
 * migrate binding to Jetpack Compose
-  * time_totals footer
   * puncher form
   * record edit form
   * report form

@@ -48,15 +48,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
+import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
 import java.util.Formatter
 import java.util.Locale
-
-private val timeBuffer = StringBuilder(20)
-private val currencyBuffer = StringBuilder(20)
 
 @Composable
 fun ReportTotalsFooter(
@@ -73,8 +71,7 @@ fun ReportTotalsFooter(
             .padding(top = 8.dp, bottom = 8.dp, end = 16.dp)
     ) {
         if (isDurationFieldVisible) {
-            timeBuffer.clear()
-            val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
+            val timeFormatter = TikalFormatter()
             Text(
                 modifier = Modifier.padding(start = 16.dp),
                 text = stringResource(id = R.string.duration_total),
@@ -90,8 +87,7 @@ fun ReportTotalsFooter(
             )
         }
         if (isCostFieldVisible) {
-            currencyBuffer.clear()
-            val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
+            val currencyFormatter = TikalFormatter()
             Text(
                 modifier = Modifier.padding(start = 16.dp),
                 text = stringResource(id = R.string.cost_total),

@@ -34,6 +34,7 @@ package com.tikalk.worktracker.report
 
 import android.content.Context
 import android.net.Uri
+import com.tikalk.util.TikalFormatter
 import com.tikalk.util.isEven
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportFilter
@@ -126,10 +127,8 @@ class ReportExporterHTML(
             val cssReader = InputStreamReader(cssStream)
             val css = cssReader.readText()
 
-            val timeBuffer = StringBuilder(20)
-            val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
-            val currencyBuffer = StringBuilder(20)
-            val currencyFormatter = Formatter(currencyBuffer, Locale.getDefault())
+            val timeFormatter = TikalFormatter()
+            val currencyFormatter = TikalFormatter()
 
             val consumer = DelayedConsumer(
                 HTMLStreamBuilder(
@@ -250,7 +249,6 @@ class ReportExporterHTML(
                                     }
                                 }
                                 if (showDurationField) {
-                                    timeBuffer.clear()
                                     val durationMs = record.duration
                                     formatElapsedTime(context, timeFormatter, durationMs)
                                     td("time-cell") {
@@ -294,7 +292,6 @@ class ReportExporterHTML(
                             }
                             if (showDurationField) {
                                 td("time-cell subtotal-cell") {
-                                    timeBuffer.clear()
                                     +formatElapsedTime(context, timeFormatter, totals.duration)
                                 }
                             }
@@ -303,7 +300,6 @@ class ReportExporterHTML(
                             }
                             if (showCostField) {
                                 td("money-value-cell subtotal-cell") {
-                                    timeBuffer.clear()
                                     +formatCurrency(currencyFormatter, totals.cost)
                                 }
                             }

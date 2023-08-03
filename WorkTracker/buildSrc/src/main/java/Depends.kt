@@ -45,6 +45,7 @@ object Android {
         const val composeUiTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
         const val composeUiToolingPreview = "androidx.compose.ui:ui-tooling-preview:${Version.compose}"
         const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.4"
+        const val composeConstraintLayout = "androidx.constraintlayout:constraintlayout-compose:1.0.1"
         const val core = "androidx.core:core-ktx:1.10.1"
         const val navigationCompose = "androidx.navigation:navigation-compose:${Version.navigation}"
         const val navigationFragment = "androidx.navigation:navigation-fragment-ktx:${Version.navigation}"
