@@ -41,12 +41,14 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.MutableFormPage
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.time.parseSystemDate
+import java.util.Calendar
+import java.util.regex.Pattern
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
 import timber.log.Timber
-import java.util.regex.Pattern
 
 open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<R>> {
 
@@ -223,6 +225,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         populateTaskIds(doc, projects, tasks)
 
         page.projects = projects
+        findDate(form)?.let { page.record.date = it }
         page.record.project = findSelectedProject(inputProjects, projects)
         page.record.task = findSelectedTask(inputTasks, tasks)
     }
@@ -260,5 +263,11 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
 
     private fun populatePage(doc: Document, page: MP) {
         populateForm(doc, page)
+    }
+
+    protected fun findDate(form: FormElement): Calendar? {
+        val inputDate = form.selectByName("date") ?: return null
+        val dateValue = inputDate.value()
+        return parseSystemDate(dateValue)
     }
 }

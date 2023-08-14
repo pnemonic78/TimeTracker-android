@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,22 +30,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model.time
+package com.tikalk.core
 
-import com.tikalk.worktracker.model.Project
-import java.util.Calendar
+import org.junit.Test
 
-class TimeListPage(
-    record: TimeRecord,
-    projects: List<Project>,
-    errorMessage: String?,
-    val records: List<TimeRecord>,
-    val totals: TimeTotals
-) : FormPage<TimeRecord>(record, projects, errorMessage) {
-    val date: Calendar get() = record.date
-}
+import org.junit.Assert.*
 
-class MutableTimeListPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {
-    var records: List<TimeRecord> = emptyList()
-    var totals: TimeTotals = TimeTotals()
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
 }

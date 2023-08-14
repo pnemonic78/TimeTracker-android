@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,22 +30,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model.time
+package com.tikalk.app
 
-import com.tikalk.worktracker.model.Project
-import java.util.Calendar
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatDialogFragment
 
-class TimeListPage(
-    record: TimeRecord,
-    projects: List<Project>,
-    errorMessage: String?,
-    val records: List<TimeRecord>,
-    val totals: TimeTotals
-) : FormPage<TimeRecord>(record, projects, errorMessage) {
-    val date: Calendar get() = record.date
-}
+open class TikalDialogFragment() : AppCompatDialogFragment() {
 
-class MutableTimeListPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {
-    var records: List<TimeRecord> = emptyList()
-    var totals: TimeTotals = TimeTotals()
+    constructor(args: Bundle) : this() {
+        arguments = args
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        if (savedInstanceState != null) {
+            onRestoreInstanceState(savedInstanceState)
+        }
+    }
+
+    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) = Unit
+
+    open fun onBackPressed(): Boolean = false
 }

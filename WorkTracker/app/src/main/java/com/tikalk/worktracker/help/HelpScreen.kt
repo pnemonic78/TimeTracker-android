@@ -44,6 +44,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,7 +60,7 @@ private val paddingBullet2 = paddingBullet.padding(start = 16.dp)
 
 @Composable
 fun HelpScreen() {
-    val styleCategory = MaterialTheme.typography.subtitle1
+    val styleCategory = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Medium)
     val styleBullet = MaterialTheme.typography.body1.copy(
         textIndent = TextIndent(firstLine = 0.sp, restLine = 10.sp)
     )

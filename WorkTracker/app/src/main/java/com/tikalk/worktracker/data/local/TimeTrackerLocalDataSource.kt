@@ -261,10 +261,9 @@ class TimeTrackerLocalDataSource @Inject constructor(
             val totals = loadTotals(db, date)
 
             val page = TimeListPage(
-                record = record,
+                record = record.copy(date = date.copy()),
                 projects = projects,
                 errorMessage = errorMessage,
-                date = date.copy(),
                 records = records,
                 totals = totals
             )

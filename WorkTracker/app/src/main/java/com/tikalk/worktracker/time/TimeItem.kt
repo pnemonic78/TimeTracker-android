@@ -60,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
+import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
@@ -70,7 +71,6 @@ import com.tikalk.worktracker.report.toLocationItem
 import java.util.Calendar
 import java.util.Formatter
 
-private val timeBuffer = StringBuilder(20)
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
 
 typealias OnRecordCallback = ((TimeRecord) -> Unit)
@@ -102,11 +102,10 @@ fun TimeItem(
         }
     } else if (isStartFieldVisible) {
         if (isFinishFieldVisible) {
-            timeBuffer.clear()
-            val timeFormatter = Formatter(timeBuffer)
+            val timeFormatter = TikalFormatter()
             val formatterRange = DateUtils.formatDateRange(
                 context,
-                timeFormatter,
+                timeFormatter.formatter,
                 startTime,
                 endTime,
                 FORMAT_DURATION
@@ -188,8 +187,7 @@ fun TimeItem(
                     )
                 }
                 if (isDurationFieldVisible) {
-                    timeBuffer.clear()
-                    val timeFormatter = Formatter(timeBuffer)
+                    val timeFormatter = TikalFormatter()
                     val duration = formatElapsedTime(context, timeFormatter, record.duration)
 
                     Spacer(modifier = Modifier.weight(1f))

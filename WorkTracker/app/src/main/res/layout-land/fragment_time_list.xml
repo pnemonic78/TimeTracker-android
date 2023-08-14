@@ -104,9 +104,8 @@
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintBottom_toTopOf="@+id/totals" />
 
-    <include
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/totals"
-        layout="@layout/time_totals"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"

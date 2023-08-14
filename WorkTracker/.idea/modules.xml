@@ -10,6 +10,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Work_Tracker.buildSrc.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Work_Tracker.core.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.Work_Tracker.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.Work_Tracker.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.Work_Tracker.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.Work_Tracker.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.Work_Tracker.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.Work_Tracker.app.unitTest.iml" />

@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,47 +30,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.view
+package com.tikalk.util
 
-import android.view.View
-import com.tikalk.worktracker.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import java.util.Formatter
+import java.util.Locale
 
-fun View.showAnimated(visible: Boolean) {
-    val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-    val view = this
-    view.visibility = if (visible) View.VISIBLE else View.GONE
-    view.animate()
-        .setDuration(shortAnimTime)
-        .alpha(if (visible) 1f else 0f)
-}
+class TikalFormatter(locale: Locale = Locale.getDefault()) {
+    private val buffer = StringBuilder()
+    val formatter = Formatter(buffer, locale)
 
-private const val view_coroutine_scope = R.id.composeView
-
-val View.viewScope: CoroutineScope
-    get() {
-        val storedScope = tag as? CoroutineScope
-        if (storedScope != null) return storedScope
-
-        val newScope = ViewCoroutineScope()
-        if (isAttachedToWindow) {
-            addOnAttachStateChangeListener(newScope)
-            setTag(view_coroutine_scope, newScope)
-        } else newScope.cancel()
-
-        return newScope
+    fun format(format: String, vararg args: Any): String {
+        clear()
+        return formatter.format(format, *args).toString()
     }
 
-private class ViewCoroutineScope : CoroutineScope, View.OnAttachStateChangeListener {
-    override val coroutineContext = SupervisorJob() + Dispatchers.Main
+    override fun toString(): String {
+        return formatter.toString()
+    }
 
-    override fun onViewAttachedToWindow(view: View) = Unit
-
-    override fun onViewDetachedFromWindow(view: View) {
-        coroutineContext.cancel()
-        view.setTag(view_coroutine_scope, null)
+    fun clear() {
+        buffer.clear()
     }
 }

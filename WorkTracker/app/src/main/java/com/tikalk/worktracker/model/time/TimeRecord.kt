@@ -135,7 +135,11 @@ open class TimeRecord(
         )
     }
 
-    fun copy(date: Calendar = this.date, start: Calendar?, finish: Calendar?): TimeRecord {
+    fun copy(
+        date: Calendar = this.date,
+        start: Calendar? = this.start,
+        finish: Calendar? = this.finish
+    ): TimeRecord {
         return TimeRecord(
             id = id,
             project = project,

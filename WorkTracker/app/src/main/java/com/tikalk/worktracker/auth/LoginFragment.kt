@@ -42,9 +42,9 @@ import androidx.annotation.MainThread
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.tikalk.compose.TikalTheme
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.net.InternetDialogFragment
 import com.tikalk.worktracker.time.formatSystemDate
 import kotlinx.coroutines.Dispatchers

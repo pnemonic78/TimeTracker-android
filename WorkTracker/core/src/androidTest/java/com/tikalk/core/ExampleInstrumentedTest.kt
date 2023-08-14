@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,27 +30,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.app
+package com.tikalk.core
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatDialogFragment
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
-@AndroidEntryPoint
-open class TikalDialogFragment() : AppCompatDialogFragment() {
+import org.junit.Test
+import org.junit.runner.RunWith
 
-    constructor(args: Bundle) : this() {
-        arguments = args
+import org.junit.Assert.*
+
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    @Test
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("com.tikalk.core.test", appContext.packageName)
     }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        if (savedInstanceState != null) {
-            onRestoreInstanceState(savedInstanceState)
-        }
-    }
-
-    protected open fun onRestoreInstanceState(savedInstanceState: Bundle) = Unit
-
-    open fun onBackPressed(): Boolean = false
 }

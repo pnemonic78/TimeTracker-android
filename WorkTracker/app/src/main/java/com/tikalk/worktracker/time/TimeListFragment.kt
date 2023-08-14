@@ -34,7 +34,6 @@ package com.tikalk.worktracker.time
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -52,6 +51,7 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.compose.TikalTheme
+import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
@@ -63,8 +63,6 @@ import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import java.util.Calendar
-import java.util.Formatter
-import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -221,7 +219,7 @@ class TimeListFragment : TimeFormFragment() {
     private suspend fun processPage(page: TimeListPage) {
         viewModel.projectsData.emit(page.projects.sortedBy { it.name })
 
-        dateData.emit(page.date)
+        dateData.emit(page.date.copy())
 
         recordsData.emit(page.records)
         var totals = totalsData.value
@@ -241,64 +239,11 @@ class TimeListFragment : TimeFormFragment() {
 
     @MainThread
     private fun bindTotals(totals: TimeTotals) {
-        val context = this.context ?: return
-        val res = context.resources ?: return
         val binding = _binding ?: return
         val bindingTotals = binding.totals
-
-        val timeBuffer = StringBuilder(20)
-        val timeFormatter = Formatter(timeBuffer, Locale.getDefault())
-
-        if (totals.daily == TimeTotals.UNKNOWN) {
-            bindingTotals.dayTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.dayTotalValue.text = null
-        } else {
-            bindingTotals.dayTotalLabel.visibility = View.VISIBLE
-            bindingTotals.dayTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.daily)
-        }
-        if (totals.weekly == TimeTotals.UNKNOWN) {
-            bindingTotals.weekTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.weekTotalValue.text = null
-        } else {
-            timeBuffer.clear()
-            bindingTotals.weekTotalLabel.visibility = View.VISIBLE
-            bindingTotals.weekTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.weekly)
-        }
-        if (totals.monthly == TimeTotals.UNKNOWN) {
-            bindingTotals.monthTotalLabel.visibility = View.INVISIBLE
-            bindingTotals.monthTotalValue.text = null
-        } else {
-            timeBuffer.clear()
-            bindingTotals.monthTotalLabel.visibility = View.VISIBLE
-            bindingTotals.monthTotalValue.text =
-                formatElapsedTime(context, timeFormatter, totals.monthly)
-        }
-        if (totals.balance == TimeTotals.UNKNOWN) {
-            bindingTotals.balanceLabel.visibility = View.INVISIBLE
-            bindingTotals.balanceValue.text = null
-        } else {
-            timeBuffer.clear()
-            bindingTotals.balanceLabel.visibility = View.VISIBLE
-            bindingTotals.balanceValue.text =
-                formatElapsedTime(context, timeFormatter, totals.balance.absoluteValue)
-            if (totals.balance < 0) {
-                bindingTotals.balanceValue.setTextColor(
-                    ResourcesCompat.getColor(
-                        res,
-                        R.color.balanceNegative,
-                        null
-                    )
-                )
-            } else {
-                bindingTotals.balanceValue.setTextColor(
-                    ResourcesCompat.getColor(
-                        res,
-                        R.color.balancePositive,
-                        null
-                    )
-                )
+        bindingTotals.setContent {
+            TikalTheme {
+                TimeTotalsFooter(totals = totals)
             }
         }
     }
@@ -465,10 +410,12 @@ class TimeListFragment : TimeFormFragment() {
                         navigateDate(cal, true)
                         args.remove(EXTRA_ACTION)
                     }
+
                     ACTION_STOP -> {
                         stopTimer()
                         args.remove(EXTRA_ACTION)
                     }
+
                     ACTION_TODAY -> {
                         navigateToday()
                         args.remove(EXTRA_ACTION)
@@ -589,6 +536,7 @@ class TimeListFragment : TimeFormFragment() {
                 pickDate()
                 return true
             }
+
             R.id.menu_today -> {
                 navigateToday()
                 return true
