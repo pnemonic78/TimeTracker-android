@@ -219,7 +219,7 @@ class TimeListFragment : TimeFormFragment() {
     private suspend fun processPage(page: TimeListPage) {
         viewModel.projectsData.emit(page.projects.sortedBy { it.name })
 
-        dateData.emit(page.date)
+        dateData.emit(page.date.copy())
 
         recordsData.emit(page.records)
         var totals = totalsData.value

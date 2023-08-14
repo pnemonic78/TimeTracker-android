@@ -39,13 +39,13 @@ class TimeListPage(
     record: TimeRecord,
     projects: List<Project>,
     errorMessage: String?,
-    val date: Calendar,
     val records: List<TimeRecord>,
     val totals: TimeTotals
-) : FormPage<TimeRecord>(record, projects, errorMessage)
+) : FormPage<TimeRecord>(record, projects, errorMessage) {
+    val date: Calendar get() = record.date
+}
 
 class MutableTimeListPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {
-    var date: Calendar = Calendar.getInstance()
     var records: List<TimeRecord> = emptyList()
     var totals: TimeTotals = TimeTotals()
 }

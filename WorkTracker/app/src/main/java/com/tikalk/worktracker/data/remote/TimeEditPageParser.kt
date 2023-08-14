@@ -34,18 +34,18 @@ package com.tikalk.worktracker.data.remote
 
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
+import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.MutableTimeEditPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.parseDuration
-import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
+import java.util.Calendar
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
-import java.util.Calendar
 
 class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeEditPage>() {
 
@@ -71,37 +71,54 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         super.populateForm(doc, page, form, inputProjects, inputTasks)
         val record = page.record
 
-        val inputDate = form.selectByName("date") ?: return
-        val dateValue = inputDate.value()
-        page.date = parseSystemDate(dateValue) ?: Calendar.getInstance()
+        findDate(form)?.let { page.date = it }
         record.date = page.date
 
-        val inputId = form.selectByName("id") ?: return
-        val idValue = inputId.value()
-        record.id = if (idValue.isBlank()) TikalEntity.ID_NONE else idValue.toLong()
+        record.id = findId(form) ?: return
+        record.start = findStartDate(page.date, form) ?: return
+        record.finish = findFinishDate(page.date, form)
+        record.duration = findDuration(form)
+        record.note = findNote(form)
+        record.location = findLocation(form)
 
-        val inputStart = form.selectByName("start") ?: return
-        val startValue = inputStart.value()
-        record.start = parseSystemTime(page.date, startValue)
-
-        val inputFinish = form.selectByName("finish") ?: return
-        val finishValue = inputFinish.value()
-        record.finish = parseSystemTime(page.date, finishValue)
-
-        val inputDuration = form.selectByName("duration") ?: return
-        val durationValue = inputDuration.value()
-        record.duration = parseDuration(durationValue) ?: 0L
-
-        val inputNote = form.selectByName("note")
-        val noteValue = inputNote?.value() ?: ""
-        record.note = noteValue
-
-        record.status =
-            if (record.id == TikalEntity.ID_NONE) TaskRecordStatus.DRAFT else TaskRecordStatus.CURRENT
-
-        val inputLocation = form.selectByName("time_field_5")
-        if (inputLocation != null) {
-            record.location = findSelectedLocation(inputLocation)
+        record.status = if (record.id == TikalEntity.ID_NONE) {
+            TaskRecordStatus.DRAFT
+        } else {
+            TaskRecordStatus.CURRENT
         }
+    }
+
+    private fun findId(form: FormElement): Long? {
+        val inputId = form.selectByName("id") ?: return null
+        val idValue = inputId.value()
+        return if (idValue.isBlank()) TikalEntity.ID_NONE else idValue.toLong()
+    }
+
+    private fun findStartDate(date: Calendar, form: FormElement): Calendar? {
+        val inputStart = form.selectByName("start") ?: return null
+        val startValue = inputStart.value()
+        return parseSystemTime(date, startValue)
+    }
+
+    private fun findFinishDate(date: Calendar, form: FormElement): Calendar? {
+        val inputFinish = form.selectByName("finish") ?: return null
+        val finishValue = inputFinish.value()
+        return parseSystemTime(date, finishValue)
+    }
+
+    private fun findDuration(form: FormElement): Long {
+        val inputDuration = form.selectByName("duration") ?: return 0L
+        val durationValue = inputDuration.value()
+        return parseDuration(durationValue) ?: 0L
+    }
+
+    private fun findNote(form: FormElement): String {
+        val inputNote = form.selectByName("note")
+        return inputNote?.value().orEmpty()
+    }
+
+    private fun findLocation(form: FormElement): Location {
+        val inputLocation = form.selectByName("time_field_5") ?: return Location.EMPTY
+        return findSelectedLocation(inputLocation) ?: Location.EMPTY
     }
 }

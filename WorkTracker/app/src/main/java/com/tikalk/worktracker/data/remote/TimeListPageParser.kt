@@ -63,7 +63,6 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
             record = page.record,
             projects = page.projects,
             errorMessage = page.errorMessage,
-            date = page.date,
             records = page.records,
             totals = page.totals
         )
@@ -87,15 +86,14 @@ class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeL
     ) {
         val inputDate = form.selectByName("date") ?: return
         val dateValue = inputDate.value()
-        page.date = parseSystemDate(dateValue) ?: return
-        page.record.date = page.date
+        page.record.date = parseSystemDate(dateValue) ?: return
 
         super.populateForm(doc, page, form, inputProjects, inputTasks)
     }
 
     /** Populate the list. */
     private fun populateList(doc: Document, page: MutableTimeListPage, form: FormElement) {
-        val date = page.date
+        val date = page.record.date
         val projects = page.projects
         val records = ArrayList<TimeRecord>()
 
