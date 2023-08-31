@@ -91,6 +91,7 @@ fun ReportList(
             val record = items[index]
             TimeItem(
                 record = record,
+                isReport = true,
                 isProjectFieldVisible = filter.isProjectFieldVisible,
                 isTaskFieldVisible = filter.isTaskFieldVisible,
                 isStartFieldVisible = filter.isStartFieldVisible,

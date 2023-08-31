@@ -69,7 +69,6 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.toLocationItem
 import java.util.Calendar
-import java.util.Formatter
 
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
 
@@ -78,6 +77,7 @@ typealias OnRecordCallback = ((TimeRecord) -> Unit)
 @Composable
 fun TimeItem(
     record: TimeRecord,
+    isReport: Boolean = false,
     isProjectFieldVisible: Boolean = true,
     isTaskFieldVisible: Boolean = true,
     isStartFieldVisible: Boolean = true,
@@ -103,12 +103,14 @@ fun TimeItem(
     } else if (isStartFieldVisible) {
         if (isFinishFieldVisible) {
             val timeFormatter = TikalFormatter()
+            var flags = FORMAT_DURATION
+            if (isReport) flags = flags or DateUtils.FORMAT_SHOW_DATE
             val formatterRange = DateUtils.formatDateRange(
                 context,
                 timeFormatter.formatter,
                 startTime,
                 endTime,
-                FORMAT_DURATION
+                flags
             )
             formatterRange.toString()
         } else {
