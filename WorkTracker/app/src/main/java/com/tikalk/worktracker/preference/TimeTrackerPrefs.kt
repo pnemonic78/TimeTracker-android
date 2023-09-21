@@ -32,7 +32,6 @@
 package com.tikalk.worktracker.preference
 
 import android.content.Context
-import android.icu.util.Calendar
 import androidx.preference.PreferenceManager
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.model.UserCredentials
@@ -44,6 +43,7 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.toCalendar
+import java.util.Calendar
 import timber.log.Timber
 
 /**
@@ -205,7 +205,7 @@ class TimeTrackerPrefs(context: Context) {
     var workHoursPerDay: Int
         get() = sharedPreferences.getInt(HOURS_PER_DAY, hoursPerDayDefault)
         set(value) {
-            sharedPreferences.edit().putInt(HOURS_PER_DAY, value)
+            sharedPreferences.edit().putInt(HOURS_PER_DAY, value).apply()
         }
 
     private val isWorkDayDefault = listOf<Boolean>(

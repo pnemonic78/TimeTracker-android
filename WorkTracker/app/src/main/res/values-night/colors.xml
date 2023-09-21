@@ -1,9 +1,6 @@
 <resources>
     <color name="colorButtonNormal">@color/colorPrimaryDark</color>
 
-    <color name="icon">@color/white</color>
-    <color name="icon_disabled">@color/white_x40</color>
-
     <color name="balancePositive">@color/green_xF0</color>
     <color name="balanceNegative">@color/red_xF0</color>
 </resources>

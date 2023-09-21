@@ -739,7 +739,6 @@ class TimeEditFragment : TimeFormFragment() {
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
-    @Suppress("DEPRECATION")
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         val recordParcel: TimeRecordEntity? =

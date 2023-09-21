@@ -99,15 +99,9 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
         datePicker.updateDate(year, month, dayOfMonth)
     }
 
-    @Suppress("DEPRECATION")
     fun updateTime(hourOfDay: Int, minuteOfHour: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            timePicker.hour = hourOfDay
-            timePicker.minute = minuteOfHour
-        } else {
-            timePicker.currentHour = hourOfDay
-            timePicker.currentMinute = minuteOfHour
-        }
+        timePicker.hour = hourOfDay
+        timePicker.minute = minuteOfHour
     }
 
     fun getYear(): Int {
@@ -122,22 +116,12 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
         return datePicker.dayOfMonth
     }
 
-    @Suppress("DEPRECATION")
     fun getHour(): Int {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            timePicker.hour
-        } else {
-            timePicker.currentHour
-        }
+        return timePicker.hour
     }
 
-    @Suppress("DEPRECATION")
     fun getMinute(): Int {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            timePicker.minute
-        } else {
-            timePicker.currentMinute
-        }
+        return timePicker.minute
     }
 
     fun is24HourView(): Boolean {
