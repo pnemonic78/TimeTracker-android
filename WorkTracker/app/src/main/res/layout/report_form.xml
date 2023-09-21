@@ -141,6 +141,7 @@
 
     <Button
         android:id="@+id/startInput"
+        style="@style/Widget.Button.Date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -162,6 +163,7 @@
 
     <Button
         android:id="@+id/finishInput"
+        style="@style/Widget.Button.Date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -263,7 +265,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/form_marginTop"
         android:text="@string/action_generate"
-        android:theme="@style/Widget.Button.Start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/errorLabel">

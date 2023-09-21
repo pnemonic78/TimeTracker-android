@@ -79,15 +79,13 @@ import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
+import java.util.Calendar
+import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Formatter
-import java.util.Locale
-import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.math.max
 
 class TimeEditFragment : TimeFormFragment() {
 
@@ -113,6 +111,7 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val binding = this.binding
         binding.projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(adapterView: AdapterView<*>) {
                 //projectItemSelected(projectEmpty)
@@ -224,8 +223,8 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
-        val context = this.context ?: return
-        if (!isVisible) return
+        val binding: TimeFormBinding = _binding ?: return
+        val context: Context = binding.root.context
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(viewModel.taskEmpty)
@@ -233,19 +232,19 @@ class TimeEditFragment : TimeFormFragment() {
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
         val projects = viewModel.projectsData.value
-        bindProjects(context, record, projects)
+        bindProjects(binding, record, projects)
 
         if (BuildConfig.LOCATION) {
-            bindLocation(context, record)
+            bindLocation(binding, record)
         }
 
-        bindStartTime(context, record.start)
+        bindStartTime(binding, record.start)
         startPickerDialog = null
 
-        bindFinishTime(context, record.finish)
+        bindFinishTime(binding, record.finish)
         finishPickerDialog = null
 
-        bindDuration(context, record.duration)
+        bindDuration(binding, record.duration)
         durationPickerDialog = null
 
         binding.noteInput.setText(record.note)
@@ -253,12 +252,17 @@ class TimeEditFragment : TimeFormFragment() {
         setErrorLabel(errorMessage)
     }
 
-    private fun bindRecord(record: TimeRecord) {
+    private fun bindRecord(binding: TimeFormBinding, record: TimeRecord) {
         record.note = binding.noteInput.text.toString()
     }
 
-    private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
+    private fun bindProjects(
+        binding: TimeFormBinding,
+        record: TimeRecord,
+        projects: List<Project>?
+    ) {
         Timber.i("bindProjects record=$record projects=$projects")
+        val context: Context = binding.root.context
         val options = addEmptyProject(projects).toTypedArray()
         binding.projectInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
@@ -269,8 +273,9 @@ class TimeEditFragment : TimeFormFragment() {
         binding.projectInput.requestFocus()
     }
 
-    private fun bindLocation(context: Context, record: TimeRecord) {
+    private fun bindLocation(binding: TimeFormBinding, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
+        val context: Context = binding.root.context
         binding.locationIcon.isVisible = true
         binding.locationInput.isVisible = true
         val locations = buildLocations(context)
@@ -545,7 +550,7 @@ class TimeEditFragment : TimeFormFragment() {
         val record = this.record
         Timber.i("submit $record")
 
-        bindRecord(record)
+        bindRecord(binding, record)
         if (!validateForm(record)) {
             return false
         }
@@ -729,9 +734,8 @@ class TimeEditFragment : TimeFormFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        if (isVisible) {
-            bindRecord(record)
-        }
+        val binding = _binding ?: return
+        bindRecord(binding, record)
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
@@ -791,10 +795,12 @@ class TimeEditFragment : TimeFormFragment() {
                 deleteRecord()
                 return true
             }
+
             R.id.menu_submit -> {
                 submit()
                 return true
             }
+
             R.id.menu_favorite -> {
                 markFavorite()
                 return true
@@ -815,7 +821,8 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun onProjectsUpdated(projects: List<Project>) {
         super.onProjectsUpdated(projects)
-        bindProjects(requireContext(), record, projects)
+        val binding = _binding ?: return
+        bindProjects(binding, record, projects)
     }
 
     override fun setRecordValue(record: TimeRecord) {
@@ -826,15 +833,15 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun setRecordStart(time: Calendar): Boolean {
         if (super.setRecordStart(time)) {
-            val context = requireContext()
-            bindStartTime(context, time)
-            bindDuration(context, record.duration)
+            bindStartTime(binding, time)
+            bindDuration(binding, record.duration)
             return true
         }
         return false
     }
 
-    private fun bindStartTime(context: Context, time: Calendar?) {
+    private fun bindStartTime(binding: TimeFormBinding, time: Calendar?) {
+        val context: Context = binding.root.context
         val timeMillis = time?.timeInMillis ?: NEVER
         binding.startInput.text = if (timeMillis != NEVER)
             DateUtils.formatDateTime(context, timeMillis, FORMAT_TIME_BUTTON)
@@ -845,15 +852,15 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun setRecordFinish(time: Calendar): Boolean {
         if (super.setRecordFinish(time)) {
-            val context = requireContext()
-            bindFinishTime(context, time)
-            bindDuration(context, record.duration)
+            bindFinishTime(binding, time)
+            bindDuration(binding, record.duration)
             return true
         }
         return false
     }
 
-    private fun bindFinishTime(context: Context, time: Calendar?) {
+    private fun bindFinishTime(binding: TimeFormBinding, time: Calendar?) {
+        val context: Context = binding.root.context
         val timeMillis = time?.timeInMillis ?: NEVER
         binding.finishInput.text = if (timeMillis != NEVER)
             DateUtils.formatDateTime(context, timeMillis, FORMAT_TIME_BUTTON)
@@ -884,7 +891,8 @@ class TimeEditFragment : TimeFormFragment() {
         preferences.stopRecord()
     }
 
-    private fun bindDuration(context: Context, duration: Long) {
+    private fun bindDuration(binding: TimeFormBinding, duration: Long) {
+        val context: Context = binding.root.context
         binding.durationInput.text = if (duration > 0L) {
             formatElapsedTime(context, timeFormatter, duration)
         } else {
@@ -938,10 +946,9 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun setRecordDuration(date: Calendar): Boolean {
         if (super.setRecordDuration(date)) {
-            val context = requireContext()
-            bindStartTime(context, record.start)
-            bindFinishTime(context, record.finish)
-            bindDuration(context, record.duration)
+            bindStartTime(binding, record.start)
+            bindFinishTime(binding, record.finish)
+            bindDuration(binding, record.duration)
             return true
         }
         return false

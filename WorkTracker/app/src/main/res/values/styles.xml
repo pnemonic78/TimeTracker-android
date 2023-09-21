@@ -24,17 +24,23 @@
         <item name="android:maxHeight">@dimen/progress_bar_size_large</item>
     </style>
 
-    <style name="Widget.Button" parent="Widget.AppCompat.Button" />
+    <style name="Widget.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorButtonNormal</item>
+    </style>
 
     <style name="Widget.Button.Start">
-        <item name="colorButtonNormal">@color/button_start</item>
+        <item name="backgroundTint">@color/button_start</item>
         <item name="drawableEndCompat">@drawable/ic_play_arrow</item>
     </style>
 
     <style name="Widget.Button.Stop">
-        <item name="colorButtonNormal">@color/button_stop</item>
+        <item name="backgroundTint">@color/button_stop</item>
         <item name="drawableEndCompat">@drawable/ic_stop</item>
     </style>
+
+    <style name="Widget.Button.Date" />
+
+    <style name="Widget.Button.Duration" parent="Widget.MaterialComponents.Button.OutlinedButton" />
 
     <style name="Widget.TextView.Timer" parent="TextAppearance.AppCompat.Headline">
         <item name="android:gravity">right</item>
