@@ -123,8 +123,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="@string/action_start"
-            android:theme="@style/Widget.Button.Start">
+            android:text="@string/action_start">
 
             <requestFocus />
         </Button>
@@ -141,8 +140,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
-                android:text="@string/action_stop"
-                android:theme="@style/Widget.Button.Stop" />
+                android:text="@string/action_stop" />
 
             <TextView
                 android:id="@+id/timerText"

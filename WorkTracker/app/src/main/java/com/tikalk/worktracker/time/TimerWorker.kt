@@ -32,6 +32,7 @@
 package com.tikalk.worktracker.time
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Notification
 import android.app.NotificationChannel
@@ -43,8 +44,10 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.tikalk.graphics.drawableToBitmap
@@ -57,8 +60,8 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import timber.log.Timber
 import java.util.Calendar
+import timber.log.Timber
 
 class TimerWorker(private val context: Context, private val workerParams: Bundle) {
 
@@ -76,6 +79,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun startTimerAction(extras: Bundle) {
         Timber.i("startTimerAction")
         val record = createRecord(extras) ?: throw IllegalArgumentException("missing record")
@@ -83,9 +87,20 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         prefs.startRecord(record)
 
         if (extras.getBoolean(EXTRA_NOTIFICATION, true)) {
-            val nm = NotificationManagerCompat.from(context)
-            nm.notify(ID_NOTIFY, createNotification(record))
+            if (isNotificationsAllowed()) {
+                val nm = NotificationManagerCompat.from(context)
+                nm.notify(ID_NOTIFY, createNotification(record))
+            }
         }
+    }
+
+    private fun isNotificationsAllowed(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
+
+        return ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun stopTimerAction(extras: Bundle) {
@@ -214,15 +229,18 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         )
     }
 
+    @SuppressLint("MissingPermission")
     private fun showNotification(extras: Bundle) {
         val visible = extras.getBoolean(EXTRA_NOTIFICATION, false)
         Timber.i("showNotification visible=$visible")
         if (visible) {
-            val record = createRecord(extras) ?: prefs.getStartedRecord()
-            ?: throw IllegalArgumentException("missing record")
-            Timber.i("showNotification record=$record")
-            val nm = NotificationManagerCompat.from(context)
-            nm.notify(ID_NOTIFY, createNotification(record))
+            if (isNotificationsAllowed()) {
+                val record = createRecord(extras) ?: prefs.getStartedRecord()
+                ?: throw IllegalArgumentException("missing record")
+                Timber.i("showNotification record=$record")
+                val nm = NotificationManagerCompat.from(context)
+                nm.notify(ID_NOTIFY, createNotification(record))
+            }
         } else {
             dismissNotification()
         }

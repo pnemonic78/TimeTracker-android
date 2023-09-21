@@ -54,7 +54,10 @@ fun Context.restartApp() {
     val context: Context = this
     val intent = Intent(context, TimeReceiver::class.java)
     intent.action = TimerWorker.ACTION_LAUNCH
-    val operation = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+    val operation = PendingIntent.getBroadcast(
+        context, 0, intent,
+        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+    )
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     alarmManager.set(
         AlarmManager.ELAPSED_REALTIME,

@@ -31,6 +31,8 @@
  */
 package com.tikalk.worktracker.db
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -89,7 +91,17 @@ class ReportRecord(
     note = note,
     cost = cost,
     status = status
-)
+) {
+    companion object CREATOR : Parcelable.Creator<ReportRecord?> {
+        override fun createFromParcel(parcel: Parcel?): ReportRecord? {
+            return null
+        }
+
+        override fun newArray(size: Int): Array<ReportRecord?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
 fun TimeRecord.toReportRecord(): ReportRecord =
     ReportRecord(

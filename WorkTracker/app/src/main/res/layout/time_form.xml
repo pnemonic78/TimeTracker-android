@@ -119,6 +119,7 @@
 
     <Button
         android:id="@+id/startInput"
+        style="@style/Widget.Button.Date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -140,6 +141,7 @@
 
     <Button
         android:id="@+id/finishInput"
+        style="@style/Widget.Button.Date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -161,6 +163,7 @@
 
     <Button
         android:id="@+id/durationInput"
+        style="@style/Widget.Button.Duration"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"

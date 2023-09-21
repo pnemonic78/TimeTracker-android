@@ -69,14 +69,14 @@ import com.tikalk.worktracker.model.time.PuncherPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.findLocation
+import java.util.Calendar
+import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Calendar
-import kotlin.math.max
 
 class PuncherFragment : TimeFormFragment() {
 
@@ -156,8 +156,8 @@ class PuncherFragment : TimeFormFragment() {
     @MainThread
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
-        val context = this.context ?: return
         val binding = _binding ?: return
+        val context: Context = binding.root.context
 
         // Populate the tasks spinner before projects so that it can be filtered.
         val taskItems = arrayOf(viewModel.taskEmpty)
@@ -165,10 +165,10 @@ class PuncherFragment : TimeFormFragment() {
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
         val projects = viewModel.projectsData.value
-        bindProjects(context, record, projects)
+        bindProjects(binding, record, projects)
 
         if (BuildConfig.LOCATION) {
-            bindLocation(context, record)
+            bindLocation(binding, record)
         }
 
         val startTime = record.startTime
@@ -189,9 +189,13 @@ class PuncherFragment : TimeFormFragment() {
         }
     }
 
-    private fun bindProjects(context: Context, record: TimeRecord, projects: List<Project>?) {
+    private fun bindProjects(
+        binding: FragmentPuncherBinding,
+        record: TimeRecord,
+        projects: List<Project>?
+    ) {
         Timber.i("bindProjects record=$record projects=$projects")
-        val binding = _binding ?: return
+        val context: Context = binding.root.context
         val options = addEmptyProject(projects).toTypedArray()
         binding.projectInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
@@ -202,9 +206,9 @@ class PuncherFragment : TimeFormFragment() {
         binding.projectInput.requestFocus()
     }
 
-    private fun bindLocation(context: Context, record: TimeRecord) {
+    private fun bindLocation(binding: FragmentPuncherBinding, record: TimeRecord) {
         Timber.i("bindLocation record=$record")
-        val binding = _binding ?: return
+        val context: Context = binding.root.context
         binding.locationIcon.isVisible = true
         binding.locationInput.isVisible = true
         val locations = buildLocations(context)
@@ -297,24 +301,21 @@ class PuncherFragment : TimeFormFragment() {
         setRecordProject(project)
         val binding = _binding ?: return
         filterTasks(project)
-        binding.actionStart.isEnabled =
-            (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
+        maybeEnableStartButton(binding, record)
     }
 
     private fun taskItemSelected(task: ProjectTask) {
         Timber.d("taskItemSelected task=$task")
         setRecordTask(task)
         val binding = _binding ?: return
-        binding.actionStart.isEnabled =
-            (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
+        maybeEnableStartButton(binding, record)
     }
 
     private fun locationItemSelected(location: LocationItem) {
         Timber.d("locationItemSelected location=$location")
         setRecordLocation(location.location)
         val binding = _binding ?: return
-        binding.actionStart.isEnabled =
-            (record.project.id > TikalEntity.ID_NONE) && (record.task.id > TikalEntity.ID_NONE) && (record.location.id > TikalEntity.ID_NONE)
+        maybeEnableStartButton(binding, record)
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
@@ -490,9 +491,16 @@ class PuncherFragment : TimeFormFragment() {
     }
 
     override fun onProjectsUpdated(projects: List<Project>) {
-        val context = this.context ?: return
         super.onProjectsUpdated(projects)
-        bindProjects(context, record, projects)
+        val binding = _binding ?: return
+        bindProjects(binding, record, projects)
+    }
+
+    private fun maybeEnableStartButton(binding: FragmentPuncherBinding, record: TimeRecord) {
+        binding.actionStart.isEnabled =
+            (record.project.id > TikalEntity.ID_NONE)
+                && (record.task.id > TikalEntity.ID_NONE)
+                // && (record.location.id > TikalEntity.ID_NONE)
     }
 
     companion object {
