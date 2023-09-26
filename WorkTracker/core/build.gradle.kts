@@ -33,8 +33,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = Java.Version.jvm
+        targetCompatibility = Java.Version.jvm
     }
 
     composeOptions {
@@ -42,7 +42,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = Java.Version.jvm.toString()
     }
 }
 
@@ -57,7 +57,7 @@ dependencies {
     implementation(Android.Jetpack.composeUi)
     implementation(Android.Jetpack.composeUiTooling)
     implementation(Android.Jetpack.composeUiToolingPreview)
-    implementation(Android.Jetpack.constraint_layout)
+    implementation(Android.Jetpack.constraintLayout)
     implementation(Android.Jetpack.core)
     implementation(Android.Jetpack.preference)
     implementation(Android.Jetpack.security)

@@ -142,7 +142,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_business)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_business)
                         ),
                         contentDescription = stringResource(id = R.string.project_label)
                     )
@@ -160,7 +160,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_time)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_time)
                         ),
                         contentDescription = stringResource(id = R.string.duration_label)
                     )
@@ -178,7 +178,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_folder_open)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_folder_open)
                         ),
                         contentDescription = stringResource(id = R.string.task_label)
                     )
@@ -208,7 +208,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_home_work)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_home_work)
                         ),
                         contentDescription = stringResource(id = R.string.location_label)
                     )
@@ -225,7 +225,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_attach_money)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_attach_money)
                         ),
                         contentDescription = stringResource(id = R.string.cost_total)
                     )
@@ -243,7 +243,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_note)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_note)
                         ),
                         contentDescription = stringResource(id = R.string.note_hint)
                     )

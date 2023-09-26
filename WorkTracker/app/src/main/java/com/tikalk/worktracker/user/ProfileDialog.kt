@@ -122,7 +122,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                     Icon(
                         painter = rememberVectorPainter(
                             image = ImageVector.vectorResource(
-                                id = R.drawable.ic_person
+                                id = com.tikalk.core.R.drawable.ic_person
                             )
                         ),
                         contentDescription = ""
@@ -157,7 +157,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                     Icon(
                         painter = rememberVectorPainter(
                             image = ImageVector.vectorResource(
-                                id = R.drawable.ic_email
+                                id = com.tikalk.core.R.drawable.ic_email
                             )
                         ),
                         contentDescription = ""
@@ -192,7 +192,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                     Icon(
                         painter = rememberVectorPainter(
                             image = ImageVector.vectorResource(
-                                id = R.drawable.ic_lock_open
+                                id = com.tikalk.core.R.drawable.ic_lock_open
                             )
                         ),
                         contentDescription = ""
@@ -259,7 +259,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                 Text(text = stringResource(id = R.string.action_submit))
                 Icon(
                     modifier = Modifier.padding(start = 8.dp),
-                    painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_done)),
+                    painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_done)),
                     contentDescription = ""
                 )
             }

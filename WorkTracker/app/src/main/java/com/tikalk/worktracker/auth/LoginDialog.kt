@@ -117,7 +117,7 @@ fun LoginForm(viewState: LoginViewState) {
                     Icon(
                         painter = rememberVectorPainter(
                             image = ImageVector.vectorResource(
-                                id = R.drawable.ic_lock_open
+                                id = com.tikalk.core.R.drawable.ic_lock_open
                             )
                         ),
                         contentDescription = ""
@@ -168,7 +168,7 @@ fun LoginForm(viewState: LoginViewState) {
                 Text(text = stringResource(id = R.string.action_sign_in))
                 Icon(
                     modifier = Modifier.padding(start = 8.dp),
-                    painter = rememberVectorPainter(image = ImageVector.vectorResource(id = R.drawable.ic_lock_open)),
+                    painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_lock_open)),
                     contentDescription = ""
                 )
             }

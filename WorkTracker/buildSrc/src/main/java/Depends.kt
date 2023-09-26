@@ -1,18 +1,20 @@
+import org.gradle.api.JavaVersion
+
 object Android {
     object Version {
-        const val compileSdk = 33
+        const val compileSdk = 34
         const val minSdk = 23
         const val targetSdk = 33
 
         const val compose = "1.3.3"
-        const val composeCompiler = "1.4.8"
+        const val composeCompiler = "1.5.3"
         const val composeMaterial = "1.3.1"
-        const val hilt = "2.47"
+        const val hilt = "2.48"
         const val navigation = "2.5.0"
         const val okhttp = "4.11.0"
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
-        const val room = "2.5.2"
+        const val room = "2.6.0-beta01"
         const val security = "1.1.0-alpha03"
         const val test = "1.4.0"
     }
@@ -44,9 +46,9 @@ object Android {
         const val composeUi = "androidx.compose.ui:ui:${Version.compose}"
         const val composeUiTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"
         const val composeUiToolingPreview = "androidx.compose.ui:ui-tooling-preview:${Version.compose}"
-        const val constraint_layout = "androidx.constraintlayout:constraintlayout:2.1.4"
+        const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
         const val composeConstraintLayout = "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-        const val core = "androidx.core:core-ktx:1.10.1"
+        const val core = "androidx.core:core-ktx:1.12.0"
         const val navigationCompose = "androidx.navigation:navigation-compose:${Version.navigation}"
         const val navigationFragment = "androidx.navigation:navigation-fragment-ktx:${Version.navigation}"
         const val navigationUI = "androidx.navigation:navigation-ui-ktx:${Version.navigation}"
@@ -88,10 +90,13 @@ object Android {
 
 object Java {
     object Version {
-        const val jsoup = "1.15.2"
+        val jvm = JavaVersion.VERSION_17
+
+        const val jsoup = "1.16.1"
+        // odf "0.10.0" and "0.11.0" cause "java.nio.charset.IllegalCharsetNameException: java.nio.charset.CharsetICU[UTF-8]"
         const val odf = "0.8.7"
-        const val opencsv = "5.6"
-        const val woodstox = "6.3.1"
+        const val opencsv = "5.8"
+        const val woodstox = "6.5.1"
     }
 
     object Document {
@@ -110,8 +115,8 @@ object Kotlin {
     object Version {
         const val coroutines = "1.7.3"
         const val html = "0.9.1"
-        const val kotlin = "1.8.22"
-        const val serialization = "1.5.1"
+        const val kotlin = "1.9.10"
+        const val serialization = "1.6.0"
     }
 
     object Document {
