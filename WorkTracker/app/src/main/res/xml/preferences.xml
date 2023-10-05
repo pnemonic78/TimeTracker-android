@@ -85,7 +85,7 @@
 
         <Preference
             android:icon="@drawable/ic_settings_logout"
-            android:key="clear_user"
+            android:key="logout"
             android:title="@string/pref_logout_title" />
         <Preference
             android:icon="@drawable/ic_settings_delete"
