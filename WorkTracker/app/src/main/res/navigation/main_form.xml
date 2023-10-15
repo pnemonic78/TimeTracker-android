@@ -39,7 +39,7 @@
     <fragment
         android:id="@+id/timeEditFragment"
         android:name="com.tikalk.worktracker.time.TimeEditFragment"
-        android:label="@string/activity_time"
+        android:label="Time Edit"
         tools:layout="@layout/time_form">
         <action
             android:id="@+id/action_timeEdit_to_login"
@@ -48,7 +48,7 @@
     <fragment
         android:id="@+id/puncherFragment"
         android:name="com.tikalk.worktracker.time.PuncherFragment"
-        android:label="@string/activity_time">
+        android:label="Puncher">
         <action
             android:id="@+id/action_puncher_to_timeEdit"
             app:destination="@id/timeEditFragment"
@@ -56,7 +56,7 @@
             app:exitAnim="@anim/slide_out_form"
             app:popEnterAnim="@anim/slide_in_form"
             app:popExitAnim="@anim/slide_out_form" />
-        <actionf
+        <action
             android:id="@+id/action_puncher_to_login"
             app:destination="@id/login" />
     </fragment>

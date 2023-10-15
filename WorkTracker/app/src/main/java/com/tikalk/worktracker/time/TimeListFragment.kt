@@ -44,14 +44,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.compose.TikalTheme
-import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
@@ -63,7 +61,6 @@ import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import java.util.Calendar
-import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -309,17 +306,21 @@ class TimeListFragment : TimeFormFragment() {
         if (form is TimeEditFragment) {
             form.editRecord(record, isStop = isTimer)
         } else {
-            Timber.i("editRecord editor.currentDestination=${formNavHostFragment.navController.currentDestination?.label}")
-            Bundle().apply {
-                putLong(TimeEditFragment.EXTRA_DATE, record.date.timeInMillis)
-                putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-                putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-                putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-                putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
-                putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-                putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
-                putBoolean(TimeEditFragment.EXTRA_STOP, isTimer)
-                formNavHostFragment.navController.navigate(R.id.action_puncher_to_timeEdit, this)
+            val navController = formNavHostFragment.navController
+            val currentDestination = navController.currentDestination ?: return
+            Timber.i("editRecord editor.currentDestination=${currentDestination.label}")
+            if (currentDestination.id == R.id.puncherFragment) {
+                Bundle().apply {
+                    putLong(TimeEditFragment.EXTRA_DATE, record.date.timeInMillis)
+                    putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+                    putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+                    putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                    putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                    putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+                    putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
+                    putBoolean(TimeEditFragment.EXTRA_STOP, isTimer)
+                    navController.navigate(R.id.action_puncher_to_timeEdit, this)
+                }
             }
         }
     }
