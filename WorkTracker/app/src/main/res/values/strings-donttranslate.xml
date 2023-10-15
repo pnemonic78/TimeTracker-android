@@ -1,5 +1,2 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="demo_login_user" translatable="false">demo@tikalk.com</string>
-    <string name="demo_basic_user" translatable="false">dem0tIk</string>
-    <string name="demo_basic_password" translatable="false">dem0tIktik23</string>
 </resources>

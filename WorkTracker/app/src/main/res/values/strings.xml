@@ -19,8 +19,6 @@
     <string name="error_invalid_email">"This email address is invalid"</string>
     <string name="error_invalid_password">"This password is incorrect"</string>
     <string name="error_field_required">"This field is required"</string>
-    <string name="activity_basic_realm">"Basic Realm Authentication"</string>
-    <string name="authentication_basic_realm">"Basic Realm Authentication for \"%1$s\""</string>
     <string name="action_authenticate">"Authenticate"</string>
 
     <!-- Time edit -->

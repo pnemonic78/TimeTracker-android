@@ -16,8 +16,6 @@
     <string name="error_invalid_email">"כתובת דוא\"ל זו שגויה"</string>
     <string name="error_invalid_password">"סיסמה זו שגויה"</string>
     <string name="error_field_required">"שדה חובה"</string>
-    <string name="activity_basic_realm">"אימות תחום בסיסי"</string>
-    <string name="authentication_basic_realm">"אימות תחום בסיסי ל-\"%1$s\"</string>
     <string name="action_authenticate">"אימות"</string>
 
     <!-- Time edit -->
