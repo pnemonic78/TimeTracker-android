@@ -77,11 +77,6 @@ data class User(
      */
     @ColumnInfo(name = "roles")
     var roles: List<String>? = null,
-    /**
-     * Are there any uncompleted entries?
-     */
-    @ColumnInfo(name = "uncompletedEntry")
-    var isUncompletedEntry: Boolean = false
 ) : TikalEntity() {
 
     constructor(parcel: Parcel) : this(

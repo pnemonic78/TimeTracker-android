@@ -137,46 +137,13 @@ fun UserItem(user: User) {
                 Text(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .weight(0.65f),
+                        .weight(0.7f),
                     text = user.roles?.joinToString(", ").orEmpty(),
                     style = MaterialTheme.typography.body1
                 )
-                if (user.isUncompletedEntry) {
-                    UserEntriesUncompleted(modifier = Modifier.weight(0.05f))
-                } else {
-                    UserEntriesCompleted(modifier = Modifier.weight(0.05f))
-                }
             }
         }
     }
-}
-
-/** Red circle with radial gradient. */
-@Composable
-private fun UserEntriesUncompleted(modifier: Modifier = Modifier) {
-    UserEntriesDot(modifier, Color.Red)
-}
-
-/** Green circle with radial gradient. */
-@Composable
-private fun UserEntriesCompleted(modifier: Modifier = Modifier) {
-    UserEntriesDot(modifier, Color.Green)
-}
-
-/** Circle with radial gradient. */
-@Composable
-private fun UserEntriesDot(modifier: Modifier = Modifier, color: Color) {
-    val colorDark = lerp(color, Color.Black, 0.2f)
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(color, colorDark),
-                ),
-                shape = CircleShape
-            )
-    )
 }
 
 @Preview(name = "default", showBackground = true)
@@ -192,6 +159,5 @@ internal val UserDemo = User(
     username = "demo",
     email = "demo@tikalk.com",
     displayName = "Demo",
-    roles = listOf("User", "Manager"),
-    isUncompletedEntry = false
+    roles = listOf("User", "Manager")
 )

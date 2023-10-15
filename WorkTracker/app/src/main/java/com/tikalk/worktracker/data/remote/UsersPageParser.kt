@@ -98,13 +98,6 @@ class UsersPageParser {
 
         val tdName = cols[0]
         val name = tdName.ownText()
-        val spans = tdName.select("span")
-        var isUncompletedEntry = false
-        for (span in spans) {
-            val classAttribute = span.attr("class")
-            isUncompletedEntry =
-                isUncompletedEntry or (classAttribute == "uncompleted-entry active")
-        }
 
         val tdLogin = cols[1]
         val username = tdLogin.ownText()
@@ -118,7 +111,6 @@ class UsersPageParser {
         if (roles.isNotEmpty()) {
             user.roles = roles.split(",")
         }
-        user.isUncompletedEntry = isUncompletedEntry
         return user
     }
 }

@@ -145,15 +145,13 @@ private fun ThisPreview() {
         username = "demo",
         email = "demo@tikalk.com",
         displayName = "Demo",
-        roles = listOf("User", "Manager"),
-        isUncompletedEntry = true
+        roles = listOf("User", "Manager")
     )
     val user2 = User(
         username = "demo",
         email = "demo@tikalk.com",
         displayName = "John Doe",
-        roles = listOf("User"),
-        isUncompletedEntry = false
+        roles = listOf("User")
     )
     val onScrollIndex: OnScrollIndexCallback = { i, p ->
         println("scrolled to $i $p")

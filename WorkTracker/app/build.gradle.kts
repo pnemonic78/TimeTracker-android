@@ -68,7 +68,7 @@ android {
         jvmTarget = Java.Version.jvm.toString()
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes += "META-INF/DEPENDENCIES"
             excludes += "META-INF/INDEX.LIST"
