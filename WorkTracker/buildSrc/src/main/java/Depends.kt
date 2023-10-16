@@ -6,11 +6,12 @@ object Android {
         const val minSdk = 23
         const val targetSdk = 33
 
-        const val compose = "1.3.3"
+        const val compose = "1.5.3"
         const val composeCompiler = "1.5.3"
-        const val composeMaterial = "1.3.1"
+        const val composeMaterial = "1.5.3"
+        const val composeMaterial3 = "1.1.2"
         const val hilt = "2.48"
-        const val navigation = "2.5.0"
+        const val navigation = "2.7.4"
         const val okhttp = "4.11.0"
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
@@ -37,11 +38,11 @@ object Android {
 
     object Jetpack {
         const val appcompat = "androidx.appcompat:appcompat:1.7.0-alpha02"
-        const val livedata = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeActivity = "androidx.activity:activity-compose:1.6.1"
         const val composeCompiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
         const val composeIcons = "androidx.compose.material:material-icons-extended:${Version.composeMaterial}"
         const val composeMaterial = "androidx.compose.material:material:${Version.composeMaterial}"
+        const val composeMaterial3 = "androidx.compose.material3:material3:${Version.composeMaterial3}"
         const val composeRuntime = "androidx.compose.runtime:runtime-livedata:${Version.compose}"
         const val composeUi = "androidx.compose.ui:ui:${Version.compose}"
         const val composeUiTooling = "androidx.compose.ui:ui-tooling:${Version.compose}"

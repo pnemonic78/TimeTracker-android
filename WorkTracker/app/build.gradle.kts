@@ -4,8 +4,8 @@ plugins {
     kotlin("android")
     kotlin("kapt")
     kotlin("plugin.parcelize")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+//    id("com.google.gms.google-services")
+//    id("com.google.firebase.crashlytics")
 }
 
 val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()
@@ -91,6 +91,7 @@ dependencies {
     implementation(Android.Jetpack.composeConstraintLayout)
     implementation(Android.Jetpack.composeIcons)
     implementation(Android.Jetpack.composeMaterial)
+    implementation(Android.Jetpack.composeMaterial3)
     implementation(Android.Jetpack.composeRuntime)
     implementation(Android.Jetpack.composeUi)
     implementation(Android.Jetpack.composeUiTooling)
@@ -142,7 +143,4 @@ dependencies {
     testImplementation(Android.Test.junit)
     androidTestImplementation(Android.Test.junit_ext)
     androidTestImplementation(Android.Test.espresso_core)
-
-    // Miscellaneous
-    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
 }

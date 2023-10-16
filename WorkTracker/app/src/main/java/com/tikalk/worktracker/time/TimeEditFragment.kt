@@ -683,6 +683,7 @@ class TimeEditFragment : TimeFormFragment() {
     private suspend fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
+            //TODO record.start = null
             record.status = TaskRecordStatus.DELETED
             viewModel.onRecordEditDeleted(record)
             return

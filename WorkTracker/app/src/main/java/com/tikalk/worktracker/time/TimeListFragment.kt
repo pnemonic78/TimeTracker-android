@@ -325,28 +325,6 @@ class TimeListFragment : TimeFormFragment() {
         }
     }
 
-    private fun deleteRecord(record: TimeRecord) {
-        Timber.i("deleteRecord record=$record")
-
-        showProgress(true)
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = service.deleteTime(record.id)
-                showProgressMain(false)
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html, record.date)
-                } else {
-                    authenticateMain()
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error deleting record: ${e.message}")
-                showProgressMain(false)
-                handleErrorMain(e)
-            }
-        }
-    }
-
     override fun populateForm(record: TimeRecord) = Unit
 
     @MainThread

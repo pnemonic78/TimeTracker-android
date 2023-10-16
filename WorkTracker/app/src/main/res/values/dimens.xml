@@ -21,6 +21,7 @@
     <dimen name="form_marginTop">6dp</dimen>
     <dimen name="card_cornerRadius">10dp</dimen>
     <dimen name="icon_item">12dp</dimen>
+    <dimen name="icon_form">24dp</dimen>
 
     <dimen name="index_width">20dp</dimen>
     <dimen name="index_textSize">16dp</dimen>

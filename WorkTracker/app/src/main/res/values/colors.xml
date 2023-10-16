@@ -11,6 +11,6 @@
     <color name="balancePositive">@color/green_xC0</color>
     <color name="balanceNegative">@color/red_xC0</color>
 
-    <color name="button_start">#FF00CC00</color>
-    <color name="button_stop">@color/red</color>
+    <color name="button_start">#FF00AA00</color>
+    <color name="button_stop">#FFCC0000</color>
 </resources>

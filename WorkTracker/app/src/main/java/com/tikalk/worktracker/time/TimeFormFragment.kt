@@ -51,12 +51,12 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
+import java.util.Calendar
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Calendar
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
-    
+
     open var record: TimeRecord = TimeRecord.EMPTY.copy()
     override val viewModel by activityViewModels<TimeViewModel>()
 
@@ -264,14 +264,19 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     protected fun addEmptyTask(tasks: List<ProjectTask>): List<ProjectTask> {
         val taskEmptyFind = tasks.find { it.isEmpty() }
-        val taskEmpty = taskEmptyFind ?: viewModel.taskEmpty
-        taskEmpty.name = getEmptyTaskName()
-        viewModel.taskEmpty = taskEmpty
         return if (taskEmptyFind != null) {
+            taskEmptyFind.name = getEmptyTaskName()
             tasks.sortedBy { it.name }
         } else {
+            val taskEmpty = getEmptyTask()
             tasks.sortedBy { it.name }.add(0, taskEmpty)
         }
+    }
+
+    protected fun getEmptyTask(): ProjectTask {
+        val taskEmpty = viewModel.taskEmpty
+        taskEmpty.name = getEmptyTaskName()
+        return taskEmpty
     }
 
     protected open fun buildLocations(context: Context): List<LocationItem> {
