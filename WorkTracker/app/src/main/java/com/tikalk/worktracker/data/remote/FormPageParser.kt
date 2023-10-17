@@ -113,7 +113,7 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
                 break
             }
         }
-        return Location.OTHER
+        return Location.EMPTY
     }
 
     private fun parseProjects(select: Element): List<Project> {

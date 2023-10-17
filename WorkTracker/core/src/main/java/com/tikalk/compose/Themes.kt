@@ -1,7 +1,7 @@
 package com.tikalk.compose
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 typealias ComposableContent = @Composable (() -> Unit)
@@ -13,7 +13,7 @@ fun TikalTheme(
     content: ComposableContent
 ) {
     MaterialTheme(
-        colors = if (isDarkTheme) tikalDarkColors else tikalLightColors,
+        colorScheme = if (isDarkTheme) tikalDarkColors else tikalLightColors,
         content = content
     )
 }

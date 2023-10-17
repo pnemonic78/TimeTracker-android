@@ -38,9 +38,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -60,13 +60,13 @@ private val paddingBullet2 = paddingBullet.padding(start = 16.dp)
 
 @Composable
 fun HelpScreen() {
-    val styleCategory = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Medium)
-    val styleBullet = MaterialTheme.typography.body1.copy(
+    val styleCategory = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
+    val styleBullet = MaterialTheme.typography.bodyLarge.copy(
         textIndent = TextIndent(firstLine = 0.sp, restLine = 10.sp)
     )
 
-    val colorCategory = MaterialTheme.colors.onBackground
-    val colorBullet = MaterialTheme.colors.onBackground
+    val colorCategory = MaterialTheme.colorScheme.onBackground
+    val colorBullet = MaterialTheme.colorScheme.onBackground
 
     Column(
         modifier = Modifier
@@ -76,7 +76,7 @@ fun HelpScreen() {
     ) {
         Text(
             text = stringResource(id = R.string.help_summary),
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             color = colorCategory
         )
 

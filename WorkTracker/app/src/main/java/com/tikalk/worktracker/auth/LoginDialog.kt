@@ -40,13 +40,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -108,7 +107,7 @@ fun LoginForm(viewState: LoginViewState) {
                         modifier = Modifier
                             .fillMaxWidth(),
                         text = stringResource(id = R.string.prompt_login),
-                        style = MaterialTheme.typography.subtitle1,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
                 },
@@ -129,7 +128,7 @@ fun LoginForm(viewState: LoginViewState) {
                         viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
                     }
                 },
-                textStyle = MaterialTheme.typography.body1,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 readOnly = credentialsLogin.isReadOnly,
                 isError = credentialsLogin.isError
@@ -146,7 +145,8 @@ fun LoginForm(viewState: LoginViewState) {
                     }
                 },
                 readOnly = credentialsPassword.isReadOnly,
-                isError = credentialsPassword.isError
+                isError = credentialsPassword.isError,
+                onDoneAction = onConfirmClick
             )
             if (errorMessage.isNotEmpty()) {
                 Text(
@@ -154,8 +154,8 @@ fun LoginForm(viewState: LoginViewState) {
                         .padding(top = marginTop)
                         .fillMaxWidth(),
                     text = errorMessage,
-                    style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.error,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center
                 )
             }
@@ -163,7 +163,7 @@ fun LoginForm(viewState: LoginViewState) {
                 modifier = Modifier
                     .padding(top = marginTop)
                     .fillMaxWidth(),
-                onClick = onConfirmClick
+                onClick = onConfirmClick,
             ) {
                 Text(text = stringResource(id = R.string.action_sign_in))
                 Icon(

@@ -1,23 +1,20 @@
 package com.tikalk.compose
 
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 // text is `onBackground`
 // button background is primary
 
-val tikalLightColors = lightColors(
+val tikalLightColors = lightColorScheme(
     primary = Color(0xFFFFCC80),
-    primaryVariant = Color(0XFFFF8A65),
-    secondary = Color(0xFFFF6E40),
-    secondaryVariant = Color(0xFFFF6E40).copy(alpha = 0.75f)
-
+    secondary = Color(0XFFFF8A65),
+    tertiary = Color(0xFFFF6E40)
 )
 
-val tikalDarkColors = darkColors(
+val tikalDarkColors = darkColorScheme(
     primary = Color(0xFFFFCC80),
-    primaryVariant = Color(0XFFFF8A65),
-    secondary = Color(0xFFFF6E40),
-    secondaryVariant = Color(0xFFFF6E40).copy(alpha = 0.75f)
+    secondary = Color(0XFFFF8A65),
+    tertiary = Color(0xFFFF6E40)
 )

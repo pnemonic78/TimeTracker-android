@@ -40,12 +40,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -113,7 +113,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                         modifier = Modifier
                             .fillMaxWidth(),
                         text = stringResource(id = R.string.prompt_name),
-                        style = MaterialTheme.typography.subtitle1,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
                 },
@@ -134,7 +134,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                         viewState.userDisplayName.emit(userDisplayName.copy(value = value))
                     }
                 },
-                textStyle = MaterialTheme.typography.body1,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 readOnly = userDisplayName.isReadOnly,
                 isError = userDisplayName.isError
@@ -148,7 +148,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                         modifier = Modifier
                             .fillMaxWidth(),
                         text = stringResource(id = R.string.prompt_email),
-                        style = MaterialTheme.typography.subtitle1,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
                 },
@@ -169,7 +169,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                         viewState.userEmail.emit(userEmail.copy(value = value))
                     }
                 },
-                textStyle = MaterialTheme.typography.body1,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 readOnly = userEmail.isReadOnly,
                 isError = userEmail.isError
@@ -183,7 +183,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                         modifier = Modifier
                             .fillMaxWidth(),
                         text = stringResource(id = R.string.prompt_login),
-                        style = MaterialTheme.typography.subtitle1,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
                 },
@@ -204,7 +204,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                         viewState.credentialsLogin.emit(credentialsLogin.copy(value = value))
                     }
                 },
-                textStyle = MaterialTheme.typography.body1,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 readOnly = credentialsLogin.isReadOnly,
                 isError = credentialsLogin.isError
@@ -245,8 +245,8 @@ fun ProfileForm(viewState: ProfileViewState) {
                         .padding(top = marginTop)
                         .fillMaxWidth(),
                     text = errorMessage,
-                    style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.error,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center
                 )
             }

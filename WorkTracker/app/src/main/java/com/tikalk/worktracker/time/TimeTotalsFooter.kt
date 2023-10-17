@@ -38,8 +38,8 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +65,7 @@ fun TimeTotalsFooter(
     totals: TimeTotals
 ) {
     val context: Context = LocalContext.current
-    val textColor = MaterialTheme.colors.onBackground
+    val textColor = MaterialTheme.colorScheme.onBackground
     val balanceColor = if (totals.balance < 0) {
         colorResource(id = R.color.balanceNegative)
     } else {
@@ -123,7 +123,7 @@ private fun TimeTotalsFooterPortrait(
                 bottom.linkTo(dayValue.bottom)
             },
             text = if (dailyValid) stringResource(id = R.string.day_total) else "",
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.bodySmall,
             color = textColor
         )
         Text(
@@ -134,7 +134,7 @@ private fun TimeTotalsFooterPortrait(
                     top.linkTo(parent.top)
                 },
             text = if (dailyValid) formatHours(context, timeFormatter, totals.daily) else "",
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             color = textColor,
             fontWeight = FontWeight.Medium
         )
@@ -148,7 +148,7 @@ private fun TimeTotalsFooterPortrait(
                     bottom.linkTo(monthValue.bottom)
                 },
             text = if (monthlyValid) stringResource(id = R.string.month_total) else "",
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.bodySmall,
             color = textColor
         )
         Text(
@@ -159,7 +159,7 @@ private fun TimeTotalsFooterPortrait(
                     top.linkTo(dayValue.bottom)
                 },
             text = if (monthlyValid) formatHours(context, timeFormatter, totals.monthly) else "",
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             color = textColor,
             fontWeight = FontWeight.Medium
         )
@@ -173,7 +173,7 @@ private fun TimeTotalsFooterPortrait(
                     bottom.linkTo(weekValue.bottom)
                 },
             text = if (weeklyValid) stringResource(id = R.string.week_total) else "",
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.bodySmall,
             color = textColor
         )
         Text(
@@ -184,7 +184,7 @@ private fun TimeTotalsFooterPortrait(
                     top.linkTo(parent.top)
                 },
             text = if (weeklyValid) formatHours(context, timeFormatter, totals.weekly) else "",
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             color = textColor,
             fontWeight = FontWeight.Medium
         )
@@ -198,7 +198,7 @@ private fun TimeTotalsFooterPortrait(
                     bottom.linkTo(balanceValue.bottom)
                 },
             text = if (balanceValid) stringResource(id = R.string.balance) else "",
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.bodySmall,
             color = textColor
         )
         Text(
@@ -213,7 +213,7 @@ private fun TimeTotalsFooterPortrait(
                 timeFormatter,
                 totals.balance.absoluteValue
             ) else "",
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             color = balanceColor,
             fontWeight = FontWeight.Medium
         )
@@ -243,14 +243,14 @@ private fun TimeTotalsFooterLandscape(
             Text(
                 modifier = Modifier,
                 text = stringResource(id = R.string.day_total),
-                style = MaterialTheme.typography.caption,
+                style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
             Text(
                 modifier = Modifier
                     .padding(start = 4.dp),
                 text = formatHours(context, timeFormatter, totals.daily),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
                 fontWeight = FontWeight.Medium
             )
@@ -261,14 +261,14 @@ private fun TimeTotalsFooterLandscape(
                 modifier = Modifier
                     .padding(start = 16.dp),
                 text = stringResource(id = R.string.week_total),
-                style = MaterialTheme.typography.caption,
+                style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
             Text(
                 modifier = Modifier
                     .padding(start = 4.dp),
                 text = formatHours(context, timeFormatter, totals.weekly),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
                 fontWeight = FontWeight.Medium
             )
@@ -279,14 +279,14 @@ private fun TimeTotalsFooterLandscape(
                 modifier = Modifier
                     .padding(start = 16.dp),
                 text = stringResource(id = R.string.month_total),
-                style = MaterialTheme.typography.caption,
+                style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
             Text(
                 modifier = Modifier
                     .padding(start = 4.dp),
                 text = formatHours(context, timeFormatter, totals.monthly),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
                 fontWeight = FontWeight.Medium
             )
@@ -297,14 +297,14 @@ private fun TimeTotalsFooterLandscape(
                 modifier = Modifier
                     .padding(start = 16.dp),
                 text = stringResource(id = R.string.balance),
-                style = MaterialTheme.typography.caption,
+                style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
             Text(
                 modifier = Modifier
                     .padding(start = 4.dp),
                 text = formatHours(context, timeFormatter, totals.balance.absoluteValue),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = balanceColor,
                 fontWeight = FontWeight.Medium
             )

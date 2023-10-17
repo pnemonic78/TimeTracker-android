@@ -119,6 +119,6 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
 
     private fun findLocation(form: FormElement): Location {
         val inputLocation = form.selectByName("time_field_5") ?: return Location.EMPTY
-        return findSelectedLocation(inputLocation) ?: Location.EMPTY
+        return findSelectedLocation(inputLocation)
     }
 }
