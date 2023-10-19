@@ -34,7 +34,6 @@ package com.tikalk.worktracker.time
 
 import android.content.Context
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -52,13 +51,26 @@ import com.tikalk.worktracker.net.InternetFragment
 import com.tikalk.worktracker.report.LocationItem
 import com.tikalk.worktracker.report.toLocationItem
 import java.util.Calendar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 abstract class TimeFormFragment : InternetFragment(), Runnable {
 
-    open var record: TimeRecord = TimeRecord.EMPTY.copy()
+    protected val recordFlow = MutableStateFlow(TimeRecord.EMPTY.copy())
+    var record: TimeRecord
+        get() = recordFlow.value
+        set(value) {
+            recordFlow.tryEmit(value)
+        }
     override val viewModel by activityViewModels<TimeViewModel>()
+    protected val projectsFlow = MutableStateFlow<List<Project>>(emptyList())
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        projectsFlow.tryEmit(getProjects())
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -97,9 +109,14 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         bindForm(record)
     }
 
+    private var rid = 0
+
     protected open fun setRecordValue(record: TimeRecord) {
         Timber.d("setRecordValue record=$record")
-        this.record = record
+        lifecycleScope.launch {
+            delay(100)
+            recordFlow.emit(record)
+        }
     }
 
     protected open fun setRecordProject(project: Project): Boolean {
@@ -184,16 +201,8 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
 
     protected open fun setRecordDuration(date: Calendar): Boolean {
         Timber.d("setRecordDuration date=$date")
-        record.date = date
-        val time =
-            (date.hourOfDay * DateUtils.HOUR_IN_MILLIS) + (date.minute * DateUtils.MINUTE_IN_MILLIS)
-        if (record.duration != time) {
-            record.start = null
-            record.finish = null
-            record.duration = time
-            return true
-        }
-        return false
+        record.setDurationDateTime(date.timeInMillis)
+        return true
     }
 
     protected fun setRecordDuration(
@@ -214,6 +223,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
+        projectsFlow.tryEmit(projects)
         val record = this.record
         populateForm(record)
         bindForm(record)
@@ -271,6 +281,10 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
             val taskEmpty = getEmptyTask()
             tasks.sortedBy { it.name }.add(0, taskEmpty)
         }
+    }
+
+    protected fun getProjects(): List<Project> {
+        return addEmptyProject(viewModel.projectsData.value)
     }
 
     protected fun getEmptyTask(): ProjectTask {

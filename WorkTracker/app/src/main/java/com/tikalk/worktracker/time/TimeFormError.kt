@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,57 +30,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.app
+package com.tikalk.worktracker.time
 
-import android.os.Bundle
-import androidx.annotation.StringRes
-import com.tikalk.app.TikalDialogFragment
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-
-@AndroidEntryPoint
-abstract class TrackerDialogFragment : TikalDialogFragment,
-    TrackerFragmentDelegate.TrackerFragmentDelegateCallback,
-    Runnable {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    @Inject
-    lateinit var preferences: TimeTrackerPrefs
-
-    @Inject
-    lateinit var service: TimeTrackerService
-
-    @Inject
-    lateinit var dataSource: TimeTrackerRepository
-
-    protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
-    protected val firstRun: Boolean get() = delegate.firstRun
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        delegate.onCreate(savedInstanceState)
-    }
-
-    protected fun handleError(error: Throwable) {
-        delegate.handleError(error)
-    }
-
-    protected open fun handleErrorMain(error: Throwable) {
-        delegate.handleErrorMain(error)
-    }
-
-    override fun showError(@StringRes messageId: Int) {
-        delegate.showError(messageId)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
+sealed class TimeFormError(val message: String) {
+    class General(message: String) : TimeFormError(message)
+    class Project(message: String) : TimeFormError(message)
+    class Task(message: String) : TimeFormError(message)
+    class Start(message: String) : TimeFormError(message)
+    class Finish(message: String) : TimeFormError(message)
+    class Duration(message: String) : TimeFormError(message)
+    class Note(message: String) : TimeFormError(message)
 }

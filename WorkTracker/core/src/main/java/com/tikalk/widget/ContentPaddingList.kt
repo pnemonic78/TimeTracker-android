@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,57 +30,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.app
+package com.tikalk.widget
 
-import android.os.Bundle
-import androidx.annotation.StringRes
-import com.tikalk.app.TikalDialogFragment
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.dp
+import com.tikalk.core.R
 
-@AndroidEntryPoint
-abstract class TrackerDialogFragment : TikalDialogFragment,
-    TrackerFragmentDelegate.TrackerFragmentDelegateCallback,
-    Runnable {
-
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    @Inject
-    lateinit var preferences: TimeTrackerPrefs
-
-    @Inject
-    lateinit var service: TimeTrackerService
-
-    @Inject
-    lateinit var dataSource: TimeTrackerRepository
-
-    protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
-    protected val firstRun: Boolean get() = delegate.firstRun
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        delegate.onCreate(savedInstanceState)
-    }
-
-    protected fun handleError(error: Throwable) {
-        delegate.handleError(error)
-    }
-
-    protected open fun handleErrorMain(error: Throwable) {
-        delegate.handleErrorMain(error)
-    }
-
-    override fun showError(@StringRes messageId: Int) {
-        delegate.showError(messageId)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
-    }
-}
+@Composable
+fun ContentPaddingList(
+    start: Boolean = true,
+    end: Boolean = true,
+    top: Boolean = true,
+    bottom: Boolean = true
+) = PaddingValues(
+    start = if (start) dimensionResource(id = R.dimen.activity_horizontal_margin) else 0.dp,
+    end = if (end) dimensionResource(id = R.dimen.activity_horizontal_margin) else 0.dp,
+    top = if (top) dimensionResource(id = R.dimen.activity_vertical_margin) else 0.dp,
+    bottom = if (bottom) dimensionResource(id = R.dimen.activity_vertical_margin) else 0.dp,
+)

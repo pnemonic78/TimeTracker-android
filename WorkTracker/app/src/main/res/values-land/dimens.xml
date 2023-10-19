@@ -1,7 +1,4 @@
 <resources>
-    <!-- Default screen margins. -->
-    <dimen name="activity_horizontal_margin">8dp</dimen>
-
     <dimen name="time_list_marginTop">2dp</dimen>
     <dimen name="form_marginTop">2dp</dimen>
 </resources>

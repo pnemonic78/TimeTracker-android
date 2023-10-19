@@ -44,10 +44,10 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 abstract class TrackerFragment : TikalFragment,
@@ -71,7 +71,7 @@ abstract class TrackerFragment : TikalFragment,
     lateinit var dataSource: TimeTrackerRepository
 
     protected abstract val viewModel: TrackerViewModel
-    protected val delegate = TrackerFragmentDelegate(this, this)
+    protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
     protected val firstRun: Boolean get() = delegate.firstRun
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,6 +135,7 @@ abstract class TrackerFragment : TikalFragment,
         }
         lifecycleScope.launch {
             delegate.login.collect { (login, reason) ->
+                if (login.isEmpty()) return@collect
                 if (reason == null) {
                     onLoginSuccess(login)
                 } else {
@@ -147,5 +148,10 @@ abstract class TrackerFragment : TikalFragment,
     override fun onStart() {
         super.onStart()
         run()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        delegate.onStop()
     }
 }

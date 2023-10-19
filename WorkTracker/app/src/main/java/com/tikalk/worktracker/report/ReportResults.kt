@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, Tikal Knowledge, Ltd.
+ * Copyright (c) 2023, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,77 +30,62 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.project
+package com.tikalk.worktracker.report
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import android.text.format.DateUtils
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
-import com.tikalk.model.TikalResult
-import com.tikalk.util.set
-import com.tikalk.widget.ContentPaddingList
-import com.tikalk.worktracker.EmptyListScreen
-import com.tikalk.worktracker.LoadingScreen
+import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportTotals
+import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.times
+import java.util.Calendar
+import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun ProjectsScreen(viewState: ProjectsViewState) {
-    val resultState = viewState.projects.collectAsState(initial = TikalResult.Loading())
-    val result: TikalResult<List<Project>> = resultState.value
-    val resultsSuccess = remember { mutableListOf<Project>() }
+fun ReportResults(
+    itemsFlow: Flow<List<TimeRecord>>,
+    filterFlow: Flow<ReportFilter>,
+    totalsFlow: Flow<ReportTotals>
+) {
+    val itemsState = itemsFlow.collectAsState(initial = emptyList())
+    val items = itemsState.value
 
-    when (result) {
-        is TikalResult.Loading -> LoadingScreen()
+    val filterState = filterFlow.collectAsState(initial = ReportFilter())
+    val filter = filterState.value
 
-        is TikalResult.Success -> {
-            val projects = result.data ?: emptyList()
-            resultsSuccess.set(projects)
-            ProjectsScreenList(projects = projects)
-        }
+    val totalsState = totalsFlow.collectAsState(initial = ReportTotals())
+    val totals = totalsState.value
 
-        is TikalResult.Error -> {
-            ProjectsScreenError(projects = resultsSuccess)
-        }
-    }
+    ReportResults(items, filter, totals)
 }
 
 @Composable
-private fun ProjectsScreenList(projects: List<Project>) {
-    if (projects.isEmpty()) {
-        EmptyListScreen()
-        return
-    }
-
-    val scrollState = rememberLazyListState()
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = ContentPaddingList(),
-        state = scrollState
-    ) {
-        items(projects) {
-            ProjectItem(project = it)
-            Spacer(modifier = Modifier.padding(4.dp))
-        }
-    }
-}
-
-@Composable
-private fun ProjectsScreenError(projects: List<Project>? = null) {
-    if (projects.isNullOrEmpty()) {
-        EmptyListScreen()
-    } else {
-        ProjectsScreenList(projects = projects)
+fun ReportResults(
+    items: List<TimeRecord>,
+    filter: ReportFilter,
+    totals: ReportTotals
+) {
+    Column {
+        ReportList(
+            modifier = Modifier.weight(1f),
+            items = items, filter = filter
+        )
+        Divider()
+        ReportTotalsFooter(
+            totals = totals,
+            isDurationFieldVisible = filter.isDurationFieldVisible,
+            isCostFieldVisible = filter.isCostFieldVisible
+        )
     }
 }
 
@@ -108,9 +93,20 @@ private fun ProjectsScreenError(projects: List<Project>? = null) {
 @Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun ThisPreview() {
-    val items = listOf(Project("Tikal"))
+    val record = TimeRecord(
+        project = Project("Project"),
+        task = ProjectTask("Task"),
+        date = Calendar.getInstance(),
+        duration = DateUtils.HOUR_IN_MILLIS,
+        note = "Note",
+        location = Location.OTHER,
+        cost = 1.23
+    )
+    val records = record * 5
+    val filter = ReportFilter()
+    val totals = ReportTotals(duration = records.sumOf { it.duration })
 
     TikalTheme {
-        ProjectsScreenList(items)
+        ReportResults(records, filter, totals)
     }
 }

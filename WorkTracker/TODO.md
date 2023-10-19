@@ -2,8 +2,6 @@ To-Do List
 ====
 
 * migrate binding to Jetpack Compose
-  * puncher form
-  * record edit form
   * report form
   * date-time picker dialog
 * move logic from fragment to ViewModel

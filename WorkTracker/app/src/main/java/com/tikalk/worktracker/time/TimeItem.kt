@@ -58,9 +58,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
+import com.tikalk.compose.WrapText
 import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Location
@@ -73,7 +75,7 @@ import java.util.Calendar
 
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
 
-typealias OnRecordCallback = ((TimeRecord) -> Unit)
+typealias RecordCallback = GenericCallback<TimeRecord>
 
 @Composable
 fun TimeItem(
@@ -87,7 +89,7 @@ fun TimeItem(
     isNoteFieldVisible: Boolean = true,
     isCostFieldVisible: Boolean = false,
     isLocationFieldVisible: Boolean = false,
-    onClick: OnRecordCallback
+    onClick: RecordCallback
 ) {
     val context: Context = LocalContext.current
     val iconSize = dimensionResource(id = R.dimen.icon_item)
@@ -148,7 +150,9 @@ fun TimeItem(
                         contentDescription = stringResource(id = R.string.project_label)
                     )
                     Text(
-                        modifier = Modifier.padding(start = 4.dp),
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .align(Alignment.CenterVertically),
                         text = record.project.name,
                         fontWeight = FontWeight.Medium,
                         color = color
@@ -158,6 +162,7 @@ fun TimeItem(
                     Spacer(modifier = Modifier.weight(1f))
                     Image(
                         modifier = Modifier
+                            .padding(start = 8.dp)
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
@@ -165,7 +170,7 @@ fun TimeItem(
                         ),
                         contentDescription = stringResource(id = R.string.duration_label)
                     )
-                    Text(
+                    WrapText(
                         modifier = Modifier.padding(start = 4.dp),
                         text = timeRange,
                         color = color
@@ -184,7 +189,9 @@ fun TimeItem(
                         contentDescription = stringResource(id = R.string.task_label)
                     )
                     Text(
-                        modifier = Modifier.padding(start = 4.dp),
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .align(Alignment.CenterVertically),
                         text = record.task.name,
                         color = color
                     )
@@ -198,6 +205,7 @@ fun TimeItem(
                         modifier = Modifier,
                         text = duration,
                         fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.End,
                         color = color
                     )
                 }

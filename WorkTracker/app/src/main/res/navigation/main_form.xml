@@ -40,7 +40,7 @@
         android:id="@+id/timeEditFragment"
         android:name="com.tikalk.worktracker.time.TimeEditFragment"
         android:label="Time Edit"
-        tools:layout="@layout/time_form">
+        tools:layout="@layout/compose_item">
         <action
             android:id="@+id/action_timeEdit_to_login"
             app:destination="@id/login" />

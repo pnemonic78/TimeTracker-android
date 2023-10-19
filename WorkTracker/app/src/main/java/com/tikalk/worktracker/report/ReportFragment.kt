@@ -51,10 +51,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.compose.TikalTheme
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentReportListBinding
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
@@ -70,11 +70,11 @@ class ReportFragment : InternetFragment() {
 
     override val viewModel by viewModels<ReportViewModel>()
 
-    private var _binding: FragmentReportListBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
-    private val totalsData = MutableStateFlow<ReportTotals?>(null)
+    private val totalsData = MutableStateFlow(ReportTotals())
     private val filterData = MutableStateFlow(ReportFilter())
 
     override fun onCreateView(
@@ -82,21 +82,19 @@ class ReportFragment : InternetFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentReportListBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.setContent {
+        binding.composeView.setContent {
             TikalTheme {
-                ReportList(itemsFlow = recordsData, filterFlow = filterData)
-            }
-        }
-
-        lifecycleScope.launch {
-            totalsData.collect { totals ->
-                if (totals != null) bindTotals(totals)
+                ReportResults(
+                    itemsFlow = recordsData,
+                    filterFlow = filterData,
+                    totalsFlow = totalsData
+                )
             }
         }
     }
@@ -104,21 +102,6 @@ class ReportFragment : InternetFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    @MainThread
-    private fun bindTotals(totals: ReportTotals) {
-        val filter = filterData.value
-
-        binding.totals.composeView.setContent {
-            TikalTheme {
-                ReportTotalsFooter(
-                    totals = totals,
-                    isDurationFieldVisible = filter.isDurationFieldVisible,
-                    isCostFieldVisible = filter.isCostFieldVisible
-                )
-            }
-        }
     }
 
     override fun authenticate(submit: Boolean) {
@@ -260,7 +243,7 @@ class ReportFragment : InternetFragment() {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
         export(
             context,
@@ -274,7 +257,7 @@ class ReportFragment : InternetFragment() {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
         export(
             context,
@@ -288,7 +271,7 @@ class ReportFragment : InternetFragment() {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
         export(
             context,
@@ -302,7 +285,7 @@ class ReportFragment : InternetFragment() {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
         export(
             context,

@@ -35,7 +35,6 @@ package com.tikalk.worktracker.report
 import android.content.res.Configuration
 import android.text.format.DateUtils
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -53,11 +52,12 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.times
 import com.tikalk.worktracker.time.OnRecordCallback
 import com.tikalk.worktracker.time.TimeItem
-import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun ReportList(
+    modifier: Modifier = Modifier,
     itemsFlow: Flow<List<TimeRecord>>,
     filterFlow: Flow<ReportFilter>
 ) {
@@ -67,11 +67,12 @@ fun ReportList(
     val filterState = filterFlow.collectAsState(initial = ReportFilter())
     val filter = filterState.value
 
-    ReportList(items = items, filter = filter)
+    ReportList(modifier = modifier, items = items, filter = filter)
 }
 
 @Composable
 fun ReportList(
+    modifier: Modifier = Modifier,
     items: List<TimeRecord>,
     filter: ReportFilter
 ) {
@@ -83,7 +84,7 @@ fun ReportList(
     val onClick: OnRecordCallback = {}
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentPadding = PaddingValues(16.dp),
         state = rememberLazyListState()
     ) {
@@ -123,6 +124,6 @@ private fun ThisPreview() {
     val filter = ReportFilter()
 
     TikalTheme {
-        ReportList(records, filter)
+        ReportList(items = records, filter = filter)
     }
 }

@@ -32,8 +32,6 @@
 
 package com.tikalk.worktracker.time
 
-import android.app.Activity.RESULT_OK
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -42,18 +40,21 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.compose.TikalTheme
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
-import com.tikalk.worktracker.databinding.FragmentPuncherBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.lang.isFalse
+import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.isNullOrEmpty
@@ -67,7 +68,7 @@ import timber.log.Timber
 
 class PuncherFragment : TimeFormFragment() {
 
-    private var _binding: FragmentPuncherBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -75,8 +76,17 @@ class PuncherFragment : TimeFormFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPuncherBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        lifecycleScope.launch {
+            viewModel.deleted.collect { data ->
+                if (data != null) onRecordDeleted(data.record)
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -196,7 +206,7 @@ class PuncherFragment : TimeFormFragment() {
         Timber.i("populateForm record=$record")
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
         Timber.i("populateForm recordStarted=$recordStarted")
-        if (recordStarted.project.isNullOrEmpty() and recordStarted.task.isNullOrEmpty()) {
+        if (recordStarted.project.isNullOrEmpty() && recordStarted.task.isNullOrEmpty()) {
             applyFavorite()
         } else if (!recordStarted.isEmpty()) {
             val projects = viewModel.projectsData.value
@@ -290,13 +300,13 @@ class PuncherFragment : TimeFormFragment() {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        if (view?.visibility == View.VISIBLE) {
+        if (view?.isVisible.isTrue) {
             menuInflater.inflate(R.menu.timer, menu)
         }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (view?.visibility != View.VISIBLE) {
+        if (view?.isVisible.isFalse) {
             return false
         }
         when (menuItem.itemId) {
@@ -308,21 +318,16 @@ class PuncherFragment : TimeFormFragment() {
         return super.onMenuItemSelected(menuItem)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_EDIT) {
-            if (resultCode == RESULT_OK) {
-                Timber.i("record processed")
-                stopTimerCancel()
-            } else {
-                Timber.i("record edit cancelled")
-            }
-            return
-        }
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
     override fun authenticate(submit: Boolean) {
         // Parent fragment responsible for authentication.
+    }
+
+    private fun onRecordDeleted(record: TimeRecord) {
+        if (record.id == TikalEntity.ID_NONE) {
+            stopTimerCancel()
+            setRecordValue(record)
+            bindForm(record)
+        }
     }
 
     companion object {
@@ -334,10 +339,5 @@ class PuncherFragment : TimeFormFragment() {
         const val EXTRA_CANCEL = BuildConfig.APPLICATION_ID + ".CANCEL"
 
         const val ACTION_STOP = TrackerFragmentDelegate.ACTION_STOP
-
-        private const val REQUEST_EDIT = 0xED17
-
-        private const val CHILD_START = 0
-        private const val CHILD_STOP = 1
     }
 }

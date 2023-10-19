@@ -65,6 +65,7 @@ typealias OnTimeRecordClick = ((record: TimeRecord) -> Unit)
 
 @Composable
 fun TimeList(
+    modifier: Modifier = Modifier,
     itemsFlow: Flow<List<TimeRecord>>,
     onClick: OnTimeRecordClick,
     onSwipe: OnSwipeDayListener
@@ -72,17 +73,18 @@ fun TimeList(
     val itemsState = itemsFlow.collectAsState(initial = emptyList())
     val items = itemsState.value
 
-    TimeList(items, onClick, onSwipe)
+    TimeList(modifier, items, onClick, onSwipe)
 }
 
 @Composable
 fun TimeList(
+    modifier: Modifier = Modifier,
     items: List<TimeRecord>,
     onClick: OnTimeRecordClick,
     onSwipe: OnSwipeDayListener
 ) {
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .pointerInput(key1 = items) {
                 detectHorizontalFling(onSwipe)
@@ -151,6 +153,6 @@ private fun ThisPreview() {
     }
 
     TikalTheme {
-        TimeList(records, onClick, onSwipe)
+        TimeList(items = records, onClick = onClick, onSwipe = onSwipe)
     }
 }

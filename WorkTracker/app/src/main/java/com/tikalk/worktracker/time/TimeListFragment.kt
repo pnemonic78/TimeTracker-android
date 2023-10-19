@@ -44,17 +44,21 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
 import com.tikalk.app.isNavDestination
 import com.tikalk.compose.TikalTheme
+import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.data.remote.TimeListPageParser
 import com.tikalk.worktracker.databinding.FragmentTimeListBinding
+import com.tikalk.worktracker.lang.isFalse
+import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
@@ -68,7 +72,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class TimeListFragment : TimeFormFragment() {
+class TimeListFragment : TimeFormFragment<TimeRecord>() {
 
     private var _binding: FragmentTimeListBinding? = null
     private val binding get() = _binding!!
@@ -105,11 +109,13 @@ class TimeListFragment : TimeFormFragment() {
 
         binding.list.setContent {
             TikalTheme {
-                TimeList(
-                    itemsFlow = recordsData,
-                    onClick = ::onRecordClick,
-                    onSwipe = swipeDayListener
-                )
+                PaddedBox(isVertical = false) {
+                    TimeList(
+                        itemsFlow = recordsData,
+                        onClick = ::onRecordClick,
+                        onSwipe = swipeDayListener
+                    )
+                }
             }
         }
         lifecycleScope.launch {
@@ -238,7 +244,7 @@ class TimeListFragment : TimeFormFragment() {
     private fun bindTotals(totals: TimeTotals) {
         val binding = _binding ?: return
         val bindingTotals = binding.totals
-        bindingTotals.setContent {
+        bindingTotals.composeView.setContent {
             TikalTheme {
                 TimeTotalsFooter(totals = totals)
             }
@@ -316,6 +322,7 @@ class TimeListFragment : TimeFormFragment() {
                     putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
                     putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
                     putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                    putLong(TimeEditFragment.EXTRA_DURATION, record.duration)
                     putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
                     putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
                     putBoolean(TimeEditFragment.EXTRA_STOP, isTimer)
@@ -501,13 +508,13 @@ class TimeListFragment : TimeFormFragment() {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menu.clear()
-        if (view?.visibility == View.VISIBLE) {
+        if (view?.isVisible.isTrue) {
             menuInflater.inflate(R.menu.time_list, menu)
         }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (view?.visibility != View.VISIBLE) {
+        if (view?.isVisible.isFalse) {
             return false
         }
         when (menuItem.itemId) {
@@ -524,8 +531,8 @@ class TimeListFragment : TimeFormFragment() {
         return super.onMenuItemSelected(menuItem)
     }
 
-    private fun findTopFormFragment(): TimeFormFragment {
-        return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java)!!
+    private fun findTopFormFragment(): TimeFormFragment<TimeRecord> {
+        return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java) as TimeFormFragment<TimeRecord>
     }
 
     private fun maybeFetchPage(date: Calendar, responseHtml: String) {

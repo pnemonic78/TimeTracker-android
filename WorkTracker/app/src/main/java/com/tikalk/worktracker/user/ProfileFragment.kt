@@ -40,14 +40,18 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isNavDestination
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
+import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.lang.isFalse
+import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -79,7 +83,9 @@ class ProfileFragment : InternetFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                ProfileForm(viewState = viewState)
+                PaddedBox {
+                    ProfileForm(viewState = viewState)
+                }
             }
         }
 
@@ -190,13 +196,13 @@ class ProfileFragment : InternetFragment() {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        if (view?.visibility == View.VISIBLE) {
+        if (view?.isVisible.isTrue) {
             menuInflater.inflate(R.menu.profile, menu)
         }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (view?.visibility != View.VISIBLE) {
+        if (view?.isVisible.isFalse) {
             return false
         }
         when (menuItem.itemId) {

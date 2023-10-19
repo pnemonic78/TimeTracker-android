@@ -38,10 +38,13 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.formatSystemDate
+import com.tikalk.worktracker.time.hourOfDay
 import com.tikalk.worktracker.time.isSameDay
 import com.tikalk.worktracker.time.millis
+import com.tikalk.worktracker.time.minute
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
+import com.tikalk.worktracker.time.toCalendar
 import java.util.Calendar
 
 /**
@@ -241,6 +244,15 @@ open class TimeRecord(
         if (c != 0) return c
 
         return 0
+    }
+
+    fun setDurationDateTime(value: Long) {
+        val cal = value.toCalendar()
+        date = cal
+        start = null
+        finish = null
+        duration = (cal.hourOfDay * DateUtils.HOUR_IN_MILLIS) +
+            (cal.minute * DateUtils.MINUTE_IN_MILLIS)
     }
 
     companion object {

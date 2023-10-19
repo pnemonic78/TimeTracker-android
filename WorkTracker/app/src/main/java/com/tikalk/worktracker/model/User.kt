@@ -37,7 +37,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.tikalk.net.createUriFromParcel
+import com.tikalk.net.createUri
 
 /**
  * User entity.
@@ -84,7 +84,7 @@ data class User(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        createUriFromParcel(parcel),
+        parcel.createUri(),
         parcel.createStringArrayList()
     )
 

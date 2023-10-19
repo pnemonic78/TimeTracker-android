@@ -32,9 +32,7 @@
 
 package com.tikalk.worktracker.time
 
-import android.content.Context
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.Menu
@@ -42,34 +40,24 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.DateTimePickerDialog
-import com.tikalk.app.DateTimePickerDialog.OnDateTimeSetListener
 import com.tikalk.app.findParentFragment
 import com.tikalk.app.isNavDestination
-import com.tikalk.app.runOnUiThread
-import com.tikalk.util.TikalFormatter
+import com.tikalk.compose.TikalTheme
+import com.tikalk.core.databinding.ComposeFullBinding
 import com.tikalk.util.getParcelableCompat
-import com.tikalk.widget.DateTimePicker
-import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.TimeFormBinding
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.lang.isFalse
+import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.model.Location
-import com.tikalk.worktracker.model.Project
-import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.model.findProject
-import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
@@ -77,89 +65,46 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.report.LocationItem
-import com.tikalk.worktracker.report.findLocation
 import java.util.Calendar
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class TimeEditFragment : TimeFormFragment() {
 
-    private var _binding: TimeFormBinding? = null
+    private var _binding: ComposeFullBinding? = null
     private val binding get() = _binding!!
 
-    private var startPickerDialog: DateTimePickerDialog? = null
-    private var finishPickerDialog: DateTimePickerDialog? = null
-    private var durationPickerDialog: DateTimePickerDialog? = null
-    private var errorMessage: String = ""
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
-    private val timeFormatter = TikalFormatter()
+    private val errorFlow = MutableStateFlow<TimeFormError?>(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = TimeFormBinding.inflate(inflater, container, false)
+        _binding = ComposeFullBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val binding = this.binding
-        binding.projectInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //projectItemSelected(projectEmpty)
-            }
-
-            override fun onItemSelected(
-                adapterView: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val project = adapterView.adapter.getItem(position) as Project
-                projectItemSelected(project)
+        binding.composeView.setContent {
+            TikalTheme {
+                val taskEmpty = getEmptyTask()
+                TimeEditForm(
+                    projectsFlow = projectsFlow,
+                    taskEmpty = taskEmpty,
+                    recordFlow = recordFlow,
+                    errorFlow = errorFlow,
+                    onRecordChanged = ::onRecordChanged
+                )
             }
         }
-        binding.taskInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //taskItemSelected(taskEmpty)
-            }
-
-            override fun onItemSelected(
-                adapterView: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val task = adapterView.adapter.getItem(position) as ProjectTask
-                taskItemSelected(task)
-            }
-        }
-        binding.locationInput.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(adapterView: AdapterView<*>) {
-                //locationItemSelected(locationEmpty)
-            }
-
-            override fun onItemSelected(
-                adapterView: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val task = adapterView.adapter.getItem(position) as LocationItem
-                locationItemSelected(task)
-            }
-        }
-        binding.startInput.setOnClickListener { pickStartTime() }
-        binding.finishInput.setOnClickListener { pickFinishTime() }
-        binding.durationInput.setOnClickListener { pickDuration() }
     }
 
     override fun onDestroyView() {
@@ -223,260 +168,37 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
-        val binding: TimeFormBinding = _binding ?: return
-        val context: Context = binding.root.context
-
-        // Populate the tasks spinner before projects so that it can be filtered.
-        val taskItems = arrayOf(viewModel.taskEmpty)
-        binding.taskInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
-
-        val projects = viewModel.projectsData.value
-        bindProjects(binding, record, projects)
-
-        if (BuildConfig.LOCATION) {
-            bindLocation(binding, record)
-        }
-
-        bindStartTime(binding, record.start)
-        startPickerDialog = null
-
-        bindFinishTime(binding, record.finish)
-        finishPickerDialog = null
-
-        bindDuration(binding, record.duration)
-        durationPickerDialog = null
-
-        binding.noteInput.setText(record.note)
-
-        setErrorLabel(errorMessage)
     }
 
-    private fun bindRecord(binding: TimeFormBinding, record: TimeRecord) {
-        record.note = binding.noteInput.text.toString()
-    }
-
-    private fun bindProjects(
-        binding: TimeFormBinding,
-        record: TimeRecord,
-        projects: List<Project>?
-    ) {
-        Timber.i("bindProjects record=$record projects=$projects")
-        val context: Context = binding.root.context
-        val options = addEmptyProject(projects).toTypedArray()
-        binding.projectInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
-        if (options.isNotEmpty()) {
-            binding.projectInput.setSelection(max(0, findProject(options, record.project)))
-            projectItemSelected(record.project)
-        }
-        binding.projectInput.requestFocus()
-    }
-
-    private fun bindLocation(binding: TimeFormBinding, record: TimeRecord) {
-        Timber.i("bindLocation record=$record")
-        val context: Context = binding.root.context
-        binding.locationIcon.isVisible = true
-        binding.locationInput.isVisible = true
-        val locations = buildLocations(context)
-        binding.locationInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, locations)
-        if (locations.isNotEmpty()) {
-            val index = findLocation(locations, record.location)
-            binding.locationInput.setSelection(max(0, index))
-            val selectedItem = if (index >= 0) locations[index] else viewModel.locationEmpty
-            locationItemSelected(selectedItem)
-        }
-    }
-
-    private fun pickStartTime() {
-        val cal = getCalendar(record.start)
-        // Server granularity is seconds.
-        cal.second = 0
-        cal.millis = 0
-        val year = cal.year
-        val month = cal.month
-        val dayOfMonth = cal.dayOfMonth
-        val hour = cal.hourOfDay
-        val minute = cal.minute
-        var picker = startPickerDialog
-        if (picker == null) {
-            val context = requireContext()
-            val listener = object : OnDateTimeSetListener {
-                override fun onDateTimeSet(
-                    view: DateTimePicker,
-                    year: Int,
-                    month: Int,
-                    dayOfMonth: Int,
-                    hourOfDay: Int,
-                    minute: Int
-                ) {
-                    setRecordStart(year, month, dayOfMonth, hourOfDay, minute)
-                }
-            }
-            picker = DateTimePickerDialog(
-                context,
-                listener,
-                year,
-                month,
-                dayOfMonth,
-                hour,
-                minute,
-                DateFormat.is24HourFormat(context)
-            )
-            startPickerDialog = picker
-        } else {
-            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
-        }
-        picker.show()
-    }
-
-    private fun pickFinishTime() {
-        val cal = getCalendar(record.finish)
-        // Server granularity is seconds.
-        cal.second = 0
-        cal.millis = 0
-        val year = cal.year
-        val month = cal.month
-        val dayOfMonth = cal.dayOfMonth
-        val hour = cal.hourOfDay
-        val minute = cal.minute
-        var picker = finishPickerDialog
-        if (picker == null) {
-            val context = requireContext()
-            val listener = object : OnDateTimeSetListener {
-                override fun onDateTimeSet(
-                    view: DateTimePicker,
-                    year: Int,
-                    month: Int,
-                    dayOfMonth: Int,
-                    hourOfDay: Int,
-                    minute: Int
-                ) {
-                    setRecordFinish(year, month, dayOfMonth, hourOfDay, minute)
-                }
-            }
-            picker = DateTimePickerDialog(
-                context,
-                listener,
-                year,
-                month,
-                dayOfMonth,
-                hour,
-                minute,
-                DateFormat.is24HourFormat(context)
-            )
-            finishPickerDialog = picker
-        } else {
-            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
-        }
-        picker.show()
-    }
-
-    private fun getCalendar(cal: Calendar?): Calendar {
-        return cal ?: Calendar.getInstance().apply {
-            year = record.date.year
-            month = record.date.month
-            dayOfMonth = record.date.dayOfMonth
-        }
-    }
-
-    private fun validateForm(record: TimeRecord): Boolean {
-        val projectInputView = binding.projectInput.selectedView as TextView
-        val taskInputView = binding.taskInput.selectedView as TextView
-        val locationInputView = binding.locationInput.selectedView as? TextView
-
-        projectInputView.error = null
-        projectInputView.isFocusableInTouchMode = false
-        taskInputView.error = null
-        taskInputView.isFocusableInTouchMode = false
-        binding.startInput.error = null
-        binding.startInput.isFocusableInTouchMode = false
-        binding.finishInput.error = null
-        binding.finishInput.isFocusableInTouchMode = false
-        binding.durationInput.error = null
-        binding.durationInput.isFocusableInTouchMode = false
-        locationInputView?.error = null
-        locationInputView?.isFocusableInTouchMode = false
-        setErrorLabel("")
-
+    private suspend fun validateForm(record: TimeRecord): Boolean {
         if (record.project.id == TikalEntity.ID_NONE) {
-            projectInputView.error = getText(R.string.error_project_field_required)
-            setErrorLabel(getText(R.string.error_project_field_required))
-            projectInputView.isFocusableInTouchMode = true
-            projectInputView.post { projectInputView.requestFocus() }
+            setErrorLabel(TimeFormError.Project(getString(R.string.error_project_field_required)))
             return false
         }
         if (record.task.id == TikalEntity.ID_NONE) {
-            taskInputView.error = getText(R.string.error_task_field_required)
-            setErrorLabel(getText(R.string.error_task_field_required))
-            taskInputView.isFocusableInTouchMode = true
-            taskInputView.post { taskInputView.requestFocus() }
+            setErrorLabel(TimeFormError.Task(getString(R.string.error_task_field_required)))
             return false
         }
-        if (BuildConfig.LOCATION && (record.location.id == TikalEntity.ID_NONE)) {
-            val locationInputView = locationInputView!!
-            locationInputView.error = getText(R.string.error_location_field_required)
-            setErrorLabel(getText(R.string.error_location_field_required))
-            locationInputView.isFocusableInTouchMode = true
-            locationInputView.post { locationInputView.requestFocus() }
-            return false
-        }
-        if (record.duration < DateUtils.MINUTE_IN_MILLIS) {
+        if (record.duration <= DateUtils.MINUTE_IN_MILLIS) {
             if (record.startTime == NEVER) {
-                binding.startInput.error = getText(R.string.error_start_field_required)
-                setErrorLabel(getText(R.string.error_start_field_required))
-                binding.startInput.isFocusableInTouchMode = true
-                binding.startInput.requestFocus()
+                if (record.duration == 0L) {
+                    setErrorLabel(TimeFormError.Start(getString(R.string.error_start_field_required)))
+                } else {
+                    setErrorLabel(TimeFormError.Duration(getString(R.string.error_finish_time_before_start_time)))
+                }
                 return false
             }
             if (record.finishTime == NEVER) {
-                binding.finishInput.error = getText(R.string.error_finish_field_required)
-                setErrorLabel(getText(R.string.error_finish_field_required))
-                binding.finishInput.isFocusableInTouchMode = true
-                binding.finishInput.requestFocus()
+                setErrorLabel(TimeFormError.Finish(getString(R.string.error_finish_field_required)))
                 return false
             }
 
-            binding.durationInput.error = getText(R.string.error_finish_time_before_start_time)
-            setErrorLabel(getText(R.string.error_finish_time_before_start_time))
-            binding.durationInput.isFocusableInTouchMode = true
-            binding.durationInput.requestFocus()
+            setErrorLabel(TimeFormError.Finish(getString(R.string.error_finish_time_before_start_time)))
             return false
         }
 
+        setErrorLabel("")
         return true
-    }
-
-    private fun filterTasks(project: Project) {
-        Timber.i("filterTasks $project")
-        val context = this.context ?: return
-        val options = addEmptyTask(project.tasks)
-        binding.taskInput.adapter =
-            ArrayAdapter(context, android.R.layout.simple_list_item_1, options)
-        binding.taskInput.setSelection(findTask(options, record.task))
-    }
-
-    private fun projectItemSelected(project: Project) {
-        Timber.i("projectItemSelected $project")
-        if (setRecordProject(project)) {
-            markRecordModified()
-        }
-        filterTasks(project)
-    }
-
-    private fun taskItemSelected(task: ProjectTask) {
-        Timber.i("taskItemSelected $task")
-        if (setRecordTask(task)) {
-            markRecordModified()
-        }
-    }
-
-    private fun locationItemSelected(location: LocationItem) {
-        Timber.d("locationItemSelected location=$location")
-        if (setRecordLocation(location.location)) {
-            markRecordModified()
-        }
     }
 
     override fun run() {
@@ -485,7 +207,7 @@ class TimeEditFragment : TimeFormFragment() {
 
         val args = arguments ?: Bundle()
         if (args.isEmpty) {
-            if (view?.visibility != View.VISIBLE) {
+            if (view?.isVisible.isFalse) {
                 return
             }
             // The parent fragment should be responsible for authentication.
@@ -493,6 +215,7 @@ class TimeEditFragment : TimeFormFragment() {
                 return
             }
         }
+        val record = this.record
         record.date.timeInMillis = args.getLong(EXTRA_DATE, record.date.timeInMillis)
 
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
@@ -515,9 +238,11 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun processPage(page: TimeEditPage) {
+    private suspend fun processPage(page: TimeEditPage) {
         viewModel.projectsData.value = page.projects
-        errorMessage = page.errorMessage ?: ""
+        val errorMessage = page.errorMessage
+        val error = if (errorMessage.isNullOrEmpty()) null else TimeFormError.General(errorMessage)
+        errorFlow.emit(error)
         setRecordValue(page.record)
     }
 
@@ -546,11 +271,14 @@ class TimeEditFragment : TimeFormFragment() {
         }
     }
 
-    private fun submit(): Boolean {
+    private fun submitRecord() {
+        lifecycleScope.launch(Dispatchers.IO) { submit() }
+    }
+
+    private suspend fun submit(): Boolean {
         val record = this.record
         Timber.i("submit $record")
 
-        bindRecord(binding, record)
         if (!validateForm(record)) {
             return false
         }
@@ -571,20 +299,26 @@ class TimeEditFragment : TimeFormFragment() {
     private fun submit(records: List<TimeRecord>) {
         val size = records.size
         if (size == 0) return
-        val lastIndex = size - 1
-        submit(records[0], true, 0 == lastIndex)
-        if (size > 1) {
-            for (i in 1 until size) {
-                submit(records[i], false, i == lastIndex)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val lastIndex = size - 1
+            submit(records[0], true, 0 == lastIndex)
+            if (size > 1) {
+                for (i in 1 until size) {
+                    submit(records[i], false, i == lastIndex)
+                }
             }
         }
     }
 
-    private fun submit(record: TimeRecord, isFirst: Boolean = true, isLast: Boolean = true) {
+    private suspend fun submit(
+        record: TimeRecord,
+        isFirst: Boolean = true,
+        isLast: Boolean = true
+    ) {
         Timber.i("submit $record first=$isFirst last=$isLast")
         // Show a progress spinner, and kick off a background task to submit the form.
         if (isFirst) {
-            showProgress(true)
+            showProgressMain(true)
             setErrorLabel("")
         }
 
@@ -600,52 +334,50 @@ class TimeEditFragment : TimeFormFragment() {
             durationValue = formatDuration(record.duration)
         }
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = if (record.id == TikalEntity.ID_NONE) {
-                    service.addTime(
-                        projectId = record.project.id,
-                        taskId = record.task.id,
-                        date = dateValue,
-                        start = startValue,
-                        finish = finishValue,
-                        duration = durationValue,
-                        note = record.note,
-                        locationId = record.location.id
-                    )
-                } else {
-                    service.editTime(
-                        id = record.id,
-                        projectId = record.project.id,
-                        taskId = record.task.id,
-                        date = dateValue,
-                        start = startValue,
-                        finish = finishValue,
-                        duration = durationValue,
-                        note = record.note,
-                        locationId = record.location.id
-                    )
-                }
-
-                if (record.id != TikalEntity.ID_NONE) {
-                    saveRecord(record)
-                }
-
-                if (isLast) {
-                    showProgressMain(false)
-                }
-
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processSubmittedPage(record, isLast, html)
-                } else {
-                    authenticateMain(true)
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error saving record: ${e.message}")
-                showProgressMain(false)
-                handleErrorMain(e)
+        try {
+            val response = if (record.id == TikalEntity.ID_NONE) {
+                service.addTime(
+                    projectId = record.project.id,
+                    taskId = record.task.id,
+                    date = dateValue,
+                    start = startValue,
+                    finish = finishValue,
+                    duration = durationValue,
+                    note = record.note,
+                    locationId = record.location.id
+                )
+            } else {
+                service.editTime(
+                    id = record.id,
+                    projectId = record.project.id,
+                    taskId = record.task.id,
+                    date = dateValue,
+                    start = startValue,
+                    finish = finishValue,
+                    duration = durationValue,
+                    note = record.note,
+                    locationId = record.location.id
+                )
             }
+
+            if (record.id != TikalEntity.ID_NONE) {
+                saveRecord(record)
+            }
+
+            if (isLast) {
+                showProgressMain(false)
+            }
+
+            if (isValidResponse(response)) {
+                val html = response.body()!!
+                processSubmittedPage(record, isLast, html)
+            } else {
+                authenticateMain(true)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error saving record: ${e.message}")
+            showProgressMain(false)
+            handleErrorMain(e)
         }
     }
 
@@ -677,13 +409,16 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun deleteRecord() {
-        lifecycleScope.launch { deleteRecord(record) }
+        val record = this.record
+        lifecycleScope.launch {
+            deleteRecord(record)
+        }
     }
 
     private suspend fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
-            //TODO record.start = null
+            record.start = null
             record.status = TaskRecordStatus.DELETED
             viewModel.onRecordEditDeleted(record)
             return
@@ -734,9 +469,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
-        val binding = _binding ?: return
-        bindRecord(binding, record)
+        val record = this.record
         outState.putParcelable(STATE_RECORD, record.toTimeRecordEntity())
     }
 
@@ -781,13 +514,13 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        if (view?.visibility == View.VISIBLE) {
+        if (view?.isVisible.isTrue) {
             menuInflater.inflate(R.menu.time_edit, menu)
         }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (view?.visibility != View.VISIBLE) {
+        if (view?.isVisible.isFalse) {
             return false
         }
         when (menuItem.itemId) {
@@ -797,7 +530,7 @@ class TimeEditFragment : TimeFormFragment() {
             }
 
             R.id.menu_submit -> {
-                submit()
+                submitRecord()
                 return true
             }
 
@@ -810,70 +543,18 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     @MainThread
-    private fun setErrorLabel(text: CharSequence) {
-        binding.errorLabel.text = text
-        binding.errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+    private suspend fun setErrorLabel(text: String) {
+        val error = if (text.isEmpty()) null else TimeFormError.General(text)
+        setErrorLabel(error)
     }
 
-    private fun setErrorLabelMain(text: CharSequence) {
-        runOnUiThread { setErrorLabel(text) }
+    @MainThread
+    private suspend fun setErrorLabel(error: TimeFormError?) {
+        errorFlow.emit(error)
     }
 
-    override fun onProjectsUpdated(projects: List<Project>) {
-        super.onProjectsUpdated(projects)
-        val binding = _binding ?: return
-        bindProjects(binding, record, projects)
-    }
-
-    override fun setRecordValue(record: TimeRecord) {
-        if ((record.id != this.record.id) || (record > this.record)) {
-            super.setRecordValue(record)
-        }
-    }
-
-    override fun setRecordStart(time: Calendar): Boolean {
-        if (super.setRecordStart(time)) {
-            bindStartTime(binding, time)
-            bindDuration(binding, record.duration)
-            return true
-        }
-        return false
-    }
-
-    private fun bindStartTime(binding: TimeFormBinding, time: Calendar?) {
-        val context: Context = binding.root.context
-        val timeMillis = time?.timeInMillis ?: NEVER
-        binding.startInput.text = if (timeMillis != NEVER)
-            DateUtils.formatDateTime(context, timeMillis, FORMAT_TIME_BUTTON)
-        else
-            ""
-        binding.startInput.error = null
-    }
-
-    override fun setRecordFinish(time: Calendar): Boolean {
-        if (super.setRecordFinish(time)) {
-            bindFinishTime(binding, time)
-            bindDuration(binding, record.duration)
-            return true
-        }
-        return false
-    }
-
-    private fun bindFinishTime(binding: TimeFormBinding, time: Calendar?) {
-        val context: Context = binding.root.context
-        val timeMillis = time?.timeInMillis ?: NEVER
-        binding.finishInput.text = if (timeMillis != NEVER)
-            DateUtils.formatDateTime(context, timeMillis, FORMAT_TIME_BUTTON)
-        else
-            ""
-        binding.finishInput.error = null
-    }
-
-    private fun markRecordModified() {
-        if (record.status == TaskRecordStatus.CURRENT) {
-            record.status = TaskRecordStatus.MODIFIED
-            record.version++
-        }
+    private fun setErrorLabelMain(text: String) {
+        lifecycleScope.launch(Dispatchers.Main) { setErrorLabel(text) }
     }
 
     /** Maybe we tried to submit the form and were asked to login first? */
@@ -891,68 +572,18 @@ class TimeEditFragment : TimeFormFragment() {
         preferences.stopRecord()
     }
 
-    private fun bindDuration(binding: TimeFormBinding, duration: Long) {
-        val context: Context = binding.root.context
-        binding.durationInput.text = if (duration > 0L) {
-            formatElapsedTime(context, timeFormatter, duration)
-        } else {
-            ""
-        }
-        binding.durationInput.error = null
+    private fun onRecordChanged(record: TimeRecord) {
+        markRecordModified(record)
+        this.record = record
     }
 
-    private fun pickDuration() {
-        val elapsedMs = record.duration
-        val cal = getCalendar(record.date)
-        // Server granularity is seconds.
-        cal.second = 0
-        cal.millis = 0
-        val year = cal.year
-        val month = cal.month
-        val dayOfMonth = cal.dayOfMonth
-        val hour = (elapsedMs / DateUtils.HOUR_IN_MILLIS).toInt()
-        val minute = ((elapsedMs % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
-        var picker = durationPickerDialog
-        if (picker == null) {
-            val context = requireContext()
-            val listener = object : OnDateTimeSetListener {
-                override fun onDateTimeSet(
-                    view: DateTimePicker,
-                    year: Int,
-                    month: Int,
-                    dayOfMonth: Int,
-                    hourOfDay: Int,
-                    minute: Int
-                ) {
-                    setRecordDuration(year, month, dayOfMonth, hourOfDay, minute)
-                }
-            }
-            picker = DateTimePickerDialog(
-                context,
-                listener,
-                year,
-                month,
-                dayOfMonth,
-                hour,
-                minute,
-                true
-            )
-            durationPickerDialog = picker
-        } else {
-            picker.updateDateTime(year, month, dayOfMonth, hour, minute)
+    private fun markRecordModified(record: TimeRecord) {
+        if (record.status == TaskRecordStatus.CURRENT) {
+            record.status = TaskRecordStatus.MODIFIED
+            record.version++
         }
-        picker.show()
     }
 
-    override fun setRecordDuration(date: Calendar): Boolean {
-        if (super.setRecordDuration(date)) {
-            bindStartTime(binding, record.start)
-            bindFinishTime(binding, record.finish)
-            bindDuration(binding, record.duration)
-            return true
-        }
-        return false
-    }
 
     companion object {
         const val EXTRA_DATE = TimeFormFragment.EXTRA_DATE

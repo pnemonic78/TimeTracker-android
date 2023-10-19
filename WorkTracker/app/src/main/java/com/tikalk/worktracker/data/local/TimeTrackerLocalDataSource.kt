@@ -360,10 +360,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
             val projectsWithTasks = loadProjectsWithTasks(db)
             populateProjects(projectsWithTasks, projects)
 
-            val page = PuncherPage(
-                record,
-                projects
-            )
+            val page = PuncherPage(record, projects)
             emit(page)
         }
     }

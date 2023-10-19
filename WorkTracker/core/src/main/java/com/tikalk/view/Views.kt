@@ -33,6 +33,7 @@
 package com.tikalk.view
 
 import android.view.View
+import androidx.core.view.isVisible
 import com.tikalk.core.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ import kotlinx.coroutines.cancel
 fun View.showAnimated(visible: Boolean) {
     val shortAnimTime = resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
     val view = this
-    view.visibility = if (visible) View.VISIBLE else View.GONE
+    view.isVisible = visible
     view.animate()
         .setDuration(shortAnimTime)
         .alpha(if (visible) 1f else 0f)

@@ -72,13 +72,13 @@ import com.tikalk.worktracker.time.dayOfMonth
 import com.tikalk.worktracker.time.millis
 import com.tikalk.worktracker.time.month
 import com.tikalk.worktracker.time.year
+import java.util.Calendar
+import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Calendar
-import kotlin.math.max
 
 class ReportFormFragment : TimeFormFragment() {
 
@@ -263,11 +263,10 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.finishInput.error = null
 
         val custom = (period == ReportTimePeriod.CUSTOM)
-        val visibility = if (custom) View.VISIBLE else View.GONE
-        bindingForm.startIcon.visibility = visibility
-        bindingForm.startInput.visibility = visibility
-        bindingForm.finishIcon.visibility = visibility
-        bindingForm.finishInput.visibility = visibility
+        bindingForm.startIcon.isVisible = custom
+        bindingForm.startInput.isVisible = custom
+        bindingForm.finishIcon.isVisible = custom
+        bindingForm.finishInput.isVisible = custom
     }
 
     override fun run() {
@@ -549,7 +548,7 @@ class ReportFormFragment : TimeFormFragment() {
     private fun setErrorLabel(text: CharSequence) {
         val bindingForm = _binding?.form ?: return
         bindingForm.errorLabel.text = text
-        bindingForm.errorLabel.visibility = if (text.isBlank()) View.GONE else View.VISIBLE
+        bindingForm.errorLabel.isVisible = text.isNotBlank()
     }
 
     override fun setRecordValue(record: TimeRecord) {

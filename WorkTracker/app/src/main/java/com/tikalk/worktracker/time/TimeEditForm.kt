@@ -33,85 +33,82 @@
 package com.tikalk.worktracker.time
 
 import android.content.res.Configuration
-import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
-import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.delay
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun PuncherForm(
+fun TimeEditForm(
+    modifier: Modifier = Modifier,
     projectsFlow: Flow<List<Project>>,
-    taskEmptyFlow: Flow<ProjectTask>,
+    taskEmpty: ProjectTask = ProjectTask.EMPTY,
     recordFlow: Flow<TimeRecord>,
-    onStartClick: UnitCallback,
-    onStopClick: UnitCallback
+    errorFlow: Flow<TimeFormError?>,
+    onRecordChanged: RecordCallback
 ) {
     val projectsState = projectsFlow.collectAsState(initial = listOf(Project.EMPTY))
-    val taskEmptyState = taskEmptyFlow.collectAsState(initial = ProjectTask.EMPTY)
     val recordState = recordFlow.collectAsState(initial = TimeRecord.EMPTY)
-    PuncherForm(
+    val errorState = errorFlow.collectAsState(initial = null)
+
+    TimeEditForm(
+        modifier,
         projectsState.value,
-        taskEmptyState.value,
+        taskEmpty,
         recordState.value,
-        onStartClick,
-        onStopClick
+        errorState.value,
+        onRecordChanged
     )
 }
 
 @Composable
-fun PuncherForm(
+fun TimeEditForm(
+    modifier: Modifier = Modifier,
     projects: List<Project>,
     taskEmpty: ProjectTask,
     record: TimeRecord,
-    onStartClick: UnitCallback,
-    onStopClick: UnitCallback
+    error: TimeFormError? = null,
+    onRecordChanged: RecordCallback
 ) {
     val paddingTop = dimensionResource(id = R.dimen.form_marginTop)
     var projectSelected by remember { mutableStateOf(Project.EMPTY) }
     var taskSelected by remember { mutableStateOf(ProjectTask.EMPTY) }
-    val isTimerStopped = (record.startTime <= TimeRecord.NEVER)
+    val isTimerStopped = (record.startTime <= NEVER)
+    var startTime by remember { mutableLongStateOf(NEVER) }
+    var finishTime by remember { mutableLongStateOf(NEVER) }
+    var duration by remember { mutableLongStateOf(0L) }
+    var note by remember { mutableStateOf("") }
 
     projectSelected = record.project
     taskSelected = record.task
+    startTime = record.startTime
+    finishTime = record.finishTime
+    duration = record.duration
+    note = record.note
 
-    Card(elevation = CardDefaults.elevatedCardElevation()) {
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.elevatedCardElevation()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,9 +117,11 @@ fun PuncherForm(
             ProjectSpinner(
                 projects = projects,
                 project = projectSelected,
-                enabled = isTimerStopped
+                enabled = isTimerStopped,
+                error = error
             ) {
                 record.project = it
+                onRecordChanged(record)
                 projectSelected = it
                 taskSelected = ProjectTask.EMPTY
             }
@@ -131,86 +130,65 @@ fun PuncherForm(
                 tasks = projectSelected.tasks,
                 taskEmpty = taskEmpty,
                 task = taskSelected,
-                enabled = isTimerStopped
+                enabled = isTimerStopped,
+                error = error
             ) {
                 record.task = it
+                onRecordChanged(record)
                 taskSelected = it
             }
-            if (isTimerStopped) {
-                PuncherStartButton(
-                    modifier = Modifier.padding(top = paddingTop),
-                    record = record,
-                    onClick = onStartClick
-                )
-            } else {
-                PuncherTimerRow(
-                    modifier = Modifier.padding(top = paddingTop),
-                    record = record,
-                    onClick = onStopClick
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PuncherStartButton(modifier: Modifier = Modifier, record: TimeRecord, onClick: UnitCallback) {
-    Button(
-        modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_start)),
-        onClick = onClick,
-        enabled = !record.project.isEmpty() && !record.task.isEmpty()
-    ) {
-        Text(text = stringResource(id = R.string.action_start))
-        Icon(
-            modifier = Modifier.padding(start = 8.dp),
-            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_play_arrow)),
-            contentDescription = ""
-        )
-    }
-}
-
-@Composable
-fun PuncherStopButton(modifier: Modifier = Modifier, onClick: UnitCallback) {
-    Button(
-        modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_stop)),
-        onClick = onClick,
-    ) {
-        Text(text = stringResource(id = R.string.action_stop))
-        Icon(
-            modifier = Modifier.padding(start = 8.dp),
-            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_stop)),
-            contentDescription = ""
-        )
-    }
-}
-
-@Composable
-fun PuncherTimerRow(modifier: Modifier = Modifier, record: TimeRecord, onClick: UnitCallback) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    val elapsedSeconds = TimeUnit.MILLISECONDS.toSeconds(now - record.startTime)
-
-    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        PuncherStopButton(
-            modifier = Modifier.weight(3f),
-            onClick = onClick
-        )
-        Text(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .weight(2f),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            text = DateUtils.formatElapsedTime(elapsedSeconds)
-        )
-    }
-
-    LaunchedEffect(key1 = record) {
-        while (true) {
-            delay(1000)
-            now = System.currentTimeMillis()
+            StartTimePickerButton(
+                modifier = Modifier.padding(top = paddingTop),
+                record = record,
+                time = startTime,
+                onTimeSelected = { time ->
+                    record.date = time.toCalendar()
+                    record.startTime = time
+                    onRecordChanged(record)
+                    startTime = time
+                    duration = record.duration
+                },
+                error = error
+            )
+            FinishTimePickerButton(
+                modifier = Modifier.padding(top = paddingTop),
+                record = record,
+                time = finishTime,
+                onTimeSelected = { time ->
+                    record.finishTime = time
+                    onRecordChanged(record)
+                    finishTime = time
+                    duration = record.duration
+                },
+                error = error
+            )
+            DurationPickerButton(
+                modifier = Modifier.padding(top = paddingTop),
+                record = record,
+                duration = duration,
+                onDurationSelected = { time ->
+                    record.setDurationDateTime(time)
+                    onRecordChanged(record)
+                    startTime = NEVER
+                    finishTime = NEVER
+                    duration = record.duration
+                },
+                error = error
+            )
+            NoteText(
+                modifier = Modifier.padding(top = paddingTop),
+                text = note,
+                onChanged = {
+                    record.note = it
+                    onRecordChanged(record)
+                    note = it
+                },
+                error = error
+            )
+            ErrorText(
+                modifier = Modifier.padding(top = paddingTop),
+                text = error?.message
+            )
         }
     }
 }
@@ -222,10 +200,17 @@ private fun ThisPreview() {
     val projects = listOf(Project("Project #1"), Project("Project #2"))
     val record = TimeRecord.EMPTY
     record.startTime = System.currentTimeMillis() - 10000
-    val onStartClick = { println("Start clicked!") }
-    val onStopClick = { println("Stop clicked!") }
+    val onRecordChanged: RecordCallback = {
+        println("Record changed: $it")
+    }
 
     TikalTheme {
-        PuncherForm(projects, ProjectTask.EMPTY, record, onStartClick, onStopClick)
+        TimeEditForm(
+            Modifier,
+            projects,
+            ProjectTask.EMPTY,
+            record,
+            onRecordChanged = onRecordChanged
+        )
     }
 }

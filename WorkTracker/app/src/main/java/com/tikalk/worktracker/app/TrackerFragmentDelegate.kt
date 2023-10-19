@@ -62,6 +62,10 @@ class TrackerFragmentDelegate(
         firstRun = (savedInstanceState == null)
     }
 
+    fun onStop() {
+        firstRun = false
+    }
+
     fun authenticateMain(submit: Boolean = true) {
         Timber.i("authenticateMain submit=$submit")
         fragment.runOnUiThread { callback.authenticate(submit) }
