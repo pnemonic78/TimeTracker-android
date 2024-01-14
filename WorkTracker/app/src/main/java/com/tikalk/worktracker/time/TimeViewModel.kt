@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.time
 
+import androidx.lifecycle.viewModelScope
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.Location
@@ -41,16 +42,26 @@ import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.report.LocationItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class TimeViewModel @Inject constructor(
     services: TrackerServices
 ) : TrackerViewModel(services) {
 
-    val projectsData = MutableStateFlow<List<Project>>(emptyList())
+    private val _projectsFlow = MutableStateFlow<List<Project>>(emptyList())
+    val projectsFlow: StateFlow<List<Project>> = _projectsFlow
+    var projects: List<Project>
+        get() = projectsFlow.value
+        set(value) {
+            viewModelScope.launch {
+                _projectsFlow.emit(value)
+            }
+        }
     var projectEmpty: Project = Project.EMPTY.copy(true)
     var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
         ?: ProjectTask.EMPTY.copy()
@@ -71,7 +82,11 @@ class TimeViewModel @Inject constructor(
      * @param last is this the last record in a series that was submitted?
      * @param responseHtml the response HTML.
      */
-    suspend fun onRecordEditSubmitted(record: TimeRecord, last: Boolean = true, responseHtml: String = "") {
+    suspend fun onRecordEditSubmitted(
+        record: TimeRecord,
+        last: Boolean = true,
+        responseHtml: String = ""
+    ) {
         _edited.emit(RecordEditData(record, last, responseHtml))
     }
 

@@ -41,7 +41,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
-import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -53,70 +52,78 @@ import com.tikalk.worktracker.report.toLocationItem
 import java.util.Calendar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-abstract class TimeFormFragment : InternetFragment(), Runnable {
+abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
 
-    protected val recordFlow = MutableStateFlow(TimeRecord.EMPTY.copy())
-    var record: TimeRecord
+    override val viewModel by activityViewModels<TimeViewModel>()
+
+    private val _recordFlow = MutableStateFlow(createEmptyRecord())
+    protected val recordFlow: StateFlow<R> = _recordFlow
+    var record: R
         get() = recordFlow.value
         set(value) {
-            recordFlow.tryEmit(value)
+            lifecycleScope.launch {
+                delay(100)
+                _recordFlow.emit(value)
+            }
         }
-    override val viewModel by activityViewModels<TimeViewModel>()
-    protected val projectsFlow = MutableStateFlow<List<Project>>(emptyList())
+
+    @Suppress("UNCHECKED_CAST")
+    protected open fun createEmptyRecord(): R {
+        return TimeRecord.EMPTY.copy() as R
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        projectsFlow.tryEmit(getProjects())
+        viewModel.projects = getProjects()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launch {
-            viewModel.projectsData.collect { projects ->
+            viewModel.projectsFlow.collect { projects ->
                 onProjectsUpdated(projects)
             }
         }
     }
 
-    abstract fun populateForm(record: TimeRecord)
+    abstract fun populateForm(record: R)
 
     @MainThread
-    abstract fun bindForm(record: TimeRecord)
+    abstract fun bindForm(record: R)
 
     protected fun markFavorite() {
         markFavorite(record)
     }
 
-    protected open fun markFavorite(record: TimeRecord) {
+    protected open fun markFavorite(record: R) {
         Timber.i("markFavorite $record")
         preferences.setFavorite(record)
         Toast.makeText(
             requireContext(),
-            getString(R.string.favorite_marked, record.project.name, record.task.name),
+            getString(
+                com.tikalk.worktracker.R.string.favorite_marked,
+                record.project.name,
+                record.task.name
+            ),
             Toast.LENGTH_LONG
         ).show()
     }
 
     @MainThread
-    protected fun populateAndBind() {
-        val record = this.record
+    protected fun populateAndBind(record: R) {
         Timber.i("populateAndBind record=$record")
         populateForm(record)
         bindForm(record)
     }
 
-    private var rid = 0
-
-    protected open fun setRecordValue(record: TimeRecord) {
+    protected open fun setRecordValue(record: R) {
         Timber.d("setRecordValue record=$record")
-        lifecycleScope.launch {
-            delay(100)
-            recordFlow.emit(record)
-        }
+        this.record = record
     }
 
     protected open fun setRecordProject(project: Project): Boolean {
@@ -223,16 +230,16 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun onProjectsUpdated(projects: List<Project>) {
-        projectsFlow.tryEmit(projects)
-        val record = this.record
-        populateForm(record)
-        bindForm(record)
+        lifecycleScope.launch {
+            val record = this@TimeFormFragment.record
+            populateAndBind(record)
+        }
     }
 
     protected fun applyFavorite() {
         val projectFavorite = preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
-            val projects = viewModel.projectsData.value
+            val projects = viewModel.projects
             val project = projects.find { it.id == projectFavorite } ?: record.project
             setRecordProject(project)
 
@@ -250,9 +257,10 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected open fun getEmptyProjectName() =
-        requireContext().getString(R.string.project_name_select)
+        requireContext().getString(com.tikalk.worktracker.R.string.project_name_select)
 
-    protected open fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
+    protected open fun getEmptyTaskName() =
+        requireContext().getString(com.tikalk.worktracker.R.string.task_name_select)
 
     protected fun addEmptyProject(projects: List<Project>?): List<Project> {
         val projectEmptyFind = projects?.find { it.isEmpty() }
@@ -284,7 +292,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
     }
 
     protected fun getProjects(): List<Project> {
-        return addEmptyProject(viewModel.projectsData.value)
+        return addEmptyProject(viewModel.projects)
     }
 
     protected fun getEmptyTask(): ProjectTask {
@@ -300,8 +308,10 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
             items.add(value.toLocationItem(context))
         }
 
-        val select =
-            LocationItem(items[0].location, context.getString(R.string.location_label_select))
+        val select = LocationItem(
+            items[0].location,
+            context.getString(com.tikalk.worktracker.R.string.location_label_select)
+        )
         items[0] = select
         viewModel.locationEmpty = select
 
@@ -318,7 +328,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
-        const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".form.LOCATION"
+        const val EXTRA_DURATION = BuildConfig.APPLICATION_ID + ".form.DURATION"
         const val EXTRA_STOP = BuildConfig.APPLICATION_ID + ".form.STOP"
     }
 }

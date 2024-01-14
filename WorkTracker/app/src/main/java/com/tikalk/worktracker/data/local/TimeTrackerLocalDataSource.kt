@@ -164,11 +164,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
             val projectsWithTasks = loadProjectsWithTasks(db)
             populateProjects(projectsWithTasks, projects)
 
-            val page = ReportFormPage(
-                filter,
-                projects,
-                errorMessage
-            )
+            val page = ReportFormPage(filter, projects, errorMessage)
             emit(page)
         }
     }
@@ -204,11 +200,7 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
             val totals = calculateTotals(records)
 
-            val page = ReportPage(
-                filter,
-                records,
-                totals
-            )
+            val page = ReportPage(filter, records, totals)
             emit(page)
         }
     }

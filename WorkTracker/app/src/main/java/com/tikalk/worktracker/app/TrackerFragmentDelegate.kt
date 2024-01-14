@@ -58,6 +58,10 @@ class TrackerFragmentDelegate(
         private set
     val internet = InternetFragmentDelegate(callback)
 
+    fun markFirst() {
+        firstRun = true
+    }
+
     fun onCreate(savedInstanceState: Bundle?) {
         firstRun = (savedInstanceState == null)
     }

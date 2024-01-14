@@ -49,7 +49,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findFragmentByClass
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.compose.TikalTheme
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
@@ -220,7 +220,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private suspend fun processPage(page: TimeListPage) {
-        viewModel.projectsData.emit(page.projects.sortedBy { it.name })
+        viewModel.projects = page.projects.sortedBy { it.name }
 
         dateData.emit(page.date.copy())
 
@@ -254,7 +254,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_timeList_to_login, this)
@@ -317,14 +317,13 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
             Timber.i("editRecord editor.currentDestination=${currentDestination.label}")
             if (currentDestination.id == R.id.puncherFragment) {
                 Bundle().apply {
-                    putLong(TimeEditFragment.EXTRA_DATE, record.date.timeInMillis)
-                    putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-                    putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-                    putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
-                    putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                    putLong(TimeEditFragment.EXTRA_DATE, record.dateTime)
                     putLong(TimeEditFragment.EXTRA_DURATION, record.duration)
+                    putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                    putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
                     putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-                    putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
+                    putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                    putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
                     putBoolean(TimeEditFragment.EXTRA_STOP, isTimer)
                     navController.navigate(R.id.action_puncher_to_timeEdit, this)
                 }
@@ -531,6 +530,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
         return super.onMenuItemSelected(menuItem)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun findTopFormFragment(): TimeFormFragment<TimeRecord> {
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java) as TimeFormFragment<TimeRecord>
     }

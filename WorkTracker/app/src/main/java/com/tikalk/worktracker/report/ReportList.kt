@@ -34,15 +34,14 @@ package com.tikalk.worktracker.report
 
 import android.content.res.Configuration
 import android.text.format.DateUtils
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
+import com.tikalk.widget.ContentPaddingList
 import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
@@ -50,7 +49,7 @@ import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.times
-import com.tikalk.worktracker.time.OnRecordCallback
+import com.tikalk.worktracker.time.RecordCallback
 import com.tikalk.worktracker.time.TimeItem
 import java.util.Calendar
 import kotlinx.coroutines.flow.Flow
@@ -59,7 +58,8 @@ import kotlinx.coroutines.flow.Flow
 fun ReportList(
     modifier: Modifier = Modifier,
     itemsFlow: Flow<List<TimeRecord>>,
-    filterFlow: Flow<ReportFilter>
+    filterFlow: Flow<ReportFilter>,
+    onClick: RecordCallback = {}
 ) {
     val itemsState = itemsFlow.collectAsState(initial = emptyList())
     val items = itemsState.value
@@ -67,25 +67,24 @@ fun ReportList(
     val filterState = filterFlow.collectAsState(initial = ReportFilter())
     val filter = filterState.value
 
-    ReportList(modifier = modifier, items = items, filter = filter)
+    ReportList(modifier = modifier, items = items, filter = filter, onClick = onClick)
 }
 
 @Composable
 fun ReportList(
     modifier: Modifier = Modifier,
     items: List<TimeRecord>,
-    filter: ReportFilter
+    filter: ReportFilter,
+    onClick: RecordCallback = {}
 ) {
     if (items.isEmpty()) {
         EmptyListScreen()
         return
     }
 
-    val onClick: OnRecordCallback = {}
-
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = ContentPaddingList(),
         state = rememberLazyListState()
     ) {
         items(count = items.size) { index ->

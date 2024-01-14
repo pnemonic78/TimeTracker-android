@@ -46,20 +46,24 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import com.tikalk.worktracker.time.TimeEditFragment
+import com.tikalk.worktracker.time.TimeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
@@ -69,6 +73,7 @@ import timber.log.Timber
 class ReportFragment : InternetFragment() {
 
     override val viewModel by viewModels<ReportViewModel>()
+    private val timeViewModel by activityViewModels<TimeViewModel>()
 
     private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
@@ -76,6 +81,24 @@ class ReportFragment : InternetFragment() {
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
     private val totalsData = MutableStateFlow(ReportTotals())
     private val filterData = MutableStateFlow(ReportFilter())
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        lifecycleScope.launch {
+            viewModel.onEdit.collect { record ->
+                if (record != null) {
+                    viewModel.clearEvents()
+                    editRecord(record)
+                }
+            }
+        }
+        lifecycleScope.launch {
+            timeViewModel.edited.collect { data ->
+                if (data != null) onRecordEditSubmitted(data.record)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,7 +116,8 @@ class ReportFragment : InternetFragment() {
                 ReportResults(
                     itemsFlow = recordsData,
                     filterFlow = filterData,
-                    totalsFlow = totalsData
+                    totalsFlow = totalsData,
+                    onClick = ::onRecordClick
                 )
             }
         }
@@ -107,7 +131,7 @@ class ReportFragment : InternetFragment() {
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_reportList_to_login, this)
@@ -343,6 +367,36 @@ class ReportFragment : InternetFragment() {
             menuItem.isEnabled = false
             showError(e)
         }
+    }
+
+    private fun onRecordClick(record: TimeRecord) {
+        viewModel.maybeEditRecord(lifecycleScope, record)
+    }
+
+    private fun editRecord(record: TimeRecord) {
+        val navController = findNavController()
+        Timber.i("editRecord record=$record currentDestination=${navController.currentDestination?.label}")
+        if (!navController.isDestination(R.id.reportFragment)) return
+        Bundle().apply {
+            putLong(TimeEditFragment.EXTRA_DATE, record.dateTime)
+            putLong(TimeEditFragment.EXTRA_DURATION, record.duration)
+            putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+            putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            navController.navigate(R.id.action_reportList_to_timeEdit, this)
+        }
+    }
+
+    private fun onRecordEditSubmitted(record: TimeRecord) {
+        Timber.i("record submitted: $record")
+        if (record.id == TikalEntity.ID_NONE) return
+        // Remove the "edit form" and update the list.
+        val navController = findNavController()
+        navController.popBackStack()
+        delegate.markFirst()
+        run()
     }
 
     companion object {

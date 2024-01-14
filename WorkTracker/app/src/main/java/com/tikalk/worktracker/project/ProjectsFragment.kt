@@ -42,7 +42,7 @@ import androidx.annotation.MainThread
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.worktracker.R
@@ -97,7 +97,7 @@ class ProjectsFragment : InternetFragment() {
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_projects_to_login, this)

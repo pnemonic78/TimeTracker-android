@@ -48,6 +48,7 @@ import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.times
+import com.tikalk.worktracker.time.RecordCallback
 import java.util.Calendar
 import kotlinx.coroutines.flow.Flow
 
@@ -55,7 +56,8 @@ import kotlinx.coroutines.flow.Flow
 fun ReportResults(
     itemsFlow: Flow<List<TimeRecord>>,
     filterFlow: Flow<ReportFilter>,
-    totalsFlow: Flow<ReportTotals>
+    totalsFlow: Flow<ReportTotals>,
+    onClick: RecordCallback = {}
 ) {
     val itemsState = itemsFlow.collectAsState(initial = emptyList())
     val items = itemsState.value
@@ -66,19 +68,22 @@ fun ReportResults(
     val totalsState = totalsFlow.collectAsState(initial = ReportTotals())
     val totals = totalsState.value
 
-    ReportResults(items, filter, totals)
+    ReportResults(items, filter, totals, onClick)
 }
 
 @Composable
 fun ReportResults(
     items: List<TimeRecord>,
     filter: ReportFilter,
-    totals: ReportTotals
+    totals: ReportTotals,
+    onClick: RecordCallback = {}
 ) {
     Column {
         ReportList(
             modifier = Modifier.weight(1f),
-            items = items, filter = filter
+            items = items,
+            filter = filter,
+            onClick = onClick
         )
         Divider()
         ReportTotalsFooter(

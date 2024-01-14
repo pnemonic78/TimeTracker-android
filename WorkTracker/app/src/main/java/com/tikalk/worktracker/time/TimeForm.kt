@@ -448,7 +448,7 @@ private fun getCalendar(record: TimeRecord, time: Long = NEVER): Calendar {
         timeInMillis = if (time != NEVER) {
             time
         } else {
-            record.date.timeInMillis
+            record.dateTime
         }
         // Server granularity is seconds.
         second = 0

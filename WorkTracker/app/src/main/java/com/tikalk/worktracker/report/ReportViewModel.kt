@@ -34,10 +34,65 @@ package com.tikalk.worktracker.report
 
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.TimeRecord
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ReportViewModel @Inject constructor(
     services: TrackerServices
-) : TrackerViewModel(services)
+) : TrackerViewModel(services) {
+
+    private val _onEdit = MutableStateFlow<TimeRecord?>(null)
+    val onEdit: Flow<TimeRecord?> = _onEdit
+
+    fun maybeEditRecord(scope: CoroutineScope, record: TimeRecord) {
+        scope.launch(Dispatchers.IO) {
+            notifyLoading(true)
+
+            val projectName = record.project.name
+            val taskName = record.task.name
+            val date = record.date
+            val start = record.start
+            val duration = record.duration
+
+            // fetch the page from the server.
+            var hasCandidate = false
+            services.dataSource.timeListPage(record.date, true)
+                .onCompletion {
+                    notifyLoading(false)
+                }
+                .collect { page ->
+                    if (hasCandidate) return@collect
+                    val candidate = page.records.firstOrNull { pageRecord ->
+                        (pageRecord.id != TikalEntity.ID_NONE) &&
+                            (pageRecord.project.name == projectName) &&
+                            (pageRecord.task.name == taskName) &&
+                            (pageRecord.date == date) &&
+                            (pageRecord.start == start) &&
+                            (pageRecord.duration == duration)
+                    }
+                    if (candidate != null) {
+                        hasCandidate = true
+                        _onEdit.emit(candidate)
+                    }
+                }
+        }
+    }
+
+    fun clearEvents() {
+        _onEdit.value = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearEvents()
+    }
+}

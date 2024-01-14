@@ -175,6 +175,14 @@ var Calendar.dayOfWeek: Int
         set(Calendar.DAY_OF_WEEK, value)
     }
 
+var Calendar.dayOfYear: Int
+    get() {
+        return get(Calendar.DAY_OF_YEAR)
+    }
+    set(value) {
+        set(Calendar.DAY_OF_YEAR, value)
+    }
+
 var Calendar.hourOfDay: Int
     get() {
         return get(Calendar.HOUR_OF_DAY)

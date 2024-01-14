@@ -42,6 +42,7 @@ import com.tikalk.worktracker.time.hourOfDay
 import com.tikalk.worktracker.time.isSameDay
 import com.tikalk.worktracker.time.millis
 import com.tikalk.worktracker.time.minute
+import com.tikalk.worktracker.time.second
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
 import com.tikalk.worktracker.time.toCalendar
@@ -101,6 +102,11 @@ open class TimeRecord(
             }
         }
 
+    var dateTime: Long
+        get() = date.timeInMillis
+        set(value) {
+            date.timeInMillis = value
+        }
     var startTime: Long
         get() = start?.timeInMillis ?: NEVER
         set(value) {
@@ -117,9 +123,7 @@ open class TimeRecord(
         }
 
     fun isEmpty(): Boolean {
-        return project.isEmpty()
-            || task.isEmpty()
-            || ((duration == 0L) && (start == null))
+        return project.isEmpty() || task.isEmpty() || (duration == 0L)
     }
 
     open fun copy(): TimeRecord {
@@ -142,6 +146,25 @@ open class TimeRecord(
         date: Calendar = this.date,
         start: Calendar? = this.start,
         finish: Calendar? = this.finish
+    ): TimeRecord {
+        return TimeRecord(
+            id = id,
+            project = project,
+            task = task,
+            date = date,
+            start = start,
+            finish = finish,
+            duration = duration,
+            note = note,
+            cost = cost,
+            status = status,
+            location = location
+        )
+    }
+
+    fun copy(
+        date: Calendar = this.date,
+        duration: Long = this.duration
     ): TimeRecord {
         return TimeRecord(
             id = id,
@@ -269,23 +292,24 @@ open class TimeRecord(
 }
 
 fun TimeRecord.split(): List<TimeRecord> {
-    val results = ArrayList<TimeRecord>()
+    val results = mutableListOf<TimeRecord>()
 
     if (isEmpty()) return results
     var duration = this.duration
-    if (duration < DateUtils.MINUTE_IN_MILLIS) return results
+    if (duration <= DateUtils.MINUTE_IN_MILLIS) return results
+    val isDurationOnly = (start == null) || (finish == null)
 
-    if (start == null) {
-        results.add(this)
-        return results
+    // Granularity is day
+    var date = this.date.copy().apply {
+        millis = 0
+        second = 0
+        minute = 0
+        hourOfDay = 0
     }
-    if (finish == null) {
-        finishTime = startTime + duration
+    val start = start ?: date
+    val finish = finish ?: date.copy().apply {
+        add(Calendar.MILLISECOND, duration.toInt())
     }
-
-    var date = this.date
-    val start = start ?: return results
-    val finish = finish ?: return results
 
     if (start.isSameDay(finish)) {
         results.add(this)
@@ -294,8 +318,13 @@ fun TimeRecord.split(): List<TimeRecord> {
         val startFirst = start
         val finishFirst = startFirst.copy()
         finishFirst.setToEndOfDay()
-        results.add(this.copy(date = date, start = startFirst, finish = finishFirst))
-        duration -= finishFirst.timeInMillis - startFirst.timeInMillis + 1L
+        val durationFirst = finishFirst.timeInMillis - startFirst.timeInMillis + 1L
+        if (isDurationOnly) {
+            results.add(this.copy(date = date, duration = durationFirst))
+        } else {
+            results.add(this.copy(date = date, start = startFirst, finish = finishFirst))
+        }
+        duration -= durationFirst
 
         // Intermediate days.
         var startDay = startFirst
@@ -303,22 +332,32 @@ fun TimeRecord.split(): List<TimeRecord> {
         while (duration >= DateUtils.DAY_IN_MILLIS) {
             date = date.copy()
             date.add(Calendar.DAY_OF_MONTH, 1)  // Next day
-            startDay = startDay.copy()
-            startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
-            startDay.setToStartOfDay()
-            finishDay = startDay.copy()
-            finishDay.setToEndOfDay()
-            results.add(this.copy(date = date, start = startDay, finish = finishDay))
+            if (isDurationOnly) {
+                results.add(this.copy(date = date, duration = DateUtils.DAY_IN_MILLIS))
+            } else {
+                startDay = startDay.copy()
+                startDay.add(Calendar.DAY_OF_MONTH, 1)  // Next day
+                startDay.setToStartOfDay()
+                finishDay = startDay.copy()
+                finishDay.setToEndOfDay()
+                results.add(this.copy(date = date, start = startDay, finish = finishDay))
+            }
             duration -= DateUtils.DAY_IN_MILLIS
         }
 
         // The last day.
-        date = date.copy()
-        date.add(Calendar.DAY_OF_MONTH, 1)  // Next day
-        val startLast = finish.copy()
-        val finishLast = finish
-        startLast.setToStartOfDay()
-        results.add(this.copy(date = date, start = startLast, finish = finishLast))
+        if (duration > DateUtils.MINUTE_IN_MILLIS) {
+            date = date.copy()
+            date.add(Calendar.DAY_OF_MONTH, 1)  // Next day
+            if (isDurationOnly) {
+                results.add(this.copy(date = date, duration = duration))
+            } else {
+                val startLast = finish.copy()
+                val finishLast = finish
+                startLast.setToStartOfDay()
+                results.add(this.copy(date = date, start = startLast, finish = finishLast))
+            }
+        }
     }
 
     return results

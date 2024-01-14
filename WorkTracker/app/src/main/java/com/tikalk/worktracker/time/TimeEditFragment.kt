@@ -45,10 +45,11 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.compose.TikalTheme
-import com.tikalk.core.databinding.ComposeFullBinding
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
+import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.db.TimeRecordEntity
@@ -56,7 +57,6 @@ import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.lang.isFalse
 import com.tikalk.worktracker.lang.isTrue
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.TaskRecordStatus
@@ -73,9 +73,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class TimeEditFragment : TimeFormFragment() {
+class TimeEditFragment : TimeFormFragment<TimeRecord>() {
 
-    private var _binding: ComposeFullBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
     private val recordsToSubmit = CopyOnWriteArrayList<TimeRecord>()
@@ -86,7 +86,7 @@ class TimeEditFragment : TimeFormFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = ComposeFullBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -95,14 +95,15 @@ class TimeEditFragment : TimeFormFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                val taskEmpty = getEmptyTask()
-                TimeEditForm(
-                    projectsFlow = projectsFlow,
-                    taskEmpty = taskEmpty,
-                    recordFlow = recordFlow,
-                    errorFlow = errorFlow,
-                    onRecordChanged = ::onRecordChanged
-                )
+                PaddedBox {
+                    TimeEditForm(
+                        projectsFlow = viewModel.projectsFlow,
+                        taskEmpty = getEmptyTask(),
+                        recordFlow = recordFlow,
+                        errorFlow = errorFlow,
+                        onRecordChanged = ::onRecordChanged
+                    )
+                }
             }
         }
     }
@@ -125,7 +126,7 @@ class TimeEditFragment : TimeFormFragment() {
                 }
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
-                    val projects = viewModel.projectsData.value
+                    val projects = viewModel.projects
                     setRecordProject(projects.find { it.id == projectId }
                         ?: viewModel.projectEmpty)
                 }
@@ -137,6 +138,12 @@ class TimeEditFragment : TimeFormFragment() {
                 if (args.containsKey(EXTRA_DATE)) {
                     val dateTime = args.getLong(EXTRA_DATE)
                     record.date = Calendar.getInstance().apply { timeInMillis = dateTime }
+                }
+                if (args.containsKey(EXTRA_DURATION)) {
+                    val duration = args.getLong(EXTRA_DURATION)
+                    if (duration > 0L) {
+                        record.duration = duration
+                    }
                 }
                 if (args.containsKey(EXTRA_START_TIME)) {
                     val startTime = args.getLong(EXTRA_START_TIME)
@@ -154,10 +161,6 @@ class TimeEditFragment : TimeFormFragment() {
                         record.finish = null
                     }
                 }
-                if (args.containsKey(EXTRA_LOCATION)) {
-                    val locationId = args.getLong(EXTRA_LOCATION, TikalEntity.ID_NONE)
-                    record.location = Location.valueOf(locationId)
-                }
             }
         }
 
@@ -168,6 +171,7 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
+        this.record = record
     }
 
     private suspend fun validateForm(record: TimeRecord): Boolean {
@@ -203,6 +207,10 @@ class TimeEditFragment : TimeFormFragment() {
 
     override fun run() {
         Timber.i("run first=$firstRun")
+        run(arguments)
+    }
+
+    private fun run(arguments: Bundle?) {
         if (maybeResubmit()) return
 
         val args = arguments ?: Bundle()
@@ -216,8 +224,6 @@ class TimeEditFragment : TimeFormFragment() {
             }
         }
         val record = this.record
-        record.date.timeInMillis = args.getLong(EXTRA_DATE, record.date.timeInMillis)
-
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
         showProgress(true)
@@ -227,7 +233,7 @@ class TimeEditFragment : TimeFormFragment() {
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
-                        populateAndBind()
+                        populateAndBind(page.record)
                         showProgress(false)
                     }
             } catch (e: Exception) {
@@ -239,11 +245,11 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private suspend fun processPage(page: TimeEditPage) {
-        viewModel.projectsData.value = page.projects
+        setRecordValue(page.record)
+        viewModel.projects = page.projects
         val errorMessage = page.errorMessage
         val error = if (errorMessage.isNullOrEmpty()) null else TimeFormError.General(errorMessage)
         errorFlow.emit(error)
-        setRecordValue(page.record)
     }
 
     override fun onLoginFailure(login: String, reason: String) {
@@ -263,7 +269,7 @@ class TimeEditFragment : TimeFormFragment() {
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_timeEdit_to_login, this)
@@ -299,8 +305,8 @@ class TimeEditFragment : TimeFormFragment() {
     private fun submit(records: List<TimeRecord>) {
         val size = records.size
         if (size == 0) return
+        val lastIndex = size - 1
         lifecycleScope.launch(Dispatchers.IO) {
-            val lastIndex = size - 1
             submit(records[0], true, 0 == lastIndex)
             if (size > 1) {
                 for (i in 1 until size) {
@@ -409,10 +415,7 @@ class TimeEditFragment : TimeFormFragment() {
     }
 
     private fun deleteRecord() {
-        val record = this.record
-        lifecycleScope.launch {
-            deleteRecord(record)
-        }
+        lifecycleScope.launch { deleteRecord(record) }
     }
 
     private suspend fun deleteRecord(record: TimeRecord) {
@@ -478,7 +481,7 @@ class TimeEditFragment : TimeFormFragment() {
         val recordParcel: TimeRecordEntity? =
             savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
-            val projects = viewModel.projectsData.value
+            val projects = viewModel.projects
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             bindForm(record)
@@ -501,16 +504,17 @@ class TimeEditFragment : TimeFormFragment() {
         }
         args.apply {
             clear()
-            putLong(EXTRA_DATE, record.date.timeInMillis)
-            putLong(EXTRA_PROJECT_ID, record.project.id)
-            putLong(EXTRA_TASK_ID, record.task.id)
-            putLong(EXTRA_START_TIME, record.startTime)
+            putLong(EXTRA_DATE, record.dateTime)
+            putLong(EXTRA_DURATION, record.duration)
             putLong(EXTRA_FINISH_TIME, record.finishTime)
+            putLong(EXTRA_PROJECT_ID, record.project.id)
             putLong(EXTRA_RECORD_ID, record.id)
-            putLong(EXTRA_LOCATION, record.location.id)
+            putLong(EXTRA_START_TIME, record.startTime)
+            putLong(EXTRA_TASK_ID, record.task.id)
             putBoolean(EXTRA_STOP, isStop)
         }
-        run()
+        delegate.markFirst()
+        run(args)
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -591,8 +595,8 @@ class TimeEditFragment : TimeFormFragment() {
         const val EXTRA_TASK_ID = TimeFormFragment.EXTRA_TASK_ID
         const val EXTRA_START_TIME = TimeFormFragment.EXTRA_START_TIME
         const val EXTRA_FINISH_TIME = TimeFormFragment.EXTRA_FINISH_TIME
+        const val EXTRA_DURATION = TimeFormFragment.EXTRA_DURATION
         const val EXTRA_RECORD_ID = TimeFormFragment.EXTRA_RECORD_ID
-        const val EXTRA_LOCATION = TimeFormFragment.EXTRA_LOCATION
         const val EXTRA_STOP = TimeFormFragment.EXTRA_STOP
     }
 }

@@ -39,6 +39,7 @@ import androidx.annotation.IdRes
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 
 fun Fragment.runOnUiThread(action: Runnable) {
@@ -92,7 +93,10 @@ fun <F : Fragment> Fragment.findParentFragment(clazz: Class<F>): F? {
 }
 
 fun Fragment.isNavDestination(@IdRes resId: Int): Boolean {
-    val navController = findNavController()
-    val destination = navController.currentDestination ?: return false
+    return findNavController().isDestination(resId)
+}
+
+fun NavController.isDestination(@IdRes resId: Int): Boolean {
+    val destination = this.currentDestination ?: return false
     return (destination.id == resId)
 }

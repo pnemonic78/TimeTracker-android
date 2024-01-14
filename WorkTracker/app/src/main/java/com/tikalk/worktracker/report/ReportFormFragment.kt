@@ -50,7 +50,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
@@ -65,7 +65,7 @@ import com.tikalk.worktracker.model.findTask
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
-import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.time.FORMAT_DATE_BUTTON
 import com.tikalk.worktracker.time.TimeFormFragment
 import com.tikalk.worktracker.time.dayOfMonth
@@ -80,7 +80,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class ReportFormFragment : TimeFormFragment() {
+class ReportFormFragment : TimeFormFragment<ReportFilter>() {
 
     private var _binding: FragmentReportFormBinding? = null
     private val binding get() = _binding!!
@@ -92,8 +92,8 @@ class ReportFormFragment : TimeFormFragment() {
     private var errorMessage: String = ""
     private val periods = ReportTimePeriod.values()
 
-    init {
-        record = ReportFilter()
+    override fun createEmptyRecord(): ReportFilter {
+        return ReportFilter()
     }
 
     override fun onCreateView(
@@ -174,26 +174,23 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.finishInput.setOnClickListener { pickFinishDate() }
 
         bindingForm.showProjectField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isProjectFieldVisible = isChecked
+            record.isProjectFieldVisible = isChecked
         }
         bindingForm.showTaskField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isTaskFieldVisible = isChecked
+            record.isTaskFieldVisible = isChecked
         }
         bindingForm.showStartField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isStartFieldVisible = isChecked
+            record.isStartFieldVisible = isChecked
         }
         bindingForm.showFinishField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isFinishFieldVisible = isChecked
+            record.isFinishFieldVisible = isChecked
         }
         bindingForm.showDurationField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isDurationFieldVisible = isChecked
+            record.isDurationFieldVisible = isChecked
         }
         bindingForm.showNoteField.setOnCheckedChangeListener { _, isChecked ->
-            (record as ReportFilter).isNoteFieldVisible = isChecked
+            record.isNoteFieldVisible = isChecked
         }
-//        bindingForm.showLocationField.setOnCheckedChangeListener { _, isChecked ->
-//            (record as ReportFilter).isLocationFieldVisible = isChecked
-//        }
 
         bindingForm.actionGenerate.setOnClickListener { generateReport() }
 
@@ -210,11 +207,11 @@ class ReportFormFragment : TimeFormFragment() {
         _binding = null
     }
 
-    override fun populateForm(record: TimeRecord) = Unit
+    override fun populateForm(record: ReportFilter) = Unit
 
-    override fun bindForm(record: TimeRecord) {
+    override fun bindForm(record: ReportFilter) {
         Timber.i("bindForm record=$record")
-        bindFilter(record as ReportFilter)
+        bindFilter(record)
     }
 
     private fun projectItemSelected(project: Project) {
@@ -249,14 +246,14 @@ class ReportFormFragment : TimeFormFragment() {
         val bindingForm = _binding?.form ?: return
 
         val startTime = filter.startTime
-        bindingForm.startInput.text = if (startTime != TimeRecord.NEVER)
+        bindingForm.startInput.text = if (startTime != NEVER)
             DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
         else
             ""
         bindingForm.startInput.error = null
 
         val finishTime = filter.finishTime
-        bindingForm.finishInput.text = if (finishTime != TimeRecord.NEVER)
+        bindingForm.finishInput.text = if (finishTime != NEVER)
             DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
         else
             ""
@@ -286,7 +283,7 @@ class ReportFormFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: ReportFormPage) {
-        viewModel.projectsData.value = page.projects
+        viewModel.projects = page.projects
         errorMessage = page.errorMessage ?: ""
 
         val filter = filterData.value
@@ -298,7 +295,7 @@ class ReportFormFragment : TimeFormFragment() {
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_reportForm_to_login, this)
@@ -316,7 +313,7 @@ class ReportFormFragment : TimeFormFragment() {
         bindingForm.taskInput.adapter =
             ArrayAdapter(context, android.R.layout.simple_list_item_1, taskItems)
 
-        val projects = viewModel.projectsData.value
+        val projects = viewModel.projects
         bindProjects(context, filter, projects)
 
         val periodList = ArrayList<String>(periods.size)
@@ -333,7 +330,7 @@ class ReportFormFragment : TimeFormFragment() {
         }
 
         val startTime = filter.startTime
-        bindingForm.startInput.text = if (startTime != TimeRecord.NEVER)
+        bindingForm.startInput.text = if (startTime != NEVER)
             DateUtils.formatDateTime(context, startTime, FORMAT_DATE_BUTTON)
         else
             ""
@@ -341,7 +338,7 @@ class ReportFormFragment : TimeFormFragment() {
         startPickerDialog = null
 
         val finishTime = filter.finishTime
-        bindingForm.finishInput.text = if (finishTime != TimeRecord.NEVER)
+        bindingForm.finishInput.text = if (finishTime != NEVER)
             DateUtils.formatDateTime(context, finishTime, FORMAT_DATE_BUTTON)
         else
             ""
@@ -490,7 +487,7 @@ class ReportFormFragment : TimeFormFragment() {
         val navController = findNavController()
         Timber.i("generateReport currentDestination=${navController.currentDestination?.label}")
 
-        if (!isNavDestination(R.id.reportFragment)) {
+        if (!navController.isDestination(R.id.reportFragment)) {
             val filter = populateFilter()
             val args = Bundle().apply {
                 putParcelable(ReportFragment.EXTRA_FILTER, filter)
@@ -549,13 +546,6 @@ class ReportFormFragment : TimeFormFragment() {
         val bindingForm = _binding?.form ?: return
         bindingForm.errorLabel.text = text
         bindingForm.errorLabel.isVisible = text.isNotBlank()
-    }
-
-    override fun setRecordValue(record: TimeRecord) {
-        // `record` must always point to `filter`.
-        if (record is ReportFilter) {
-            super.setRecordValue(record)
-        }
     }
 
     override fun setRecordProject(project: Project): Boolean {

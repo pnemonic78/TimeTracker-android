@@ -47,6 +47,7 @@ import com.tikalk.app.findParentFragment
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
+import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
@@ -55,7 +56,6 @@ import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.lang.isFalse
 import com.tikalk.worktracker.lang.isTrue
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.PuncherPage
@@ -66,7 +66,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class PuncherFragment : TimeFormFragment() {
+class PuncherFragment : TimeFormFragment<TimeRecord>() {
 
     private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
@@ -101,15 +101,15 @@ class PuncherFragment : TimeFormFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                val projects = getProjects()
-                val taskEmpty = getEmptyTask()
-                PuncherForm(
-                    projects = projects,
-                    taskEmpty = taskEmpty,
-                    record = record,
-                    onStartClick = ::startTimer,
-                    onStopClick = ::stopTimer
-                )
+                PaddedBox {
+                    PuncherForm(
+                        projects = getProjects(),
+                        taskEmpty = getEmptyTask(),
+                        record = record,
+                        onStartClick = ::startTimer,
+                        onStopClick = ::stopTimer
+                    )
+                }
             }
         }
 
@@ -158,7 +158,7 @@ class PuncherFragment : TimeFormFragment() {
             remove(EXTRA_TASK_ID)
             remove(EXTRA_START_TIME)
             remove(EXTRA_FINISH_TIME)
-            remove(EXTRA_LOCATION)
+            remove(EXTRA_DURATION)
             remove(EXTRA_STOP)
         }
     }
@@ -175,9 +175,9 @@ class PuncherFragment : TimeFormFragment() {
                 val taskId = args.getLong(EXTRA_TASK_ID)
                 val startTime = args.getLong(EXTRA_START_TIME)
                 val finishTime = args.getLong(EXTRA_FINISH_TIME, System.currentTimeMillis())
-                val locationId = args.getLong(EXTRA_LOCATION)
+                val duration = args.getLong(EXTRA_DURATION, 0L)
 
-                val projects = viewModel.projectsData.value
+                val projects = viewModel.projects
                 val project = projects.find { it.id == projectId } ?: viewModel.projectEmpty
                 val tasks = project.tasks
                 val task = tasks.find { it.id == taskId } ?: viewModel.taskEmpty
@@ -188,13 +188,15 @@ class PuncherFragment : TimeFormFragment() {
                     task = task,
                     date = Calendar.getInstance().apply { timeInMillis = startTime }
                 )
+                if (duration > 0L) {
+                    record.duration = duration
+                }
                 if (startTime != TimeRecord.NEVER) {
                     record.startTime = startTime
                 }
                 if (finishTime != TimeRecord.NEVER) {
                     record.finishTime = finishTime
                 }
-                record.location = Location.valueOf(locationId)
                 return record
             }
         }
@@ -209,7 +211,7 @@ class PuncherFragment : TimeFormFragment() {
         if (recordStarted.project.isNullOrEmpty() && recordStarted.task.isNullOrEmpty()) {
             applyFavorite()
         } else if (!recordStarted.isEmpty()) {
-            val projects = viewModel.projectsData.value
+            val projects = viewModel.projects
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
             val project = projects.find { it.id == recordStartedProjectId } ?: record.project
@@ -230,12 +232,12 @@ class PuncherFragment : TimeFormFragment() {
             parent.editRecord(record, true)
         } else {
             Bundle().apply {
-                putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
-                putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
-                putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                putLong(TimeEditFragment.EXTRA_DURATION, record.duration)
                 putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+                putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
                 putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
-                putLong(TimeEditFragment.EXTRA_LOCATION, record.location.id)
+                putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+                putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
                 putBoolean(TimeEditFragment.EXTRA_STOP, true)
                 navController.navigate(R.id.action_puncher_to_timeEdit, this)
             }
@@ -250,7 +252,7 @@ class PuncherFragment : TimeFormFragment() {
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
-                        populateAndBind()
+                        populateAndBind(page.record)
                         handleArguments()
                     }
             } catch (e: Exception) {
@@ -261,7 +263,7 @@ class PuncherFragment : TimeFormFragment() {
     }
 
     private fun processPage(page: PuncherPage) {
-        viewModel.projectsData.value = page.projects
+        viewModel.projects = page.projects
         setRecordValue(page.record)
     }
 
@@ -291,7 +293,7 @@ class PuncherFragment : TimeFormFragment() {
         super.onRestoreInstanceState(savedInstanceState)
         val recordParcel = savedInstanceState.getParcelableCompat<TimeRecordEntity>(STATE_RECORD)
         if (recordParcel != null) {
-            val projects = viewModel.projectsData.value
+            val projects = viewModel.projects
             val record = recordParcel.toTimeRecord(projects)
             setRecordValue(record)
             populateForm(record)

@@ -94,7 +94,7 @@ fun TimeItem(
     val context: Context = LocalContext.current
     val iconSize = dimensionResource(id = R.dimen.icon_item)
 
-    val dateTime = record.date.timeInMillis
+    val dateTime = record.dateTime
     val startTime = record.startTime
     val endTime = record.finishTime
     val timeRange = if ((startTime == TimeRecord.NEVER) || (endTime == TimeRecord.NEVER)) {
