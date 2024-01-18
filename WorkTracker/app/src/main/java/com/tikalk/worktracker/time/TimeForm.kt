@@ -34,7 +34,6 @@ package com.tikalk.worktracker.time
 
 import android.content.Context
 import android.content.res.Configuration
-import android.text.format.DateFormat
 import android.text.format.DateUtils
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -68,26 +67,22 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tikalk.app.DateTimePickerDialog
+import com.tikalk.compose.GenericCallback
+import com.tikalk.compose.LongCallback
+import com.tikalk.compose.StringCallback
 import com.tikalk.compose.TikalTheme
 import com.tikalk.util.TikalFormatter
-import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
-import java.util.Calendar
 import kotlin.math.max
 
-typealias GenericCallback<T> = ((T) -> Unit)
 typealias ProjectCallback = GenericCallback<Project>
 typealias ProjectTaskCallback = GenericCallback<ProjectTask>
-typealias CalendarCallback = GenericCallback<Calendar>
-typealias LongCallback = GenericCallback<Long>
 typealias TimeCallback = LongCallback
 typealias DurationCallback = LongCallback
-typealias StringCallback = GenericCallback<String>
 
 @DrawableRes
 private val iconIdProject = com.tikalk.core.R.drawable.ic_business
@@ -277,7 +272,7 @@ fun DurationPickerButton(
 @Composable
 fun DateTimePickerButton(
     modifier: Modifier = Modifier,
-    record: TimeRecord,
+    record: TimeRecord?,
     timeInMillis: Long = NEVER,
     @DrawableRes iconId: Int,
     hint: String,
@@ -303,7 +298,7 @@ fun DateTimePickerButton(
                 onTimeSelected(it)
             }
         },
-        enabled = !record.project.isEmpty() && !record.task.isEmpty()
+        enabled = (record == null) || (!record.project.isEmpty() && !record.task.isEmpty())
     ) {
         Icon(
             modifier = Modifier.size(iconSize),
@@ -367,111 +362,6 @@ fun DurationPickerButton(
     }
 }
 
-private fun pickDateTime(
-    context: Context,
-    record: TimeRecord,
-    time: Long = NEVER,
-    onTimeSelected: TimeCallback
-) {
-    val cal = getCalendar(record, time)
-    val year = cal.year
-    val month = cal.month
-    val dayOfMonth = cal.dayOfMonth
-    val hour = cal.hourOfDay
-    val minute = cal.minute
-
-    val listener = object : DateTimePickerDialog.OnDateTimeSetListener {
-        override fun onDateTimeSet(
-            view: DateTimePicker,
-            year: Int,
-            month: Int,
-            dayOfMonth: Int,
-            hourOfDay: Int,
-            minute: Int
-        ) {
-            val date = toCalendar(year, month, dayOfMonth, hourOfDay, minute)
-            onTimeSelected(date.timeInMillis)
-        }
-    }
-    DateTimePickerDialog(
-        context,
-        listener,
-        year,
-        month,
-        dayOfMonth,
-        hour,
-        minute,
-        DateFormat.is24HourFormat(context)
-    ).show()
-}
-
-private fun pickDuration(
-    context: Context,
-    record: TimeRecord,
-    duration: Long = 0L,
-    onTimeSelected: TimeCallback
-) {
-    val cal = getCalendar(record, NEVER)
-    val year = cal.year
-    val month = cal.month
-    val dayOfMonth = cal.dayOfMonth
-    val hour = (duration / DateUtils.HOUR_IN_MILLIS).toInt()
-    val minute = ((duration % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
-
-    val listener = object : DateTimePickerDialog.OnDateTimeSetListener {
-        override fun onDateTimeSet(
-            view: DateTimePicker,
-            year: Int,
-            month: Int,
-            dayOfMonth: Int,
-            hourOfDay: Int,
-            minute: Int
-        ) {
-            val date = toCalendar(year, month, dayOfMonth, hourOfDay, minute)
-            onTimeSelected(date.timeInMillis)
-        }
-    }
-    DateTimePickerDialog(
-        context,
-        listener,
-        year,
-        month,
-        dayOfMonth,
-        hour,
-        minute,
-        true
-    ).show()
-}
-
-private fun getCalendar(record: TimeRecord, time: Long = NEVER): Calendar {
-    return Calendar.getInstance().apply {
-        timeInMillis = if (time != NEVER) {
-            time
-        } else {
-            record.dateTime
-        }
-        // Server granularity is seconds.
-        second = 0
-        millis = 0
-    }
-}
-
-private fun toCalendar(
-    year: Int,
-    month: Int,
-    dayOfMonth: Int,
-    hourOfDay: Int,
-    minute: Int
-): Calendar {
-    return Calendar.getInstance().apply {
-        this.year = year
-        this.month = month
-        this.dayOfMonth = dayOfMonth
-        this.hourOfDay = hourOfDay
-        this.minute = minute
-    }
-}
-
 @Composable
 fun NoteText(
     modifier: Modifier = Modifier,
@@ -493,7 +383,7 @@ fun NoteText(
                 painter = rememberVectorPainter(
                     image = ImageVector.vectorResource(id = iconIdNote)
                 ),
-                contentDescription = ""
+                contentDescription = null
             )
         },
         maxLines = 4,

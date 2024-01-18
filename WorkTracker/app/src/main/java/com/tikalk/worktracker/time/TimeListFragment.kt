@@ -33,10 +33,7 @@
 package com.tikalk.worktracker.time
 
 import android.annotation.SuppressLint
-import android.app.DatePickerDialog
-import android.content.DialogInterface
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -68,6 +65,7 @@ import java.util.Calendar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -77,10 +75,11 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     private var _binding: FragmentTimeListBinding? = null
     private val binding get() = _binding!!
 
-    private var datePickerDialog: DatePickerDialog? = null
     private lateinit var formNavHostFragment: NavHostFragment
-    private val dateData = MutableStateFlow<Calendar>(Calendar.getInstance())
-    private val totalsData = MutableStateFlow<TimeTotals?>(null)
+    private val _dateFlow = MutableStateFlow<Calendar>(Calendar.getInstance())
+    private val dateFlow: StateFlow<Calendar> = _dateFlow
+    private val _totalsFlow = MutableStateFlow<TimeTotals?>(null)
+    private val totalsFlow : StateFlow<TimeTotals?> = _totalsFlow
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
 
     /** Is the record from the "timer" or "+" FAB? */
@@ -99,14 +98,29 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val date = record.date
 
         formNavHostFragment =
             childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
 
         val binding = this.binding
-        binding.dateInput.setOnClickListener { pickDate() }
-        binding.recordAdd.setOnClickListener { addTime() }
-
+        binding.dateInput.setContent {
+            TikalTheme {
+                TimeListDateButton(
+                    dateFlow = dateFlow
+                ) { pickedDate ->
+                    val oldYear = date.year
+                    val oldMonth = date.month
+                    val oldDayOfMonth = date.dayOfMonth
+                    val pickedYear = pickedDate.year
+                    val pickedMonth = pickedDate.month
+                    val pickedDayOfMonth = pickedDate.dayOfMonth
+                    val refresh =
+                        (pickedYear != oldYear) || (pickedMonth != oldMonth) || (pickedDayOfMonth != oldDayOfMonth)
+                    navigateDate(pickedDate, refresh)
+                }
+            }
+        }
         binding.list.setContent {
             TikalTheme {
                 PaddedBox(isVertical = false) {
@@ -118,16 +132,19 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
                 }
             }
         }
-        lifecycleScope.launch {
-            dateData.collect { date ->
-                bindDate(date)
+        binding.totals.composeView.setContent {
+            TikalTheme {
+                TimeTotalsFooter(totalsFlow = totalsFlow)
             }
         }
-        lifecycleScope.launch {
-            totalsData.collect { totals ->
-                if (totals != null) bindTotals(totals)
+        binding.recordAdd.setContent {
+            TikalTheme {
+                FloatingAddButton {
+                    addTime()
+                }
             }
         }
+
         lifecycleScope.launch {
             viewModel.deleted.collect { data ->
                 if (data != null) onRecordEditDeleted(data.record, data.responseHtml)
@@ -222,33 +239,15 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     private suspend fun processPage(page: TimeListPage) {
         viewModel.projects = page.projects.sortedBy { it.name }
 
-        dateData.emit(page.date.copy())
+        _dateFlow.emit(page.date.copy())
 
         recordsData.emit(page.records)
-        var totals = totalsData.value
+        var totals = totalsFlow.value
         if ((totals == null) || (page.totals.status == TaskRecordStatus.CURRENT)) {
             totals = page.totals
         }
-        totalsData.emit(totals)
+        _totalsFlow.emit(totals)
         setRecordValue(page.record)
-    }
-
-    @MainThread
-    private fun bindDate(date: Calendar) {
-        val binding = _binding ?: return
-        binding.dateInput.text =
-            DateUtils.formatDateTime(context, date.timeInMillis, FORMAT_DATE_BUTTON)
-    }
-
-    @MainThread
-    private fun bindTotals(totals: TimeTotals) {
-        val binding = _binding ?: return
-        val bindingTotals = binding.totals
-        bindingTotals.composeView.setContent {
-            TikalTheme {
-                TimeTotalsFooter(totals = totals)
-            }
-        }
     }
 
     override fun authenticate(submit: Boolean) {
@@ -264,40 +263,17 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
 
     private fun pickDate() {
         val date = record.date
-        val cal = date
-        val year = cal.year
-        val month = cal.month
-        val dayOfMonth = cal.dayOfMonth
-        var picker = datePickerDialog
-        if (picker == null) {
-            val listener =
-                DatePickerDialog.OnDateSetListener { _, pickedYear, pickedMonth, pickedDayOfMonth ->
-                    val oldYear = date.year
-                    val oldMonth = date.month
-                    val oldDayOfMonth = date.dayOfMonth
-                    val refresh =
-                        (pickedYear != oldYear) || (pickedMonth != oldMonth) || (pickedDayOfMonth != oldDayOfMonth)
-                    cal.year = pickedYear
-                    cal.month = pickedMonth
-                    cal.dayOfMonth = pickedDayOfMonth
-                    navigateDate(cal, refresh)
-                }
-            val context = requireContext()
-            picker = DatePickerDialog(context, listener, year, month, dayOfMonth)
-            picker.setButton(
-                DialogInterface.BUTTON_NEUTRAL,
-                context.getText(R.string.today)
-            ) { dialog: DialogInterface, which: Int ->
-                if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
-                    val today = Calendar.getInstance()
-                    listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
-                }
-            }
-            datePickerDialog = picker
-        } else {
-            picker.updateDate(year, month, dayOfMonth)
+        pickDate(requireContext(), date) { pickedDate ->
+            val oldYear = date.year
+            val oldMonth = date.month
+            val oldDayOfMonth = date.dayOfMonth
+            val pickedYear = pickedDate.year
+            val pickedMonth = pickedDate.month
+            val pickedDayOfMonth = pickedDate.dayOfMonth
+            val refresh =
+                (pickedYear != oldYear) || (pickedMonth != oldMonth) || (pickedDayOfMonth != oldDayOfMonth)
+            navigateDate(pickedDate, refresh)
         }
-        picker.show()
     }
 
     private fun addTime() {

@@ -120,8 +120,9 @@ dependencies {
     implementation(Android.Logging.crashlytics)
 
     // Navigation
-    implementation(Android.Navigation.navigation_fragment)
-    implementation(Android.Navigation.navigation_ui)
+    implementation(Android.Jetpack.navigationCompose)
+    implementation(Android.Jetpack.navigationFragment)
+    implementation(Android.Jetpack.navigationUI)
 
     // Export
     implementation(Java.Document.opencsv) {

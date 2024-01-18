@@ -6,12 +6,12 @@ object Android {
         const val minSdk = 23
         const val targetSdk = 33
 
-        const val compose = "1.5.3"
-        const val composeCompiler = "1.5.3"
+        const val compose = "1.5.4"
+        const val composeCompiler = "1.5.8"
         const val composeMaterial = "1.5.3"
         const val composeMaterial3 = "1.1.2"
         const val hilt = "2.48"
-        const val navigation = "2.7.4"
+        const val navigation = "2.7.6"
         const val okhttp = "4.11.0"
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
@@ -66,11 +66,6 @@ object Android {
         const val timber = "com.jakewharton.timber:timber:5.0.1"
     }
 
-    object Navigation {
-        const val navigation_fragment = "androidx.navigation:navigation-fragment-ktx:${Version.navigation}"
-        const val navigation_ui = "androidx.navigation:navigation-ui-ktx:${Version.navigation}"
-    }
-
     object Network {
         const val logging = "com.squareup.okhttp3:logging-interceptor:${Version.okhttp}"
         const val okhttp = "com.squareup.okhttp3:okhttp:${Version.okhttp}"
@@ -115,7 +110,7 @@ object Kotlin {
     object Version {
         const val coroutines = "1.7.3"
         const val html = "0.9.1"
-        const val kotlin = "1.9.10"
+        const val kotlin = "1.9.22"
         const val serialization = "1.6.0"
     }
 

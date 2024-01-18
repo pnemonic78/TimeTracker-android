@@ -64,7 +64,7 @@ fun PasswordTextField(
     readOnly: Boolean = false,
     isError: Boolean = false,
     onDoneAction: UnitCallback? = null,
-    onValueChange: (String) -> Unit
+    onValueChange: StringCallback
 ) {
     val showPassword = remember { mutableStateOf(false) }
 

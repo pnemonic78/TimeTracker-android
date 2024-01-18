@@ -125,7 +125,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                                 id = com.tikalk.core.R.drawable.ic_person
                             )
                         ),
-                        contentDescription = ""
+                        contentDescription = null
                     )
                 },
                 singleLine = true,
@@ -160,7 +160,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                                 id = com.tikalk.core.R.drawable.ic_email
                             )
                         ),
-                        contentDescription = ""
+                        contentDescription = null
                     )
                 },
                 singleLine = true,
@@ -195,7 +195,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                                 id = com.tikalk.core.R.drawable.ic_lock_open
                             )
                         ),
-                        contentDescription = ""
+                        contentDescription = null
                     )
                 },
                 singleLine = true,
@@ -260,7 +260,7 @@ fun ProfileForm(viewState: ProfileViewState) {
                 Icon(
                     modifier = Modifier.padding(start = 8.dp),
                     painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_done)),
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         }

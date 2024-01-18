@@ -41,11 +41,13 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.tikalk.app.findFragmentByClass
+import com.tikalk.compose.TikalTheme
 import com.tikalk.view.showAnimated
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerActivity
 import com.tikalk.worktracker.databinding.ActivityTimeListBinding
 import com.tikalk.worktracker.user.ProfileViewModel
+import com.tikalk.worktracker.widget.TikalProgress
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -81,6 +83,12 @@ class TimeListActivity : TrackerActivity() {
             binding.navView.setupWithNavController(navController)
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 supportActionBar?.title = destination.label
+            }
+        }
+
+        binding.progress.setContent {
+            TikalTheme {
+                TikalProgress()
             }
         }
 
@@ -122,7 +130,7 @@ class TimeListActivity : TrackerActivity() {
     }
 
     override fun showProgress(show: Boolean) {
-        binding.progress.progressContainer.showAnimated(show)
+        binding.progress.showAnimated(show)
     }
 
     private fun handleIntent(intent: Intent) {

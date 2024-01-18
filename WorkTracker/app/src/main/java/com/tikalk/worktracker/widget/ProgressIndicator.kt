@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,39 +30,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.start
+package com.tikalk.worktracker.widget
 
-import android.content.res.Configuration
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.widget.TikalProgressIndicator
 
 // Each rotation is 1 and 1/3 seconds, but 1332ms divides more evenly
 private const val RotationDuration = 1332
-private val ProgressSize = 150.dp
 
 @Composable
-fun SplashScreen() {
+fun TikalProgress() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .zIndex(10000f)
+            .clickable(true) {}
+            .focusable(true)
+            .background(color = colorResource(id = com.tikalk.core.R.color.black_x80))
+    ) {
+        TikalProgressIndicator(
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+fun TikalProgressIndicator(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "splash_transition")
     val rotation by transition.animateFloat(
         initialValue = 0f,
@@ -77,31 +97,20 @@ fun SplashScreen() {
         label = "rotation"
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = stringResource(id = R.string.app_name),
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        TikalProgressIndicator(
-            modifier = Modifier.size(ProgressSize)
-        )
-        Spacer(modifier = Modifier.weight(2f))
-    }
+    Image(
+        modifier = modifier
+            .progressSemantics()
+            .size(dimensionResource(id = R.dimen.progress_bar_size_large))
+            .rotate(rotation),
+        bitmap = ImageBitmap.imageResource(id = R.drawable.tikal_flower),
+        contentDescription = null
+    )
 }
 
-@Preview(name = "default", showBackground = true)
-@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "default", showBackground = true, device = Devices.DEFAULT)
 @Composable
 private fun ThisPreview() {
     TikalTheme {
-        SplashScreen()
+        TikalProgress()
     }
 }

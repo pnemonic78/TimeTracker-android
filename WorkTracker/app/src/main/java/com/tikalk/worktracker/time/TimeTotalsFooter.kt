@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,16 @@ import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.TimeTotals
 import kotlin.math.absoluteValue
+import kotlinx.coroutines.flow.Flow
+
+@Composable
+fun TimeTotalsFooter(
+    totalsFlow: Flow<TimeTotals?>
+) {
+    val totalsState = totalsFlow.collectAsState(initial = null)
+    val totals = totalsState.value ?: return
+    TimeTotalsFooter(totals)
+}
 
 @Composable
 fun TimeTotalsFooter(

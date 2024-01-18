@@ -31,15 +31,20 @@
  */
 package com.tikalk.worktracker.time
 
+import android.app.DatePickerDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.text.format.DateFormat
 import android.text.format.DateUtils
+import com.tikalk.app.DateTimePickerDialog
+import com.tikalk.compose.CalendarCallback
 import com.tikalk.util.TikalFormatter
+import com.tikalk.widget.DateTimePicker
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.model.time.TimeRecord
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Formatter
 import java.util.Locale
 import java.util.TimeZone
 
@@ -279,4 +284,138 @@ fun Calendar.setToEndOfDay(): Calendar {
     this.second = getActualMaximum(Calendar.SECOND)
     this.millis = getActualMaximum(Calendar.MILLISECOND)
     return this
+}
+
+fun toCalendar(
+    year: Int,
+    month: Int,
+    dayOfMonth: Int,
+    hourOfDay: Int = 0,
+    minute: Int = 0
+): Calendar {
+    return Calendar.getInstance().apply {
+        this.year = year
+        this.month = month
+        this.dayOfMonth = dayOfMonth
+        this.hourOfDay = hourOfDay
+        this.minute = minute
+    }
+}
+
+fun pickDate(
+    context: Context,
+    date: Calendar,
+    onDateSelected: CalendarCallback
+) {
+    val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+        onDateSelected(toCalendar(year, month, dayOfMonth))
+    }
+    DatePickerDialog(
+        context,
+        listener,
+        date.year,
+        date.month,
+        date.dayOfMonth
+    ).apply {
+        val picker = this
+        setButton(
+            DialogInterface.BUTTON_NEUTRAL,
+            context.getText(R.string.today)
+        ) { dialog: DialogInterface, which: Int ->
+            if ((dialog == picker) and (which == DialogInterface.BUTTON_NEUTRAL)) {
+                val today = Calendar.getInstance()
+                listener.onDateSet(picker.datePicker, today.year, today.month, today.dayOfMonth)
+            }
+        }
+        show()
+    }
+}
+
+fun pickDateTime(
+    context: Context,
+    record: TimeRecord?,
+    time: Long = TimeRecord.NEVER,
+    onTimeSelected: TimeCallback
+) {
+    val cal = getCalendar(record, time)
+    val year = cal.year
+    val month = cal.month
+    val dayOfMonth = cal.dayOfMonth
+    val hour = cal.hourOfDay
+    val minute = cal.minute
+
+    val listener = object : DateTimePickerDialog.OnDateTimeSetListener {
+        override fun onDateTimeSet(
+            view: DateTimePicker,
+            year: Int,
+            month: Int,
+            dayOfMonth: Int,
+            hourOfDay: Int,
+            minute: Int
+        ) {
+            val date = toCalendar(year, month, dayOfMonth, hourOfDay, minute)
+            onTimeSelected(date.timeInMillis)
+        }
+    }
+    DateTimePickerDialog(
+        context,
+        listener,
+        year,
+        month,
+        dayOfMonth,
+        hour,
+        minute,
+        DateFormat.is24HourFormat(context)
+    ).show()
+}
+
+fun pickDuration(
+    context: Context,
+    record: TimeRecord,
+    duration: Long = 0L,
+    onTimeSelected: TimeCallback
+) {
+    val cal = getCalendar(record, TimeRecord.NEVER)
+    val year = cal.year
+    val month = cal.month
+    val dayOfMonth = cal.dayOfMonth
+    val hour = (duration / DateUtils.HOUR_IN_MILLIS).toInt()
+    val minute = ((duration % DateUtils.HOUR_IN_MILLIS) / DateUtils.MINUTE_IN_MILLIS).toInt()
+
+    val listener = object : DateTimePickerDialog.OnDateTimeSetListener {
+        override fun onDateTimeSet(
+            view: DateTimePicker,
+            year: Int,
+            month: Int,
+            dayOfMonth: Int,
+            hourOfDay: Int,
+            minute: Int
+        ) {
+            val date = toCalendar(year, month, dayOfMonth, hourOfDay, minute)
+            onTimeSelected(date.timeInMillis)
+        }
+    }
+    DateTimePickerDialog(
+        context,
+        listener,
+        year,
+        month,
+        dayOfMonth,
+        hour,
+        minute,
+        true
+    ).show()
+}
+
+private fun getCalendar(record: TimeRecord?, time: Long = TimeRecord.NEVER): Calendar {
+    return Calendar.getInstance().apply {
+        if (time != TimeRecord.NEVER) {
+            timeInMillis = time
+        } else if (record != null) {
+            timeInMillis = record.dateTime
+        }
+        // Server granularity is seconds.
+        second = 0
+        millis = 0
+    }
 }

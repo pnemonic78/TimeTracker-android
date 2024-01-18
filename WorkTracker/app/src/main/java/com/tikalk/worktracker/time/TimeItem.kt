@@ -61,6 +61,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tikalk.compose.GenericCallback
 import com.tikalk.compose.TikalTheme
 import com.tikalk.compose.WrapText
 import com.tikalk.util.TikalFormatter
@@ -305,7 +306,7 @@ private fun ThisPreview() {
         location = Location.OTHER,
         cost = 1.23
     )
-    val onClick: ((TimeRecord) -> Unit) = { println("record clicked: $it") }
+    val onClick: OnTimeRecordClick = { println("record clicked: $it") }
 
     TikalTheme {
         TimeItem(record, onClick = onClick)

@@ -165,7 +165,7 @@ fun PuncherStartButton(modifier: Modifier = Modifier, record: TimeRecord, onClic
         Icon(
             modifier = Modifier.padding(start = 8.dp),
             painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_play_arrow)),
-            contentDescription = ""
+            contentDescription = null
         )
     }
 }
@@ -181,7 +181,7 @@ fun PuncherStopButton(modifier: Modifier = Modifier, onClick: UnitCallback) {
         Icon(
             modifier = Modifier.padding(start = 8.dp),
             painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_stop)),
-            contentDescription = ""
+            contentDescription = null
         )
     }
 }

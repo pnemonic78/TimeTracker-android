@@ -62,20 +62,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/nav_host_form" />
 
-    <!-- TODO convert to compose -->
-    <Button
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/dateInput"
-        style="@style/Widget.Button.Date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:hint="@string/date_label"
-        app:drawableEndCompat="@drawable/ic_today"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_form_divider" />
+        app:layout_constraintTop_toBottomOf="@+id/time_form_divider"
+        tools:background="?colorButtonNormal"
+        tools:layout_height="48dp" />
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@android:id/list"
@@ -104,16 +102,15 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_height="40dp" />
 
-    <!-- TODO convert to compose -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/recordAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:backgroundTint="?colorButtonNormal"
         android:contentDescription="@string/action_add"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:maxImageSize="48dp"
-        app:srcCompat="@drawable/ic_add" />
+        tools:background="?colorButtonNormal"
+        tools:layout_height="48dp"
+        tools:layout_width="48dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

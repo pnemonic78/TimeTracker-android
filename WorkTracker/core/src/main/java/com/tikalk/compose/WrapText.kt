@@ -85,6 +85,7 @@ fun WrapText(
                 overflow = overflow,
                 softWrap = softWrap,
                 maxLines = maxLines,
+                minLines = minLines,
                 onTextLayout = localOnTextLayout,
                 style = style
             )

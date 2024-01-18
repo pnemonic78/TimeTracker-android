@@ -9,12 +9,18 @@ import androidx.compose.ui.graphics.Color
 
 val tikalLightColors = lightColorScheme(
     primary = Color(0xFFFFCC80),
+    primaryContainer = Color(0xFFFFCC80),
     secondary = Color(0XFFFF8A65),
-    tertiary = Color(0xFFFF6E40)
+    secondaryContainer = Color(0XFFFF8A65),
+    tertiary = Color(0xFFFF6E40),
+    tertiaryContainer = Color(0xFFFF6E40)
 )
 
 val tikalDarkColors = darkColorScheme(
     primary = Color(0xFFFFCC80),
+    primaryContainer = Color(0xFFFFCC80),
     secondary = Color(0XFFFF8A65),
-    tertiary = Color(0xFFFF6E40)
+    secondaryContainer = Color(0XFFFF8A65),
+    tertiary = Color(0xFFFF6E40),
+    tertiaryContainer = Color(0xFFFF6E40)
 )

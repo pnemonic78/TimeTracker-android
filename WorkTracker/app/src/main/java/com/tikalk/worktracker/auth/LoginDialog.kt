@@ -119,7 +119,7 @@ fun LoginForm(viewState: LoginViewState) {
                                 id = com.tikalk.core.R.drawable.ic_lock_open
                             )
                         ),
-                        contentDescription = ""
+                        contentDescription = null
                     )
                 },
                 singleLine = true,
@@ -169,7 +169,7 @@ fun LoginForm(viewState: LoginViewState) {
                 Icon(
                     modifier = Modifier.padding(start = 8.dp),
                     painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_lock_open)),
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         }

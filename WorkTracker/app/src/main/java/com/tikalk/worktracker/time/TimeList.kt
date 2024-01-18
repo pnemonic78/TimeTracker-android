@@ -32,24 +32,48 @@
 
 package com.tikalk.worktracker.time
 
+import android.content.Context
 import android.content.res.Configuration
 import android.text.format.DateUtils
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tikalk.compose.CalendarCallback
+import com.tikalk.compose.GenericCallback
 import com.tikalk.compose.TikalTheme
+import com.tikalk.compose.UnitCallback
 import com.tikalk.util.isLocaleRTL
+import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -61,7 +85,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Callback to be invoked when an item in this list has been clicked.
  */
-typealias OnTimeRecordClick = ((record: TimeRecord) -> Unit)
+typealias OnTimeRecordClick = GenericCallback<TimeRecord>
 
 @Composable
 fun TimeList(
@@ -127,6 +151,87 @@ private suspend fun PointerInputScope.detectHorizontalFling(onSwipe: OnSwipeDayL
     }
 }
 
+@DrawableRes
+private val iconIdDate = com.tikalk.core.R.drawable.ic_day
+
+@Composable
+fun TimeListDateButton(
+    modifier: Modifier = Modifier,
+    dateFlow: Flow<Calendar>,
+    onDateSelected: CalendarCallback
+) {
+    val dateState = dateFlow.collectAsState(initial = Calendar.getInstance())
+    TimeListDateButton(modifier, dateState.value, onDateSelected)
+}
+
+@Composable
+fun TimeListDateButton(
+    modifier: Modifier = Modifier,
+    date: Calendar,
+    onDateSelected: CalendarCallback
+) {
+    DatePickerButton(
+        modifier = modifier,
+        date = date,
+        iconId = iconIdDate,
+        hint = stringResource(id = R.string.date_label),
+        onDateSelected = onDateSelected
+    )
+}
+
+@Composable
+fun DatePickerButton(
+    modifier: Modifier = Modifier,
+    date: Calendar? = null,
+    @DrawableRes iconId: Int,
+    hint: String,
+    isError: Boolean = false,
+    onDateSelected: CalendarCallback
+) {
+    val context: Context = LocalContext.current
+    val iconSize = dimensionResource(id = R.dimen.icon_form)
+    val timeInMillis = date?.timeInMillis ?: TimeRecord.NEVER
+    val text = if (timeInMillis == TimeRecord.NEVER)
+        hint
+    else
+        DateUtils.formatDateTime(context, timeInMillis, FORMAT_DATE_BUTTON)
+    val modifierError = if (isError) {
+        modifier.background(color = MaterialTheme.colorScheme.error)
+    } else {
+        modifier
+    }
+
+    Button(
+        modifier = modifierError.fillMaxWidth(),
+        onClick = {
+            pickDate(context, date ?: Calendar.getInstance(), onDateSelected)
+        }
+    ) {
+        Icon(
+            modifier = Modifier.size(iconSize),
+            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = iconId)),
+            contentDescription = hint
+        )
+        Text(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f),
+            text = text
+        )
+    }
+}
+
+@Composable
+fun FloatingAddButton(
+    onClick: UnitCallback
+) {
+    FloatingActionButton(
+        onClick = onClick
+    ) {
+        Icon(Icons.Filled.Add, stringResource(id = R.string.action_add))
+    }
+}
+
 @Preview(name = "default", showBackground = true)
 @Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -140,7 +245,7 @@ private fun ThisPreview() {
         location = Location.OTHER,
         cost = 1.23
     )
-    val records = listOf(record)
+    val records = listOf(record, record)
     val onClick: OnTimeRecordClick = { println("record clicked: $it") }
     val onSwipe = object : OnSwipeDayListener {
         override fun onSwipePreviousDay() {
@@ -153,6 +258,14 @@ private fun ThisPreview() {
     }
 
     TikalTheme {
-        TimeList(items = records, onClick = onClick, onSwipe = onSwipe)
+        Column {
+            FloatingAddButton {
+                println("fab clicked")
+            }
+            TimeListDateButton(date = Calendar.getInstance()) {
+                println("date clicked: $it")
+            }
+            TimeList(items = records, onClick = onClick, onSwipe = onSwipe)
+        }
     }
 }
