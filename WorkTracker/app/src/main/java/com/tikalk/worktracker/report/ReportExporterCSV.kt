@@ -94,7 +94,6 @@ class ReportExporterCSV(
             val showDurationField = filter.isDurationFieldVisible
             val showNoteField = filter.isNoteFieldVisible
             val showCostField = filter.isCostFieldVisible
-            val showLocationField = filter.isLocationFieldVisible
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -107,9 +106,6 @@ class ReportExporterCSV(
             }
             if (showTaskField) {
                 headerRecord.add(context.getString(R.string.task_header))
-            }
-            if (showLocationField) {
-                headerRecord.add(context.getString(R.string.location_header))
             }
             if (showStartField) {
                 headerRecord.add(context.getString(R.string.start_header))
@@ -137,10 +133,6 @@ class ReportExporterCSV(
                 }
                 if (showTaskField) {
                     row.add(record.task.name)
-                }
-                if (showLocationField) {
-                    val text = record.location.toLocationItem(context).label
-                    row.add(text)
                 }
                 if (showStartField) {
                     row.add(formatSystemTime(record.start).orEmpty())

@@ -53,6 +53,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +68,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tikalk.compose.CalendarCallback
 import com.tikalk.compose.GenericCallback
 import com.tikalk.compose.LongCallback
 import com.tikalk.compose.StringCallback
@@ -77,7 +79,9 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
+import java.util.Calendar
 import kotlin.math.max
+import kotlinx.coroutines.flow.Flow
 
 typealias ProjectCallback = GenericCallback<Project>
 typealias ProjectTaskCallback = GenericCallback<ProjectTask>
@@ -85,22 +89,42 @@ typealias TimeCallback = LongCallback
 typealias DurationCallback = LongCallback
 
 @DrawableRes
-private val iconIdProject = com.tikalk.core.R.drawable.ic_business
+val iconIdProject = com.tikalk.core.R.drawable.ic_business
 
 @DrawableRes
-private val iconIdTask = com.tikalk.core.R.drawable.ic_folder_open
+val iconIdTask = com.tikalk.core.R.drawable.ic_folder_open
 
 @DrawableRes
-private val iconIdStart = com.tikalk.core.R.drawable.ic_timer
+val iconIdStart = com.tikalk.core.R.drawable.ic_timer
 
 @DrawableRes
-private val iconIdFinish = com.tikalk.core.R.drawable.ic_timer_off
+val iconIdFinish = com.tikalk.core.R.drawable.ic_timer_off
 
 @DrawableRes
-private val iconIdDuration = com.tikalk.core.R.drawable.ic_timelapse
+val iconIdDuration = com.tikalk.core.R.drawable.ic_timelapse
 
 @DrawableRes
 private val iconIdNote = com.tikalk.core.R.drawable.ic_note
+
+@Composable
+fun ProjectSpinner(
+    modifier: Modifier = Modifier,
+    projectsFlow: Flow<List<Project>>,
+    project: Project,
+    enabled: Boolean = true,
+    error: TimeFormError? = null,
+    onProjectSelected: ProjectCallback
+) {
+    val projectsState = projectsFlow.collectAsState(initial = listOf(Project.EMPTY))
+    ProjectSpinner(
+        modifier = modifier,
+        projects = projectsState.value,
+        project = project,
+        enabled = enabled,
+        error = error,
+        onProjectSelected = onProjectSelected
+    )
+}
 
 @Composable
 fun ProjectSpinner(
@@ -137,6 +161,7 @@ fun <T> FormSpinner(
 ) {
     val iconSize = dimensionResource(id = R.dimen.icon_form)
     var isExpanded by remember { mutableStateOf(false) }
+    var selectedItemState by remember { mutableStateOf(selectedItem) }
 
     ExposedDropdownMenuBox(
         modifier = modifier
@@ -148,7 +173,7 @@ fun <T> FormSpinner(
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(),
-            value = selectedItem?.toString() ?: "",
+            value = selectedItemState?.toString() ?: "",
             onValueChange = { },
             readOnly = true,
             leadingIcon = {
@@ -180,6 +205,7 @@ fun <T> FormSpinner(
                     text = { Text(item.toString()) },
                     onClick = {
                         isExpanded = false
+                        selectedItemState = item
                         onItemSelected(item)
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -347,6 +373,48 @@ fun DurationPickerButton(
             }
         },
         enabled = !record.project.isEmpty() && !record.task.isEmpty()
+    ) {
+        Icon(
+            modifier = Modifier.size(iconSize),
+            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = iconId)),
+            contentDescription = hint
+        )
+        Text(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f),
+            text = text
+        )
+    }
+}
+
+@Composable
+fun DatePickerButton(
+    modifier: Modifier = Modifier,
+    date: Calendar? = null,
+    @DrawableRes iconId: Int,
+    hint: String,
+    isError: Boolean = false,
+    onDateSelected: CalendarCallback
+) {
+    val context: Context = LocalContext.current
+    val iconSize = dimensionResource(id = R.dimen.icon_form)
+    val timeInMillis = date?.timeInMillis ?: TimeRecord.NEVER
+    val text = if (timeInMillis == TimeRecord.NEVER)
+        hint
+    else
+        DateUtils.formatDateTime(context, timeInMillis, FORMAT_DATE_BUTTON)
+    val modifierError = if (isError) {
+        modifier.background(color = MaterialTheme.colorScheme.error)
+    } else {
+        modifier
+    }
+
+    Button(
+        modifier = modifierError.fillMaxWidth(),
+        onClick = {
+            pickDate(context, date ?: Calendar.getInstance(), onDateSelected)
+        }
     ) {
         Icon(
             modifier = Modifier.size(iconSize),

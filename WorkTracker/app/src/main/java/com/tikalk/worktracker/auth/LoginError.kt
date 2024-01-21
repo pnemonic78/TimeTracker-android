@@ -30,16 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.compose
+package com.tikalk.worktracker.auth
 
-import androidx.compose.runtime.Composable
-import java.util.Calendar
-
-typealias ComposableContent = @Composable (() -> Unit)
-typealias UnitCallback = (() -> Unit)
-typealias GenericCallback<T> = ((T) -> Unit)
-typealias BooleanCallback = GenericCallback<Boolean>
-typealias CalendarCallback = GenericCallback<Calendar>
-typealias IntCallback = GenericCallback<Int>
-typealias LongCallback = GenericCallback<Long>
-typealias StringCallback = GenericCallback<String>
+sealed class LoginError(val message: String) {
+    class General(message: String) : LoginError(message)
+    class Name(message: String) : LoginError(message)
+    class Password(message: String) : LoginError(message)
+}

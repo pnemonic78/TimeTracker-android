@@ -102,7 +102,6 @@ class ReportExporterODF(
             val showDurationField = filter.isDurationFieldVisible
             val showNoteField = filter.isNoteFieldVisible
             val showCostField = filter.isCostFieldVisible
-            val showLocationField = filter.isLocationFieldVisible
 
             val locale = Locale.getDefault()
             val currency = Currency.getInstance(locale)
@@ -138,10 +137,6 @@ class ReportExporterODF(
             if (showTaskField) {
                 cell = table.getCellByPosition(columnIndex++, rowIndex)
                 cell.stringValue = context.getString(R.string.task_header)
-            }
-            if (showLocationField) {
-                cell = table.getCellByPosition(columnIndex++, rowIndex)
-                cell.stringValue = context.getString(R.string.location_header)
             }
             var cellHeaderStart: OdfTableCell? = null
             if (showStartField) {
@@ -187,11 +182,6 @@ class ReportExporterODF(
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     cell.stringValue = record.task.name
                 }
-                if (showLocationField) {
-                    val text = record.location.toLocationItem(context).label
-                    cell = table.getCellByPosition(columnIndex++, rowIndex)
-                    cell.stringValue = text
-                }
                 if (showStartField) {
                     cell = table.getCellByPosition(columnIndex++, rowIndex)
                     if (record.start != null) {
@@ -234,9 +224,6 @@ class ReportExporterODF(
                 columnIndex++
             }
             if (showTaskField) {
-                columnIndex++
-            }
-            if (showLocationField) {
                 columnIndex++
             }
             if (showStartField) {

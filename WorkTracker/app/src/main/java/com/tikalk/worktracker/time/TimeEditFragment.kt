@@ -133,7 +133,8 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     val tasks = record.project.tasks
-                    setRecordTask(tasks.find { it.id == taskId } ?: viewModel.taskEmpty)
+                    val task = tasks.find { it.id == taskId } ?: viewModel.taskEmpty
+                    setRecordTask(task)
                 }
                 if (args.containsKey(EXTRA_DATE)) {
                     val dateTime = args.getLong(EXTRA_DATE)

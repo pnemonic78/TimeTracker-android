@@ -32,12 +32,6 @@
 
 package com.tikalk.worktracker.widget
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,12 +41,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.imageResource
@@ -60,51 +52,40 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import com.tikalk.compose.TikalTheme
+import com.tikalk.widget.RotatingContent
 import com.tikalk.worktracker.R
-
-// Each rotation is 1 and 1/3 seconds, but 1332ms divides more evenly
-private const val RotationDuration = 1332
 
 @Composable
 fun TikalProgress() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .zIndex(10000f)
-            .clickable(true) {}
-            .focusable(true)
             .background(color = colorResource(id = com.tikalk.core.R.color.black_x80))
+            .clickable(true) {}
+            .pointerInput(Unit) { }
+            .focusable(true)
+            .zIndex(100000f),
+        contentAlignment = Alignment.Center
     ) {
-        TikalProgressIndicator(
-            modifier = Modifier.align(Alignment.Center)
-        )
+        TikalProgressIndicator()
     }
 }
 
 @Composable
-fun TikalProgressIndicator(modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "splash_transition")
-    val rotation by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = RotationDuration,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    Image(
+fun TikalProgressIndicator(
+    modifier: Modifier = Modifier.size(dimensionResource(id = R.dimen.progress_bar_size_large))
+) {
+    RotatingContent(
         modifier = modifier
-            .progressSemantics()
-            .size(dimensionResource(id = R.dimen.progress_bar_size_large))
-            .rotate(rotation),
-        bitmap = ImageBitmap.imageResource(id = R.drawable.tikal_flower),
-        contentDescription = null
-    )
+    ) {
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .progressSemantics(),
+            bitmap = ImageBitmap.imageResource(id = R.drawable.tikal_flower),
+            contentDescription = null
+        )
+    }
 }
 
 @Preview(name = "default", showBackground = true, device = Devices.DEFAULT)

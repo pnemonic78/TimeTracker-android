@@ -412,7 +412,10 @@ private fun getCalendar(record: TimeRecord?, time: Long = TimeRecord.NEVER): Cal
         if (time != TimeRecord.NEVER) {
             timeInMillis = time
         } else if (record != null) {
-            timeInMillis = record.dateTime
+            val date = record.date
+            year = date.year
+            month = date.month
+            dayOfMonth = date.dayOfMonth
         }
         // Server granularity is seconds.
         second = 0

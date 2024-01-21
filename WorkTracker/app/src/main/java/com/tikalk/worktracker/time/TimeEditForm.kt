@@ -185,10 +185,12 @@ fun TimeEditForm(
                 },
                 error = error
             )
-            ErrorText(
-                modifier = Modifier.padding(top = paddingTop),
-                text = error?.message
-            )
+            if (error != null) {
+                ErrorText(
+                    modifier = Modifier.padding(top = paddingTop),
+                    text = error.message
+                )
+            }
         }
     }
 }

@@ -59,13 +59,11 @@ class TimeViewModel @Inject constructor(
         get() = projectsFlow.value
         set(value) {
             viewModelScope.launch {
-                _projectsFlow.emit(value)
+                _projectsFlow.emit(value.filter { !it.isEmpty() })
             }
         }
     var projectEmpty: Project = Project.EMPTY.copy(true)
-    var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
-        ?: ProjectTask.EMPTY.copy()
-    var locationEmpty: LocationItem = LocationItem(Location.EMPTY, "")
+    var taskEmpty: ProjectTask = ProjectTask.EMPTY.copy()
 
     data class RecordEditData(
         val record: TimeRecord,

@@ -334,20 +334,10 @@ class ReportFragment : InternetFragment() {
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Timber.e(e)
             menuItem.isEnabled = false
-            showError(e)
+            showError(R.string.error_export)
         }
-    }
-
-    private fun showError(error: Throwable) {
-        Timber.e(error)
-        val activity = activity ?: return
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.error_title)
-            .setIcon(R.drawable.ic_dialog)
-            .setMessage(R.string.error_export)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
     }
 
     private fun previewFile(
@@ -364,8 +354,9 @@ class ReportFragment : InternetFragment() {
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Timber.e(e)
             menuItem.isEnabled = false
-            showError(e)
+            showError(R.string.error_export)
         }
     }
 

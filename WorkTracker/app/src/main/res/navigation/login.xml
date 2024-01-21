@@ -39,7 +39,7 @@
         android:id="@+id/loginFragment"
         android:name="com.tikalk.worktracker.auth.LoginFragment"
         android:label="@string/activity_login"
-        tools:layout="@layout/fragment_login">
+        tools:layout="@layout/fragment_compose">
         <argument
             android:name="callerId"
             app:argType="string" />

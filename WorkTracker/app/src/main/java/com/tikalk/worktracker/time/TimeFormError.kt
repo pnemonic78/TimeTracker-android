@@ -40,4 +40,5 @@ sealed class TimeFormError(val message: String) {
     class Finish(message: String) : TimeFormError(message)
     class Duration(message: String) : TimeFormError(message)
     class Note(message: String) : TimeFormError(message)
+    class Period(message: String) : TimeFormError(message)
 }

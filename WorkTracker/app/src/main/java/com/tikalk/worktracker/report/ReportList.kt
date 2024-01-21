@@ -99,7 +99,6 @@ fun ReportList(
                 isDurationFieldVisible = filter.isDurationFieldVisible,
                 isNoteFieldVisible = filter.isNoteFieldVisible,
                 isCostFieldVisible = filter.isCostFieldVisible,
-                isLocationFieldVisible = filter.isLocationFieldVisible,
                 onClick = onClick
             )
         }

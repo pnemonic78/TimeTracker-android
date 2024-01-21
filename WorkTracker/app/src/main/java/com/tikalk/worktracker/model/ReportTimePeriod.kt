@@ -66,3 +66,5 @@ enum class ReportTimePeriod(val value: String, @StringRes val labelId: Int) {
         return value
     }
 }
+
+val DefaultTimePeriod = ReportTimePeriod.THIS_MONTH

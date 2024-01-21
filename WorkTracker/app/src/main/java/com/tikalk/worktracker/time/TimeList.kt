@@ -180,48 +180,6 @@ fun TimeListDateButton(
 }
 
 @Composable
-fun DatePickerButton(
-    modifier: Modifier = Modifier,
-    date: Calendar? = null,
-    @DrawableRes iconId: Int,
-    hint: String,
-    isError: Boolean = false,
-    onDateSelected: CalendarCallback
-) {
-    val context: Context = LocalContext.current
-    val iconSize = dimensionResource(id = R.dimen.icon_form)
-    val timeInMillis = date?.timeInMillis ?: TimeRecord.NEVER
-    val text = if (timeInMillis == TimeRecord.NEVER)
-        hint
-    else
-        DateUtils.formatDateTime(context, timeInMillis, FORMAT_DATE_BUTTON)
-    val modifierError = if (isError) {
-        modifier.background(color = MaterialTheme.colorScheme.error)
-    } else {
-        modifier
-    }
-
-    Button(
-        modifier = modifierError.fillMaxWidth(),
-        onClick = {
-            pickDate(context, date ?: Calendar.getInstance(), onDateSelected)
-        }
-    ) {
-        Icon(
-            modifier = Modifier.size(iconSize),
-            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = iconId)),
-            contentDescription = hint
-        )
-        Text(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .weight(1f),
-            text = text
-        )
-    }
-}
-
-@Composable
 fun FloatingAddButton(
     onClick: UnitCallback
 ) {

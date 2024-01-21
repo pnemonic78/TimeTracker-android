@@ -30,16 +30,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.compose
+package com.tikalk.widget
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
-import java.util.Calendar
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 
-typealias ComposableContent = @Composable (() -> Unit)
-typealias UnitCallback = (() -> Unit)
-typealias GenericCallback<T> = ((T) -> Unit)
-typealias BooleanCallback = GenericCallback<Boolean>
-typealias CalendarCallback = GenericCallback<Calendar>
-typealias IntCallback = GenericCallback<Int>
-typealias LongCallback = GenericCallback<Long>
-typealias StringCallback = GenericCallback<String>
+// Each rotation is 1 and 1/3 seconds, but 1332ms divides more evenly
+private const val RotationDuration = 1332
+
+@Composable
+fun RotatingContent(
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val transition = rememberInfiniteTransition(label = "RotatingContent")
+    val rotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = RotationDuration,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
+
+    Box(
+        modifier = modifier.rotate(rotation),
+        content = content
+    )
+}

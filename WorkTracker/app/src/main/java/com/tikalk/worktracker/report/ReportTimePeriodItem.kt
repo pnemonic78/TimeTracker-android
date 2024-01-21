@@ -30,16 +30,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.compose
+package com.tikalk.worktracker.report
 
-import androidx.compose.runtime.Composable
-import java.util.Calendar
+import android.content.Context
+import com.tikalk.worktracker.model.ReportTimePeriod
 
-typealias ComposableContent = @Composable (() -> Unit)
-typealias UnitCallback = (() -> Unit)
-typealias GenericCallback<T> = ((T) -> Unit)
-typealias BooleanCallback = GenericCallback<Boolean>
-typealias CalendarCallback = GenericCallback<Calendar>
-typealias IntCallback = GenericCallback<Int>
-typealias LongCallback = GenericCallback<Long>
-typealias StringCallback = GenericCallback<String>
+class ReportTimePeriodItem(
+    context: Context,
+    val period: ReportTimePeriod
+) {
+    val label: String = context.getString(period.labelId)
+
+    override fun toString(): String {
+        return label
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is ReportTimePeriodItem) {
+            return this.period == other.period
+        }
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        return period.hashCode()
+    }
+}

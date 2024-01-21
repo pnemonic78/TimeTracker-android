@@ -34,6 +34,7 @@ package com.tikalk.worktracker.user
 
 import com.tikalk.compose.TextFieldViewState
 import com.tikalk.compose.UnitCallback
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -43,7 +44,7 @@ interface ProfileViewState {
     val credentialsLogin: MutableStateFlow<TextFieldViewState>
     val credentialsPassword: MutableStateFlow<TextFieldViewState>
     val credentialsPasswordConfirmation: MutableStateFlow<TextFieldViewState>
-    val errorMessage: StateFlow<String>
+    val error: Flow<ProfileError?>
     val onConfirmClick: UnitCallback
     val onDismiss: UnitCallback
 }

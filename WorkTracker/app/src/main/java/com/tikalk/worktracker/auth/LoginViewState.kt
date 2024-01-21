@@ -66,13 +66,14 @@ package com.tikalk.worktracker.auth
 
 import com.tikalk.compose.TextFieldViewState
 import com.tikalk.compose.UnitCallback
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface LoginViewState {
     val credentialsLogin: MutableStateFlow<TextFieldViewState>
     val credentialsPassword: MutableStateFlow<TextFieldViewState>
-    val errorMessage: StateFlow<String>
+    val error: Flow<LoginError?>
     val onConfirmClick: UnitCallback
     val onDismiss: UnitCallback
 }

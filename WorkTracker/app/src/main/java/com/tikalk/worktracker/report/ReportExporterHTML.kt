@@ -112,7 +112,6 @@ class ReportExporterHTML(
             val showDurationField = filter.isDurationFieldVisible
             val showNoteField = filter.isNoteFieldVisible
             val showCostField = filter.isCostFieldVisible
-            val showLocationField = filter.isLocationFieldVisible
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -184,11 +183,6 @@ class ReportExporterHTML(
                                     +context.getString(R.string.task_header)
                                 }
                             }
-                            if (showLocationField) {
-                                th {
-                                    +context.getString(R.string.location_header)
-                                }
-                            }
                             if (showStartField) {
                                 th {
                                     +context.getString(R.string.start_header)
@@ -231,11 +225,6 @@ class ReportExporterHTML(
                                 if (showTaskField) {
                                     td("text-cell") {
                                         +record.task.name
-                                    }
-                                }
-                                if (showLocationField) {
-                                    td("text-cell") {
-                                        +record.location.toLocationItem(context).label
                                     }
                                 }
                                 if (showStartField) {

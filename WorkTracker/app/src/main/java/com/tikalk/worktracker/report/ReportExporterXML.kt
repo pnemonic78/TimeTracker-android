@@ -93,7 +93,6 @@ class ReportExporterXML(
             val showDurationField = filter.isDurationFieldVisible
             val showNoteField = filter.isNoteFieldVisible
             val showCostField = filter.isCostFieldVisible
-            val showLocationField = filter.isLocationFieldVisible
 
             val file = File(folder, filenamePrefix + EXTENSION)
             val writer: Writer = FileWriter(file)
@@ -119,12 +118,6 @@ class ReportExporterXML(
                     xmlWriter.startTag(ns, "task")
                     xmlWriter.text(record.task.name)
                     xmlWriter.endTag(ns, "task")
-                }
-                if (showLocationField) {
-                    val text = record.location.toLocationItem(context).label
-                    xmlWriter.startTag(ns, "location")
-                    xmlWriter.text(text)
-                    xmlWriter.endTag(ns, "location")
                 }
                 if (showStartField) {
                     xmlWriter.startTag(ns, "start")

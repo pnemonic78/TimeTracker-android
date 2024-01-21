@@ -46,10 +46,11 @@ import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -87,8 +88,8 @@ class ProfileViewModel @Inject constructor(
     override val credentialsLogin = MutableStateFlow(TextFieldViewState())
     override val credentialsPassword = MutableStateFlow(TextFieldViewState())
     override val credentialsPasswordConfirmation = MutableStateFlow(TextFieldViewState())
-    private var _errorMessage = MutableStateFlow("")
-    override val errorMessage: StateFlow<String> = _errorMessage
+    private var _error = MutableStateFlow<ProfileError?>(null)
+    override val error: Flow<ProfileError?> = _error
     override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
     override val onDismiss: UnitCallback = {}
 
@@ -144,7 +145,7 @@ class ProfileViewModel @Inject constructor(
                 value = page.passwordConfirm ?: ""
             )
         )
-        _errorMessage.emit(page.errorMessage ?: "")
+        _error.emit(ProfileError.General(page.errorMessage ?: ""))
     }
 
     suspend fun validateForm(resources: Resources): Boolean {
@@ -161,12 +162,7 @@ class ProfileViewModel @Inject constructor(
         val credentialsPasswordConfirmation = credentialsPasswordConfirmationState.value
 
         // Reset errors.
-        userDisplayNameState.emit(userDisplayName.copy(isError = false))
-        userEmailState.emit(userEmail.copy(isError = false))
-        credentialsLoginState.emit(credentialsLogin.copy(isError = false))
-        credentialsPasswordState.emit(credentialsPassword.copy(isError = false))
-        credentialsPasswordConfirmationState.emit(credentialsPasswordConfirmation.copy(isError = false))
-        _errorMessage.emit("")
+        _error.emit(null)
 
         // Store values at the time of the submission attempt.
         val emailValue = userEmail.value
@@ -179,12 +175,13 @@ class ProfileViewModel @Inject constructor(
         // Check for a valid email address.
         when (validator.validateEmail(emailValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(userEmailState, resources.getString(R.string.error_field_required))
+                _error.emit(ProfileError.Email(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(userEmailState, resources.getString(R.string.error_invalid_email))
+                _error.emit(ProfileError.Email(resources.getString(R.string.error_invalid_email)))
                 return false
             }
         }
@@ -192,18 +189,13 @@ class ProfileViewModel @Inject constructor(
         // Check for a valid login name.
         when (validator.validateUsername(loginValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsLoginState,
-                    resources.getString(R.string.error_field_required)
-                )
+                _error.emit(ProfileError.Login(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsLoginState,
-                    resources.getString(R.string.error_invalid_login)
-                )
+                _error.emit(ProfileError.Login(resources.getString(R.string.error_invalid_login)))
                 return false
             }
         }
@@ -211,53 +203,36 @@ class ProfileViewModel @Inject constructor(
         // Check for a valid password, if the user entered one.
         when (validator.validatePassword(passwordValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsPasswordState,
-                    resources.getString(R.string.error_field_required)
-                )
+                _error.emit(ProfileError.Password(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsPasswordState,
-                    resources.getString(R.string.error_invalid_password)
-                )
+                _error.emit(ProfileError.Password(resources.getString(R.string.error_invalid_password)))
                 return false
             }
         }
 
         when (validator.validatePassword(passwordValue, confirmPasswordValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsPasswordConfirmationState,
-                    resources.getString(R.string.error_field_required)
-                )
+                _error.emit(ProfileError.PasswordConfirmation(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsPasswordConfirmationState,
-                    resources.getString(R.string.error_invalid_password)
-                )
+                _error.emit(ProfileError.PasswordConfirmation(resources.getString(R.string.error_invalid_password)))
                 return false
             }
+
             LoginValidator.ERROR_CONFIRM -> {
-                notifyError(
-                    credentialsPasswordConfirmationState,
-                    resources.getString(R.string.error_match_password)
-                )
+                _error.emit(ProfileError.PasswordConfirmation(resources.getString(R.string.error_match_password)))
                 return false
             }
         }
 
         return true
-    }
-
-    private suspend fun notifyError(state: MutableStateFlow<TextFieldViewState>, message: String) {
-        state.emit(state.value.copy(isError = true))
-        _errorMessage.emit(message)
     }
 
     suspend fun processEdit(
@@ -270,7 +245,7 @@ class ProfileViewModel @Inject constructor(
         val user = User(username = loginValue, email = emailValue, displayName = nameValue)
         val pageWithError = parsePage(html)
         val errorMessage = pageWithError.errorMessage ?: ""
-        _errorMessage.emit(errorMessage)
+        _error.emit(ProfileError.General(errorMessage))
 
         if (errorMessage.isEmpty()) {
             val userCredentials = UserCredentials(loginValue, passwordValue)

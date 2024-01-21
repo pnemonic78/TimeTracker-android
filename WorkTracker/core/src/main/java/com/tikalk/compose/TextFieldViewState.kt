@@ -35,6 +35,5 @@ package com.tikalk.compose
 data class TextFieldViewState(
     var value: String = "",
     val isEnabled: Boolean = true,
-    val isReadOnly: Boolean = false,
-    val isError: Boolean = false
+    val isReadOnly: Boolean = false
 )

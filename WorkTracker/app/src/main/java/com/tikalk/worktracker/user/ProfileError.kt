@@ -30,16 +30,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.compose
+package com.tikalk.worktracker.user
 
-import androidx.compose.runtime.Composable
-import java.util.Calendar
-
-typealias ComposableContent = @Composable (() -> Unit)
-typealias UnitCallback = (() -> Unit)
-typealias GenericCallback<T> = ((T) -> Unit)
-typealias BooleanCallback = GenericCallback<Boolean>
-typealias CalendarCallback = GenericCallback<Calendar>
-typealias IntCallback = GenericCallback<Int>
-typealias LongCallback = GenericCallback<Long>
-typealias StringCallback = GenericCallback<String>
+sealed class ProfileError(val message: String) {
+    class General(message: String) : ProfileError(message)
+    class Name(message: String) : ProfileError(message)
+    class Email(message: String) : ProfileError(message)
+    class Login(message: String) : ProfileError(message)
+    class Password(message: String) : ProfileError(message)
+    class PasswordConfirmation(message: String) : ProfileError(message)
+}

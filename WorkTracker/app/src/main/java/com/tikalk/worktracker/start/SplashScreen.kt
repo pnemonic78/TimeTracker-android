@@ -33,12 +33,6 @@
 package com.tikalk.worktracker.start
 
 import android.content.res.Configuration
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,7 +41,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -57,26 +50,10 @@ import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.widget.TikalProgressIndicator
 
-// Each rotation is 1 and 1/3 seconds, but 1332ms divides more evenly
-private const val RotationDuration = 1332
 private val ProgressSize = 150.dp
 
 @Composable
 fun SplashScreen() {
-    val transition = rememberInfiniteTransition(label = "splash_transition")
-    val rotation by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = RotationDuration,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
     Column(
         modifier = Modifier
             .fillMaxSize()

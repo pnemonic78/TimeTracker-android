@@ -35,6 +35,7 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.html.isChecked
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
+import com.tikalk.worktracker.model.DefaultTimePeriod
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.ReportTimePeriod
@@ -152,11 +153,11 @@ class ReportFormPageParser : FormPageParser<ReportFilter, ReportFormPage, Mutabl
             if (option.hasAttr("selected")) {
                 val value = option.value()
                 if (value.isNotEmpty()) {
-                    return periods.find { value == it.value } ?: ReportTimePeriod.CUSTOM
+                    return periods.find { value == it.value } ?: DefaultTimePeriod
                 }
                 break
             }
         }
-        return ReportTimePeriod.CUSTOM
+        return DefaultTimePeriod
     }
 }
