@@ -150,13 +150,11 @@ class ProfileViewModel @Inject constructor(
     suspend fun validateForm(resources: Resources): Boolean {
         val viewState: ProfileViewState = this
 
-        val userDisplayNameState = viewState.userDisplayName
         val userEmailState = viewState.userEmail
         val credentialsLoginState = viewState.credentialsLogin
         val credentialsPasswordState = viewState.credentialsPassword
         val credentialsPasswordConfirmationState = viewState.credentialsPasswordConfirmation
 
-        val userDisplayName = userDisplayNameState.value
         val userEmail = userEmailState.value
         val credentialsLogin = credentialsLoginState.value
         val credentialsPassword = credentialsPasswordState.value

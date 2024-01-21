@@ -38,7 +38,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -80,7 +80,7 @@ fun HelpScreen() {
             color = colorCategory
         )
 
-        Divider(modifier = Modifier.padding(top = 12.dp), thickness = 1.dp)
+        HorizontalDivider(modifier = Modifier.padding(top = 12.dp), thickness = 1.dp)
 
         Text(
             modifier = paddingCategory,

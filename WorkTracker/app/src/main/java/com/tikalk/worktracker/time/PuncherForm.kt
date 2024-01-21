@@ -157,7 +157,7 @@ fun PuncherForm(
 fun PuncherStartButton(modifier: Modifier = Modifier, record: TimeRecord, onClick: UnitCallback) {
     Button(
         modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_start)),
+        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.buttonStart)),
         onClick = onClick,
         enabled = !record.project.isEmpty() && !record.task.isEmpty()
     ) {
@@ -174,7 +174,7 @@ fun PuncherStartButton(modifier: Modifier = Modifier, record: TimeRecord, onClic
 fun PuncherStopButton(modifier: Modifier = Modifier, onClick: UnitCallback) {
     Button(
         modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.button_stop)),
+        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.buttonStop)),
         onClick = onClick,
     ) {
         Text(text = stringResource(id = R.string.action_stop))

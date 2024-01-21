@@ -110,7 +110,7 @@ fun UserItem(user: User) {
                                 end = username.length
                             )
                             addStyle(
-                                style = SpanStyle(color = MaterialTheme.colorScheme.primary),
+                                style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
                                 start = 0,
                                 end = username.length
                             )

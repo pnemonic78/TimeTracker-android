@@ -35,7 +35,7 @@ package com.tikalk.worktracker.report
 import android.content.res.Configuration
 import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -85,7 +85,7 @@ fun ReportResults(
             filter = filter,
             onClick = onClick
         )
-        Divider()
+        HorizontalDivider()
         ReportTotalsFooter(
             totals = totals,
             isDurationFieldVisible = filter.isDurationFieldVisible,

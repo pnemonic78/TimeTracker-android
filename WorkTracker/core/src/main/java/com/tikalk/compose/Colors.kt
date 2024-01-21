@@ -8,19 +8,13 @@ import androidx.compose.ui.graphics.Color
 // button background is primary
 
 val tikalLightColors = lightColorScheme(
-    primary = Color(0xFFFFCC80),
+    primary = Color(0xFFFF6E40),
     primaryContainer = Color(0xFFFFCC80),
-    secondary = Color(0XFFFF8A65),
-    secondaryContainer = Color(0XFFFF8A65),
-    tertiary = Color(0xFFFF6E40),
-    tertiaryContainer = Color(0xFFFF6E40)
+    secondaryContainer = Color(0xFFFFCC80),
+    surfaceVariant = Color(0xFFFFF5E7)
 )
 
 val tikalDarkColors = darkColorScheme(
-    primary = Color(0xFFFFCC80),
-    primaryContainer = Color(0xFFFFCC80),
-    secondary = Color(0XFFFF8A65),
-    secondaryContainer = Color(0XFFFF8A65),
-    tertiary = Color(0xFFFF6E40),
-    tertiaryContainer = Color(0xFFFF6E40)
+    primary = Color(0XFFFF8A65),
+    primaryContainer = Color(0xFFFFCC80)
 )

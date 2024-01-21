@@ -9,7 +9,6 @@ android {
 
     defaultConfig {
         minSdk = Android.Version.minSdk
-        targetSdk = Android.Version.targetSdk
 
         vectorDrawables.useSupportLibrary = true
 
@@ -52,7 +51,7 @@ dependencies {
     implementation(Android.Jetpack.composeActivity)
     implementation(Android.Jetpack.composeCompiler)
     implementation(Android.Jetpack.composeIcons)
-    implementation(Android.Jetpack.composeMaterial)
+    implementation(Android.Jetpack.composeMaterial3)
     implementation(Android.Jetpack.composeRuntime)
     implementation(Android.Jetpack.composeUi)
     implementation(Android.Jetpack.composeUiTooling)
