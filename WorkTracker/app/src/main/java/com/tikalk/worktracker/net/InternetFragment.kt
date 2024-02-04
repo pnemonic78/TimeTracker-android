@@ -52,4 +52,9 @@ abstract class InternetFragment : TrackerFragment {
     protected fun getResponseError(html: String?): String? {
         return delegate.getResponseError(html)
     }
+
+    protected fun getResponseError(response: Response<String>): String? {
+        val html = response.body()
+        return getResponseError(html)
+    }
 }

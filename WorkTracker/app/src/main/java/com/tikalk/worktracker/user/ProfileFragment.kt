@@ -109,7 +109,7 @@ class ProfileFragment : InternetFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                dataSource.profilePage(firstRun)
+                services.dataSource.profilePage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         viewModel.processPage(page)
@@ -153,7 +153,7 @@ class ProfileFragment : InternetFragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = service.editProfile(
+                val response = services.service.editProfile(
                     name = nameValue,
                     email = emailValue,
                     login = loginValue,

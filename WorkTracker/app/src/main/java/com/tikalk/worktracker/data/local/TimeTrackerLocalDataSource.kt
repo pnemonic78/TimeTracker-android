@@ -39,10 +39,12 @@ import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
+import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.PuncherPage
@@ -60,13 +62,13 @@ import com.tikalk.worktracker.time.dayOfMonth
 import com.tikalk.worktracker.time.dayOfWeek
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
+import java.util.Calendar
+import javax.inject.Inject
+import kotlin.math.max
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
-import java.util.Calendar
-import javax.inject.Inject
-import kotlin.math.max
 
 class TimeTrackerLocalDataSource @Inject constructor(
     private val db: TrackerDatabase,
@@ -357,7 +359,18 @@ class TimeTrackerLocalDataSource @Inject constructor(
         }
     }
 
-    override suspend fun savePage(page: TimeListPage) {
-        TimeListPageSaver(db).save(page)
+    override suspend fun savePage(page: TimeListPage): FormPage<*> {
+        return TimeListPageSaver(db).save(page)
+    }
+
+    override suspend fun editRecord(record: TimeRecord): FormPage<*> {
+        val recordDao = db.timeRecordDao()
+        val entity = record.toTimeRecordEntity()
+        if (record.id == TikalEntity.ID_NONE) {
+            record.id = recordDao.insert(entity)
+        } else {
+            recordDao.update(entity)
+        }
+        return FormPage(record, emptyList(), null)
     }
 }

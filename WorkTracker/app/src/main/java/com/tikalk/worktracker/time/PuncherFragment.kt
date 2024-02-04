@@ -147,7 +147,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
     private fun stopTimerCancel() {
         Timber.i("stopTimerCancel")
 
-        preferences.stopRecord()
+        services.preferences.stopRecord()
         record.apply {
             start = null
             finish = null
@@ -164,7 +164,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
-        val started = preferences.getStartedRecord()
+        val started = services.preferences.getStartedRecord()
         if (started != null) {
             return started
         }
@@ -209,16 +209,16 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
         val recordStarted = getStartedRecord() ?: TimeRecord.EMPTY
         Timber.i("populateForm recordStarted=$recordStarted")
         if (recordStarted.project.isNullOrEmpty() && recordStarted.task.isNullOrEmpty()) {
-            applyFavorite()
+            applyFavorite(record)
         } else if (!recordStarted.isEmpty()) {
             val projects = viewModel.projects
             val recordStartedProjectId = recordStarted.project.id
             val recordStartedTaskId = recordStarted.task.id
             val project = projects.find { it.id == recordStartedProjectId } ?: record.project
-            setRecordProject(project)
+            setRecordProject(record, project)
             val tasks = project.tasks
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
-            setRecordTask(task)
+            setRecordTask(record, task)
             record.start = recordStarted.start
             record.location = recordStarted.location
         }
@@ -248,7 +248,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                dataSource.puncherPage(firstRun)
+                services.dataSource.puncherPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)

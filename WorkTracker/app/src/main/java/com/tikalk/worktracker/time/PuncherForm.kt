@@ -86,6 +86,7 @@ fun PuncherForm(
     val projectsState = projectsFlow.collectAsState(initial = listOf(Project.EMPTY))
     val taskEmptyState = taskEmptyFlow.collectAsState(initial = ProjectTask.EMPTY)
     val recordState = recordFlow.collectAsState(initial = TimeRecord.EMPTY)
+
     PuncherForm(
         projectsState.value,
         taskEmptyState.value,

@@ -43,18 +43,21 @@ import timber.log.Timber
 
 open class FormPageSaver<R : TimeRecord, P : FormPage<R>>(protected val db: TrackerDatabase) {
 
-    suspend fun save(page: P) {
+    suspend fun save(page: P): FormPage<*> {
         Timber.i("save page $page")
+        var result: FormPage<*> = page
         db.withTransaction {
-            savePage(db, page)
+            result = savePage(db, page)
         }
+        return result
     }
 
-    protected open suspend fun savePage(db: TrackerDatabase, page: P) {
+    protected open suspend fun savePage(db: TrackerDatabase, page: P): FormPage<*> {
         saveProjects(db, page.projects)
         val tasks = page.projects.flatMap { project -> project.tasks }
         saveTasks(db, tasks)
         saveProjectTaskKeys(db, page.projects)
+        return page
     }
 
     protected open suspend fun saveProjects(db: TrackerDatabase, projects: List<Project>) {

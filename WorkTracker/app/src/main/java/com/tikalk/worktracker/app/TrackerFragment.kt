@@ -39,10 +39,6 @@ import androidx.lifecycle.lifecycleScope
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
 import com.tikalk.model.TikalResult
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Runnable
@@ -59,16 +55,7 @@ abstract class TrackerFragment : TikalFragment,
     constructor(args: Bundle) : super(args)
 
     @Inject
-    lateinit var preferences: TimeTrackerPrefs
-
-    @Inject
-    lateinit var db: TrackerDatabase
-
-    @Inject
-    lateinit var service: TimeTrackerService
-
-    @Inject
-    lateinit var dataSource: TimeTrackerRepository
+    lateinit var services: TrackerServices
 
     protected abstract val viewModel: TrackerViewModel
     protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)

@@ -51,7 +51,11 @@ import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.AccessDeniedException
+import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.data.remote.FormPageParser
+import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
@@ -59,8 +63,10 @@ import com.tikalk.worktracker.lang.isFalse
 import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.isNullOrEmpty
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeEditPage
+import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.model.time.split
@@ -127,14 +133,14 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
                 if (args.containsKey(EXTRA_PROJECT_ID)) {
                     val projectId = args.getLong(EXTRA_PROJECT_ID)
                     val projects = viewModel.projects
-                    setRecordProject(projects.find { it.id == projectId }
+                    setRecordProject(record, projects.find { it.id == projectId }
                         ?: viewModel.projectEmpty)
                 }
                 if (args.containsKey(EXTRA_TASK_ID)) {
                     val taskId = args.getLong(EXTRA_TASK_ID)
                     val tasks = record.project.tasks
                     val task = tasks.find { it.id == taskId } ?: viewModel.taskEmpty
-                    setRecordTask(task)
+                    setRecordTask(record, task)
                 }
                 if (args.containsKey(EXTRA_DATE)) {
                     val dateTime = args.getLong(EXTRA_DATE)
@@ -166,7 +172,7 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         }
 
         if (record.project.isNullOrEmpty() and record.task.isNullOrEmpty()) {
-            applyFavorite()
+            applyFavorite(record)
         }
     }
 
@@ -230,7 +236,7 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         showProgress(true)
         lifecycleScope.launch {
             try {
-                dataSource.editPage(recordId, firstRun)
+                services.dataSource.editPage(recordId, firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -256,15 +262,6 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
     override fun onLoginFailure(login: String, reason: String) {
         super.onLoginFailure(login, reason)
         activity?.finish()
-    }
-
-    private suspend fun saveRecord(record: TimeRecord) {
-        val recordDao = db.timeRecordDao()
-        if (record.id == TikalEntity.ID_NONE) {
-            recordDao.insert(record.toTimeRecordEntity())
-        } else {
-            recordDao.update(record.toTimeRecordEntity())
-        }
     }
 
     override fun authenticate(submit: Boolean) {
@@ -329,58 +326,18 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
             setErrorLabel("")
         }
 
-        val dateValue = formatSystemDate(record.date)!!
-
-        var startValue: String? = null
-        var finishValue: String? = null
-        var durationValue: String? = null
-        if ((record.start != null) && (record.finish != null)) {
-            startValue = formatSystemTime(record.start)
-            finishValue = formatSystemTime(record.finish)
-        } else {
-            durationValue = formatDuration(record.duration)
-        }
-
         try {
-            val response = if (record.id == TikalEntity.ID_NONE) {
-                service.addTime(
-                    projectId = record.project.id,
-                    taskId = record.task.id,
-                    date = dateValue,
-                    start = startValue,
-                    finish = finishValue,
-                    duration = durationValue,
-                    note = record.note,
-                    locationId = record.location.id
-                )
-            } else {
-                service.editTime(
-                    id = record.id,
-                    projectId = record.project.id,
-                    taskId = record.task.id,
-                    date = dateValue,
-                    start = startValue,
-                    finish = finishValue,
-                    duration = durationValue,
-                    note = record.note,
-                    locationId = record.location.id
-                )
-            }
-
-            if (record.id != TikalEntity.ID_NONE) {
-                saveRecord(record)
-            }
+            val page = services.dataSource.editRecord(record)
 
             if (isLast) {
                 showProgressMain(false)
             }
 
-            if (isValidResponse(response)) {
-                val html = response.body()!!
-                processSubmittedPage(record, isLast, html)
-            } else {
-                authenticateMain(true)
-            }
+            processSubmittedPage(record, isLast, page)
+        } catch (ade: AccessDeniedException) {
+            authenticateMain(true)
+        } catch (ae: AuthenticationException) {
+            authenticateMain(true)
         } catch (e: Exception) {
             Timber.e(e, "Error saving record: ${e.message}")
             showProgressMain(false)
@@ -388,19 +345,23 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         }
     }
 
-    private suspend fun processSubmittedPage(record: TimeRecord, isLast: Boolean, html: String) {
-        val errorMessage = getResponseError(html)
-        Timber.i("processSubmittedPage last=$isLast err=[$errorMessage]")
-        if (errorMessage.isNullOrEmpty()) {
-            onRecordSubmitted(record, isLast, html)
+    private suspend fun processSubmittedPage(
+        record: TimeRecord,
+        isLast: Boolean,
+        page: FormPage<*>
+    ) {
+        val errorMessage = page.errorMessage
+        Timber.i("processSubmittedPage last=$isLast error=[$errorMessage]")
+        if (errorMessage.isNullOrEmpty() && (page is TimeListPage)) {
+            onRecordSubmitted(record, isLast, page)
         } else {
-            onRecordError(record, errorMessage)
+            onRecordError(record, errorMessage.orEmpty())
         }
     }
 
-    private suspend fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, html: String) {
+    private suspend fun onRecordSubmitted(record: TimeRecord, isLast: Boolean, page: TimeListPage) {
         recordsToSubmit.remove(record)
-        viewModel.onRecordEditSubmitted(record, isLast, html)
+        viewModel.onRecordEditSubmitted(record, isLast, page)
 
         if (isLast) {
             val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
@@ -423,6 +384,7 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
             record.start = null
+            record.finish = null
             record.status = TaskRecordStatus.DELETED
             viewModel.onRecordEditDeleted(record)
             return
@@ -434,14 +396,14 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         // Fetch from remote server.
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = service.deleteTime(record.id)
+                val response = services.service.deleteTime(record.id)
+                val page = FormPageParser.parse(response)
                 showProgressMain(false)
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processDeletePage(record, html)
-                } else {
-                    authenticateMain()
-                }
+                processDeletePage(record, page)
+            } catch (ade: AccessDeniedException) {
+                authenticateMain(true)
+            } catch (ae: AuthenticationException) {
+                authenticateMain(true)
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting record: ${e.message}")
                 showProgressMain(false)
@@ -450,20 +412,20 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         }
     }
 
-    private suspend fun processDeletePage(record: TimeRecord, html: String) {
+    private suspend fun processDeletePage(record: TimeRecord, page: FormPage<*>) {
         Timber.i("processDeletePage")
-        val errorMessage = getResponseError(html)
-        if (errorMessage.isNullOrEmpty()) {
-            onRecordDeleted(record, html)
+        val errorMessage = page.errorMessage
+        if (errorMessage.isNullOrEmpty() && (page is TimeListPage)) {
+            onRecordDeleted(record, page)
         } else {
-            onRecordError(record, errorMessage)
+            onRecordError(record, errorMessage.orEmpty())
         }
     }
 
-    private suspend fun onRecordDeleted(record: TimeRecord, html: String) {
+    private suspend fun onRecordDeleted(record: TimeRecord, page: TimeListPage?) {
         record.status = TaskRecordStatus.DELETED
         recordsToSubmit.remove(record)
-        viewModel.onRecordEditDeleted(record, html)
+        viewModel.onRecordEditDeleted(record, page)
 
         val isStop = arguments?.getBoolean(EXTRA_STOP, false) ?: false
         if (isStop) {
@@ -574,7 +536,7 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private fun stopTimer() {
-        preferences.stopRecord()
+        services.preferences.stopRecord()
     }
 
     private fun onRecordChanged(record: TimeRecord) {

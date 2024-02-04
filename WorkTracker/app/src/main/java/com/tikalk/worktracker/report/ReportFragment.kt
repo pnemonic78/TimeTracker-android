@@ -160,7 +160,7 @@ class ReportFragment : InternetFragment() {
 
         lifecycleScope.launch {
             try {
-                dataSource.reportPage(filter, firstRun)
+                services.dataSource.reportPage(filter, firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)

@@ -39,7 +39,7 @@ class TimeEditPage(
     record: TimeRecord,
     projects: List<Project>,
     errorMessage: String?,
-    val date: Calendar
+    val date: Calendar = record.date
 ) : FormPage<TimeRecord>(record, projects, errorMessage)
 
 class MutableTimeEditPage(record: TimeRecord) : MutableFormPage<TimeRecord>(record) {

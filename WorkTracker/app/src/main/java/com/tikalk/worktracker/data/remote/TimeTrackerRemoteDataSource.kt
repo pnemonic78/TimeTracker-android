@@ -37,6 +37,7 @@ import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.PuncherPage
@@ -45,15 +46,16 @@ import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragmentDelegate.Companion.validateResponse
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.formatSystemDate
+import java.util.Calendar
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
-import java.util.Calendar
-import javax.inject.Inject
 
 class TimeTrackerRemoteDataSource @Inject constructor(
     private val service: TimeTrackerService,
@@ -79,8 +81,8 @@ class TimeTrackerRemoteDataSource @Inject constructor(
         return TimeEditPageParser().parse(html)
     }
 
-    private suspend fun savePage(page: TimeEditPage) {
-        return TimeEditPageSaver(db).save(page)
+    private suspend fun savePage(page: TimeEditPage): FormPage<*> {
+        return TimeEditPageSaver(service, db).save(page)
     }
 
     override fun projectsPage(refresh: Boolean): Flow<ProjectsPage> {
@@ -184,8 +186,12 @@ class TimeTrackerRemoteDataSource @Inject constructor(
         return TimeListPageParser().parse(html)
     }
 
-    override suspend fun savePage(page: TimeListPage) {
-        TimeListPageSaver(db).save(page)
+    override suspend fun savePage(page: TimeListPage): FormPage<*> {
+        return TimeListPageSaver(db).save(page)
+    }
+
+    override suspend fun editRecord(record: TimeRecord): FormPage<*> {
+        return TimeEditPageSaver(service, db).saveRecord(service, record)
     }
 
     override fun profilePage(refresh: Boolean): Flow<ProfilePage> {

@@ -161,7 +161,9 @@ fun <T> FormSpinner(
 ) {
     val iconSize = dimensionResource(id = R.dimen.icon_form)
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedItemState by remember { mutableStateOf(selectedItem) }
+    var selectedItemState by remember { mutableStateOf<T?>(null) }
+
+    selectedItemState = selectedItem
 
     ExposedDropdownMenuBox(
         modifier = modifier

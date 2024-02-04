@@ -35,12 +35,15 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.html.selectByName
 import com.tikalk.html.textBr
 import com.tikalk.html.value
+import com.tikalk.worktracker.auth.AccessDeniedException
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.MutableFormPage
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.InternetFragmentDelegate
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.time.parseSystemDate
 import java.util.Calendar
 import java.util.regex.Pattern
@@ -48,6 +51,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
+import retrofit2.Response
 import timber.log.Timber
 
 open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<R>> {
@@ -269,5 +273,21 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
         val inputDate = form.selectByName("date") ?: return null
         val dateValue = inputDate.value()
         return parseSystemDate(dateValue)
+    }
+
+    companion object {
+        fun parse(response: Response<String>): FormPage<*> {
+            InternetFragmentDelegate.validateResponse(response)
+            val html = response.body().orEmpty()
+            val networkResponse = response.raw().networkResponse!!
+            val networkUrl = networkResponse.request.url
+            return when (val pageName = networkUrl.pathSegments[networkUrl.pathSize - 1]) {
+                TimeTrackerService.PHP_EDIT -> TimeEditPageParser().parse(html)
+                TimeTrackerService.PHP_REPORT -> ReportFormPageParser().parse(html)
+                TimeTrackerService.PHP_TIME -> TimeListPageParser().parse(html)
+                TimeTrackerService.PHP_ACCESS_DENIED -> throw AccessDeniedException()
+                else -> throw IllegalArgumentException("unknown form page: $pageName")
+            }
+        }
     }
 }

@@ -61,6 +61,7 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import java.net.ConnectException
 import java.util.Calendar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -79,7 +80,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     private val _dateFlow = MutableStateFlow<Calendar>(Calendar.getInstance())
     private val dateFlow: StateFlow<Calendar> = _dateFlow
     private val _totalsFlow = MutableStateFlow<TimeTotals?>(null)
-    private val totalsFlow : StateFlow<TimeTotals?> = _totalsFlow
+    private val totalsFlow: StateFlow<TimeTotals?> = _totalsFlow
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
 
     /** Is the record from the "timer" or "+" FAB? */
@@ -147,12 +148,12 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
 
         lifecycleScope.launch {
             viewModel.deleted.collect { data ->
-                if (data != null) onRecordEditDeleted(data.record, data.responseHtml)
+                if (data != null) onRecordEditDeleted(data.record, data.page)
             }
         }
         lifecycleScope.launch {
             viewModel.edited.collect { data ->
-                if (data != null) onRecordEditSubmitted(data.record, data.isLast, data.responseHtml)
+                if (data != null) onRecordEditSubmitted(data.record, data.isLast, data.page)
             }
         }
         lifecycleScope.launch {
@@ -177,21 +178,27 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     }
 
     /**
-     * Load and then fetch.
+     * Fetch the page.
      */
-    private fun loadAndFetchPage(date: Calendar, refresh: Boolean) {
+    private fun fetchPage(date: Calendar, refresh: Boolean) {
         Timber.i("loadAndFetchPage ${formatSystemDate(date)} refresh=$refresh")
 
         showProgress(true)
         lifecycleScope.launch {
             try {
-                dataSource.timeListPage(date, refresh)
+                services.dataSource.timeListPage(date, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
                         handleArguments()
                         showProgress(false)
                     }
+                //TODO authenticateMain(loginAutomatic) when relevant error
+            } catch (ce: ConnectException) {
+                Timber.e(ce, "Error loading page: ${ce.message}")
+                if (refresh) {
+                    fetchPage(date, false)
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Error loading page: ${e.message}")
                 showProgress(false)
@@ -200,40 +207,11 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
         }
     }
 
-    private var fetchingPage = false
-
-    /**
-     * Fetch from remote server.
-     */
-    private fun fetchPage(date: Calendar) {
-        val dateFormatted = formatSystemDate(date)!!
-        Timber.i("fetchPage $dateFormatted fetching=$fetchingPage")
-        if (fetchingPage) return
-        fetchingPage = true
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = service.fetchTimes(dateFormatted)
-                if (isValidResponse(response)) {
-                    val html = response.body()!!
-                    processPage(html, date)
-                } else {
-                    authenticateMain(loginAutomatic)
-                }
-                fetchingPage = false
-            } catch (e: Exception) {
-                Timber.e(e, "Error fetching page: ${e.message}")
-                handleErrorMain(e)
-                fetchingPage = false
-            }
-        }
-    }
-
     private suspend fun processPage(html: String, date: Calendar) {
         Timber.i("processPage ${formatSystemDate(date)}")
         val page = TimeListPageParser().parse(html)
         processPage(page)
-        dataSource.savePage(page)
+        services.dataSource.savePage(page)
     }
 
     private suspend fun processPage(page: TimeListPage) {
@@ -349,14 +327,14 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
 
     private fun navigateDate(date: Calendar, refresh: Boolean = true) {
         Timber.i("navigateDate ${formatSystemDate(date)}")
-        loadAndFetchPage(date, refresh)
+        fetchPage(date, refresh)
         hideEditor()
     }
 
     @MainThread
     override fun run() {
         Timber.i("run first=$firstRun")
-        loadAndFetchPage(record.date, firstRun)
+        fetchPage(record.date, firstRun)
     }
 
     private fun handleArguments() {
@@ -394,7 +372,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
         }
     }
 
-    private fun onRecordEditSubmitted(record: TimeRecord, isLast: Boolean, responseHtml: String) {
+    private fun onRecordEditSubmitted(record: TimeRecord, isLast: Boolean, page: TimeListPage?) {
         Timber.i("record submitted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             val records = recordsData.value
@@ -410,7 +388,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
                     showTimer(this, true)
                 }
                 // Refresh the list with the inserted item.
-                maybeFetchPage(record.date, responseHtml)
+                maybeFetchPage(record.date, page)
                 return
             }
         }
@@ -428,11 +406,11 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
                     lifecycleScope.launch { recordsData.emit(recordsNew) }
                 }
             }
-            maybeFetchPage(record.date, responseHtml)
+            maybeFetchPage(record.date, page)
         }
     }
 
-    private fun onRecordEditDeleted(record: TimeRecord, responseHtml: String) {
+    private fun onRecordEditDeleted(record: TimeRecord, page: TimeListPage?) {
         Timber.i("record deleted: $record")
         if (record.id == TikalEntity.ID_NONE) {
             if (recordForTimer) {
@@ -450,7 +428,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
             val records = recordsData.value
             val recordsActive = records.filter { it.status != TaskRecordStatus.DELETED }
             lifecycleScope.launch { recordsData.emit(recordsActive) }
-            maybeFetchPage(record.date, responseHtml)
+            maybeFetchPage(record.date, page)
         }
     }
 
@@ -511,13 +489,13 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
         return formNavHostFragment.childFragmentManager.findFragmentByClass(TimeFormFragment::class.java) as TimeFormFragment<TimeRecord>
     }
 
-    private fun maybeFetchPage(date: Calendar, responseHtml: String) {
-        if (responseHtml.isEmpty()) {
-            fetchPage(date)
-        } else {
+    private fun maybeFetchPage(date: Calendar, page: TimeListPage? = null) {
+        if (page != null) {
             CoroutineScope(Dispatchers.IO).launch {
-                processPage(responseHtml, date)
+                processPage(page)
             }
+        } else {
+            fetchPage(date, true)
         }
     }
 

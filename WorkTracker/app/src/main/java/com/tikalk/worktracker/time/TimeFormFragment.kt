@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.time
 
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
@@ -79,16 +78,6 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         viewModel.projects = getProjects()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        lifecycleScope.launch {
-            viewModel.projectsFlow.collect { projects ->
-                onProjectsUpdated(projects)
-            }
-        }
-    }
-
     abstract fun populateForm(record: R)
 
     @MainThread
@@ -100,7 +89,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
 
     protected open fun markFavorite(record: R) {
         Timber.i("markFavorite $record")
-        preferences.setFavorite(record)
+        services.preferences.setFavorite(record)
         Toast.makeText(
             requireContext(),
             getString(
@@ -124,7 +113,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         this.record = record
     }
 
-    protected open fun setRecordProject(project: Project): Boolean {
+    protected open fun setRecordProject(record: R, project: Project): Boolean {
         Timber.d("setRecordProject project=$project")
         if (record.project != project) {
             record.project = project
@@ -133,7 +122,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         return false
     }
 
-    protected open fun setRecordTask(task: ProjectTask): Boolean {
+    protected open fun setRecordTask(record: R, task: ProjectTask): Boolean {
         Timber.d("setRecordTask task=$task")
         if (record.task != task) {
             record.task = task
@@ -142,7 +131,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         return false
     }
 
-    protected open fun setRecordStart(time: Calendar): Boolean {
+    protected open fun setRecordStart(record: R, time: Calendar): Boolean {
         Timber.d("setRecordStart time=$time")
         if (record.start != time) {
             record.date = time
@@ -152,7 +141,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         return false
     }
 
-    protected open fun setRecordFinish(time: Calendar): Boolean {
+    protected open fun setRecordFinish(record: R, time: Calendar): Boolean {
         Timber.d("setRecordFinish time=$time")
         if (record.finish != time) {
             record.finish = time
@@ -161,31 +150,24 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         return false
     }
 
-    protected open fun setRecordDuration(date: Calendar): Boolean {
+    protected open fun setRecordDuration(record: R, date: Calendar): Boolean {
         Timber.d("setRecordDuration date=$date")
         record.setDurationDateTime(date.timeInMillis)
         return true
     }
 
-    protected open fun onProjectsUpdated(projects: List<Project>) {
-        lifecycleScope.launch {
-            val record = this@TimeFormFragment.record
-            populateAndBind(record)
-        }
-    }
-
-    protected fun applyFavorite() {
-        val projectFavorite = preferences.getFavoriteProject()
+    protected fun applyFavorite(record: R) {
+        val projectFavorite = services.preferences.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
             val projects = viewModel.projects
             val project = projects.find { it.id == projectFavorite } ?: record.project
-            setRecordProject(project)
+            setRecordProject(record, project)
 
             val tasks = project.tasks
-            val taskFavorite = preferences.getFavoriteTask()
+            val taskFavorite = services.preferences.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
                 val task = tasks.find { it.id == taskFavorite } ?: record.task
-                setRecordTask(task)
+                setRecordTask(record, task)
             }
         }
     }
@@ -232,6 +214,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
         val tasksWithEmpty = tasks.filter { !it.isEmpty() }
             .sortedBy { it.name }
             .add(0, taskEmpty)
+        viewModel.taskEmpty = taskEmpty
         return tasksWithEmpty
     }
 

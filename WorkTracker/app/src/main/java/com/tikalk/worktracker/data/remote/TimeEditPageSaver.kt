@@ -35,23 +35,73 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerService
+import com.tikalk.worktracker.time.formatDuration
+import com.tikalk.worktracker.time.formatSystemDate
+import com.tikalk.worktracker.time.formatSystemTime
 
-class TimeEditPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeEditPage>(db) {
+class TimeEditPageSaver(
+    private val service: TimeTrackerService,
+    db: TrackerDatabase
+) : FormPageSaver<TimeRecord, TimeEditPage>(db) {
 
-    override suspend fun savePage(db: TrackerDatabase, page: TimeEditPage) {
-        super.savePage(db, page)
+    override suspend fun savePage(db: TrackerDatabase, page: TimeEditPage): FormPage<*> {
+        val result = super.savePage(db, page)
         saveRecord(db, page.record)
+        return result
     }
 
     private suspend fun saveRecord(db: TrackerDatabase, record: TimeRecord) {
         val recordDao = db.timeRecordDao()
         val entity = record.toTimeRecordEntity()
         if (record.id == TikalEntity.ID_NONE) {
-            recordDao.insert(entity)
+            record.id = recordDao.insert(entity)
         } else {
             recordDao.update(entity)
         }
+    }
+
+    suspend fun saveRecord(service: TimeTrackerService, record: TimeRecord): FormPage<*> {
+        val dateValue = formatSystemDate(record.date)!!
+
+        var startValue: String? = null
+        var finishValue: String? = null
+        var durationValue: String? = null
+        if ((record.start != null) && (record.finish != null)) {
+            startValue = formatSystemTime(record.start)
+            finishValue = formatSystemTime(record.finish)
+        } else {
+            durationValue = formatDuration(record.duration)
+        }
+
+        val response = if (record.id == TikalEntity.ID_NONE) {
+            service.addTime(
+                projectId = record.project.id,
+                taskId = record.task.id,
+                date = dateValue,
+                start = startValue,
+                finish = finishValue,
+                duration = durationValue,
+                note = record.note,
+                locationId = record.location.id
+            )
+        } else {
+            service.editTime(
+                id = record.id,
+                projectId = record.project.id,
+                taskId = record.task.id,
+                date = dateValue,
+                start = startValue,
+                finish = finishValue,
+                duration = durationValue,
+                note = record.note,
+                locationId = record.location.id
+            )
+        }
+
+        return FormPageParser.parse(response)
     }
 }

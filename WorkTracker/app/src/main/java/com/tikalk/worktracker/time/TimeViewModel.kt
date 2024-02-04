@@ -35,12 +35,10 @@ package com.tikalk.worktracker.time
 import androidx.lifecycle.viewModelScope
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.report.LocationItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +66,7 @@ class TimeViewModel @Inject constructor(
     data class RecordEditData(
         val record: TimeRecord,
         val isLast: Boolean = true,
-        val responseHtml: String = ""
+        val page: TimeListPage? = null
     )
 
     private val _edited = MutableStateFlow<RecordEditData?>(null)
@@ -78,17 +76,17 @@ class TimeViewModel @Inject constructor(
      * The record was submitted.
      * @param record the record.
      * @param last is this the last record in a series that was submitted?
-     * @param responseHtml the response HTML.
+     * @param page the response page.
      */
     suspend fun onRecordEditSubmitted(
         record: TimeRecord,
         last: Boolean = true,
-        responseHtml: String = ""
+        page: TimeListPage? = null
     ) {
-        _edited.emit(RecordEditData(record, last, responseHtml))
+        _edited.emit(RecordEditData(record, last, page))
     }
 
-    data class RecordDeletedData(val record: TimeRecord, val responseHtml: String = "")
+    data class RecordDeletedData(val record: TimeRecord, val page: TimeListPage? = null)
 
     private val _deleted = MutableStateFlow<RecordDeletedData?>(null)
     val deleted: Flow<RecordDeletedData?> = _deleted
@@ -98,8 +96,8 @@ class TimeViewModel @Inject constructor(
      * @param record the record.
      * @param responseHtml the response HTML.
      */
-    suspend fun onRecordEditDeleted(record: TimeRecord, responseHtml: String = "") {
-        _deleted.emit(RecordDeletedData(record, responseHtml))
+    suspend fun onRecordEditDeleted(record: TimeRecord, page: TimeListPage? = null) {
+        _deleted.emit(RecordDeletedData(record, page))
     }
 
     private val _favorite = MutableStateFlow<TimeRecord?>(null)

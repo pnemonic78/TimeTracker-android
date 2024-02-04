@@ -103,8 +103,8 @@ class ReportFormFragment : TimeFormFragment<ReportFilter>() {
                     onProjectSelected = ::onProjectItemSelected,
                     onTaskSelected = ::onTaskItemSelected,
                     onPeriodSelected = ::onPeriodItemSelected,
-                    onStartDateSelected = { setRecordStart(it) },
-                    onFinishDateSelected = { setRecordFinish(it) },
+                    onStartDateSelected = { setRecordStart(record, it) },
+                    onFinishDateSelected = { setRecordFinish(record, it) },
                     onProjectFieldVisible = { record.isProjectFieldVisible = it },
                     onTaskFieldVisible = { record.isTaskFieldVisible = it },
                     onStartFieldVisible = { record.isStartFieldVisible = it },
@@ -128,12 +128,12 @@ class ReportFormFragment : TimeFormFragment<ReportFilter>() {
 
     private fun onProjectItemSelected(project: Project) {
         Timber.d("onProjectItemSelected project=$project")
-        setRecordProject(project)
+        setRecordProject(record, project)
     }
 
     private fun onTaskItemSelected(task: ProjectTask) {
         Timber.d("onTaskItemSelected task=$task")
-        setRecordTask(task)
+        setRecordTask(record, task)
     }
 
     private fun onPeriodItemSelected(period: ReportTimePeriod) {
@@ -147,7 +147,7 @@ class ReportFormFragment : TimeFormFragment<ReportFilter>() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                dataSource.reportFormPage(firstRun)
+                services.dataSource.reportFormPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
