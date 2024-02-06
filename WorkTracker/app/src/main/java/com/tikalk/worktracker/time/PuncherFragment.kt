@@ -147,7 +147,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
     private fun stopTimerCancel() {
         Timber.i("stopTimerCancel")
 
-        services.preferences.stopRecord()
+        viewModel.stopRecord()
         record.apply {
             start = null
             finish = null
@@ -164,7 +164,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private fun getStartedRecord(args: Bundle? = arguments): TimeRecord? {
-        val started = services.preferences.getStartedRecord()
+        val started = viewModel.getStartedRecord()
         if (started != null) {
             return started
         }
@@ -248,7 +248,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                services.dataSource.puncherPage(firstRun)
+                viewModel.puncherPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)

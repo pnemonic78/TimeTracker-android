@@ -51,11 +51,8 @@ import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.AccessDeniedException
 import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.data.remote.FormPageParser
-import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
@@ -218,10 +215,12 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         run(arguments)
     }
 
+    @MainThread
     private fun run(arguments: Bundle?) {
         run(arguments, firstRun)
     }
 
+    @MainThread
     private fun run(arguments: Bundle?, refresh: Boolean) {
         if (maybeResubmit()) return
 
@@ -238,10 +237,10 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         val record = this.record
         val recordId = args.getLong(EXTRA_RECORD_ID, record.id)
 
-        showProgress(true)
         lifecycleScope.launch {
             try {
-                services.dataSource.editPage(recordId, refresh)
+                showProgress(true)
+                viewModel.editPage(recordId, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -285,10 +284,12 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         }
     }
 
+    @MainThread
     private fun submitRecord() {
-        lifecycleScope.launch(Dispatchers.IO) { submit() }
+        lifecycleScope.launch { submit() }
     }
 
+    @MainThread
     private suspend fun submit(): Boolean {
         val record = this.record
         Timber.i("submit $record")
@@ -310,48 +311,49 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         return true
     }
 
-    private fun submit(records: List<TimeRecord>) {
+    @MainThread
+    private suspend fun submit(records: List<TimeRecord>) {
         val size = records.size
         if (size == 0) return
         val lastIndex = size - 1
-        lifecycleScope.launch(Dispatchers.IO) {
-            submit(records[0], true, 0 == lastIndex)
-            if (size > 1) {
-                for (i in 1 until size) {
-                    submit(records[i], false, i == lastIndex)
-                }
+
+        submit(records[0], true, 0 == lastIndex)
+        if (size > 1) {
+            for (i in 1 until size) {
+                submit(records[i], false, i == lastIndex)
             }
         }
     }
 
+    @MainThread
     private suspend fun submit(
         record: TimeRecord,
         isFirst: Boolean = true,
         isLast: Boolean = true
     ) {
         Timber.i("submit $record first=$isFirst last=$isLast")
-        // Show a progress spinner, and kick off a background task to submit the form.
-        if (isFirst) {
-            showProgressMain(true)
-            setErrorLabel("")
-        }
-
         try {
-            val page = services.dataSource.editRecord(record)
-
-            if (isLast) {
-                showProgressMain(false)
+            // Show a progress spinner, and kick off a background task to submit the form.
+            if (isFirst) {
+                showProgress(true)
+                setErrorLabel("")
             }
 
-            processSubmittedPage(record, isLast, page)
-        } catch (ade: AccessDeniedException) {
-            authenticateMain(true)
+            viewModel.editRecord(record)
+                .flowOn(Dispatchers.IO)
+                .collect { page ->
+                    if (page.projects.isEmpty()) return@collect
+                    if (isLast) {
+                        showProgress(false)
+                    }
+                    processSubmittedPage(record, isLast, page)
+                }
         } catch (ae: AuthenticationException) {
-            authenticateMain(true)
+            authenticate(true)
         } catch (e: Exception) {
             Timber.e(e, "Error saving record: ${e.message}")
-            showProgressMain(false)
-            handleErrorMain(e)
+            showProgress(false)
+            handleError(e)
         }
     }
 
@@ -390,6 +392,7 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         lifecycleScope.launch { deleteRecord(record) }
     }
 
+    @MainThread
     private suspend fun deleteRecord(record: TimeRecord) {
         Timber.i("deleteRecord $record")
         if (record.id == TikalEntity.ID_NONE) {
@@ -400,25 +403,23 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
             return
         }
 
-        // Show a progress spinner, and kick off a background task to fetch the page.
-        showProgress(true)
+        // Update the remote server.
+        try {
+            // Show a progress spinner, and kick off a background task to fetch the page.
+            showProgress(true)
 
-        // Fetch from remote server.
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = services.service.deleteTime(record.id)
-                val page = FormPageParser.parse(response)
-                showProgressMain(false)
-                processDeletePage(record, page)
-            } catch (ade: AccessDeniedException) {
-                authenticateMain(true)
-            } catch (ae: AuthenticationException) {
-                authenticateMain(true)
-            } catch (e: Exception) {
-                Timber.e(e, "Error deleting record: ${e.message}")
-                showProgressMain(false)
-                handleErrorMain(e)
-            }
+            viewModel.deleteRecord(record)
+                .flowOn(Dispatchers.IO)
+                .collect { page ->
+                    showProgress(false)
+                    processDeletePage(record, page)
+                }
+        } catch (ae: AuthenticationException) {
+            authenticate(true)
+        } catch (e: Exception) {
+            Timber.e(e, "Error deleting record: ${e.message}")
+            showProgress(false)
+            handleError(e)
         }
     }
 
@@ -519,13 +520,11 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         return super.onMenuItemSelected(menuItem)
     }
 
-    @MainThread
     private suspend fun setErrorLabel(text: String) {
         val error = if (text.isEmpty()) null else TimeFormError.General(text)
         setErrorLabel(error)
     }
 
-    @MainThread
     private suspend fun setErrorLabel(error: TimeFormError?) {
         errorFlow.emit(error)
     }
@@ -535,18 +534,21 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
     }
 
     /** Maybe we tried to submit the form and were asked to login first? */
+    @MainThread
     private fun maybeResubmit(): Boolean {
         val records = recordsToSubmit
         Timber.i("maybeResubmit records=$records")
         if (records.isNotEmpty()) {
-            submit(records)
+            lifecycleScope.launch {
+                submit(records)
+            }
             return true
         }
         return false
     }
 
     private fun stopTimer() {
-        services.preferences.stopRecord()
+        viewModel.stopRecord()
     }
 
     private fun onRecordChanged(record: TimeRecord) {

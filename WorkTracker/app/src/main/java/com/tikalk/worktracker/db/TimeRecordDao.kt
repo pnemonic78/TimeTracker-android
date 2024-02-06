@@ -94,6 +94,14 @@ interface TimeRecordDao : BaseDao<TimeRecordEntity> {
     ): List<TimeTotals>
 
     /**
+     * Delete a record.
+     * @param id the record's ID to be deleted.
+     * @return the number of records deleted.
+     */
+    @Query("DELETE FROM record WHERE id = :id")
+    suspend fun delete(id: Long): Int
+
+    /**
      * Delete all records.
      */
     @Query("DELETE FROM record")

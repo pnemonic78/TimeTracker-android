@@ -74,8 +74,9 @@ class LoginFragment : InternetDialogFragment {
                 val loginState = viewState.credentialsLogin.value
                 val passwordState = viewState.credentialsPassword.value
 
-                val loginValue = preferences.userCredentials.login
-                val passwordValue = preferences.userCredentials.password
+                val userCredentials = viewModel.userCredentials
+                val loginValue = userCredentials.login
+                val passwordValue = userCredentials.password
 
                 viewState.credentialsLogin.emit(loginState.copy(value = loginValue))
                 viewState.credentialsPassword.emit(passwordState.copy(value = passwordValue))
@@ -159,6 +160,7 @@ class LoginFragment : InternetDialogFragment {
      * If there are form errors (invalid login, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
+    @MainThread
     private suspend fun attemptLogin() {
         if (!viewModel.validateForm(resources)) return
 
@@ -176,7 +178,7 @@ class LoginFragment : InternetDialogFragment {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val today = formatSystemDate()
-                val response = service.login(
+                val response = viewModel.login(
                     name = loginValue,
                     password = passwordValue,
                     date = today
@@ -187,7 +189,7 @@ class LoginFragment : InternetDialogFragment {
                     if (isValidResponse(response)) {
                         val errorMessage = getResponseError(response)
                         if (errorMessage.isNullOrEmpty()) {
-                            preferences.userCredentials = UserCredentials(loginValue, passwordValue)
+                            viewModel.userCredentials = UserCredentials(loginValue, passwordValue)
                             notifyLoginSuccess(loginValue)
                         } else {
                             showError(errorMessage)
@@ -204,6 +206,8 @@ class LoginFragment : InternetDialogFragment {
     }
 
     override fun authenticate(submit: Boolean) = Unit
+
+    override fun authenticateMain(submit: Boolean) = Unit
 
     private suspend fun notifyLoginSuccess(login: String) {
         dismissAllowingStateLoss()

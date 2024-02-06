@@ -37,9 +37,14 @@ import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.time.FormPage
+import com.tikalk.worktracker.model.time.PuncherPage
+import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Calendar
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -123,5 +128,53 @@ class TimeViewModel @Inject constructor(
      */
     suspend fun onRecordEditFailure(record: TimeRecord, reason: String) {
         _editFailure.emit(RecordEditFailureData(record, reason))
+    }
+
+    fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
+        return services.dataSource.reportFormPage(refresh)
+    }
+
+    fun stopRecord() {
+        services.preferences.stopRecord()
+    }
+
+    fun getStartedRecord(): TimeRecord? {
+        return services.preferences.getStartedRecord()
+    }
+
+    fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return services.dataSource.puncherPage(refresh)
+    }
+
+    fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
+        return services.dataSource.editPage(recordId, refresh)
+    }
+
+    fun editRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return services.dataSource.editRecord(record)
+    }
+
+    fun deleteRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return services.dataSource.deleteRecord(record)
+    }
+
+    fun setFavorite(record: TimeRecord) {
+        services.preferences.setFavorite(record)
+    }
+
+    fun getFavoriteProject(): Long {
+        return services.preferences.getFavoriteProject()
+    }
+
+    fun getFavoriteTask(): Long {
+        return services.preferences.getFavoriteTask()
+    }
+
+    fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
+        return services.dataSource.timeListPage(date, refresh)
+    }
+
+    suspend fun savePage(page: TimeListPage) {
+        services.dataSource.savePage(page)
     }
 }

@@ -35,6 +35,7 @@ package com.tikalk.worktracker.app
 import android.os.Bundle
 import androidx.annotation.StringRes
 import com.tikalk.app.TikalDialogFragment
+import com.tikalk.app.runOnUiThread
 import com.tikalk.worktracker.data.TimeTrackerRepository
 import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
@@ -51,13 +52,7 @@ abstract class TrackerDialogFragment : TikalDialogFragment,
     constructor(args: Bundle) : super(args)
 
     @Inject
-    lateinit var preferences: TimeTrackerPrefs
-
-    @Inject
-    lateinit var service: TimeTrackerService
-
-    @Inject
-    lateinit var dataSource: TimeTrackerRepository
+    lateinit var services: TrackerServices
 
     protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
     protected val firstRun: Boolean get() = delegate.firstRun
@@ -72,11 +67,15 @@ abstract class TrackerDialogFragment : TikalDialogFragment,
     }
 
     protected open fun handleErrorMain(error: Throwable) {
-        delegate.handleErrorMain(error)
+        runOnUiThread { handleError(error) }
     }
 
     override fun showError(@StringRes messageId: Int) {
         delegate.showError(messageId)
+    }
+
+    override fun showErrorMain(messageId: Int) {
+        runOnUiThread { showError(messageId) }
     }
 
     override fun onStart() {

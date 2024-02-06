@@ -39,11 +39,13 @@ import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.auth.model.UserCredentials
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import retrofit2.Response
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -57,6 +59,11 @@ class LoginViewModel @Inject constructor(
     override val error: StateFlow<LoginError?> = _error
     override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
     override val onDismiss: UnitCallback = ::onDialogDismiss
+    var userCredentials: UserCredentials
+        get() = services.preferences.userCredentials
+        set(value) {
+            services.preferences.userCredentials = value
+        }
 
     init {
         val userCredentials = services.preferences.userCredentials
@@ -103,6 +110,7 @@ class LoginViewModel @Inject constructor(
                 _error.emit(LoginError.Name(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
                 _error.emit(LoginError.Name(resources.getString(R.string.error_invalid_login)))
@@ -116,6 +124,7 @@ class LoginViewModel @Inject constructor(
                 _error.emit(LoginError.Password(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
                 _error.emit(LoginError.Password(resources.getString(R.string.error_invalid_password)))
@@ -138,5 +147,9 @@ class LoginViewModel @Inject constructor(
 
     suspend fun showError(message: String) {
         _error.emit(LoginError.General(message))
+    }
+
+    suspend fun login(name: String, password: String, date: String): Response<String> {
+        return services.dataSource.login(name, password, date)
     }
 }

@@ -35,6 +35,8 @@ package com.tikalk.worktracker.report
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.ReportFilter
+import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -94,5 +96,9 @@ class ReportViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         clearEvents()
+    }
+
+    fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
+        return services.dataSource.reportPage(filter, refresh)
     }
 }

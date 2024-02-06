@@ -33,18 +33,33 @@
 package com.tikalk.worktracker.data.remote
 
 import com.tikalk.worktracker.model.ProfilePage
+import com.tikalk.worktracker.net.InternetFragmentDelegate
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import timber.log.Timber
 
-class ProfilePageSaver(private val preferences: TimeTrackerPrefs) {
+class ProfilePageSaver {
 
-    fun save(page: ProfilePage) {
-        Timber.i("save page $page")
-        savePage(preferences, page)
-    }
-
-    private fun savePage(preferences: TimeTrackerPrefs, page: ProfilePage) {
+    fun save(preferences: TimeTrackerPrefs, page: ProfilePage): ProfilePage {
+        Timber.i("save profile $page")
         preferences.user = page.user
         preferences.userCredentials = page.userCredentials
+        return page
+    }
+
+    suspend fun save(service: TimeTrackerService, page: ProfilePage): ProfilePage {
+        Timber.i("save profile $page")
+        val user = page.user
+        val credentials = page.userCredentials
+        val response = service.editProfile(
+            name = user.displayName!!,
+            email = user.email!!,
+            login = credentials.login,
+            password1 = credentials.password,
+            password2 = page.passwordConfirm ?: credentials.password
+        )
+        InternetFragmentDelegate.validateResponse(response)
+        val html = response.body() ?: return page
+        return ProfilePageParser().parse(html)
     }
 }

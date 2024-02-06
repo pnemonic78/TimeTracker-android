@@ -56,6 +56,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
+import retrofit2.Response
 
 class TimeTrackerRemoteDataSource @Inject constructor(
     private val service: TimeTrackerService,
@@ -190,10 +191,6 @@ class TimeTrackerRemoteDataSource @Inject constructor(
         return TimeListPageSaver(db).save(page)
     }
 
-    override suspend fun editRecord(record: TimeRecord): FormPage<*> {
-        return TimeEditPageSaver(service, db).saveRecord(service, record)
-    }
-
     override fun profilePage(refresh: Boolean): Flow<ProfilePage> {
         return flow {
             val response = service.fetchProfile()
@@ -210,10 +207,36 @@ class TimeTrackerRemoteDataSource @Inject constructor(
     }
 
     private fun savePage(page: ProfilePage) {
-        ProfilePageSaver(preferences).save(page)
+        ProfilePageSaver().save(preferences, page)
     }
 
     override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
         return emptyFlow()
+    }
+
+    override fun editRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return flow {
+            val page = TimeEditPageSaver(service, db).saveRecord(record)
+            emit(page)
+        }
+    }
+
+    override fun deleteRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return flow {
+            val response = service.deleteTime(record.id)
+            val page = FormPageParser.parse(response)
+            emit(page)
+        }
+    }
+
+    override fun editProfile(profilePage: ProfilePage): Flow<ProfilePage> {
+        return flow {
+            val page = ProfilePageSaver().save(service, profilePage)
+            emit(page)
+        }
+    }
+
+    override suspend fun login(name: String, password: String, date: String): Response<String> {
+        return service.login(name, password, date)
     }
 }

@@ -89,7 +89,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
 
     protected open fun markFavorite(record: R) {
         Timber.i("markFavorite $record")
-        services.preferences.setFavorite(record)
+        viewModel.setFavorite(record)
         Toast.makeText(
             requireContext(),
             getString(
@@ -157,14 +157,14 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
     }
 
     protected fun applyFavorite(record: R) {
-        val projectFavorite = services.preferences.getFavoriteProject()
+        val projectFavorite = viewModel.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
             val projects = viewModel.projects
             val project = projects.find { it.id == projectFavorite } ?: record.project
             setRecordProject(record, project)
 
             val tasks = project.tasks
-            val taskFavorite = services.preferences.getFavoriteTask()
+            val taskFavorite = viewModel.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
                 val task = tasks.find { it.id == taskFavorite } ?: record.task
                 setRecordTask(record, task)

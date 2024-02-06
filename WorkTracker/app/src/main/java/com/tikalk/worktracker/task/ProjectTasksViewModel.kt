@@ -54,9 +54,9 @@ class ProjectTasksViewModel @Inject constructor(
     override val tasks: Flow<TikalResult<List<ProjectTask>>> = _tasks
 
     suspend fun fetchTasks(firstRun: Boolean) {
-        _tasks.emit(TikalResult.Loading())
-        notifyLoading(true)
         try {
+            _tasks.emit(TikalResult.Loading())
+            notifyLoading(true)
             services.dataSource.tasksPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->

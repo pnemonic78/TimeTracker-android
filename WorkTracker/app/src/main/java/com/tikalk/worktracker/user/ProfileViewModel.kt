@@ -42,14 +42,15 @@ import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.auth.LoginValidator
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.data.remote.ProfilePageParser
-import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -235,35 +236,38 @@ class ProfileViewModel @Inject constructor(
         return true
     }
 
-    suspend fun processEdit(
-        html: String,
-        loginValue: String,
-        emailValue: String,
+    suspend fun editProfile(
         nameValue: String,
-        passwordValue: String
+        emailValue: String,
+        loginValue: String,
+        passwordValue: String,
+        passwordConfirm: String
     ) {
+        notifyLoading(true)
         val user = User(username = loginValue, email = emailValue, displayName = nameValue)
-        val pageWithError = parsePage(html)
-        val errorMessage = pageWithError.errorMessage ?: ""
-        _error.emit(ProfileError.General(errorMessage))
-
-        if (errorMessage.isEmpty()) {
-            val userCredentials = UserCredentials(loginValue, passwordValue)
-            val page = ProfilePage(
-                user = user,
-                userCredentials = userCredentials,
-                nameInputEditable = false,
-                emailInputEditable = false,
-                loginInputEditable = false,
-                passwordConfirm = null,
-                errorMessage = null
-            )
-            ProfilePageSaver(services.preferences).save(page)
-
-            notifyProfileSuccess(user)
-        } else {
-            notifyProfileFailure(user, errorMessage)
-        }
+        val userCredentials = UserCredentials(loginValue, passwordValue)
+        val page = ProfilePage(
+            user = user,
+            userCredentials = userCredentials,
+            nameInputEditable = false,
+            emailInputEditable = false,
+            loginInputEditable = false,
+            passwordConfirm = passwordConfirm,
+            errorMessage = null
+        )
+        services.dataSource.editProfile(page)
+            .flowOn(Dispatchers.IO)
+            .collect { pageWithError ->
+                val errorMessage = pageWithError.errorMessage
+                if (errorMessage.isNullOrEmpty()) {
+                    _error.emit(null)
+                    notifyProfileSuccess(pageWithError.user)
+                } else {
+                    _error.emit(ProfileError.General(errorMessage))
+                    notifyProfileFailure(user, errorMessage)
+                }
+                notifyLoading(false)
+            }
     }
 
     private fun parsePage(html: String): ProfilePage {
@@ -282,5 +286,9 @@ class ProfileViewModel @Inject constructor(
 
     fun clearEvents() {
         _onDialogConfirmClick.value = false
+    }
+
+    fun profilePage(refresh: Boolean): Flow<ProfilePage> {
+        return services.dataSource.profilePage(refresh)
     }
 }

@@ -51,7 +51,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 /**
  * Write the list of records to a file.
  */
-@OptIn(FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 abstract class ReportExporter(
     val context: Context,
     val records: List<TimeRecord>,

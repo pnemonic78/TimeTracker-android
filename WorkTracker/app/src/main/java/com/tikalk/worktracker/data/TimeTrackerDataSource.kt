@@ -46,6 +46,7 @@ import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
+import retrofit2.Response
 
 interface TimeTrackerDataSource {
     fun editPage(recordId: Long, refresh: Boolean = true): Flow<TimeEditPage>
@@ -59,5 +60,8 @@ interface TimeTrackerDataSource {
     fun usersPage(refresh: Boolean = true): Flow<UsersPage>
 
     suspend fun savePage(page: TimeListPage): FormPage<*>
-    suspend fun editRecord(record: TimeRecord): FormPage<*>
+    fun editRecord(record: TimeRecord): Flow<FormPage<*>>
+    fun deleteRecord(record: TimeRecord): Flow<FormPage<*>>
+    fun editProfile(page: ProfilePage): Flow<ProfilePage>
+    suspend fun login(name: String, password: String, date: String): Response<String>
 }

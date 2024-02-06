@@ -64,7 +64,7 @@ class TimeEditPageSaver(
         }
     }
 
-    suspend fun saveRecord(service: TimeTrackerService, record: TimeRecord): FormPage<*> {
+    suspend fun saveRecord(record: TimeRecord): FormPage<*> {
         val dateValue = formatSystemDate(record.date)!!
 
         var startValue: String? = null

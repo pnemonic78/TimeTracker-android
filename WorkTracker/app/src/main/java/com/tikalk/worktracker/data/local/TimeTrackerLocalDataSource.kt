@@ -34,6 +34,7 @@ package com.tikalk.worktracker.data.local
 
 import android.text.format.DateUtils
 import com.tikalk.worktracker.data.TimeTrackerDataSource
+import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.data.remote.TimeListPageSaver
 import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
@@ -69,6 +70,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
+import retrofit2.Response
 
 class TimeTrackerLocalDataSource @Inject constructor(
     private val db: TrackerDatabase,
@@ -77,13 +79,13 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         return flow {
-            val projects = ArrayList<Project>()
+            val projects = mutableListOf<Project>()
             val errorMessage: String? = null
 
             val projectsWithTasks = loadProjectsWithTasks(db)
             populateProjects(projectsWithTasks, projects)
 
-            val record = loadRecord(db, recordId) ?: TimeRecord.EMPTY.copy()
+            val record = loadRecord(db, recordId, projects) ?: TimeRecord.EMPTY.copy()
 
             val page = TimeEditPage(
                 record,
@@ -95,12 +97,19 @@ class TimeTrackerLocalDataSource @Inject constructor(
         }
     }
 
-    private suspend fun loadRecord(db: TrackerDatabase, recordId: Long): TimeRecord? {
+    private suspend fun loadRecord(
+        db: TrackerDatabase,
+        recordId: Long,
+        projects: List<Project>
+    ): TimeRecord? {
         if (recordId != TikalEntity.ID_NONE) {
             val recordsDao = db.timeRecordDao()
             val recordEntity = recordsDao.queryById(recordId)
             if (recordEntity != null) {
-                return recordEntity.toTimeRecord()
+                val record = recordEntity.toTimeRecord()
+                val projectId = recordEntity.project.id
+                record.project = projects.firstOrNull { it.id == projectId } ?: record.project
+                return record
             }
         }
         return null
@@ -173,9 +182,8 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     private suspend fun loadProjectsWithTasks(db: TrackerDatabase): List<ProjectWithTasks> {
         val projectsDao = db.projectDao()
-        val projects = projectsDao.queryAllWithTasks()
+        return projectsDao.queryAllWithTasks()
             .filter { it.project.id != TikalEntity.ID_NONE }
-        return projects
     }
 
     private fun populateProjects(
@@ -363,14 +371,37 @@ class TimeTrackerLocalDataSource @Inject constructor(
         return TimeListPageSaver(db).save(page)
     }
 
-    override suspend fun editRecord(record: TimeRecord): FormPage<*> {
-        val recordDao = db.timeRecordDao()
-        val entity = record.toTimeRecordEntity()
-        if (record.id == TikalEntity.ID_NONE) {
-            record.id = recordDao.insert(entity)
-        } else {
-            recordDao.update(entity)
+    override fun editRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return flow {
+            val recordDao = db.timeRecordDao()
+            val entity = record.toTimeRecordEntity()
+            if (record.id == TikalEntity.ID_NONE) {
+                record.id = recordDao.insert(entity)
+            } else {
+                recordDao.update(entity)
+            }
+            val page = FormPage(record, emptyList(), null)
+            emit(page)
         }
-        return FormPage(record, emptyList(), null)
+    }
+
+    override fun deleteRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return flow {
+            val recordDao = db.timeRecordDao()
+            recordDao.delete(record.id)
+            val page = FormPage(record, emptyList(), null)
+            emit(page)
+        }
+    }
+
+    override fun editProfile(profilePage: ProfilePage): Flow<ProfilePage> {
+        return flow {
+            val page = ProfilePageSaver().save(preferences, profilePage)
+            emit(page)
+        }
+    }
+
+    override suspend fun login(name: String, password: String, date: String): Response<String> {
+        throw NotImplementedError()
     }
 }

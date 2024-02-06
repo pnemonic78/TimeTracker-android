@@ -50,6 +50,7 @@ import java.util.Calendar
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
+import retrofit2.Response
 
 class TimeTrackerRepository @Inject constructor(
     private val localRepository: TimeTrackerLocalDataSource,
@@ -144,8 +145,28 @@ class TimeTrackerRepository @Inject constructor(
         return localRepository.savePage(page)
     }
 
-    override suspend fun editRecord(record: TimeRecord): FormPage<*> {
-        localRepository.editRecord(record)
-        return remoteRepository.editRecord(record)
+    override fun editRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return merge(
+            localRepository.editRecord(record),
+            remoteRepository.editRecord(record)
+        )
+    }
+
+    override fun deleteRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return merge(
+            localRepository.deleteRecord(record),
+            remoteRepository.deleteRecord(record)
+        )
+    }
+
+    override fun editProfile(page: ProfilePage): Flow<ProfilePage> {
+        return merge(
+            localRepository.editProfile(page),
+            remoteRepository.editProfile(page)
+        )
+    }
+
+    override suspend fun login(name: String, password: String, date: String): Response<String> {
+        return remoteRepository.login(name, password, date)
     }
 }

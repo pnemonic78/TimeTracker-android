@@ -49,6 +49,7 @@ import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.lang.isFalse
 import com.tikalk.worktracker.lang.isTrue
@@ -109,7 +110,7 @@ class ProfileFragment : InternetFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                services.dataSource.profilePage(firstRun)
+                viewModel.profilePage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         viewModel.processPage(page)
@@ -149,38 +150,21 @@ class ProfileFragment : InternetFragment() {
         val passwordValue = credentialsPassword.value
         val confirmPasswordValue = credentialsPasswordConfirmation.value
 
-        showProgress(true)
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = services.service.editProfile(
-                    name = nameValue,
-                    email = emailValue,
-                    login = loginValue,
-                    password1 = passwordValue,
-                    password2 = confirmPasswordValue
-                )
-                lifecycleScope.launch(Dispatchers.Main) main@{
-                    if (isValidResponse(response)) {
-                        val html = response.body() ?: return@main
-                        viewModel.processEdit(
-                            html,
-                            loginValue,
-                            emailValue,
-                            nameValue,
-                            passwordValue
-                        )
-                        showProgress(false)
-                    } else {
-                        showProgress(false)
-                        authenticate(true)
-                    }
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error updating profile: ${e.message}")
-                showProgressMain(false)
-                handleErrorMain(e)
-            }
+        // Update the remote server.
+        try {
+            viewModel.editProfile(
+                nameValue = nameValue,
+                emailValue = emailValue,
+                loginValue = loginValue,
+                passwordValue = passwordValue,
+                passwordConfirm = confirmPasswordValue
+            )
+        } catch (ae: AuthenticationException) {
+            authenticate(true)
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating profile: ${e.message}")
+            showProgress(false)
+            handleError(e)
         }
     }
 

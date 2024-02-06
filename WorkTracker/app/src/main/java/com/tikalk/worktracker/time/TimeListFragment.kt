@@ -51,6 +51,7 @@ import com.tikalk.compose.TikalTheme
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerFragmentDelegate
+import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.data.remote.TimeListPageParser
 import com.tikalk.worktracker.databinding.FragmentTimeListBinding
@@ -181,20 +182,22 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     /**
      * Fetch the page.
      */
+    @MainThread
     private fun fetchPage(date: Calendar, refresh: Boolean) {
         Timber.i("loadAndFetchPage ${formatSystemDate(date)} refresh=$refresh")
 
-        showProgress(true)
         lifecycleScope.launch {
             try {
-                services.dataSource.timeListPage(date, refresh)
+                showProgress(true)
+                viewModel.timeListPage(date, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
                         handleArguments()
                         showProgress(false)
                     }
-                //TODO authenticateMain(loginAutomatic) when relevant error
+            } catch (ae: AuthenticationException) {
+                authenticate(loginAutomatic)
             } catch (ce: ConnectException) {
                 Timber.e(ce, "Error loading page: ${ce.message}")
                 if (refresh) {
@@ -206,13 +209,6 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
                 handleError(e)
             }
         }
-    }
-
-    private suspend fun processPage(html: String, date: Calendar) {
-        Timber.i("processPage ${formatSystemDate(date)}")
-        val page = TimeListPageParser().parse(html)
-        processPage(page)
-        services.dataSource.savePage(page)
     }
 
     private suspend fun processPage(page: TimeListPage) {

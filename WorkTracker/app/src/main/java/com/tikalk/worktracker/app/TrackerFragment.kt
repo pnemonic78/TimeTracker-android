@@ -35,6 +35,7 @@ package com.tikalk.worktracker.app
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.lifecycleScope
 import com.tikalk.app.TikalFragment
 import com.tikalk.app.runOnUiThread
@@ -54,9 +55,6 @@ abstract class TrackerFragment : TikalFragment,
 
     constructor(args: Bundle) : super(args)
 
-    @Inject
-    lateinit var services: TrackerServices
-
     protected abstract val viewModel: TrackerViewModel
     protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
     protected val firstRun: Boolean get() = delegate.firstRun
@@ -75,8 +73,8 @@ abstract class TrackerFragment : TikalFragment,
         Timber.e("login failure: $reason")
     }
 
-    protected fun authenticateMain(submit: Boolean = true) {
-        delegate.authenticateMain(submit)
+    override fun authenticateMain(submit: Boolean) {
+        runOnUiThread { authenticate(submit) }
     }
 
     protected fun handleError(error: Throwable) {
@@ -87,6 +85,7 @@ abstract class TrackerFragment : TikalFragment,
         delegate.handleError(result.exception)
     }
 
+    @WorkerThread
     protected open fun handleErrorMain(error: Throwable) {
         delegate.handleErrorMain(error)
     }
@@ -95,15 +94,15 @@ abstract class TrackerFragment : TikalFragment,
         delegate.showError(messageId)
     }
 
+    override fun showErrorMain(messageId: Int) {
+        runOnUiThread { showError(messageId) }
+    }
+
     override fun showProgress(show: Boolean) {
         (activity as? TrackerActivity)?.showProgress(show)
     }
 
-    /**
-     * Shows the progress UI and hides the login form, on the main thread.
-     * @param show is visible?
-     */
-    protected fun showProgressMain(show: Boolean) {
+    override fun showProgressMain(show: Boolean) {
         runOnUiThread { showProgress(show) }
     }
 

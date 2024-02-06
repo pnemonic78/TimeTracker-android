@@ -75,7 +75,7 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         record.date = page.date
 
         record.id = findId(form) ?: return
-        record.start = findStartDate(page.date, form) ?: return
+        record.start = findStartDate(page.date, form)
         record.finish = findFinishDate(page.date, form)
         record.duration = findDuration(form)
         record.note = findNote(form)

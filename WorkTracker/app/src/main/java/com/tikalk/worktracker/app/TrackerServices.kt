@@ -39,6 +39,5 @@ import com.tikalk.worktracker.preference.TimeTrackerPrefs
 
 class TrackerServices(
     val preferences: TimeTrackerPrefs,
-    val service: TimeTrackerService,
     val dataSource: TimeTrackerRepository
 )

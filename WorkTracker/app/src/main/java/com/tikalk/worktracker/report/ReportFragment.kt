@@ -44,7 +44,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -160,7 +159,7 @@ class ReportFragment : InternetFragment() {
 
         lifecycleScope.launch {
             try {
-                services.dataSource.reportPage(filter, firstRun)
+                viewModel.reportPage(filter, firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -232,7 +231,8 @@ class ReportFragment : InternetFragment() {
         return super.onMenuItemSelected(menuItem)
     }
 
-    private fun export(
+    @MainThread
+    private suspend fun export(
         context: Context,
         menuItem: MenuItem,
         exporter: ReportExporter,
@@ -241,25 +241,23 @@ class ReportFragment : InternetFragment() {
         menuItem.isEnabled = false
         showProgress(true)
 
-        lifecycleScope.launch(Dispatchers.Main) {
-            try {
-                exporter
-                    .flowOn(Dispatchers.IO)
-                    .collect { uri ->
-                        Timber.i("Exported to $uri")
-                        menuItem.isEnabled = true
-                        if (preview) {
-                            previewFile(context, menuItem, uri, exporter.mimeType)
-                        } else {
-                            shareFile(context, menuItem, uri, exporter.mimeType)
-                        }
-                        showProgress(false)
+        try {
+            exporter
+                .flowOn(Dispatchers.IO)
+                .collect { uri ->
+                    Timber.i("Exported to $uri")
+                    menuItem.isEnabled = true
+                    if (preview) {
+                        previewFile(context, menuItem, uri, exporter.mimeType)
+                    } else {
+                        shareFile(context, menuItem, uri, exporter.mimeType)
                     }
-            } catch (err: Exception) {
-                Timber.e(err, "Error exporting: ${err.message}")
-                showProgress(false)
-                menuItem.isEnabled = true
-            }
+                    showProgress(false)
+                }
+        } catch (err: Exception) {
+            Timber.e(err, "Error exporting: ${err.message}")
+            showProgress(false)
+            menuItem.isEnabled = true
         }
     }
 
@@ -269,12 +267,14 @@ class ReportFragment : InternetFragment() {
         val filter = filterData.value
         val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterCSV(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterCSV(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun exportHTML(menuItem: MenuItem, preview: Boolean = false) {
@@ -283,12 +283,14 @@ class ReportFragment : InternetFragment() {
         val filter = filterData.value
         val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterHTML(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterHTML(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun exportODF(menuItem: MenuItem, preview: Boolean = false) {
@@ -297,12 +299,14 @@ class ReportFragment : InternetFragment() {
         val filter = filterData.value
         val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterODF(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterODF(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun exportXML(menuItem: MenuItem, preview: Boolean = false) {
@@ -311,12 +315,14 @@ class ReportFragment : InternetFragment() {
         val filter = filterData.value
         val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterXML(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterXML(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun shareFile(

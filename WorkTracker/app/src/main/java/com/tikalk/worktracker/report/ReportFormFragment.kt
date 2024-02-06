@@ -147,7 +147,7 @@ class ReportFormFragment : TimeFormFragment<ReportFilter>() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                services.dataSource.reportFormPage(firstRun)
+                viewModel.reportFormPage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)

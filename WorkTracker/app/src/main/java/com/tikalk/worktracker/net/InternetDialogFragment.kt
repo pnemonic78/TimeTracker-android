@@ -64,11 +64,7 @@ abstract class InternetDialogFragment : TrackerDialogFragment {
         (activity as? TrackerActivity)?.showProgress(show)
     }
 
-    /**
-     * Shows the progress UI and hides the login form, on the main thread.
-     * @param show is visible?
-     */
-    protected fun showProgressMain(show: Boolean) {
+    override fun showProgressMain(show: Boolean) {
         runOnUiThread { showProgress(show) }
     }
 }
