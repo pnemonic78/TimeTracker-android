@@ -71,6 +71,7 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.model.time.split
 import com.tikalk.worktracker.net.InternetFragment
+import java.net.ConnectException
 import java.util.Calendar
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.Dispatchers
@@ -218,6 +219,10 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private fun run(arguments: Bundle?) {
+        run(arguments, firstRun)
+    }
+
+    private fun run(arguments: Bundle?, refresh: Boolean) {
         if (maybeResubmit()) return
 
         val args = arguments ?: Bundle()
@@ -236,13 +241,18 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
         showProgress(true)
         lifecycleScope.launch {
             try {
-                services.dataSource.editPage(recordId, firstRun)
+                services.dataSource.editPage(recordId, refresh)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
                         populateAndBind(page.record)
                         showProgress(false)
                     }
+            } catch (ce: ConnectException) {
+                Timber.e(ce, "Error loading page: ${ce.message}")
+                if (refresh) {
+                    run(arguments, false)
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Error loading page: ${e.message}")
                 showProgress(false)

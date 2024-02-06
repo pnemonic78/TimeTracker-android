@@ -99,7 +99,6 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val date = record.date
 
         formNavHostFragment =
             childFragmentManager.findFragmentById(R.id.nav_host_form) as NavHostFragment
@@ -110,14 +109,16 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
                 TimeListDateButton(
                     dateFlow = dateFlow
                 ) { pickedDate ->
+                    val date = record.date
                     val oldYear = date.year
                     val oldMonth = date.month
                     val oldDayOfMonth = date.dayOfMonth
                     val pickedYear = pickedDate.year
                     val pickedMonth = pickedDate.month
                     val pickedDayOfMonth = pickedDate.dayOfMonth
-                    val refresh =
-                        (pickedYear != oldYear) || (pickedMonth != oldMonth) || (pickedDayOfMonth != oldDayOfMonth)
+                    val refresh = (pickedYear != oldYear)
+                        || (pickedMonth != oldMonth)
+                        || (pickedDayOfMonth != oldDayOfMonth)
                     navigateDate(pickedDate, refresh)
                 }
             }
@@ -241,15 +242,16 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
 
     private fun pickDate() {
         val date = record.date
+        val oldYear = date.year
+        val oldMonth = date.month
+        val oldDayOfMonth = date.dayOfMonth
         pickDate(requireContext(), date) { pickedDate ->
-            val oldYear = date.year
-            val oldMonth = date.month
-            val oldDayOfMonth = date.dayOfMonth
             val pickedYear = pickedDate.year
             val pickedMonth = pickedDate.month
             val pickedDayOfMonth = pickedDate.dayOfMonth
-            val refresh =
-                (pickedYear != oldYear) || (pickedMonth != oldMonth) || (pickedDayOfMonth != oldDayOfMonth)
+            val refresh = (pickedYear != oldYear)
+                || (pickedMonth != oldMonth)
+                || (pickedDayOfMonth != oldDayOfMonth)
             navigateDate(pickedDate, refresh)
         }
     }
