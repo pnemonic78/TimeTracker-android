@@ -32,34 +32,46 @@
 
 package com.tikalk.worktracker.time
 
+import androidx.lifecycle.viewModelScope
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.time.FormPage
+import com.tikalk.worktracker.model.time.PuncherPage
+import com.tikalk.worktracker.model.time.ReportFormPage
+import com.tikalk.worktracker.model.time.TimeEditPage
+import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.report.LocationItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Calendar
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class TimeViewModel @Inject constructor(
     services: TrackerServices
 ) : TrackerViewModel(services) {
 
-    val projectsData = MutableStateFlow<List<Project>>(emptyList())
+    private val _projectsFlow = MutableStateFlow<List<Project>>(emptyList())
+    val projectsFlow: StateFlow<List<Project>> = _projectsFlow
+    var projects: List<Project>
+        get() = projectsFlow.value
+        set(value) {
+            viewModelScope.launch {
+                _projectsFlow.emit(value.filter { !it.isEmpty() })
+            }
+        }
     var projectEmpty: Project = Project.EMPTY.copy(true)
-    var taskEmpty: ProjectTask = projectEmpty.tasksById[TikalEntity.ID_NONE]
-        ?: ProjectTask.EMPTY.copy()
-    var locationEmpty: LocationItem = LocationItem(Location.EMPTY, "")
+    var taskEmpty: ProjectTask = ProjectTask.EMPTY.copy()
 
     data class RecordEditData(
         val record: TimeRecord,
         val isLast: Boolean = true,
-        val responseHtml: String = ""
+        val page: TimeListPage? = null
     )
 
     private val _edited = MutableStateFlow<RecordEditData?>(null)
@@ -69,13 +81,17 @@ class TimeViewModel @Inject constructor(
      * The record was submitted.
      * @param record the record.
      * @param last is this the last record in a series that was submitted?
-     * @param responseHtml the response HTML.
+     * @param page the response page.
      */
-    suspend fun onRecordEditSubmitted(record: TimeRecord, last: Boolean = true, responseHtml: String = "") {
-        _edited.emit(RecordEditData(record, last, responseHtml))
+    suspend fun onRecordEditSubmitted(
+        record: TimeRecord,
+        last: Boolean = true,
+        page: TimeListPage? = null
+    ) {
+        _edited.emit(RecordEditData(record, last, page))
     }
 
-    data class RecordDeletedData(val record: TimeRecord, val responseHtml: String = "")
+    data class RecordDeletedData(val record: TimeRecord, val page: TimeListPage? = null)
 
     private val _deleted = MutableStateFlow<RecordDeletedData?>(null)
     val deleted: Flow<RecordDeletedData?> = _deleted
@@ -85,8 +101,8 @@ class TimeViewModel @Inject constructor(
      * @param record the record.
      * @param responseHtml the response HTML.
      */
-    suspend fun onRecordEditDeleted(record: TimeRecord, responseHtml: String = "") {
-        _deleted.emit(RecordDeletedData(record, responseHtml))
+    suspend fun onRecordEditDeleted(record: TimeRecord, page: TimeListPage? = null) {
+        _deleted.emit(RecordDeletedData(record, page))
     }
 
     private val _favorite = MutableStateFlow<TimeRecord?>(null)
@@ -112,5 +128,53 @@ class TimeViewModel @Inject constructor(
      */
     suspend fun onRecordEditFailure(record: TimeRecord, reason: String) {
         _editFailure.emit(RecordEditFailureData(record, reason))
+    }
+
+    fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
+        return services.dataSource.reportFormPage(refresh)
+    }
+
+    fun stopRecord() {
+        services.preferences.stopRecord()
+    }
+
+    fun getStartedRecord(): TimeRecord? {
+        return services.preferences.getStartedRecord()
+    }
+
+    fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
+        return services.dataSource.puncherPage(refresh)
+    }
+
+    fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
+        return services.dataSource.editPage(recordId, refresh)
+    }
+
+    fun editRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return services.dataSource.editRecord(record)
+    }
+
+    fun deleteRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return services.dataSource.deleteRecord(record)
+    }
+
+    fun setFavorite(record: TimeRecord) {
+        services.preferences.setFavorite(record)
+    }
+
+    fun getFavoriteProject(): Long {
+        return services.preferences.getFavoriteProject()
+    }
+
+    fun getFavoriteTask(): Long {
+        return services.preferences.getFavoriteTask()
+    }
+
+    fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
+        return services.dataSource.timeListPage(date, refresh)
+    }
+
+    suspend fun savePage(page: TimeListPage) {
+        services.dataSource.savePage(page)
     }
 }

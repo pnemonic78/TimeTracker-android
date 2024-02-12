@@ -36,9 +36,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -51,14 +52,14 @@ import com.tikalk.worktracker.model.Project
 
 @Composable
 fun ProjectItem(project: Project) {
-    Card {
+    Card(elevation = CardDefaults.elevatedCardElevation()) {
         Column(modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)) {
             Row {
                 Text(
                     modifier = Modifier
                         .weight(0.3f),
                     text = stringResource(id = R.string.name_label),
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
@@ -66,7 +67,7 @@ fun ProjectItem(project: Project) {
                         .padding(start = 8.dp)
                         .weight(0.7f),
                     text = project.name,
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
             Row(modifier = Modifier.padding(top = 8.dp)) {
@@ -74,7 +75,7 @@ fun ProjectItem(project: Project) {
                     modifier = Modifier
                         .weight(0.3f),
                     text = stringResource(id = R.string.description_label),
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
@@ -82,7 +83,7 @@ fun ProjectItem(project: Project) {
                         .padding(start = 8.dp)
                         .weight(0.7f),
                     text = project.description.orEmpty(),
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         }

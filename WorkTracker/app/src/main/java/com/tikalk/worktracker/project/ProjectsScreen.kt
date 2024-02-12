@@ -33,7 +33,6 @@
 package com.tikalk.worktracker.project
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -49,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.model.TikalResult
 import com.tikalk.util.set
+import com.tikalk.widget.ContentPaddingList
 import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.LoadingScreen
 import com.tikalk.worktracker.model.Project
@@ -85,7 +85,7 @@ private fun ProjectsScreenList(projects: List<Project>) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = ContentPaddingList(),
         state = scrollState
     ) {
         items(projects) {

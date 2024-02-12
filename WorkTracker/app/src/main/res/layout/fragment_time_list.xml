@@ -37,28 +37,20 @@
     android:layout_height="match_parent"
     tools:context=".time.TimeListActivity">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/fragmentFormCard"
+    <!-- TODO convert to compose -->
+    <!-- https://developer.android.com/jetpack/compose/navigation -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_form"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        app:cardCornerRadius="@dimen/card_cornerRadius"
+        app:defaultNavHost="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/nav_host_form"
-            android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:defaultNavHost="false"
-            app:navGraph="@navigation/main_form"
-            tools:layout="@layout/fragment_puncher" />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toTopOf="parent"
+        app:navGraph="@navigation/main_form"
+        tools:layout="@layout/fragment_compose"
+        tools:layout_height="200dp" />
 
     <View
         android:id="@+id/time_form_divider"
@@ -68,29 +60,25 @@
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragmentFormCard" />
+        app:layout_constraintTop_toBottomOf="@+id/nav_host_form" />
 
-    <Button
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/dateInput"
-        style="@style/Widget.Button.Date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/time_list_marginTop"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:hint="@string/date_label"
-        app:drawableEndCompat="@drawable/ic_today"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/time_form_divider" />
+        app:layout_constraintTop_toBottomOf="@+id/time_form_divider"
+        tools:background="?colorButtonNormal"
+        tools:layout_height="48dp" />
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@android:id/list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/totals_divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -104,22 +92,25 @@
         android:background="@drawable/divider_horizontal_dark"
         app:layout_constraintBottom_toTopOf="@+id/totals" />
 
-    <androidx.compose.ui.platform.ComposeView
+    <include
         android:id="@+id/totals"
-        android:layout_width="match_parent"
+        layout="@layout/compose_item"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_height="40dp" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/recordAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:backgroundTint="?colorButtonNormal"
         android:contentDescription="@string/action_add"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:maxImageSize="48dp"
-        app:srcCompat="@drawable/ic_add" />
+        tools:background="?colorButtonNormal"
+        tools:layout_height="48dp"
+        tools:layout_width="48dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

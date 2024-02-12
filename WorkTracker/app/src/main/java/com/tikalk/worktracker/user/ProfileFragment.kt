@@ -40,14 +40,19 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
+import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.auth.LoginFragment
+import com.tikalk.worktracker.lang.isFalse
+import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -79,7 +84,9 @@ class ProfileFragment : InternetFragment() {
 
         binding.composeView.setContent {
             TikalTheme {
-                ProfileForm(viewState = viewState)
+                PaddedBox {
+                    ProfileForm(viewState = viewState)
+                }
             }
         }
 
@@ -103,7 +110,7 @@ class ProfileFragment : InternetFragment() {
         Timber.i("run first=$firstRun")
         lifecycleScope.launch {
             try {
-                dataSource.profilePage(firstRun)
+                viewModel.profilePage(firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         viewModel.processPage(page)
@@ -143,45 +150,28 @@ class ProfileFragment : InternetFragment() {
         val passwordValue = credentialsPassword.value
         val confirmPasswordValue = credentialsPasswordConfirmation.value
 
-        showProgress(true)
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = service.editProfile(
-                    name = nameValue,
-                    email = emailValue,
-                    login = loginValue,
-                    password1 = passwordValue,
-                    password2 = confirmPasswordValue
-                )
-                lifecycleScope.launch(Dispatchers.Main) main@{
-                    if (isValidResponse(response)) {
-                        val html = response.body() ?: return@main
-                        viewModel.processEdit(
-                            html,
-                            loginValue,
-                            emailValue,
-                            nameValue,
-                            passwordValue
-                        )
-                        showProgress(false)
-                    } else {
-                        showProgress(false)
-                        authenticate(true)
-                    }
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error updating profile: ${e.message}")
-                showProgressMain(false)
-                handleErrorMain(e)
-            }
+        // Update the remote server.
+        try {
+            viewModel.editProfile(
+                nameValue = nameValue,
+                emailValue = emailValue,
+                loginValue = loginValue,
+                passwordValue = passwordValue,
+                passwordConfirm = confirmPasswordValue
+            )
+        } catch (ae: AuthenticationException) {
+            authenticate(true)
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating profile: ${e.message}")
+            showProgress(false)
+            handleError(e)
         }
     }
 
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_profile_to_login, this)
@@ -190,13 +180,13 @@ class ProfileFragment : InternetFragment() {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        if (view?.visibility == View.VISIBLE) {
+        if (view?.isVisible.isTrue) {
             menuInflater.inflate(R.menu.profile, menu)
         }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (view?.visibility != View.VISIBLE) {
+        if (view?.isVisible.isFalse) {
             return false
         }
         when (menuItem.itemId) {

@@ -1,26 +1,14 @@
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-
     <!-- Progress bar dimens -->
     <dimen name="progress_bar_size_large">76dp</dimen>
 
     <!-- Dialogs -->
     <dimen name="dialog_form_minWidth">305dp</dimen>
-    <dimen name="dialog_form_paddingBottom">8dp</dimen>
-    <dimen name="dialog_form_paddingEnd">8dp</dimen>
-    <dimen name="dialog_form_paddingStart">8dp</dimen>
-    <dimen name="dialog_form_paddingTop">8dp</dimen>
-    <dimen name="fragment_form_paddingBottom">8dp</dimen>
-    <dimen name="fragment_form_paddingEnd">8dp</dimen>
-    <dimen name="fragment_form_paddingStart">8dp</dimen>
-    <dimen name="fragment_form_paddingTop">8dp</dimen>
 
     <dimen name="time_list_marginTop">8dp</dimen>
     <dimen name="form_marginTop">6dp</dimen>
-    <dimen name="card_cornerRadius">10dp</dimen>
     <dimen name="icon_item">12dp</dimen>
+    <dimen name="icon_form">24dp</dimen>
 
     <dimen name="index_width">20dp</dimen>
     <dimen name="index_textSize">16dp</dimen>

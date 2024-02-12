@@ -1,13 +1,10 @@
 To-Do List
 ====
 
-* migrate binding to Jetpack Compose
-  * puncher form
-  * record edit form
-  * report form
-  * date-time picker dialog
 * move logic from fragment to ViewModel
-    * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
+  * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
+* migrate binding to Jetpack Compose
+  * navigation
 * "model" module
 * "domain" module
 * "ui-common" module

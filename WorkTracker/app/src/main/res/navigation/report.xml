@@ -40,12 +40,28 @@
         android:id="@+id/reportFragment"
         android:name="com.tikalk.worktracker.report.ReportFragment"
         android:label="@string/reports_title"
-        tools:layout="@layout/fragment_report_list">
+        tools:layout="@layout/fragment_compose">
         <action
             android:id="@+id/action_reportList_to_login"
             app:destination="@id/login" />
+        <action
+            android:id="@+id/action_reportList_to_timeEdit"
+            app:destination="@id/timeEditFragment"
+            app:enterAnim="@anim/slide_in_form"
+            app:exitAnim="@anim/slide_out_form"
+            app:popEnterAnim="@anim/slide_in_form"
+            app:popExitAnim="@anim/slide_out_form" />
         <argument
             android:name="filter"
             app:argType="com.tikalk.worktracker.model.time.ReportFilter" />
+    </fragment>
+    <fragment
+        android:id="@+id/timeEditFragment"
+        android:name="com.tikalk.worktracker.time.TimeEditFragment"
+        android:label="Time Edit"
+        tools:layout="@layout/time_form">
+        <action
+            android:id="@+id/action_timeEdit_to_login"
+            app:destination="@id/login" />
     </fragment>
 </navigation>

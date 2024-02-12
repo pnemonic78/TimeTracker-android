@@ -37,7 +37,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.tikalk.net.createUriFromParcel
+import com.tikalk.net.createUri
 
 /**
  * User entity.
@@ -77,11 +77,6 @@ data class User(
      */
     @ColumnInfo(name = "roles")
     var roles: List<String>? = null,
-    /**
-     * Are there any uncompleted entries?
-     */
-    @ColumnInfo(name = "uncompletedEntry")
-    var isUncompletedEntry: Boolean = false
 ) : TikalEntity() {
 
     constructor(parcel: Parcel) : this(
@@ -89,7 +84,7 @@ data class User(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        createUriFromParcel(parcel),
+        parcel.createUri(),
         parcel.createStringArrayList()
     )
 

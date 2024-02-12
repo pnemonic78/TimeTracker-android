@@ -32,6 +32,7 @@
 
 package com.tikalk.worktracker.user
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.viewModelScope
 import com.tikalk.model.TikalResult
 import com.tikalk.worktracker.app.TrackerServices
@@ -55,10 +56,11 @@ class UsersViewModel @Inject constructor(
     private val _users = MutableStateFlow<TikalResult<List<User>>>(TikalResult.Loading())
     override val users: Flow<TikalResult<List<User>>> = _users
 
+    @MainThread
     suspend fun fetchUsers(firstRun: Boolean) {
-        _users.emit(TikalResult.Loading())
-        notifyLoading(true)
         try {
+            _users.emit(TikalResult.Loading())
+            notifyLoading(true)
             services.dataSource.usersPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->

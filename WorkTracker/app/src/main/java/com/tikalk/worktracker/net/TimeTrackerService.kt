@@ -58,6 +58,9 @@ interface TimeTrackerService {
         @Field("btn_login") button: String = "Login"
     ): Response<String>
 
+    @GET(PHP_LOGOUT)
+    suspend fun logout(): Response<String>
+
     @GET(PHP_TIME)
     suspend fun fetchTimes(@Query("date") date: String): Response<String>
 
@@ -144,16 +147,17 @@ interface TimeTrackerService {
     companion object {
         const val BASE_URL = BuildConfig.API_URL
 
-        const val PHP_LOGIN = "login.php"
-        const val PHP_TIME = "time.php"
-        const val PHP_EDIT = "time_edit.php"
+        const val PHP_ACCESS_DENIED = "access_denied.php"
         const val PHP_DELETE = "time_delete.php"
+        const val PHP_EDIT = "time_edit.php"
+        const val PHP_LOGIN = "login.php"
+        const val PHP_LOGOUT = "logout.php"
         const val PHP_PROFILE = "profile_edit.php"
         const val PHP_PROJECTS = "projects.php"
-        const val PHP_TASKS = "tasks.php"
-        const val PHP_USERS = "users.php"
-        const val PHP_REPORTS = "reports.php"
         const val PHP_REPORT = "report.php"
-        const val PHP_ACCESS_DENIED = "access_denied.php"
+        const val PHP_REPORTS = "reports.php"
+        const val PHP_TASKS = "tasks.php"
+        const val PHP_TIME = "time.php"
+        const val PHP_USERS = "users.php"
     }
 }

@@ -36,23 +36,29 @@ import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecordEntity
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.formatSystemDate
 import com.tikalk.worktracker.time.setToEndOfDay
 import com.tikalk.worktracker.time.setToStartOfDay
-import timber.log.Timber
 import java.util.Calendar
+import timber.log.Timber
 
 class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeListPage>(db) {
 
-    override suspend fun savePage(db: TrackerDatabase, page: TimeListPage) {
-        super.savePage(db, page)
+    override suspend fun savePage(db: TrackerDatabase, page: TimeListPage): FormPage<*> {
+        val result = super.savePage(db, page)
         saveRecords(db, page.date, page.records)
+        return result
     }
 
-    private suspend fun saveRecords(db: TrackerDatabase, date: Calendar, records: List<TimeRecord>) {
+    private suspend fun saveRecords(
+        db: TrackerDatabase,
+        date: Calendar,
+        records: List<TimeRecord>
+    ) {
         Timber.i("saveRecords ${formatSystemDate(date)}")
         val recordsDao = db.timeRecordDao()
         val recordsDb = queryRecords(db, date)
@@ -96,12 +102,14 @@ class TimeListPageSaver(db: TrackerDatabase) : FormPageSaver<TimeRecord, TimeLis
      * @param recordPage The parsed record from the page.
      */
     private fun mergeRecord(recordDb: TimeRecordEntity, recordPage: TimeRecord) {
-        recordDb.duration = recordPage.duration
-        recordDb.finish = recordPage.finish
-        recordDb.note = recordPage.note
-        recordDb.projectId = recordPage.project.id
-        recordDb.start = recordPage.start
-        recordDb.status = recordPage.status
-        recordDb.taskId = recordPage.task.id
+        recordDb.apply {
+            duration = recordPage.duration
+            finish = recordPage.finish
+            note = recordPage.note
+            projectId = recordPage.project.id
+            start = recordPage.start
+            status = recordPage.status
+            taskId = recordPage.task.id
+        }
     }
 }

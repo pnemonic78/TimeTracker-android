@@ -19,13 +19,9 @@
     <string name="error_invalid_email">"This email address is invalid"</string>
     <string name="error_invalid_password">"This password is incorrect"</string>
     <string name="error_field_required">"This field is required"</string>
-    <string name="activity_basic_realm">"Basic Realm Authentication"</string>
-    <string name="authentication_basic_realm">"Basic Realm Authentication for \"%1$s\""</string>
-    <string name="action_authenticate">"Authenticate"</string>
 
     <!-- Time edit -->
     <string name="activity_time">"Time Tracker"</string>
-    <string name="prompt_username">"Username"</string>
     <string name="project_label">"Project"</string>
     <string name="task_label">"Task"</string>
     <string name="location_label">"Location"</string>
@@ -42,7 +38,6 @@
     <string name="error_start_field_required">"Start time required"</string>
     <string name="error_finish_field_required">"Finish time required"</string>
     <string name="error_finish_time_before_start_time">"Finish time must be later than start time."</string>
-    <string name="error_location_field_required">"Location required"</string>
     <string name="delete">"Delete"</string>
     <string name="action_delete" translatable="false">@string/delete</string>
     <string name="action_submit" translatable="false">@string/submit</string>
@@ -50,7 +45,6 @@
     <!-- Time recorder -->
     <string name="action_start">"Start"</string>
     <string name="action_stop">"Stop"</string>
-    <string name="timer_0" translatable="false">"0:00"</string>
 
     <!-- Favourite / Favorite -->
     <string name="action_favorite">"Favourite"</string>
@@ -61,7 +55,6 @@
     <string name="menu_time" translatable="false">@string/timeList_title</string>
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
     <string name="day_total">"Day total"</string>
-    <string name="remaining_quota">"Remaining quota"</string>
     <string name="month_total">"Month total"</string>
     <string name="week_total">"Week total"</string>
     <string name="pick_date">"Go to date"</string>
@@ -111,7 +104,6 @@
     <string name="prompt_confirmPassword">"Confirm Password"</string>
     <string name="menu_profile" translatable="false">@string/profile</string>
     <string name="error_match_password">"Passwords are not the same"</string>
-    <string name="uncompleted_entry">"User has an uncompleted time entry"</string>
     <string name="login_label" translatable="false">@string/prompt_login</string>
     <string name="role">"Role"</string>
     <string name="role_label" translatable="false">@string/role</string>
@@ -166,15 +158,12 @@
     <string name="duration_header" translatable="false">@string/duration_label</string>
     <string name="note_header" translatable="false">@string/note_hint</string>
     <string name="cost_header" translatable="false">@string/cost</string>
-    <string name="location_header" translatable="false">@string/location_label</string>
     <string name="item_all">"(All)"</string>
     <string name="project_name_all" translatable="false">@string/item_all</string>
     <string name="task_name_all" translatable="false">@string/item_all</string>
-    <string name="location_label_all" translatable="false">@string/item_all</string>
     <string name="location_label_client">"Client"</string>
     <string name="location_label_home">"Home"</string>
     <string name="location_label_other">"Other"</string>
-    <string name="location_label_select" translatable="false">@string/item_select</string>
     <string name="location_label_tikal">"Tikal"</string>
     <string name="action_preview">"Preview"</string>
     <string name="action_preview_csv">"Preview as CSV"</string>

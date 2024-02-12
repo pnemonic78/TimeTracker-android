@@ -75,7 +75,7 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         record.date = page.date
 
         record.id = findId(form) ?: return
-        record.start = findStartDate(page.date, form) ?: return
+        record.start = findStartDate(page.date, form)
         record.finish = findFinishDate(page.date, form)
         record.duration = findDuration(form)
         record.note = findNote(form)
@@ -119,6 +119,6 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
 
     private fun findLocation(form: FormElement): Location {
         val inputLocation = form.selectByName("time_field_5") ?: return Location.EMPTY
-        return findSelectedLocation(inputLocation) ?: Location.EMPTY
+        return findSelectedLocation(inputLocation)
     }
 }

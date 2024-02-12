@@ -67,12 +67,11 @@ class TimeTrackerPrefs(context: Context) {
             return field
         }
         set(value) {
-            field.login = value.login
-            field.password = value.password
             sharedPreferences.edit()
                 .putString(USER_CREDENTIALS_LOGIN, value.login)
                 .putString(USER_CREDENTIALS_PASSWORD, value.password)
                 .apply()
+            field = value
         }
 
     fun startRecord(

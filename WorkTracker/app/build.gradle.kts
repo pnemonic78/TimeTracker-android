@@ -50,13 +50,14 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
         viewBinding = true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = Java.Version.jvm
+        targetCompatibility = Java.Version.jvm
     }
 
     composeOptions {
@@ -64,10 +65,10 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = Java.Version.jvm.toString()
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes += "META-INF/DEPENDENCIES"
             excludes += "META-INF/INDEX.LIST"
@@ -89,13 +90,14 @@ dependencies {
     implementation(Android.Jetpack.composeCompiler)
     implementation(Android.Jetpack.composeConstraintLayout)
     implementation(Android.Jetpack.composeIcons)
-    implementation(Android.Jetpack.composeMaterial)
+    implementation(Android.Jetpack.composeMaterial3)
     implementation(Android.Jetpack.composeRuntime)
     implementation(Android.Jetpack.composeUi)
     implementation(Android.Jetpack.composeUiTooling)
     implementation(Android.Jetpack.composeUiToolingPreview)
-    implementation(Android.Jetpack.constraint_layout)
+    implementation(Android.Jetpack.constraintLayout)
     implementation(Android.Jetpack.core)
+    implementation(Android.Jetpack.material3)
     implementation(Android.Jetpack.preference)
     implementation(Android.Jetpack.security)
 
@@ -119,8 +121,9 @@ dependencies {
     implementation(Android.Logging.crashlytics)
 
     // Navigation
-    implementation(Android.Navigation.navigation_fragment)
-    implementation(Android.Navigation.navigation_ui)
+    implementation(Android.Jetpack.navigationCompose)
+    implementation(Android.Jetpack.navigationFragment)
+    implementation(Android.Jetpack.navigationUI)
 
     // Export
     implementation(Java.Document.opencsv) {
@@ -141,7 +144,4 @@ dependencies {
     testImplementation(Android.Test.junit)
     androidTestImplementation(Android.Test.junit_ext)
     androidTestImplementation(Android.Test.espresso_core)
-
-    // Miscellaneous
-    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
 }

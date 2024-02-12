@@ -44,22 +44,25 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.tikalk.app.isNavDestination
+import com.tikalk.app.isDestination
 import com.tikalk.compose.TikalTheme
+import com.tikalk.core.databinding.FragmentComposeBinding
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.databinding.FragmentReportListBinding
+import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
+import com.tikalk.worktracker.time.TimeEditFragment
+import com.tikalk.worktracker.time.TimeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
@@ -69,34 +72,52 @@ import timber.log.Timber
 class ReportFragment : InternetFragment() {
 
     override val viewModel by viewModels<ReportViewModel>()
+    private val timeViewModel by activityViewModels<TimeViewModel>()
 
-    private var _binding: FragmentReportListBinding? = null
+    private var _binding: FragmentComposeBinding? = null
     private val binding get() = _binding!!
 
     private val recordsData = MutableStateFlow<List<TimeRecord>>(emptyList())
-    private val totalsData = MutableStateFlow<ReportTotals?>(null)
+    private val totalsData = MutableStateFlow(ReportTotals())
     private val filterData = MutableStateFlow(ReportFilter())
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        lifecycleScope.launch {
+            viewModel.onEdit.collect { record ->
+                if (record != null) {
+                    viewModel.clearEvents()
+                    editRecord(record)
+                }
+            }
+        }
+        lifecycleScope.launch {
+            timeViewModel.edited.collect { data ->
+                if (data != null) onRecordEditSubmitted(data.record)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentReportListBinding.inflate(inflater, container, false)
+        _binding = FragmentComposeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.setContent {
+        binding.composeView.setContent {
             TikalTheme {
-                ReportList(itemsFlow = recordsData, filterFlow = filterData)
-            }
-        }
-
-        lifecycleScope.launch {
-            totalsData.collect { totals ->
-                if (totals != null) bindTotals(totals)
+                ReportResults(
+                    itemsFlow = recordsData,
+                    filterFlow = filterData,
+                    totalsFlow = totalsData,
+                    onClick = ::onRecordClick
+                )
             }
         }
     }
@@ -106,25 +127,10 @@ class ReportFragment : InternetFragment() {
         _binding = null
     }
 
-    @MainThread
-    private fun bindTotals(totals: ReportTotals) {
-        val filter = filterData.value
-
-        binding.totals.composeView.setContent {
-            TikalTheme {
-                ReportTotalsFooter(
-                    totals = totals,
-                    isDurationFieldVisible = filter.isDurationFieldVisible,
-                    isCostFieldVisible = filter.isCostFieldVisible
-                )
-            }
-        }
-    }
-
     override fun authenticate(submit: Boolean) {
         val navController = findNavController()
         Timber.i("authenticate submit=$submit currentDestination=${navController.currentDestination?.label}")
-        if (!isNavDestination(R.id.loginFragment)) {
+        if (!navController.isDestination(R.id.loginFragment)) {
             Bundle().apply {
                 putBoolean(LoginFragment.EXTRA_SUBMIT, submit)
                 navController.navigate(R.id.action_reportList_to_login, this)
@@ -153,7 +159,7 @@ class ReportFragment : InternetFragment() {
 
         lifecycleScope.launch {
             try {
-                dataSource.reportPage(filter, firstRun)
+                viewModel.reportPage(filter, firstRun)
                     .flowOn(Dispatchers.IO)
                     .collect { page ->
                         processPage(page)
@@ -225,7 +231,8 @@ class ReportFragment : InternetFragment() {
         return super.onMenuItemSelected(menuItem)
     }
 
-    private fun export(
+    @MainThread
+    private suspend fun export(
         context: Context,
         menuItem: MenuItem,
         exporter: ReportExporter,
@@ -234,25 +241,23 @@ class ReportFragment : InternetFragment() {
         menuItem.isEnabled = false
         showProgress(true)
 
-        lifecycleScope.launch(Dispatchers.Main) {
-            try {
-                exporter
-                    .flowOn(Dispatchers.IO)
-                    .collect { uri ->
-                        Timber.i("Exported to $uri")
-                        menuItem.isEnabled = true
-                        if (preview) {
-                            previewFile(context, menuItem, uri, exporter.mimeType)
-                        } else {
-                            shareFile(context, menuItem, uri, exporter.mimeType)
-                        }
-                        showProgress(false)
+        try {
+            exporter
+                .flowOn(Dispatchers.IO)
+                .collect { uri ->
+                    Timber.i("Exported to $uri")
+                    menuItem.isEnabled = true
+                    if (preview) {
+                        previewFile(context, menuItem, uri, exporter.mimeType)
+                    } else {
+                        shareFile(context, menuItem, uri, exporter.mimeType)
                     }
-            } catch (err: Exception) {
-                Timber.e(err, "Error exporting: ${err.message}")
-                showProgress(false)
-                menuItem.isEnabled = true
-            }
+                    showProgress(false)
+                }
+        } catch (err: Exception) {
+            Timber.e(err, "Error exporting: ${err.message}")
+            showProgress(false)
+            menuItem.isEnabled = true
         }
     }
 
@@ -260,56 +265,64 @@ class ReportFragment : InternetFragment() {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterCSV(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterCSV(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun exportHTML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterHTML(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterHTML(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun exportODF(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterODF(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterODF(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun exportXML(menuItem: MenuItem, preview: Boolean = false) {
         val context = this.context ?: return
         val records = recordsData.value
         val filter = filterData.value
-        val totals = totalsData.value ?: return
+        val totals = totalsData.value
 
-        export(
-            context,
-            menuItem,
-            ReportExporterXML(context, records, filter, totals),
-            preview
-        )
+        lifecycleScope.launch {
+            export(
+                context,
+                menuItem,
+                ReportExporterXML(context, records, filter, totals),
+                preview
+            )
+        }
     }
 
     private fun shareFile(
@@ -327,20 +340,10 @@ class ReportFragment : InternetFragment() {
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Timber.e(e)
             menuItem.isEnabled = false
-            showError(e)
+            showError(R.string.error_export)
         }
-    }
-
-    private fun showError(error: Throwable) {
-        Timber.e(error)
-        val activity = activity ?: return
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.error_title)
-            .setIcon(R.drawable.ic_dialog)
-            .setMessage(R.string.error_export)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
     }
 
     private fun previewFile(
@@ -357,9 +360,40 @@ class ReportFragment : InternetFragment() {
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Timber.e(e)
             menuItem.isEnabled = false
-            showError(e)
+            showError(R.string.error_export)
         }
+    }
+
+    private fun onRecordClick(record: TimeRecord) {
+        viewModel.maybeEditRecord(lifecycleScope, record)
+    }
+
+    private fun editRecord(record: TimeRecord) {
+        val navController = findNavController()
+        Timber.i("editRecord record=$record currentDestination=${navController.currentDestination?.label}")
+        if (!navController.isDestination(R.id.reportFragment)) return
+        Bundle().apply {
+            putLong(TimeEditFragment.EXTRA_DATE, record.dateTime)
+            putLong(TimeEditFragment.EXTRA_DURATION, record.duration)
+            putLong(TimeEditFragment.EXTRA_FINISH_TIME, record.finishTime)
+            putLong(TimeEditFragment.EXTRA_PROJECT_ID, record.project.id)
+            putLong(TimeEditFragment.EXTRA_RECORD_ID, record.id)
+            putLong(TimeEditFragment.EXTRA_START_TIME, record.startTime)
+            putLong(TimeEditFragment.EXTRA_TASK_ID, record.task.id)
+            navController.navigate(R.id.action_reportList_to_timeEdit, this)
+        }
+    }
+
+    private fun onRecordEditSubmitted(record: TimeRecord) {
+        Timber.i("record submitted: $record")
+        if (record.id == TikalEntity.ID_NONE) return
+        // Remove the "edit form" and update the list.
+        val navController = findNavController()
+        navController.popBackStack()
+        delegate.markFirst()
+        run()
     }
 
     companion object {

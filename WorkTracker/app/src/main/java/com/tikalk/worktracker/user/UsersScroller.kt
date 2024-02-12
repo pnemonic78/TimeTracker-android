@@ -42,8 +42,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +79,7 @@ fun UsersScroller(
     var indexBottom: Float
     val textSize =
         with(LocalDensity.current) { dimensionResource(id = R.dimen.index_textSize).toSp() }
-    val textColor = MaterialTheme.colors.onBackground
+    val textColor = MaterialTheme.colorScheme.onBackground
 
     Column(
         modifier = modifier
@@ -145,15 +145,13 @@ private fun ThisPreview() {
         username = "demo",
         email = "demo@tikalk.com",
         displayName = "Demo",
-        roles = listOf("User", "Manager"),
-        isUncompletedEntry = true
+        roles = listOf("User", "Manager")
     )
     val user2 = User(
         username = "demo",
         email = "demo@tikalk.com",
         displayName = "John Doe",
-        roles = listOf("User"),
-        isUncompletedEntry = false
+        roles = listOf("User")
     )
     val onScrollIndex: OnScrollIndexCallback = { i, p ->
         println("scrolled to $i $p")

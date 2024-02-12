@@ -34,7 +34,6 @@ package com.tikalk.worktracker.user
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -51,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.model.TikalResult
+import com.tikalk.widget.ContentPaddingList
 import com.tikalk.worktracker.EmptyListScreen
 import com.tikalk.worktracker.LoadingScreen
 import com.tikalk.worktracker.model.User
@@ -110,7 +110,7 @@ private fun UsersScreenList(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
-            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp),
+            contentPadding = ContentPaddingList(end = false),
             state = scrollState
         ) {
             items(users) {
@@ -139,15 +139,13 @@ private fun ThisPreview() {
         username = "demo",
         email = "demo@tikalk.com",
         displayName = "Demo",
-        roles = listOf("User", "Manager"),
-        isUncompletedEntry = true
+        roles = listOf("User", "Manager")
     )
     val user2 = User(
         username = "demo",
         email = "demo@tikalk.com",
         displayName = "John Doe",
-        roles = listOf("User"),
-        isUncompletedEntry = false
+        roles = listOf("User")
     )
     val onScrollIndex: OnScrollIndexCallback = { _, _ -> }
     val items = listOf(User.EMPTY, user1, user2)

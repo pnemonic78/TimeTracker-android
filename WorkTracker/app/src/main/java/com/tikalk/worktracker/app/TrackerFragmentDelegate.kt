@@ -58,8 +58,16 @@ class TrackerFragmentDelegate(
         private set
     val internet = InternetFragmentDelegate(callback)
 
+    fun markFirst() {
+        firstRun = true
+    }
+
     fun onCreate(savedInstanceState: Bundle?) {
         firstRun = (savedInstanceState == null)
+    }
+
+    fun onStop() {
+        firstRun = false
     }
 
     fun authenticateMain(submit: Boolean = true) {
@@ -88,7 +96,7 @@ class TrackerFragmentDelegate(
         AlertDialog.Builder(activity)
             .setTitle(R.string.error_title)
             .setMessage(messageId)
-            .setIcon(R.drawable.ic_report_problem)
+            .setIcon(com.tikalk.core.R.drawable.ic_report_problem)
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }

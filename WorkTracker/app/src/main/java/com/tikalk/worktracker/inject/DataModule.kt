@@ -94,10 +94,8 @@ object DataModule {
     @Singleton
     fun provideServices(
         preferences: TimeTrackerPrefs,
-        db: TrackerDatabase,
-        service: TimeTrackerService,
         dataSource: TimeTrackerRepository
     ): TrackerServices {
-        return TrackerServices(preferences, db, service, dataSource)
+        return TrackerServices(preferences, dataSource)
     }
 }

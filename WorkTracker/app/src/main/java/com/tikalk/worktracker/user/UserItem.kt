@@ -33,22 +33,16 @@
 package com.tikalk.worktracker.user
 
 import android.content.res.Configuration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -69,14 +63,14 @@ fun UserItem(user: User) {
     val email = user.email
     val uriHandler = LocalUriHandler.current
 
-    Card {
+    Card(elevation = CardDefaults.elevatedCardElevation()) {
         Column(modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)) {
             Row {
                 Text(
                     modifier = Modifier
                         .weight(0.3f),
                     text = stringResource(id = R.string.name_label),
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
@@ -84,7 +78,7 @@ fun UserItem(user: User) {
                         .padding(start = 8.dp)
                         .weight(0.7f),
                     text = user.displayName.orEmpty(),
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
             Row(modifier = Modifier.padding(top = 8.dp)) {
@@ -92,7 +86,7 @@ fun UserItem(user: User) {
                     modifier = Modifier
                         .weight(0.3f),
                     text = stringResource(id = R.string.login_label),
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 if (email.isNullOrEmpty()) {
@@ -101,7 +95,7 @@ fun UserItem(user: User) {
                             .padding(start = 8.dp)
                             .weight(0.7f),
                         text = username,
-                        style = MaterialTheme.typography.body1
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 } else {
                     ClickableText(
@@ -116,12 +110,12 @@ fun UserItem(user: User) {
                                 end = username.length
                             )
                             addStyle(
-                                style = SpanStyle(color = MaterialTheme.colors.primary),
+                                style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
                                 start = 0,
                                 end = username.length
                             )
                         },
-                        style = MaterialTheme.typography.body1,
+                        style = MaterialTheme.typography.bodyLarge,
                         onClick = { uriHandler.openUri("mailto:$email") }
                     )
                 }
@@ -131,52 +125,19 @@ fun UserItem(user: User) {
                     modifier = Modifier
                         .weight(0.3f),
                     text = stringResource(id = R.string.role_label),
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .weight(0.65f),
+                        .weight(0.7f),
                     text = user.roles?.joinToString(", ").orEmpty(),
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyLarge
                 )
-                if (user.isUncompletedEntry) {
-                    UserEntriesUncompleted(modifier = Modifier.weight(0.05f))
-                } else {
-                    UserEntriesCompleted(modifier = Modifier.weight(0.05f))
-                }
             }
         }
     }
-}
-
-/** Red circle with radial gradient. */
-@Composable
-private fun UserEntriesUncompleted(modifier: Modifier = Modifier) {
-    UserEntriesDot(modifier, Color.Red)
-}
-
-/** Green circle with radial gradient. */
-@Composable
-private fun UserEntriesCompleted(modifier: Modifier = Modifier) {
-    UserEntriesDot(modifier, Color.Green)
-}
-
-/** Circle with radial gradient. */
-@Composable
-private fun UserEntriesDot(modifier: Modifier = Modifier, color: Color) {
-    val colorDark = lerp(color, Color.Black, 0.2f)
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(color, colorDark),
-                ),
-                shape = CircleShape
-            )
-    )
 }
 
 @Preview(name = "default", showBackground = true)
@@ -192,6 +153,5 @@ internal val UserDemo = User(
     username = "demo",
     email = "demo@tikalk.com",
     displayName = "Demo",
-    roles = listOf("User", "Manager"),
-    isUncompletedEntry = false
+    roles = listOf("User", "Manager")
 )

@@ -34,18 +34,22 @@ package com.tikalk.widget
 
 import android.content.Context
 import android.os.Build
+import android.text.format.DateFormat
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.DatePicker
 import android.widget.FrameLayout
 import android.widget.TimePicker
-import com.tikalk.core.R
+import android.widget.ViewSwitcher
+import com.google.android.material.tabs.TabLayout
+import com.tikalk.core.databinding.DateTimePickerBinding
 
 /**
  * Provides a widget for selecting a date and time.
  */
 class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
     FrameLayout(context, attrs, defStyleAttr),
+    TabLayout.OnTabSelectedListener,
     DatePicker.OnDateChangedListener,
     TimePicker.OnTimeChangedListener {
 
@@ -53,20 +57,26 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
-    val datePicker: DatePicker
-    val timePicker: TimePicker
+    private val binding: DateTimePickerBinding
+    private val datePicker: DatePicker
+    private val timePicker: TimePicker
 
     private var listener: OnDateTimeChangedListener? = null
 
     init {
-        val view = LayoutInflater.from(context).inflate(R.layout.date_time_picker, this)
-        datePicker = view.findViewById(R.id.datePicker)
-        timePicker = view.findViewById(R.id.timePicker)
+        val inflater = LayoutInflater.from(context)
+        binding = DateTimePickerBinding.inflate(inflater, this, true)
+        datePicker = binding.datePicker
+        timePicker = binding.timePicker
+
+        val tabhost = binding.tabhost
+        tabhost.addOnTabSelectedListener(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             datePicker.setOnDateChangedListener(this)
         }
         timePicker.setOnTimeChangedListener(this)
+        timePicker.setIs24HourView(DateFormat.is24HourFormat(context))
     }
 
     /**
@@ -94,6 +104,14 @@ class DateTimePicker(context: Context, attrs: AttributeSet? = null, defStyleAttr
         updateTime(hourOfDay, minute)
         timePicker.setOnTimeChangedListener(this)
     }
+
+    override fun onTabSelected(tab: TabLayout.Tab) {
+        binding.tabcontent.displayedChild = tab.position
+    }
+
+    override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+
+    override fun onTabReselected(tab: TabLayout.Tab) = Unit
 
     fun updateDate(year: Int, month: Int, dayOfMonth: Int) {
         datePicker.updateDate(year, month, dayOfMonth)

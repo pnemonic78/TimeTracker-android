@@ -33,76 +33,44 @@
 package com.tikalk.worktracker.start
 
 import android.content.res.Configuration
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
+import com.tikalk.worktracker.widget.TikalProgressIndicator
+
+private val ProgressSize = 150.dp
 
 @Composable
 fun SplashScreen() {
-    var rotationDegrees by remember { mutableStateOf(0f) }
-    val rotation = remember { Animatable(rotationDegrees) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
             text = stringResource(id = R.string.app_name),
-            style = MaterialTheme.typography.h3,
-            color = MaterialTheme.colors.primaryVariant
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.secondary
         )
         Spacer(modifier = Modifier.weight(1f))
-        // TODO animate rotation
-        Image(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .rotate(rotationDegrees),
-            bitmap = ImageBitmap.imageResource(id = R.drawable.tikal_flower),
-            contentDescription = ""
+        TikalProgressIndicator(
+            modifier = Modifier.size(ProgressSize)
         )
         Spacer(modifier = Modifier.weight(2f))
-    }
-
-    LaunchedEffect("splash") {
-        rotation.animateTo(
-            targetValue = rotationDegrees + 360f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(2000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            )
-        ) {
-            rotationDegrees = value
-        }
     }
 }
 

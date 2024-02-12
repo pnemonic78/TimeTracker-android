@@ -32,77 +32,88 @@
 
 package com.tikalk.worktracker.time
 
-import android.content.Context
 import android.os.Bundle
-import android.text.format.DateUtils
-import android.view.View
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.tikalk.util.add
 import com.tikalk.worktracker.BuildConfig
-import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.net.InternetFragment
-import com.tikalk.worktracker.report.LocationItem
-import com.tikalk.worktracker.report.toLocationItem
+import java.util.Calendar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Calendar
 
-abstract class TimeFormFragment : InternetFragment(), Runnable {
-    
-    open var record: TimeRecord = TimeRecord.EMPTY.copy()
+abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
+
     override val viewModel by activityViewModels<TimeViewModel>()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        lifecycleScope.launch {
-            viewModel.projectsData.collect { projects ->
-                onProjectsUpdated(projects)
+    private val _recordFlow = MutableStateFlow(createEmptyRecord())
+    protected val recordFlow: StateFlow<R> = _recordFlow
+    var record: R
+        get() = recordFlow.value
+        set(value) {
+            lifecycleScope.launch {
+                delay(100)
+                _recordFlow.emit(value)
             }
         }
+
+    @Suppress("UNCHECKED_CAST")
+    protected open fun createEmptyRecord(): R {
+        return TimeRecord.EMPTY.copy() as R
     }
 
-    abstract fun populateForm(record: TimeRecord)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.projects = getProjects()
+    }
+
+    abstract fun populateForm(record: R)
 
     @MainThread
-    abstract fun bindForm(record: TimeRecord)
+    abstract fun bindForm(record: R)
 
     protected fun markFavorite() {
         markFavorite(record)
     }
 
-    protected open fun markFavorite(record: TimeRecord) {
-        Timber.i("markFavorite $record")
-        preferences.setFavorite(record)
+    protected open fun markFavorite(record: R) {
+        Timber.i("markFavorite record=$record")
+        viewModel.setFavorite(record)
         Toast.makeText(
             requireContext(),
-            getString(R.string.favorite_marked, record.project.name, record.task.name),
+            getString(
+                com.tikalk.worktracker.R.string.favorite_marked,
+                record.project.name,
+                record.task.name
+            ),
             Toast.LENGTH_LONG
         ).show()
     }
 
     @MainThread
-    protected fun populateAndBind() {
-        val record = this.record
+    protected fun populateAndBind(record: R) {
         Timber.i("populateAndBind record=$record")
         populateForm(record)
         bindForm(record)
     }
 
-    protected open fun setRecordValue(record: TimeRecord) {
+    protected open fun setRecordValue(record: R) {
         Timber.d("setRecordValue record=$record")
         this.record = record
     }
 
-    protected open fun setRecordProject(project: Project): Boolean {
+    protected open fun setRecordProject(record: R, project: Project): Boolean {
         Timber.d("setRecordProject project=$project")
         if (record.project != project) {
             record.project = project
@@ -111,7 +122,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return false
     }
 
-    protected open fun setRecordTask(task: ProjectTask): Boolean {
+    protected open fun setRecordTask(record: R, task: ProjectTask): Boolean {
         Timber.d("setRecordTask task=$task")
         if (record.task != task) {
             record.task = task
@@ -120,16 +131,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return false
     }
 
-    protected open fun setRecordLocation(location: Location): Boolean {
-        Timber.d("setRecordLocation location=$location")
-        if (record.location != location) {
-            record.location = location
-            return true
-        }
-        return false
-    }
-
-    protected open fun setRecordStart(time: Calendar): Boolean {
+    protected open fun setRecordStart(record: R, time: Calendar): Boolean {
         Timber.d("setRecordStart time=$time")
         if (record.start != time) {
             record.date = time
@@ -139,24 +141,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return false
     }
 
-    protected fun setRecordStart(
-        year: Int,
-        month: Int,
-        dayOfMonth: Int,
-        hourOfDay: Int,
-        minute: Int
-    ): Boolean {
-        Timber.d("setRecordStart date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
-        val time = Calendar.getInstance()
-        time.year = year
-        time.month = month
-        time.dayOfMonth = dayOfMonth
-        time.hourOfDay = hourOfDay
-        time.minute = minute
-        return setRecordStart(time)
-    }
-
-    protected open fun setRecordFinish(time: Calendar): Boolean {
+    protected open fun setRecordFinish(record: R, time: Calendar): Boolean {
         Timber.d("setRecordFinish time=$time")
         if (record.finish != time) {
             record.finish = time
@@ -165,95 +150,42 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return false
     }
 
-    protected fun setRecordFinish(
-        year: Int,
-        month: Int,
-        dayOfMonth: Int,
-        hourOfDay: Int,
-        minute: Int
-    ): Boolean {
-        Timber.d("setRecordFinish date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
-        val time = Calendar.getInstance()
-        time.year = year
-        time.month = month
-        time.dayOfMonth = dayOfMonth
-        time.hourOfDay = hourOfDay
-        time.minute = minute
-        return setRecordFinish(time)
-    }
-
-    protected open fun setRecordDuration(date: Calendar): Boolean {
+    protected open fun setRecordDuration(record: R, date: Calendar): Boolean {
         Timber.d("setRecordDuration date=$date")
-        record.date = date
-        val time =
-            (date.hourOfDay * DateUtils.HOUR_IN_MILLIS) + (date.minute * DateUtils.MINUTE_IN_MILLIS)
-        if (record.duration != time) {
-            record.start = null
-            record.finish = null
-            record.duration = time
-            return true
-        }
-        return false
+        record.setDurationDateTime(date.timeInMillis)
+        return true
     }
 
-    protected fun setRecordDuration(
-        year: Int,
-        month: Int,
-        dayOfMonth: Int,
-        hourOfDay: Int,
-        minute: Int
-    ): Boolean {
-        Timber.d("setRecordDuration date=$year-${month + 1}-$dayOfMonth $hourOfDay:$minute")
-        val date = Calendar.getInstance()
-        date.year = year
-        date.month = month
-        date.dayOfMonth = dayOfMonth
-        date.hourOfDay = hourOfDay
-        date.minute = minute
-        return setRecordDuration(date)
-    }
-
-    protected open fun onProjectsUpdated(projects: List<Project>) {
-        val record = this.record
-        populateForm(record)
-        bindForm(record)
-    }
-
-    protected fun applyFavorite() {
-        val projectFavorite = preferences.getFavoriteProject()
+    protected fun applyFavorite(record: R) {
+        val projectFavorite = viewModel.getFavoriteProject()
         if (projectFavorite != TikalEntity.ID_NONE) {
-            val projects = viewModel.projectsData.value
+            val projects = viewModel.projects
             val project = projects.find { it.id == projectFavorite } ?: record.project
-            setRecordProject(project)
+            setRecordProject(record, project)
 
             val tasks = project.tasks
-            val taskFavorite = preferences.getFavoriteTask()
+            val taskFavorite = viewModel.getFavoriteTask()
             if (taskFavorite != TikalEntity.ID_NONE) {
                 val task = tasks.find { it.id == taskFavorite } ?: record.task
-                setRecordTask(task)
+                setRecordTask(record, task)
             }
-
-            val locationFavorite = preferences.getFavoriteLocation()
-            val location = Location.valueOf(locationFavorite)
-            setRecordLocation(location)
         }
     }
 
     protected open fun getEmptyProjectName() =
-        requireContext().getString(R.string.project_name_select)
+        requireContext().getString(com.tikalk.worktracker.R.string.project_name_select)
 
-    protected open fun getEmptyTaskName() = requireContext().getString(R.string.task_name_select)
+    protected open fun getEmptyTaskName() =
+        requireContext().getString(com.tikalk.worktracker.R.string.task_name_select)
 
     protected fun addEmptyProject(projects: List<Project>?): List<Project> {
         val projectEmptyFind = projects?.find { it.isEmpty() }
         val projectEmpty = projectEmptyFind ?: viewModel.projectEmpty
         projectEmpty.name = getEmptyProjectName()
         val projectsWithEmpty = if (projects != null) {
-            if (projectEmptyFind != null) {
-                projects.sortedBy { it.name }
-            } else {
-                projects.sortedBy { it.name }.add(0, projectEmpty)
-            }
+            projects.filter { !it.isEmpty() }
+                .sortedBy { it.name }
+                .add(0, projectEmpty)
         } else {
             listOf(projectEmpty)
         }
@@ -262,31 +194,38 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         return projectsWithEmpty
     }
 
-    protected fun addEmptyTask(tasks: List<ProjectTask>): List<ProjectTask> {
-        val taskEmptyFind = tasks.find { it.isEmpty() }
-        val taskEmpty = taskEmptyFind ?: viewModel.taskEmpty
-        taskEmpty.name = getEmptyTaskName()
-        viewModel.taskEmpty = taskEmpty
-        return if (taskEmptyFind != null) {
-            tasks.sortedBy { it.name }
-        } else {
-            tasks.sortedBy { it.name }.add(0, taskEmpty)
+    protected open fun addEmptyProject(projectsFlow: Flow<List<Project>>): Flow<List<Project>> {
+        return projectsFlow.map { projects ->
+            val projectEmptyFind = projects.find { it.isEmpty() }
+            val projectEmpty = projectEmptyFind ?: viewModel.projectEmpty
+            projectEmpty.name = getEmptyProjectName()
+            val projectsWithEmpty = projects.filter { !it.isEmpty() }
+                .sortedBy { it.name }
+                .add(0, projectEmpty)
+            viewModel.projectEmpty = projectEmpty
+            projectsWithEmpty
         }
     }
 
-    protected open fun buildLocations(context: Context): List<LocationItem> {
-        val items = ArrayList<LocationItem>()
-        val values = Location.values
-        for (value in values) {
-            items.add(value.toLocationItem(context))
+    protected open fun addEmptyTask(tasks: List<ProjectTask>): List<ProjectTask> {
+        val taskEmptyFind = tasks.find { it.isEmpty() }
+        val taskEmpty = taskEmptyFind ?: getEmptyTask()
+        taskEmpty.name = getEmptyTaskName()
+        val tasksWithEmpty = tasks.filter { !it.isEmpty() }
+            .sortedBy { it.name }
+            .add(0, taskEmpty)
+        viewModel.taskEmpty = taskEmpty
+        return tasksWithEmpty
+    }
+
+    protected fun getProjects(): List<Project> {
+        return addEmptyProject(viewModel.projects)
+    }
+
+    protected open fun getEmptyTask(): ProjectTask {
+        return viewModel.taskEmpty.apply {
+            name = getEmptyTaskName()
         }
-
-        val select =
-            LocationItem(items[0].location, context.getString(R.string.location_label_select))
-        items[0] = select
-        viewModel.locationEmpty = select
-
-        return items
     }
 
     companion object {
@@ -299,7 +238,7 @@ abstract class TimeFormFragment : InternetFragment(), Runnable {
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".form.TASK_ID"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".form.START_TIME"
         const val EXTRA_FINISH_TIME = BuildConfig.APPLICATION_ID + ".form.FINISH_TIME"
-        const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".form.LOCATION"
+        const val EXTRA_DURATION = BuildConfig.APPLICATION_ID + ".form.DURATION"
         const val EXTRA_STOP = BuildConfig.APPLICATION_ID + ".form.STOP"
     }
 }

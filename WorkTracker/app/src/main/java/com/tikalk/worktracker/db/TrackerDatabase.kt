@@ -51,7 +51,7 @@ import com.tikalk.worktracker.model.User
         TimeRecordEntity::class,
         User::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = false
 )
 abstract class TrackerDatabase : RoomDatabase() {

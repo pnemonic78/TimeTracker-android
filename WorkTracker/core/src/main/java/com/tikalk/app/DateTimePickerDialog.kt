@@ -36,13 +36,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.TabHost
 import androidx.annotation.StyleRes
-import androidx.core.content.ContextCompat
-import com.tikalk.core.R
+import com.tikalk.core.databinding.DateTimePickerDialogBinding
 import com.tikalk.widget.DateTimePicker
 import java.util.Calendar
 
@@ -52,11 +48,12 @@ class DateTimePickerDialog private constructor(
     listener: OnDateTimeSetListener?,
     calendar: Calendar?,
     year: Int, monthOfYear: Int, dayOfMonth: Int,
-    hourOfDay: Int, minute: Int, is24HourView: Boolean
-) : AlertDialog(context, themeResId), DialogInterface.OnClickListener,
+    hourOfDay: Int, minute: Int, is24HourView: Boolean? = null
+) : AlertDialog(context, themeResId),
+    DialogInterface.OnClickListener,
     DateTimePicker.OnDateTimeChangedListener {
 
-    var dateTimePicker: DateTimePicker
+    val dateTimePicker: DateTimePicker
 
     var dateTimeSetListener: OnDateTimeSetListener? = listener
 
@@ -70,8 +67,7 @@ class DateTimePickerDialog private constructor(
             0,
             0,
             0,
-            0,
-            DateFormat.is24HourFormat(context)
+            0
         )
 
     constructor(context: Context, listener: OnDateTimeSetListener?) :
@@ -84,15 +80,14 @@ class DateTimePickerDialog private constructor(
             0,
             0,
             0,
-            0,
-            DateFormat.is24HourFormat(context)
+            0
         )
 
     constructor(
         context: Context,
         listener: OnDateTimeSetListener?,
         year: Int, monthOfYear: Int, dayOfMonth: Int,
-        hourOfDay: Int, minute: Int, is24HourView: Boolean
+        hourOfDay: Int, minute: Int, is24HourView: Boolean?
     ) : this(
         context,
         0,
@@ -107,13 +102,13 @@ class DateTimePickerDialog private constructor(
     )
 
     init {
-        val themeContext = getContext()
-        val inflater = LayoutInflater.from(themeContext)
-        val view: View = inflater.inflate(R.layout.date_time_picker_dialog, null)
-        setView(view)
+        val inflater = LayoutInflater.from(context)
+        val binding = DateTimePickerDialogBinding.inflate(inflater)
 
-        dateTimePicker = view.findViewById(R.id.dateTimePicker)
-        dateTimePicker.setIs24HourView(is24HourView)
+        dateTimePicker = binding.dateTimePicker
+        if (is24HourView != null) {
+            dateTimePicker.setIs24HourView(is24HourView)
+        }
 
         if (calendar != null) {
             val calYear = calendar[Calendar.YEAR]
@@ -126,29 +121,10 @@ class DateTimePickerDialog private constructor(
             dateTimePicker.init(year, monthOfYear, dayOfMonth, hourOfDay, minute, this)
         }
 
-        val tabs: TabHost = view.findViewById(android.R.id.tabhost)
-        tabs.setup()
+        setButton(DialogInterface.BUTTON_POSITIVE, context.getString(android.R.string.ok), this)
+        setButton(DialogInterface.BUTTON_NEGATIVE, context.getString(android.R.string.cancel), this)
 
-        val tabTime = tabs.newTabSpec(TAG_TIME)
-        tabTime.setIndicator(null, ContextCompat.getDrawable(context, R.drawable.ic_date_time_time))
-        tabTime.setContent(R.id.timePicker)
-        tabs.addTab(tabTime)
-
-        val tabDate = tabs.newTabSpec(TAG_DATE)
-        tabDate.setIndicator(null, ContextCompat.getDrawable(context, R.drawable.ic_date_time_date))
-        tabDate.setContent(R.id.datePicker)
-        tabs.addTab(tabDate)
-
-        setButton(
-            DialogInterface.BUTTON_POSITIVE,
-            themeContext.getString(android.R.string.ok),
-            this
-        )
-        setButton(
-            DialogInterface.BUTTON_NEGATIVE,
-            themeContext.getString(android.R.string.cancel),
-            this
-        )
+        setView(binding.root)
     }
 
     override fun onClick(dialog: DialogInterface, which: Int) {
@@ -164,6 +140,7 @@ class DateTimePickerDialog private constructor(
                     dateTimePicker.getHour(), dateTimePicker.getMinute()
                 )
             }
+
             DialogInterface.BUTTON_NEGATIVE -> cancel()
         }
     }
@@ -259,8 +236,5 @@ class DateTimePickerDialog private constructor(
         private const val HOUR = "hour"
         private const val MINUTE = "minute"
         private const val IS_24_HOUR = "is24hour"
-
-        private const val TAG_DATE = "tab:date"
-        private const val TAG_TIME = "tab:time"
     }
 }

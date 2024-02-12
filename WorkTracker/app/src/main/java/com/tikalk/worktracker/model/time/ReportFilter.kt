@@ -32,6 +32,7 @@
 package com.tikalk.worktracker.model.time
 
 import android.os.Parcelable
+import com.tikalk.worktracker.model.DefaultTimePeriod
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
@@ -53,7 +54,7 @@ import java.util.Calendar
  */
 @Parcelize
 class ReportFilter(
-    var period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
+    var period: ReportTimePeriod = DefaultTimePeriod,
     var favorite: String? = null,
     var isProjectFieldVisible: Boolean = true,
     var isTaskFieldVisible: Boolean = true,
@@ -61,8 +62,7 @@ class ReportFilter(
     var isFinishFieldVisible: Boolean = true,
     var isDurationFieldVisible: Boolean = true,
     var isNoteFieldVisible: Boolean = true,
-    var isCostFieldVisible: Boolean = false,
-    var isLocationFieldVisible: Boolean = false
+    var isCostFieldVisible: Boolean = false
 ) : TimeRecord(
     id = ID_NONE,
     project = Project.EMPTY,
@@ -75,7 +75,7 @@ class ReportFilter(
         task: ProjectTask = ProjectTask.EMPTY,
         start: Calendar? = null,
         finish: Calendar? = null,
-        period: ReportTimePeriod = ReportTimePeriod.CUSTOM,
+        period: ReportTimePeriod = DefaultTimePeriod,
         favorite: String? = null,
         location: Location = Location.EMPTY,
         isProjectFieldVisible: Boolean = true,
@@ -84,8 +84,7 @@ class ReportFilter(
         isFinishFieldVisible: Boolean = true,
         isDurationFieldVisible: Boolean = true,
         isNoteFieldVisible: Boolean = true,
-        isCostFieldVisible: Boolean = false,
-        isLocationFieldVisible: Boolean = false
+        isCostFieldVisible: Boolean = false
     ) : this(
         period = period,
         favorite = favorite,
@@ -95,8 +94,7 @@ class ReportFilter(
         isFinishFieldVisible = isFinishFieldVisible,
         isDurationFieldVisible = isDurationFieldVisible,
         isNoteFieldVisible = isNoteFieldVisible,
-        isCostFieldVisible = isCostFieldVisible,
-        isLocationFieldVisible = isLocationFieldVisible
+        isCostFieldVisible = isCostFieldVisible
     ) {
         this.project = project
         this.task = task
@@ -129,9 +127,6 @@ class ReportFilter(
             }
             //put("chcost", "1")
             //put("chtotalsonly", "1")
-            if (isLocationFieldVisible) {
-                put("show_time_field_5", "1")
-            }
 
             // Grouping
             put("group_by1", "no_grouping")
@@ -156,48 +151,57 @@ class ReportFilter(
                 }
             }
             ReportTimePeriod.PREVIOUS_MONTH -> {
-                val first = today.copy()
-                first.month--
-                first.dayOfMonth = 1
-                val last = first.copy()
-                last.dayOfMonth = last.getActualMaximum(Calendar.DAY_OF_MONTH)
+                val first = today.copy().apply {
+                    month--
+                    dayOfMonth = 1
+                }
+                val last = first.copy().apply {
+                    dayOfMonth = getActualMaximum(Calendar.DAY_OF_MONTH)
+                }
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.PREVIOUS_WEEK -> {
-                val first = today.copy()
-                first.dayOfWeek = first.firstDayOfWeek
-                first.dayOfMonth -= 7
-                val last = first.copy()
-                last.dayOfMonth += 6
+                val first = today.copy().apply {
+                    dayOfWeek = firstDayOfWeek
+                    dayOfMonth -= 7
+                }
+                val last = first.copy().apply {
+                    dayOfMonth += 6
+                }
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.THIS_MONTH -> {
-                val first = today.copy()
-                first.dayOfMonth = 1
-                val last = today.copy()
-                last.dayOfMonth = last.getActualMaximum(Calendar.DAY_OF_MONTH)
+                val first = today.copy().apply {
+                    dayOfMonth = 1
+                }
+                val last = today.copy().apply {
+                    dayOfMonth = getActualMaximum(Calendar.DAY_OF_MONTH)
+                }
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.THIS_WEEK -> {
-                val first = today.copy()
-                first.dayOfWeek = first.firstDayOfWeek
-                val last = first.copy()
-                last.dayOfMonth += 6
+                val first = today.copy().apply {
+                    dayOfWeek = firstDayOfWeek
+                }
+                val last = first.copy().apply {
+                    dayOfMonth += 6
+                }
                 this.start = first
                 this.finish = last
             }
             ReportTimePeriod.TODAY -> {
-                this.start = today.copy()
-                this.finish = today.copy()
+                this.start = today
+                this.finish = today
             }
             ReportTimePeriod.YESTERDAY -> {
-                val yesterday = today.copy()
-                yesterday.dayOfMonth--
+                val yesterday = today.copy().apply {
+                    dayOfMonth--
+                }
                 this.start = yesterday
-                this.finish = yesterday.copy()
+                this.finish = yesterday
             }
         }
 
@@ -219,7 +223,6 @@ class ReportFilter(
         if (isDurationFieldVisible) s.append('D')
         if (isNoteFieldVisible) s.append('N')
         if (isCostFieldVisible) s.append('C')
-        if (isLocationFieldVisible) s.append('R')
         return s
     }
 }

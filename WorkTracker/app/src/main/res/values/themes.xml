@@ -1,15 +1,10 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="Base.Theme.WorkTracker" parent="Theme.MaterialComponents.DayNight">
+    <style name="Base.Theme.WorkTracker" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="colorButtonNormal">@color/colorButtonNormal</item>
-
-        <item name="android:progressBarStyle">@style/Widget.ProgressBar</item>
-        <item name="android:progressBarStyleLarge">@style/Widget.ProgressBar.Large</item>
-        <item name="android:indeterminateProgressStyle">@style/Widget.ProgressBar</item>
     </style>
 
     <style name="Theme.WorkTracker" parent="Base.Theme.WorkTracker" />

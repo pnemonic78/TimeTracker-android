@@ -302,7 +302,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         private const val EXTRA_ACTION = BuildConfig.APPLICATION_ID + ".ACTION"
 
         private const val CHANNEL_ID = "timer"
-        private const val ID_NOTIFY = R.string.action_start
+        private const val ID_NOTIFY = 2
         private const val ID_ACTIVITY = 0
         private const val ID_ACTION_STOP = 1
 

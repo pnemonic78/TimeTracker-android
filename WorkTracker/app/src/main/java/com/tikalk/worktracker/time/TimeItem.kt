@@ -44,8 +44,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +58,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tikalk.compose.GenericCallback
 import com.tikalk.compose.TikalTheme
+import com.tikalk.compose.WrapText
 import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Location
@@ -72,7 +76,7 @@ import java.util.Calendar
 
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
 
-typealias OnRecordCallback = ((TimeRecord) -> Unit)
+typealias RecordCallback = GenericCallback<TimeRecord>
 
 @Composable
 fun TimeItem(
@@ -86,12 +90,12 @@ fun TimeItem(
     isNoteFieldVisible: Boolean = true,
     isCostFieldVisible: Boolean = false,
     isLocationFieldVisible: Boolean = false,
-    onClick: OnRecordCallback
+    onClick: RecordCallback
 ) {
     val context: Context = LocalContext.current
     val iconSize = dimensionResource(id = R.dimen.icon_item)
 
-    val dateTime = record.date.timeInMillis
+    val dateTime = record.dateTime
     val startTime = record.startTime
     val endTime = record.finishTime
     val timeRange = if ((startTime == TimeRecord.NEVER) || (endTime == TimeRecord.NEVER)) {
@@ -126,9 +130,9 @@ fun TimeItem(
 
     Card(
         modifier = Modifier
-            .padding(4.dp)
+            .padding(2.dp)
             .clickable { onClick(record) },
-        elevation = 2.dp
+        elevation = CardDefaults.elevatedCardElevation()
     ) {
         Column(
             modifier = Modifier
@@ -142,12 +146,14 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_business)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_business)
                         ),
                         contentDescription = stringResource(id = R.string.project_label)
                     )
                     Text(
-                        modifier = Modifier.padding(start = 4.dp),
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .align(Alignment.CenterVertically),
                         text = record.project.name,
                         fontWeight = FontWeight.Medium,
                         color = color
@@ -157,14 +163,15 @@ fun TimeItem(
                     Spacer(modifier = Modifier.weight(1f))
                     Image(
                         modifier = Modifier
+                            .padding(start = 8.dp)
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_time)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_time)
                         ),
                         contentDescription = stringResource(id = R.string.duration_label)
                     )
-                    Text(
+                    WrapText(
                         modifier = Modifier.padding(start = 4.dp),
                         text = timeRange,
                         color = color
@@ -178,12 +185,14 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_folder_open)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_folder_open)
                         ),
                         contentDescription = stringResource(id = R.string.task_label)
                     )
                     Text(
-                        modifier = Modifier.padding(start = 4.dp),
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .align(Alignment.CenterVertically),
                         text = record.task.name,
                         color = color
                     )
@@ -197,6 +206,7 @@ fun TimeItem(
                         modifier = Modifier,
                         text = duration,
                         fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.End,
                         color = color
                     )
                 }
@@ -208,7 +218,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_home_work)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_home_work)
                         ),
                         contentDescription = stringResource(id = R.string.location_label)
                     )
@@ -225,7 +235,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_attach_money)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_attach_money)
                         ),
                         contentDescription = stringResource(id = R.string.cost_total)
                     )
@@ -243,7 +253,7 @@ fun TimeItem(
                             .size(iconSize)
                             .align(Alignment.CenterVertically),
                         painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = R.drawable.ic_note)
+                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_note)
                         ),
                         contentDescription = stringResource(id = R.string.note_hint)
                     )
@@ -296,7 +306,7 @@ private fun ThisPreview() {
         location = Location.OTHER,
         cost = 1.23
     )
-    val onClick: ((TimeRecord) -> Unit) = { println("record clicked: $it") }
+    val onClick: OnTimeRecordClick = { println("record clicked: $it") }
 
     TikalTheme {
         TimeItem(record, onClick = onClick)

@@ -37,15 +37,19 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import com.tikalk.preference.TikalPreferenceFragment
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.model.BasicCredentials
 import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class TimeSettingsFragment : TikalPreferenceFragment() {
@@ -53,14 +57,17 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
     @Inject
     lateinit var preferences: TimeTrackerPrefs
 
+    @Inject
+    lateinit var service: TimeTrackerService
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
         val context = requireContext()
 
-        val clearUser = findPreference<Preference>("clear_user")
-        clearUser?.setOnPreferenceClickListener { preference ->
-            onClearUserClicked(preference)
+        val logoutUser = findPreference<Preference>("logout")
+        logoutUser?.setOnPreferenceClickListener { preference ->
+            onLogoutClicked(preference)
             true
         }
 
@@ -84,33 +91,42 @@ class TimeSettingsFragment : TikalPreferenceFragment() {
         validateIntent("about.issue")
     }
 
-    private fun onClearUserClicked(preference: Preference) {
+    private fun onLogoutClicked(preference: Preference) {
         preference.isEnabled = false
-        deleteUser()
+        logout()
+        deleteUser(preference.context)
         preference.isEnabled = true
     }
 
-    private fun deleteUser() {
+    private fun logout() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                service.logout()
+            } catch (e: Exception) {
+                Timber.e(e, "Error signing out: ${e.message}")
+            }
+        }
+    }
+
+    private fun deleteUser(context: Context) {
         preferences.user = User.EMPTY
         preferences.userCredentials = UserCredentials.EMPTY
         TimeTrackerServiceFactory.clearCookies()
 
-        val context = this.context ?: return
         Toast.makeText(context, context.getString(R.string.pref_logout_toast), Toast.LENGTH_LONG)
             .show()
     }
 
     private fun onClearDataClicked(preference: Preference) {
         preference.isEnabled = false
-        deleteAppData()
+        deleteAppData(preference.context)
         preference.isEnabled = true
     }
 
     /**
      * Clear the application data.
      */
-    private fun deleteAppData() {
-        val context = this.context ?: return
+    private fun deleteAppData(context: Context) {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         am.clearApplicationUserData()
 

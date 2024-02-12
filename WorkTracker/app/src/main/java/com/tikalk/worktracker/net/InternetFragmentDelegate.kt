@@ -32,7 +32,9 @@
 
 package com.tikalk.worktracker.net
 
+import androidx.annotation.MainThread
 import androidx.annotation.StringRes
+import androidx.annotation.WorkerThread
 import com.tikalk.html.textBr
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.auth.AccessDeniedException
@@ -138,13 +140,30 @@ class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
     }
 
     interface InternetFragmentCallback {
+        @MainThread
         fun authenticate(submit: Boolean = true)
+
+        @WorkerThread
+        fun authenticateMain(submit: Boolean = true)
+
+        @MainThread
         fun showError(@StringRes messageId: Int)
+
+        @WorkerThread
+        fun showErrorMain(@StringRes messageId: Int)
 
         /**
          * Shows the progress UI and hides the login form.
          * @param show is visible?
          */
+        @MainThread
         fun showProgress(show: Boolean = true)
+
+        /**
+         * Shows the progress UI and hides the login form.
+         * @param show is visible?
+         */
+        @WorkerThread
+        fun showProgressMain(show: Boolean = true)
     }
 }

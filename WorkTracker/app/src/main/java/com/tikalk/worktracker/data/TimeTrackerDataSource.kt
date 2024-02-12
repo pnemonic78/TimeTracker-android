@@ -34,6 +34,7 @@ package com.tikalk.worktracker.data
 
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.PuncherPage
@@ -42,8 +43,10 @@ import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
+import com.tikalk.worktracker.model.time.TimeRecord
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
+import retrofit2.Response
 
 interface TimeTrackerDataSource {
     fun editPage(recordId: Long, refresh: Boolean = true): Flow<TimeEditPage>
@@ -56,5 +59,9 @@ interface TimeTrackerDataSource {
     fun timeListPage(date: Calendar, refresh: Boolean = true): Flow<TimeListPage>
     fun usersPage(refresh: Boolean = true): Flow<UsersPage>
 
-    suspend fun savePage(page: TimeListPage)
+    suspend fun savePage(page: TimeListPage): FormPage<*>
+    fun editRecord(record: TimeRecord): Flow<FormPage<*>>
+    fun deleteRecord(record: TimeRecord): Flow<FormPage<*>>
+    fun editProfile(page: ProfilePage): Flow<ProfilePage>
+    suspend fun login(name: String, password: String, date: String): Response<String>
 }

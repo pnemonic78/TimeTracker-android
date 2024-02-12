@@ -39,11 +39,13 @@ import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
+import com.tikalk.worktracker.auth.model.UserCredentials
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import retrofit2.Response
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -53,10 +55,15 @@ class LoginViewModel @Inject constructor(
 
     override val credentialsLogin = MutableStateFlow(TextFieldViewState())
     override val credentialsPassword = MutableStateFlow(TextFieldViewState())
-    private var _errorMessage = MutableStateFlow("")
-    override val errorMessage: StateFlow<String> = _errorMessage
+    private val _error = MutableStateFlow<LoginError?>(null)
+    override val error: StateFlow<LoginError?> = _error
     override val onConfirmClick: UnitCallback = ::onDialogConfirmClick
     override val onDismiss: UnitCallback = ::onDialogDismiss
+    var userCredentials: UserCredentials
+        get() = services.preferences.userCredentials
+        set(value) {
+            services.preferences.userCredentials = value
+        }
 
     init {
         val userCredentials = services.preferences.userCredentials
@@ -89,9 +96,7 @@ class LoginViewModel @Inject constructor(
         val credentialsPassword = credentialsPasswordState.value
 
         // Reset errors.
-        credentialsLoginState.emit(credentialsLogin.copy(isError = false))
-        credentialsPasswordState.emit(credentialsPassword.copy(isError = false))
-        _errorMessage.emit("")
+        _error.emit(null)
 
         // Store values at the time of the submission attempt.
         val loginValue = credentialsLogin.value
@@ -102,18 +107,13 @@ class LoginViewModel @Inject constructor(
         // Check for a valid login name.
         when (validator.validateUsername(loginValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsLoginState,
-                    resources.getString(R.string.error_field_required)
-                )
+                _error.emit(LoginError.Name(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsLoginState,
-                    resources.getString(R.string.error_invalid_login)
-                )
+                _error.emit(LoginError.Name(resources.getString(R.string.error_invalid_login)))
                 return false
             }
         }
@@ -121,28 +121,18 @@ class LoginViewModel @Inject constructor(
         // Check for a valid password, if the user entered one.
         when (validator.validatePassword(passwordValue)) {
             LoginValidator.ERROR_REQUIRED -> {
-                notifyError(
-                    credentialsPasswordState,
-                    resources.getString(R.string.error_field_required)
-                )
+                _error.emit(LoginError.Password(resources.getString(R.string.error_field_required)))
                 return false
             }
+
             LoginValidator.ERROR_LENGTH,
             LoginValidator.ERROR_INVALID -> {
-                notifyError(
-                    credentialsPasswordState,
-                    resources.getString(R.string.error_invalid_password)
-                )
+                _error.emit(LoginError.Password(resources.getString(R.string.error_invalid_password)))
                 return false
             }
         }
 
         return true
-    }
-
-    private suspend fun notifyError(state: MutableStateFlow<TextFieldViewState>, message: String) {
-        state.emit(state.value.copy(isError = true))
-        _errorMessage.emit(message)
     }
 
     override fun onCleared() {
@@ -156,6 +146,10 @@ class LoginViewModel @Inject constructor(
     }
 
     suspend fun showError(message: String) {
-        _errorMessage.emit(message)
+        _error.emit(LoginError.General(message))
+    }
+
+    suspend fun login(name: String, password: String, date: String): Response<String> {
+        return services.dataSource.login(name, password, date)
     }
 }

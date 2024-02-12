@@ -46,11 +46,12 @@ import kotlinx.coroutines.flow.FlowCollector
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
  * Write the list of records to a file.
  */
-@OptIn(FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 abstract class ReportExporter(
     val context: Context,
     val records: List<TimeRecord>,
@@ -58,6 +59,7 @@ abstract class ReportExporter(
     val totals: ReportTotals
 ) : AbstractFlow<Uri>() {
 
+    @ExperimentalCoroutinesApi
     override suspend fun collectSafely(collector: FlowCollector<Uri>) {
         val runner = createRunner(context, records, filter, totals, collector)
         runner.run()

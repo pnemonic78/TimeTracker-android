@@ -38,8 +38,8 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -63,7 +63,7 @@ fun ReportTotalsFooter(
     isCostFieldVisible: Boolean = false
 ) {
     val context: Context = LocalContext.current
-    val textColor = MaterialTheme.colors.onBackground
+    val textColor = MaterialTheme.colorScheme.onBackground
 
     Row(
         modifier = Modifier
@@ -75,13 +75,13 @@ fun ReportTotalsFooter(
             Text(
                 modifier = Modifier.padding(start = 16.dp),
                 text = stringResource(id = R.string.duration_total),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
             Text(
                 modifier = Modifier.padding(start = 4.dp),
                 text = formatElapsedTime(context, timeFormatter, totals.duration),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
                 fontWeight = FontWeight.Medium
             )
@@ -91,13 +91,13 @@ fun ReportTotalsFooter(
             Text(
                 modifier = Modifier.padding(start = 16.dp),
                 text = stringResource(id = R.string.cost_total),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
             Text(
                 modifier = Modifier.padding(start = 4.dp),
                 text = formatCurrency(currencyFormatter, totals.cost),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
                 fontWeight = FontWeight.Medium
             )

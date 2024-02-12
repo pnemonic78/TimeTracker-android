@@ -36,6 +36,7 @@ import com.tikalk.worktracker.data.local.TimeTrackerLocalDataSource
 import com.tikalk.worktracker.data.remote.TimeTrackerRemoteDataSource
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
 import com.tikalk.worktracker.model.time.PuncherPage
@@ -44,10 +45,12 @@ import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.merge
+import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.Calendar
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
+import retrofit2.Response
 
 class TimeTrackerRepository @Inject constructor(
     private val localRepository: TimeTrackerLocalDataSource,
@@ -138,7 +141,32 @@ class TimeTrackerRepository @Inject constructor(
         return localRepository.puncherPage(refresh)
     }
 
-    override suspend fun savePage(page: TimeListPage) {
-        localRepository.savePage(page)
+    override suspend fun savePage(page: TimeListPage): FormPage<*> {
+        return localRepository.savePage(page)
+    }
+
+    override fun editRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return merge(
+            localRepository.editRecord(record),
+            remoteRepository.editRecord(record)
+        )
+    }
+
+    override fun deleteRecord(record: TimeRecord): Flow<FormPage<*>> {
+        return merge(
+            localRepository.deleteRecord(record),
+            remoteRepository.deleteRecord(record)
+        )
+    }
+
+    override fun editProfile(page: ProfilePage): Flow<ProfilePage> {
+        return merge(
+            localRepository.editProfile(page),
+            remoteRepository.editProfile(page)
+        )
+    }
+
+    override suspend fun login(name: String, password: String, date: String): Response<String> {
+        return remoteRepository.login(name, password, date)
     }
 }

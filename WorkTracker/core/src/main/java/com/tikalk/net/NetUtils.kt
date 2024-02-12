@@ -35,10 +35,10 @@ import android.net.Uri
 import android.os.Parcel
 import java.net.HttpCookie
 
-fun createUriFromParcel(parcel: Parcel): Uri? {
+fun Parcel.createUri(): Uri? {
     try {
-        return Uri.CREATOR.createFromParcel(parcel)
-    } catch (e: IllegalArgumentException) {
+        return Uri.CREATOR.createFromParcel(this)
+    } catch (e: Exception) {
         e.printStackTrace()
     }
     return null

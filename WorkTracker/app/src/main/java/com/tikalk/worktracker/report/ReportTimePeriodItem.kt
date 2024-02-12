@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,25 +29,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.auth.model
 
-import okhttp3.Credentials
+package com.tikalk.worktracker.report
 
-/**
- * Credentials for Basic realm authentication.
- * @author moshe on 2018/05/13.
- */
-data class BasicCredentials(var realm: String, var username: String, var password: String) {
+import android.content.Context
+import com.tikalk.worktracker.model.ReportTimePeriod
 
-    fun authToken(): String {
-        return Credentials.basic(username, password)
+class ReportTimePeriodItem(
+    context: Context,
+    val period: ReportTimePeriod
+) {
+    val label: String = context.getString(period.labelId)
+
+    override fun toString(): String {
+        return label
     }
 
-    fun isEmpty(): Boolean = realm.isEmpty() || username.isEmpty() || password.isEmpty()
+    override fun equals(other: Any?): Boolean {
+        if (other is ReportTimePeriodItem) {
+            return this.period == other.period
+        }
+        return super.equals(other)
+    }
 
-    companion object {
-        const val SCHEME = "Basic"
-
-        val EMPTY = BasicCredentials("", "", "")
+    override fun hashCode(): Int {
+        return period.hashCode()
     }
 }

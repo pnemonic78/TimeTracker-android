@@ -55,8 +55,8 @@ class ProjectsViewModel @Inject constructor(
 
     suspend fun fetchProjects(firstRun: Boolean) {
         _projects.emit(TikalResult.Loading())
-        notifyLoading(true)
         try {
+            notifyLoading(true)
             services.dataSource.projectsPage(firstRun)
                 .flowOn(Dispatchers.IO)
                 .collect { page ->
