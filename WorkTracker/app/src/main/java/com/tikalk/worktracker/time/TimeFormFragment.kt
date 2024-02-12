@@ -88,7 +88,7 @@ abstract class TimeFormFragment<R : TimeRecord> : InternetFragment(), Runnable {
     }
 
     protected open fun markFavorite(record: R) {
-        Timber.i("markFavorite $record")
+        Timber.i("markFavorite record=$record")
         viewModel.setFavorite(record)
         Toast.makeText(
             requireContext(),

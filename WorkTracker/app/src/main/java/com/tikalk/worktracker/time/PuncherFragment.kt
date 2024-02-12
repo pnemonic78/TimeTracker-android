@@ -106,6 +106,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
                         projects = getProjects(),
                         taskEmpty = getEmptyTask(),
                         record = record,
+                        onRecordCallback = ::setRecordValue,
                         onStartClick = ::startTimer,
                         onStopClick = ::stopTimer
                     )

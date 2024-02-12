@@ -80,6 +80,7 @@ fun PuncherForm(
     projectsFlow: Flow<List<Project>>,
     taskEmptyFlow: Flow<ProjectTask>,
     recordFlow: Flow<TimeRecord>,
+    onRecordCallback: RecordCallback,
     onStartClick: UnitCallback,
     onStopClick: UnitCallback
 ) {
@@ -91,6 +92,7 @@ fun PuncherForm(
         projectsState.value,
         taskEmptyState.value,
         recordState.value,
+        onRecordCallback,
         onStartClick,
         onStopClick
     )
@@ -101,6 +103,7 @@ fun PuncherForm(
     projects: List<Project>,
     taskEmpty: ProjectTask,
     record: TimeRecord,
+    onRecordCallback: RecordCallback,
     onStartClick: UnitCallback,
     onStopClick: UnitCallback
 ) {
@@ -126,6 +129,7 @@ fun PuncherForm(
                 record.project = it
                 projectSelected = it
                 taskSelected = ProjectTask.EMPTY
+                onRecordCallback(record)
             }
             ProjectTaskSpinner(
                 modifier = Modifier.padding(top = paddingTop),
@@ -136,6 +140,7 @@ fun PuncherForm(
             ) {
                 record.task = it
                 taskSelected = it
+                onRecordCallback(record)
             }
             if (isTimerStopped) {
                 PuncherStartButton(
@@ -223,10 +228,18 @@ private fun ThisPreview() {
     val projects = listOf(Project("Project #1"), Project("Project #2"))
     val record = TimeRecord.EMPTY
     record.startTime = System.currentTimeMillis() - 10000
+    val onRecordCallback: RecordCallback = { println("Record changed!") }
     val onStartClick = { println("Start clicked!") }
     val onStopClick = { println("Stop clicked!") }
 
     TikalTheme {
-        PuncherForm(projects, ProjectTask.EMPTY, record, onStartClick, onStopClick)
+        PuncherForm(
+            projects,
+            ProjectTask.EMPTY,
+            record,
+            onRecordCallback,
+            onStartClick,
+            onStopClick
+        )
     }
 }
