@@ -33,6 +33,7 @@
 package com.tikalk.worktracker.data.local
 
 import android.text.format.DateUtils
+import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.data.remote.TimeListPageSaver
@@ -44,6 +45,7 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.UsersPage
 import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
@@ -57,6 +59,7 @@ import com.tikalk.worktracker.model.time.TimeEditPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
+import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.dayOfMonth
@@ -403,5 +406,14 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override suspend fun login(name: String, password: String, date: String): Response<String> {
         throw NotImplementedError()
+    }
+
+    override suspend fun logout() {
+        preferences.user = User.EMPTY
+        preferences.userCredentials = UserCredentials.EMPTY
+        TimeTrackerServiceFactory.clearCookies()
+        db.userDao().deleteAll()
+        db.timeRecordDao().deleteAll()
+        db.reportRecordDao().deleteAll()
     }
 }

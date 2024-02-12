@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,49 +30,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.app
+package com.tikalk.worktracker.preference
 
-import android.os.Bundle
-import androidx.annotation.StringRes
-import com.tikalk.app.TikalDialogFragment
-import com.tikalk.app.runOnUiThread
-import dagger.hilt.android.AndroidEntryPoint
+import com.tikalk.worktracker.app.TrackerServices
+import com.tikalk.worktracker.app.TrackerViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-@AndroidEntryPoint
-abstract class TrackerDialogFragment : TikalDialogFragment,
-    TrackerFragmentDelegate.TrackerFragmentDelegateCallback,
-    Runnable {
+@HiltViewModel
+class SettingsViewModel  @Inject constructor(
+    services: TrackerServices
+) : TrackerViewModel(services) {
 
-    constructor() : super()
-
-    constructor(args: Bundle) : super(args)
-
-    protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
-    protected val firstRun: Boolean get() = delegate.firstRun
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        delegate.onCreate(savedInstanceState)
-    }
-
-    protected fun handleError(error: Throwable) {
-        delegate.handleError(error)
-    }
-
-    protected open fun handleErrorMain(error: Throwable) {
-        runOnUiThread { handleError(error) }
-    }
-
-    override fun showError(@StringRes messageId: Int) {
-        delegate.showError(messageId)
-    }
-
-    override fun showErrorMain(messageId: Int) {
-        runOnUiThread { showError(messageId) }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        run()
+    suspend fun logout() {
+        services.dataSource.logout()
     }
 }

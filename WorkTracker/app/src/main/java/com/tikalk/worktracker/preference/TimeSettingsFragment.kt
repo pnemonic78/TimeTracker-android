@@ -37,16 +37,12 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import com.tikalk.preference.TikalPreferenceFragment
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.model.UserCredentials
-import com.tikalk.worktracker.model.User
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -54,67 +50,57 @@ import timber.log.Timber
 @AndroidEntryPoint
 class TimeSettingsFragment : TikalPreferenceFragment() {
 
-    @Inject
-    lateinit var preferences: TimeTrackerPrefs
-
-    @Inject
-    lateinit var service: TimeTrackerService
+    private val viewModel by viewModels<SettingsViewModel>()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
         val context = requireContext()
 
-        val logoutUser = findPreference<Preference>("logout")
-        logoutUser?.setOnPreferenceClickListener { preference ->
-            onLogoutClicked(preference)
-            true
+        findPreference<Preference>("logout")?.apply {
+            setOnPreferenceClickListener { preference ->
+                onLogoutClicked(preference)
+                true
+            }
         }
 
-        val clearAppData = findPreference<Preference>("clear_data")
-        clearAppData?.setOnPreferenceClickListener { preference ->
-            onClearDataClicked(preference)
-            true
+        findPreference<Preference>("clear_data")?.apply {
+            setOnPreferenceClickListener { preference ->
+                onClearDataClicked(preference)
+                true
+            }
         }
 
-        val version = findPreference<Preference>("about.version")
-        if (version != null) {
+        findPreference<Preference>("about.version")?.apply {
             try {
-                version.summary =
-                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                summary = context.packageManager.getPackageInfo(context.packageName, 0).versionName
             } catch (e: PackageManager.NameNotFoundException) {
                 // Never should happen with our own package!
             }
 
-            validateIntent(version)
+            validateIntent(this)
         }
+
         validateIntent("about.issue")
     }
 
     private fun onLogoutClicked(preference: Preference) {
+        val context: Context = preference.context
         preference.isEnabled = false
         logout()
-        deleteUser(preference.context)
         preference.isEnabled = true
+        Toast.makeText(context, context.getString(R.string.pref_logout_toast), Toast.LENGTH_LONG)
+            .show()
     }
 
     private fun logout() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                service.logout()
+                viewModel.logout()
             } catch (e: Exception) {
                 Timber.e(e, "Error signing out: ${e.message}")
             }
         }
-    }
-
-    private fun deleteUser(context: Context) {
-        preferences.user = User.EMPTY
-        preferences.userCredentials = UserCredentials.EMPTY
-        TimeTrackerServiceFactory.clearCookies()
-
-        Toast.makeText(context, context.getString(R.string.pref_logout_toast), Toast.LENGTH_LONG)
-            .show()
     }
 
     private fun onClearDataClicked(preference: Preference) {

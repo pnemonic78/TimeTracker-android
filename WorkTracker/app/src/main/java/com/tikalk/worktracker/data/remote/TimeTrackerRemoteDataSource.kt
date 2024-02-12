@@ -239,4 +239,8 @@ class TimeTrackerRemoteDataSource @Inject constructor(
     override suspend fun login(name: String, password: String, date: String): Response<String> {
         return service.login(name, password, date)
     }
+
+    override suspend fun logout() {
+        service.logout()
+    }
 }
