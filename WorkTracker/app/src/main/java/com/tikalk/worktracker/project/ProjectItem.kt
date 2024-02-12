@@ -35,6 +35,7 @@ package com.tikalk.worktracker.project
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,38 +54,36 @@ import com.tikalk.worktracker.model.Project
 @Composable
 fun ProjectItem(project: Project) {
     Card(elevation = CardDefaults.elevatedCardElevation()) {
-        Column(modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)) {
-            Row {
+        Row(
+            modifier = Modifier
+                .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
+                .fillMaxWidth()
+        ) {
+            Column {
                 Text(
-                    modifier = Modifier
-                        .weight(0.3f),
                     text = stringResource(id = R.string.name_label),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(0.7f),
-                    text = project.name,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                Text(
-                    modifier = Modifier
-                        .weight(0.3f),
+                    modifier = Modifier.padding(top = 8.dp),
                     text = stringResource(id = R.string.description_label),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
-                Text(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(0.7f),
-                    text = project.description.orEmpty(),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            }
+            Row(modifier = Modifier.padding(start = 8.dp)) {
+                Column {
+                    Text(
+                        text = project.name,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        modifier = Modifier.padding(top = 8.dp),
+                        text = project.description.orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }
