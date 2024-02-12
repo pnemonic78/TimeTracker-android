@@ -8,7 +8,7 @@
 
     <!-- Strings related to login -->
     <string name="activity_login">"כניסה"</string>
-    <string name="prompt_login">"שם כניסה"</string>
+    <string name="prompt_login">"שם משתמש"</string>
     <string name="prompt_email">"דוא\"ל"</string>
     <string name="prompt_password">"סיסמה"</string>
     <string name="action_sign_in">"היכנס"</string>
@@ -16,11 +16,9 @@
     <string name="error_invalid_email">"כתובת דוא\"ל זו שגויה"</string>
     <string name="error_invalid_password">"סיסמה זו שגויה"</string>
     <string name="error_field_required">"שדה חובה"</string>
-    <string name="action_authenticate">"אימות"</string>
 
     <!-- Time edit -->
     <string name="activity_time">"גשש שעות"</string>
-    <string name="prompt_username">"שם משתמש"</string>
     <string name="project_label">"פרויקט"</string>
     <string name="task_label">"משימה"</string>
     <string name="location_label">"מיקום"</string>
@@ -35,7 +33,6 @@
     <string name="error_start_field_required">"שעת התחלה חובה"</string>
     <string name="error_finish_field_required">"שעת סיום חובה"</string>
     <string name="error_finish_time_before_start_time">"זמן הסיום חייב להיות מאוחר משעת ההתחלה."</string>
-    <string name="error_location_field_required">"מיקום חובה"</string>
     <string name="delete">"מחק"</string>
 
     <!-- Time recorder -->
@@ -50,7 +47,6 @@
     <string name="timeList_title">"זמנים"</string>
     <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
     <string name="day_total">"סה\"כ יום"</string>
-    <string name="remaining_quota">"מכסה נותרת"</string>
     <string name="month_total">"סה\"כ חודש"</string>
     <string name="week_total">"סה\"כ שבוע"</string>
     <string name="pick_date">"מעבר לתאריך"</string>
@@ -91,7 +87,6 @@
     <string name="prompt_newPassword">"סיסמה חדשה"</string>
     <string name="prompt_confirmPassword">"אשר סיסמה"</string>
     <string name="error_match_password">"סיסמאות אינן זהות"</string>
-    <string name="uncompleted_entry">"משתמש עם הזנת זמן לא הושלמה"</string>
     <string name="role">"תפקיד"</string>
     <string name="users">"משתמשים"</string>
 

@@ -193,7 +193,7 @@ fun ReportPeriodSpinner(
 
     FormSpinner(
         modifier = modifier,
-        labelId = R.string.project_label,
+        labelId = R.string.period_label,
         iconId = iconIdPeriod,
         items = items,
         selectedItem = items.find { it.period == period },

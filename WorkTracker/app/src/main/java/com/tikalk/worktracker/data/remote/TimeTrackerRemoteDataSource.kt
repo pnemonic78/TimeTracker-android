@@ -229,10 +229,10 @@ class TimeTrackerRemoteDataSource @Inject constructor(
         }
     }
 
-    override fun editProfile(profilePage: ProfilePage): Flow<ProfilePage> {
+    override fun editProfile(page: ProfilePage): Flow<ProfilePage> {
         return flow {
-            val page = ProfilePageSaver().save(service, profilePage)
-            emit(page)
+            val result = ProfilePageSaver().save(service, page)
+            emit(result)
         }
     }
 
