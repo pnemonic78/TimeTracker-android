@@ -4,8 +4,8 @@ plugins {
     kotlin("android")
     kotlin("kapt")
     kotlin("plugin.parcelize")
-//    id("com.google.gms.google-services")
-//    id("com.google.firebase.crashlytics")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()

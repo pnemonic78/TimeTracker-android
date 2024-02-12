@@ -11,7 +11,7 @@ object Android {
         const val composeMaterial = "1.5.3"
         const val composeMaterial3 = "1.2.0-rc01"
         const val hilt = "2.48"
-        const val navigation = "2.7.6"
+        const val navigation = "2.7.7"
         const val okhttp = "4.11.0"
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"

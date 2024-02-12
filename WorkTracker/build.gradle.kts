@@ -13,7 +13,7 @@ buildscript {
         // Navigation
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:${Android.Version.navigation}")
         // Crashlytics
-        classpath("com.google.gms:google-services:4.4.0")
+        classpath("com.google.gms:google-services:4.4.1")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.9.9")
     }
 }
