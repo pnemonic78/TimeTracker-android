@@ -82,6 +82,22 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.composeView.setContent {
+            TikalTheme {
+                PaddedBox {
+                    PuncherForm(
+                        projectsFlow = addEmptyProject(viewModel.projectsFlow),
+                        taskEmpty = getEmptyTask(),
+                        recordFlow = recordFlow,
+                        onRecordCallback = ::setRecordValue,
+                        onStartClick = ::startTimer,
+                        onStopClick = ::stopTimer
+                    )
+                }
+            }
+        }
+
         lifecycleScope.launch {
             viewModel.deleted.collect { data ->
                 if (data != null) onRecordDeleted(data.record)
@@ -97,34 +113,19 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
     @MainThread
     override fun bindForm(record: TimeRecord) {
         Timber.i("bindForm record=$record")
-        val binding = _binding ?: return
-
-        binding.composeView.setContent {
-            TikalTheme {
-                PaddedBox {
-                    PuncherForm(
-                        projects = getProjects(),
-                        taskEmpty = getEmptyTask(),
-                        record = record,
-                        onRecordCallback = ::setRecordValue,
-                        onStartClick = ::startTimer,
-                        onStopClick = ::stopTimer
-                    )
-                }
-            }
-        }
-
+        this.record = record
         activity?.invalidateOptionsMenu()
     }
 
     private fun startTimer() {
         Timber.i("startTimer")
-        val record = this.record
+        var record = this.record
         if (record.project.isEmpty()) return
         if (record.task.isEmpty()) return
 
         val context = this.context ?: return
         val now = System.currentTimeMillis()
+        record = record.copy()
         record.startTime = now
         TimerWorker.startTimer(context, record)
 
@@ -149,11 +150,7 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
         Timber.i("stopTimerCancel")
 
         viewModel.stopRecord()
-        record.apply {
-            start = null
-            finish = null
-            bindForm(this)
-        }
+        populateAndBind(TimeRecord.EMPTY.copy())
         arguments?.apply {
             remove(EXTRA_PROJECT_ID)
             remove(EXTRA_TASK_ID)
