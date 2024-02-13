@@ -59,7 +59,6 @@ dependencies {
     implementation(Android.Jetpack.constraintLayout)
     implementation(Android.Jetpack.core)
     implementation(Android.Jetpack.preference)
-    implementation(Android.Jetpack.security)
 
     // Rx
     implementation(Kotlin.Reactive.coroutinesAndroid)

@@ -100,7 +100,6 @@ dependencies {
     implementation(Android.Jetpack.core)
     implementation(Android.Jetpack.material3)
     implementation(Android.Jetpack.preference)
-    implementation(Android.Jetpack.security)
 
     // Database
     implementation(Android.Database.roomKotlin)

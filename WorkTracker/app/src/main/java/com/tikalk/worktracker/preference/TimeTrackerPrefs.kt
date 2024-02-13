@@ -44,7 +44,6 @@ import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.auth.UserCredentials
 import com.tikalk.worktracker.model.time.TimeRecord
 import java.util.Calendar
-import timber.log.Timber
 
 /**
  * Time Tracker preferences.
@@ -53,12 +52,6 @@ import timber.log.Timber
 class TimeTrackerPrefs(context: Context) {
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-    init {
-        if (!sharedPreferences.contains(USER_CREDENTIALS_LOGIN)) {
-            migrateToShared(context)
-        }
-    }
 
     var userCredentials: UserCredentials = UserCredentials.EMPTY.copy()
         get() {
@@ -242,56 +235,6 @@ class TimeTrackerPrefs(context: Context) {
         if (isWorkDayFriday) list.add(Calendar.FRIDAY)
         if (isWorkDaySaturday) list.add(Calendar.SATURDAY)
         return list
-    }
-
-    // Migrate from secured to non-secured, because Google's protobuf is problematic.
-    private fun migrateToShared(context: Context) {
-        try {
-            val securePreferences = SecurePreferences.getDefaultSharedPreferences(context)
-            val login = securePreferences.getString(USER_CREDENTIALS_LOGIN, null) ?: return
-            val password = securePreferences.getString(USER_CREDENTIALS_PASSWORD, null) ?: ""
-
-            val projectId = securePreferences.getLong(PROJECT_ID, TikalEntity.ID_NONE)
-            val projectName = securePreferences.getString(PROJECT_NAME, null)
-            val taskId = securePreferences.getLong(TASK_ID, TikalEntity.ID_NONE)
-            val taskName = securePreferences.getString(TASK_NAME, null)
-            val startTime = securePreferences.getLong(START_TIME, TimeRecord.NEVER)
-            val locationId = securePreferences.getLong(LOCATION, TikalEntity.ID_NONE)
-
-            val projectFavorite = securePreferences.getLong(PROJECT_FAVORITE, TikalEntity.ID_NONE)
-            val taskFavorite = securePreferences.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
-            val locationFavorite = securePreferences.getLong(LOCATION_FAVORITE, TikalEntity.ID_NONE)
-
-            sharedPreferences.edit()
-                .putString(USER_CREDENTIALS_LOGIN, login)
-                .putString(USER_CREDENTIALS_PASSWORD, password)
-                .putLong(PROJECT_ID, projectId)
-                .putString(PROJECT_NAME, projectName)
-                .putLong(TASK_ID, taskId)
-                .putString(TASK_NAME, taskName)
-                .putLong(START_TIME, startTime)
-                .putLong(LOCATION, locationId)
-                .putLong(PROJECT_FAVORITE, projectFavorite)
-                .putLong(TASK_FAVORITE, taskFavorite)
-                .putLong(LOCATION_FAVORITE, locationFavorite)
-                .apply()
-
-            securePreferences.edit()
-                .remove(USER_CREDENTIALS_LOGIN)
-                .remove(USER_CREDENTIALS_PASSWORD)
-                .remove(PROJECT_ID)
-                .remove(PROJECT_NAME)
-                .remove(TASK_ID)
-                .remove(TASK_NAME)
-                .remove(START_TIME)
-                .remove(LOCATION)
-                .remove(PROJECT_FAVORITE)
-                .remove(TASK_FAVORITE)
-                .remove(LOCATION_FAVORITE)
-                .apply()
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
     }
 
     companion object {

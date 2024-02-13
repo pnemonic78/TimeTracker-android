@@ -16,7 +16,6 @@ object Android {
         const val preference = "1.2.0"
         const val retrofit = "2.9.0"
         const val room = "2.6.0-beta01"
-        const val security = "1.1.0-alpha03"
         const val test = "1.4.0"
     }
 
@@ -54,7 +53,6 @@ object Android {
         const val navigationFragment = "androidx.navigation:navigation-fragment-ktx:${Version.navigation}"
         const val navigationUI = "androidx.navigation:navigation-ui-ktx:${Version.navigation}"
         const val preference = "androidx.preference:preference-ktx:${Version.preference}"
-        const val security = "androidx.security:security-crypto-ktx:${Version.security}"
     }
 
     object JSON {
