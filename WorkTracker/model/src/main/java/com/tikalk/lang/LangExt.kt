@@ -1,4 +1,4 @@
-package com.tikalk.worktracker.lang
+package com.tikalk.lang
 
 val Boolean?.isTrue: Boolean
     get() = (this != null) && (this == true)

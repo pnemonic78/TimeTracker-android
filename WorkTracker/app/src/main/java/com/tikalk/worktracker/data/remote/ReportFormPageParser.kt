@@ -35,10 +35,10 @@ package com.tikalk.worktracker.data.remote
 import com.tikalk.html.isChecked
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
-import com.tikalk.worktracker.model.DefaultTimePeriod
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.report.DefaultTimePeriod
+import com.tikalk.worktracker.model.report.ReportTimePeriod
 import com.tikalk.worktracker.model.time.MutableReportFormPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage

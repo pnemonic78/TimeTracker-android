@@ -68,7 +68,7 @@ import com.tikalk.compose.UnitCallback
 import com.tikalk.compose.auth.LoginTextField
 import com.tikalk.compose.auth.PasswordTextField
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.model.auth.UserCredentials
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch

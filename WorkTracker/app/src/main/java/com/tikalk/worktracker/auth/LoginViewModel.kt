@@ -39,7 +39,7 @@ import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
-import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.model.auth.UserCredentials
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

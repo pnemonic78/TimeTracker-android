@@ -43,14 +43,13 @@ import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
-import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
+import java.util.Calendar
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.FormElement
-import java.util.Calendar
 
 class TimeListPageParser : FormPageParser<TimeRecord, TimeListPage, MutableTimeListPage>() {
 

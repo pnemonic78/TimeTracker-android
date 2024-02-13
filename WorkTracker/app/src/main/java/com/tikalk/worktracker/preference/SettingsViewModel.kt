@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,16 +29,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.auth.model
 
-/**
- * Credentials for user authentication.
- * @author moshe on 2018/05/13.
- */
-data class UserCredentials(var login: String, var password: String) {
-    fun isEmpty(): Boolean = login.isEmpty() || password.isEmpty()
+package com.tikalk.worktracker.preference
 
-    companion object {
-        val EMPTY = UserCredentials("", "")
+import com.tikalk.worktracker.app.TrackerServices
+import com.tikalk.worktracker.app.TrackerViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class SettingsViewModel  @Inject constructor(
+    services: TrackerServices
+) : TrackerViewModel(services) {
+
+    suspend fun logout() {
+        services.dataSource.logout()
     }
 }

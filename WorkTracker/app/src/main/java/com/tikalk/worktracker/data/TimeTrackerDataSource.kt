@@ -64,4 +64,5 @@ interface TimeTrackerDataSource {
     fun deleteRecord(record: TimeRecord): Flow<FormPage<*>>
     fun editProfile(page: ProfilePage): Flow<ProfilePage>
     suspend fun login(name: String, password: String, date: String): Response<String>
+    suspend fun logout()
 }

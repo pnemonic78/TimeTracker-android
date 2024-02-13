@@ -33,7 +33,7 @@
 package com.tikalk.worktracker.report
 
 import android.content.Context
-import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.report.ReportTimePeriod
 
 class ReportTimePeriodItem(
     context: Context,

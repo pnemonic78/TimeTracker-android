@@ -33,16 +33,16 @@ package com.tikalk.worktracker.preference
 
 import android.content.Context
 import androidx.preference.PreferenceManager
+import com.tikalk.time.copy
+import com.tikalk.time.toCalendar
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.model.UserCredentials
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.model.auth.UserCredentials
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.time.copy
-import com.tikalk.worktracker.time.toCalendar
 import java.util.Calendar
 import timber.log.Timber
 

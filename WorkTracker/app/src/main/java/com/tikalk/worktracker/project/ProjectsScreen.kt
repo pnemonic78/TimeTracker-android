@@ -104,11 +104,16 @@ private fun ProjectsScreenError(projects: List<Project>? = null) {
     }
 }
 
-@Preview(name = "default", showBackground = true)
-@Preview(name = "dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "default", showBackground = true, widthDp = 320)
+@Preview(
+    name = "dark",
+    showBackground = true,
+    widthDp = 320,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun ThisPreview() {
-    val items = listOf(Project("Tikal"))
+    val items = listOf(Project("Tikal"), Project("Nike"))
 
     TikalTheme {
         ProjectsScreenList(items)

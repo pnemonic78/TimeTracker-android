@@ -78,19 +78,18 @@ import kotlinx.coroutines.flow.Flow
 @Composable
 fun PuncherForm(
     projectsFlow: Flow<List<Project>>,
-    taskEmptyFlow: Flow<ProjectTask>,
+    taskEmpty: ProjectTask,
     recordFlow: Flow<TimeRecord>,
     onRecordCallback: RecordCallback,
     onStartClick: UnitCallback,
     onStopClick: UnitCallback
 ) {
     val projectsState = projectsFlow.collectAsState(initial = listOf(Project.EMPTY))
-    val taskEmptyState = taskEmptyFlow.collectAsState(initial = ProjectTask.EMPTY)
     val recordState = recordFlow.collectAsState(initial = TimeRecord.EMPTY)
 
     PuncherForm(
         projectsState.value,
-        taskEmptyState.value,
+        taskEmpty,
         recordState.value,
         onRecordCallback,
         onStartClick,
@@ -149,7 +148,7 @@ fun PuncherForm(
                     onClick = onStartClick
                 )
             } else {
-                PuncherTimerRow(
+                PuncherStopButton(
                     modifier = Modifier.padding(top = paddingTop),
                     record = record,
                     onClick = onStopClick
@@ -177,39 +176,25 @@ fun PuncherStartButton(modifier: Modifier = Modifier, record: TimeRecord, onClic
 }
 
 @Composable
-fun PuncherStopButton(modifier: Modifier = Modifier, onClick: UnitCallback) {
+fun PuncherStopButton(modifier: Modifier = Modifier, record: TimeRecord, onClick: UnitCallback) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val elapsedSeconds = TimeUnit.MILLISECONDS.toSeconds(now - record.startTime)
+
     Button(
         modifier = modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.buttonStop)),
         onClick = onClick,
     ) {
-        Text(text = stringResource(id = R.string.action_stop))
-        Icon(
-            modifier = Modifier.padding(start = 8.dp),
-            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_stop)),
-            contentDescription = null
-        )
-    }
-}
-
-@Composable
-fun PuncherTimerRow(modifier: Modifier = Modifier, record: TimeRecord, onClick: UnitCallback) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    val elapsedSeconds = TimeUnit.MILLISECONDS.toSeconds(now - record.startTime)
-
-    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        PuncherStopButton(
-            modifier = Modifier.weight(3f),
-            onClick = onClick
-        )
         Text(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .weight(2f),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             text = DateUtils.formatElapsedTime(elapsedSeconds)
+        )
+        Icon(
+            modifier = Modifier.padding(start = 12.dp),
+            painter = rememberVectorPainter(image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_stop)),
+            contentDescription = stringResource(id = R.string.action_stop)
         )
     }
 

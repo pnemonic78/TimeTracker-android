@@ -169,4 +169,9 @@ class TimeTrackerRepository @Inject constructor(
     override suspend fun login(name: String, password: String, date: String): Response<String> {
         return remoteRepository.login(name, password, date)
     }
+
+    override suspend fun logout() {
+        localRepository.logout()
+        remoteRepository.logout()
+    }
 }

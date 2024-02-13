@@ -36,11 +36,7 @@ import android.os.Bundle
 import androidx.annotation.StringRes
 import com.tikalk.app.TikalDialogFragment
 import com.tikalk.app.runOnUiThread
-import com.tikalk.worktracker.data.TimeTrackerRepository
-import com.tikalk.worktracker.net.TimeTrackerService
-import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 abstract class TrackerDialogFragment : TikalDialogFragment,
@@ -50,9 +46,6 @@ abstract class TrackerDialogFragment : TikalDialogFragment,
     constructor() : super()
 
     constructor(args: Bundle) : super(args)
-
-    @Inject
-    lateinit var services: TrackerServices
 
     protected val delegate = TrackerFragmentDelegate(fragment = this, callback = this)
     protected val firstRun: Boolean get() = delegate.firstRun

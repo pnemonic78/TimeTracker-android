@@ -53,7 +53,7 @@ import com.tikalk.worktracker.auth.LoginFragment
 import com.tikalk.worktracker.databinding.FragmentReportFormBinding
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.report.ReportTimePeriod
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportFormPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
@@ -164,7 +164,7 @@ class ReportFormFragment : TimeFormFragment<ReportFilter>() {
         error = if (page.errorMessage.isNullOrEmpty()) {
             null
         } else {
-            TimeFormError.General(page.errorMessage)
+            TimeFormError.General(page.errorMessage!!)
         }
 
         val filter = record

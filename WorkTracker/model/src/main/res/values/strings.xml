@@ -1,0 +1,12 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
+
+    <!-- Reports -->
+    <string name="period_custom">"Custom"</string>
+    <string name="period_today" translatable="false">@string/today</string>
+    <string name="period_this_week">"This week"</string>
+    <string name="period_this_month">"This month"</string>
+    <string name="period_previous_week">"The previous week"</string>
+    <string name="period_previous_month">"The previous month"</string>
+    <string name="period_yesterday">"Yesterday"</string>
+</resources>
