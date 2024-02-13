@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,16 +29,42 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tikalk.worktracker.auth.model
+package com.tikalk.worktracker.model.report
+
+import androidx.annotation.StringRes
+import com.tikalk.worktracker.model.R
 
 /**
- * Credentials for user authentication.
- * @author moshe on 2018/05/13.
+ * Time period for report filter.
+ *
+ * @author Moshe Waisberg.
  */
-data class UserCredentials(var login: String, var password: String) {
-    fun isEmpty(): Boolean = login.isEmpty() || password.isEmpty()
+enum class ReportTimePeriod(val value: String, @StringRes val labelId: Int) {
 
-    companion object {
-        val EMPTY = UserCredentials("", "")
+    /** Custom (start, finish). */
+    CUSTOM("", R.string.period_custom),
+
+    /** Today. */
+    TODAY("1", R.string.period_today),
+
+    /** This week. */
+    THIS_WEEK("2", R.string.period_this_week),
+
+    /** This month. */
+    THIS_MONTH("3", R.string.period_this_month),
+
+    /** The previous week. */
+    PREVIOUS_WEEK("6", R.string.period_previous_week),
+
+    /** The previous month. */
+    PREVIOUS_MONTH("7", R.string.period_previous_month),
+
+    /** Yesterday. */
+    YESTERDAY("8", R.string.period_yesterday);
+
+    override fun toString(): String {
+        return value
     }
 }
+
+val DefaultTimePeriod = ReportTimePeriod.THIS_MONTH

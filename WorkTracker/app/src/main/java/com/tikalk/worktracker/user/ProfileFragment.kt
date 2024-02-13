@@ -45,14 +45,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.tikalk.app.isDestination
+import com.tikalk.auth.AuthenticationException
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
+import com.tikalk.lang.isFalse
+import com.tikalk.lang.isTrue
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.AuthenticationException
 import com.tikalk.worktracker.auth.LoginFragment
-import com.tikalk.worktracker.lang.isFalse
-import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.net.InternetFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn

@@ -32,20 +32,20 @@
 package com.tikalk.worktracker.model.time
 
 import android.os.Parcelable
-import com.tikalk.worktracker.model.DefaultTimePeriod
+import com.tikalk.time.copy
+import com.tikalk.time.dayOfMonth
+import com.tikalk.time.dayOfWeek
+import com.tikalk.time.month
+import com.tikalk.time.setToEndOfDay
+import com.tikalk.time.setToStartOfDay
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ReportTimePeriod
-import com.tikalk.worktracker.time.copy
-import com.tikalk.worktracker.time.dayOfMonth
-import com.tikalk.worktracker.time.dayOfWeek
+import com.tikalk.worktracker.model.report.DefaultTimePeriod
+import com.tikalk.worktracker.model.report.ReportTimePeriod
 import com.tikalk.worktracker.time.formatSystemDate
-import com.tikalk.worktracker.time.month
-import com.tikalk.worktracker.time.setToEndOfDay
-import com.tikalk.worktracker.time.setToStartOfDay
-import kotlinx.parcelize.Parcelize
 import java.util.Calendar
+import kotlinx.parcelize.Parcelize
 
 /**
  * Report filter entity.

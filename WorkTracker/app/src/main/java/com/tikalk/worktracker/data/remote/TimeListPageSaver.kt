@@ -32,6 +32,9 @@
 
 package com.tikalk.worktracker.data.remote
 
+import com.tikalk.time.copy
+import com.tikalk.time.setToEndOfDay
+import com.tikalk.time.setToStartOfDay
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.db.WholeTimeRecordEntity
@@ -39,10 +42,7 @@ import com.tikalk.worktracker.db.toTimeRecordEntity
 import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.TimeListPage
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.formatSystemDate
-import com.tikalk.worktracker.time.setToEndOfDay
-import com.tikalk.worktracker.time.setToStartOfDay
 import java.util.Calendar
 import timber.log.Timber
 

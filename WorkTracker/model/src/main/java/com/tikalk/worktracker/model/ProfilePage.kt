@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,30 +32,24 @@
 
 package com.tikalk.worktracker.model
 
-import android.net.Uri
-import androidx.core.net.toUri
-import androidx.room.TypeConverter
-import com.tikalk.worktracker.time.toCalendar
-import java.util.Calendar
-import java.util.Date
+import com.tikalk.worktracker.model.auth.UserCredentials
 
-open class Converters {
+class ProfilePage(
+    val user: User,
+    val userCredentials: UserCredentials,
+    val nameInputEditable: Boolean,
+    val emailInputEditable: Boolean,
+    val loginInputEditable: Boolean,
+    val passwordConfirm: String?,
+    val errorMessage: String?
+)
 
-    @TypeConverter
-    fun fromTimestamp(value: Long?): Date? = value?.let { Date(it) }
-
-    @TypeConverter
-    fun toTimestamp(value: Date?): Long? = value?.time
-
-    @TypeConverter
-    fun fromCalendar(value: Calendar?): Long? = value?.timeInMillis
-
-    @TypeConverter
-    fun toCalendar(value: Long?): Calendar? = value?.toCalendar()
-
-    @TypeConverter
-    fun fromUri(value: Uri?): String? = value?.toString()
-
-    @TypeConverter
-    fun toUri(value: String?): Uri? = value?.toUri()
-}
+class MutableProfilePage(
+    var user: User = User.EMPTY.copy(),
+    var userCredentials: UserCredentials = UserCredentials.EMPTY.copy(),
+    var nameInputEditable: Boolean = false,
+    var emailInputEditable: Boolean = false,
+    var loginInputEditable: Boolean = false,
+    var passwordConfirm: String? = null,
+    var errorMessage: String? = null
+)

@@ -46,6 +46,8 @@ import androidx.navigation.fragment.findNavController
 import com.tikalk.app.findParentFragment
 import com.tikalk.compose.TikalTheme
 import com.tikalk.core.databinding.FragmentComposeBinding
+import com.tikalk.lang.isFalse
+import com.tikalk.lang.isTrue
 import com.tikalk.util.getParcelableCompat
 import com.tikalk.widget.PaddedBox
 import com.tikalk.worktracker.BuildConfig
@@ -54,8 +56,6 @@ import com.tikalk.worktracker.app.TrackerFragmentDelegate
 import com.tikalk.worktracker.db.TimeRecordEntity
 import com.tikalk.worktracker.db.toTimeRecord
 import com.tikalk.worktracker.db.toTimeRecordEntity
-import com.tikalk.worktracker.lang.isFalse
-import com.tikalk.worktracker.lang.isTrue
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.isNullOrEmpty
 import com.tikalk.worktracker.model.time.PuncherPage

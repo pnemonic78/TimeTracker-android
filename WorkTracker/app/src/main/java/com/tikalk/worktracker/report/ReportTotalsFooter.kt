@@ -53,8 +53,6 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.time.formatCurrency
 import com.tikalk.worktracker.time.formatElapsedTime
-import java.util.Formatter
-import java.util.Locale
 
 @Composable
 fun ReportTotalsFooter(

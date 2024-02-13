@@ -58,7 +58,6 @@
     <string name="month_total">"Month total"</string>
     <string name="week_total">"Week total"</string>
     <string name="pick_date">"Go to date"</string>
-    <string name="today">"Today"</string>
     <string name="menu_today" translatable="false">@string/today</string>
     <string name="add">"Add"</string>
     <string name="action_add" translatable="false">@string/add</string>
@@ -134,13 +133,6 @@
     <string name="action_generate">"Generate"</string>
     <string name="error_no_items">"No items"</string>
     <string name="period_label">"Time Period"</string>
-    <string name="period_custom">"Custom"</string>
-    <string name="period_today" translatable="false">@string/today</string>
-    <string name="period_this_week">"This week"</string>
-    <string name="period_this_month">"This month"</string>
-    <string name="period_previous_week">"The previous week"</string>
-    <string name="period_previous_month">"The previous month"</string>
-    <string name="period_yesterday">"Yesterday"</string>
     <string name="total">"Total"</string>
     <string name="duration_total">"Total hours"</string>
     <string name="cost_total">"Total cost"</string>

@@ -40,7 +40,7 @@ import com.tikalk.worktracker.R
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.auth.LoginValidator
-import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.worktracker.model.auth.UserCredentials
 import com.tikalk.worktracker.data.remote.ProfilePageParser
 import com.tikalk.worktracker.model.ProfilePage
 import com.tikalk.worktracker.model.User

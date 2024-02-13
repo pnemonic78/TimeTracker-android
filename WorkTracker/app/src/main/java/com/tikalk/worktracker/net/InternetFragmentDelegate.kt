@@ -35,16 +35,16 @@ package com.tikalk.worktracker.net
 import androidx.annotation.MainThread
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
+import com.tikalk.auth.AccessDeniedException
+import com.tikalk.auth.AuthenticationException
 import com.tikalk.html.textBr
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.auth.AccessDeniedException
-import com.tikalk.worktracker.auth.AuthenticationException
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import retrofit2.Response
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import retrofit2.Response
 
 class InternetFragmentDelegate(private val callback: InternetFragmentCallback) {
 

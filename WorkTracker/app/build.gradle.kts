@@ -83,6 +83,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":model"))
 
     // Jetpack
     implementation(Android.Jetpack.appcompat)

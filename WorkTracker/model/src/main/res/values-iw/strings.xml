@@ -1,0 +1,11 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="elapsed_time_short_format_h_mm">"<xliff:g id="HOURS">%1$d</xliff:g>:<xliff:g id="MINUTES">%2$02d</xliff:g>"</string>
+
+    <!-- Reports -->
+    <string name="period_custom">"מותאם אישית"</string>
+    <string name="period_this_week">"השבוע"</string>
+    <string name="period_this_month">"החודש"</string>
+    <string name="period_previous_week">"השבוע הקודם"</string>
+    <string name="period_previous_month">"החודש הקודם"</string>
+    <string name="period_yesterday">"אתמול"</string>
+</resources>

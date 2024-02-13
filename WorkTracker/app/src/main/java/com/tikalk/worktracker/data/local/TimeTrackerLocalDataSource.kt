@@ -33,7 +33,11 @@
 package com.tikalk.worktracker.data.local
 
 import android.text.format.DateUtils
-import com.tikalk.worktracker.auth.model.UserCredentials
+import com.tikalk.time.copy
+import com.tikalk.time.dayOfMonth
+import com.tikalk.time.dayOfWeek
+import com.tikalk.time.setToEndOfDay
+import com.tikalk.time.setToStartOfDay
 import com.tikalk.worktracker.data.TimeTrackerDataSource
 import com.tikalk.worktracker.data.remote.ProfilePageSaver
 import com.tikalk.worktracker.data.remote.TimeListPageSaver
@@ -47,6 +51,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.User
 import com.tikalk.worktracker.model.UsersPage
+import com.tikalk.worktracker.model.auth.UserCredentials
 import com.tikalk.worktracker.model.time.FormPage
 import com.tikalk.worktracker.model.time.ProjectTasksPage
 import com.tikalk.worktracker.model.time.ProjectsPage
@@ -61,11 +66,6 @@ import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.TimeTotals
 import com.tikalk.worktracker.net.TimeTrackerServiceFactory
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
-import com.tikalk.worktracker.time.copy
-import com.tikalk.worktracker.time.dayOfMonth
-import com.tikalk.worktracker.time.dayOfWeek
-import com.tikalk.worktracker.time.setToEndOfDay
-import com.tikalk.worktracker.time.setToStartOfDay
 import java.util.Calendar
 import javax.inject.Inject
 import kotlin.math.max

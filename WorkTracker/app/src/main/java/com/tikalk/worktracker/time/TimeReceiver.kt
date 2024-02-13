@@ -34,7 +34,7 @@ package com.tikalk.worktracker.time
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.tikalk.worktracker.app.launchApp
+import com.tikalk.app.launchApp
 import timber.log.Timber
 
 /**

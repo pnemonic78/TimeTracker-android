@@ -1,7 +1,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2020, Tikal Knowledge, Ltd.
+ * Copyright (c) 2024, Tikal Knowledge, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,26 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.tikalk.worktracker.model
+package com.tikalk.auth
 
-import com.tikalk.worktracker.auth.model.UserCredentials
-
-class ProfilePage(
-    val user: User,
-    val userCredentials: UserCredentials,
-    val nameInputEditable: Boolean,
-    val emailInputEditable: Boolean,
-    val loginInputEditable: Boolean,
-    val passwordConfirm: String?,
-    val errorMessage: String?
-)
-
-class MutableProfilePage(
-    var user: User = User.EMPTY.copy(),
-    var userCredentials: UserCredentials = UserCredentials.EMPTY.copy(),
-    var nameInputEditable: Boolean = false,
-    var emailInputEditable: Boolean = false,
-    var loginInputEditable: Boolean = false,
-    var passwordConfirm: String? = null,
-    var errorMessage: String? = null
-)
+class AccessDeniedException : SecurityException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}

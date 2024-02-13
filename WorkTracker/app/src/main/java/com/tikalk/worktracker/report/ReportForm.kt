@@ -72,10 +72,10 @@ import com.tikalk.compose.GenericCallback
 import com.tikalk.compose.TikalTheme
 import com.tikalk.compose.UnitCallback
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.DefaultTimePeriod
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
-import com.tikalk.worktracker.model.ReportTimePeriod
+import com.tikalk.worktracker.model.report.DefaultTimePeriod
+import com.tikalk.worktracker.model.report.ReportTimePeriod
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.time.DatePickerButton
 import com.tikalk.worktracker.time.ErrorText

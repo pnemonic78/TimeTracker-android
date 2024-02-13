@@ -32,20 +32,20 @@
 package com.tikalk.worktracker.model.time
 
 import android.text.format.DateUtils
+import com.tikalk.time.copy
+import com.tikalk.time.hourOfDay
+import com.tikalk.time.isSameDay
+import com.tikalk.time.millis
+import com.tikalk.time.minute
+import com.tikalk.time.second
+import com.tikalk.time.setToEndOfDay
+import com.tikalk.time.setToStartOfDay
+import com.tikalk.time.toCalendar
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
-import com.tikalk.worktracker.time.copy
 import com.tikalk.worktracker.time.formatSystemDate
-import com.tikalk.worktracker.time.hourOfDay
-import com.tikalk.worktracker.time.isSameDay
-import com.tikalk.worktracker.time.millis
-import com.tikalk.worktracker.time.minute
-import com.tikalk.worktracker.time.second
-import com.tikalk.worktracker.time.setToEndOfDay
-import com.tikalk.worktracker.time.setToStartOfDay
-import com.tikalk.worktracker.time.toCalendar
 import java.util.Calendar
 
 /**
@@ -368,7 +368,7 @@ inline fun TimeRecord?.isNullOrEmpty(): Boolean {
     return (this == null) || isEmpty()
 }
 
-internal operator fun TimeRecord.times(n: Int): List<TimeRecord> {
+operator fun TimeRecord.times(n: Int): List<TimeRecord> {
     val list = mutableListOf<TimeRecord>()
     for (i in 0 until n) {
         list.add(this)
