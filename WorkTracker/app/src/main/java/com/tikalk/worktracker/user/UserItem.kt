@@ -33,8 +33,7 @@
 package com.tikalk.worktracker.user
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
@@ -53,8 +52,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
+import com.tikalk.compose.link
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.User
+import com.tikalk.worktracker.widget.Table
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -64,77 +65,74 @@ fun UserItem(user: User) {
     val uriHandler = LocalUriHandler.current
 
     Card(elevation = CardDefaults.elevatedCardElevation()) {
-        Column(modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)) {
-            Row {
-                Text(
-                    modifier = Modifier
-                        .weight(0.3f),
-                    text = stringResource(id = R.string.name_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(0.7f),
-                    text = user.displayName.orEmpty(),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                Text(
-                    modifier = Modifier
-                        .weight(0.3f),
-                    text = stringResource(id = R.string.login_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                if (email.isNullOrEmpty()) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .weight(0.7f),
-                        text = username,
+        Table(
+            modifier = Modifier
+                .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
+                .fillMaxWidth(),
+            rowCount = 3,
+            columnCount = 2,
+            columnPadding = 8.dp,
+            rowPadding = 8.dp
+        ) { rowIndex, columnIndex ->
+            when (rowIndex) {
+                0 -> when (columnIndex) {
+                    0 -> Text(
+                        text = stringResource(id = R.string.name_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    1 -> Text(
+                        text = user.displayName.orEmpty(),
                         style = MaterialTheme.typography.bodyLarge
                     )
-                } else {
-                    ClickableText(
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .weight(0.7f),
-                        text = buildAnnotatedString {
-                            append(username)
-                            addUrlAnnotation(
-                                urlAnnotation = UrlAnnotation(email),
-                                start = 0,
-                                end = username.length
-                            )
-                            addStyle(
-                                style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
-                                start = 0,
-                                end = username.length
-                            )
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        onClick = { uriHandler.openUri("mailto:$email") }
+                }
+
+                1 -> when (columnIndex) {
+                    0 -> Text(
+                        text = stringResource(id = R.string.login_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    1 -> if (email.isNullOrEmpty()) {
+                        Text(
+                            text = username,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    } else {
+                        ClickableText(
+                            text = buildAnnotatedString {
+                                append(username)
+                                addUrlAnnotation(
+                                    urlAnnotation = UrlAnnotation(email),
+                                    start = 0,
+                                    end = username.length
+                                )
+                                addStyle(
+                                    style = SpanStyle(color = MaterialTheme.colorScheme.link),
+                                    start = 0,
+                                    end = username.length
+                                )
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            onClick = { uriHandler.openUri("mailto:$email") }
+                        )
+                    }
+                }
+
+                2 -> when (columnIndex) {
+                    0 -> Text(
+                        text = stringResource(id = R.string.role_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    1 -> Text(
+                        text = user.roles?.joinToString(", ").orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
-            }
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                Text(
-                    modifier = Modifier
-                        .weight(0.3f),
-                    text = stringResource(id = R.string.role_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(0.7f),
-                    text = user.roles?.joinToString(", ").orEmpty(),
-                    style = MaterialTheme.typography.bodyLarge
-                )
             }
         }
     }
@@ -150,7 +148,7 @@ private fun ThisPreview() {
 }
 
 internal val UserDemo = User(
-    username = "demo",
+    username = "demo@tikalk.com",
     email = "demo@tikalk.com",
     displayName = "Demo",
     roles = listOf("User", "Manager")

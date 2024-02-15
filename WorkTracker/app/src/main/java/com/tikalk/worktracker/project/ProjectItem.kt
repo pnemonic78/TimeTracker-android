@@ -33,8 +33,6 @@
 package com.tikalk.worktracker.project
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -50,36 +48,42 @@ import androidx.compose.ui.unit.dp
 import com.tikalk.compose.TikalTheme
 import com.tikalk.worktracker.R
 import com.tikalk.worktracker.model.Project
+import com.tikalk.worktracker.widget.Table
 
 @Composable
 fun ProjectItem(project: Project) {
     Card(elevation = CardDefaults.elevatedCardElevation()) {
-        Row(
+        Table(
             modifier = Modifier
                 .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
-                .fillMaxWidth()
-        ) {
-            Column {
-                Text(
-                    text = stringResource(id = R.string.name_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    modifier = Modifier.padding(top = 8.dp),
-                    text = stringResource(id = R.string.description_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Row(modifier = Modifier.padding(start = 8.dp)) {
-                Column {
-                    Text(
+                .fillMaxWidth(),
+            rowCount = 2,
+            columnCount = 2,
+            columnPadding = 8.dp,
+            rowPadding = 8.dp
+        ) { rowIndex, columnIndex ->
+            when (rowIndex) {
+                0 -> when (columnIndex) {
+                    0 -> Text(
+                        text = stringResource(id = R.string.name_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    1 -> Text(
                         text = project.name,
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    Text(
-                        modifier = Modifier.padding(top = 8.dp),
+                }
+
+                1 -> when (columnIndex) {
+                    0 -> Text(
+                        text = stringResource(id = R.string.description_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    1 -> Text(
                         text = project.description.orEmpty(),
                         style = MaterialTheme.typography.bodyLarge
                     )

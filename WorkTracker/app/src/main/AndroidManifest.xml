@@ -6,8 +6,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <uses-sdk tools:overrideLibrary="androidx.security" />
-
     <application
         android:name="com.tikalk.worktracker.app.TrackerApplication"
         android:icon="@mipmap/ic_launcher"
