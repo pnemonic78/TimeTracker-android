@@ -93,7 +93,6 @@ fun TimeEditForm(
     val paddingTop = dimensionResource(id = R.dimen.form_marginTop)
     var projectSelected by remember { mutableStateOf(Project.EMPTY) }
     var taskSelected by remember { mutableStateOf(ProjectTask.EMPTY) }
-    val isTimerStopped = (record.startTime <= NEVER)
     var startTime by remember { mutableLongStateOf(NEVER) }
     var finishTime by remember { mutableLongStateOf(NEVER) }
     var duration by remember { mutableLongStateOf(0L) }
@@ -118,7 +117,6 @@ fun TimeEditForm(
             ProjectSpinner(
                 projects = projects,
                 project = projectSelected,
-                enabled = isTimerStopped,
                 error = error
             ) {
                 record.project = it
@@ -131,7 +129,6 @@ fun TimeEditForm(
                 tasks = projectSelected.tasks,
                 taskEmpty = taskEmpty,
                 task = taskSelected,
-                enabled = isTimerStopped,
                 error = error
             ) {
                 record.task = it
