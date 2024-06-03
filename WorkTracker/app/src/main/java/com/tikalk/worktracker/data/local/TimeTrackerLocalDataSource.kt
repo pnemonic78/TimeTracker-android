@@ -82,11 +82,10 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override fun editPage(recordId: Long, refresh: Boolean): Flow<TimeEditPage> {
         return flow {
-            val projects = mutableListOf<Project>()
             val errorMessage: String? = null
 
             val projectsWithTasks = loadProjectsWithTasks(db)
-            populateProjects(projectsWithTasks, projects)
+            val projects = getProjects(projectsWithTasks)
 
             val record = loadRecord(db, recordId, projects) ?: TimeRecord.EMPTY.copy()
 
@@ -171,12 +170,11 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override fun reportFormPage(refresh: Boolean): Flow<ReportFormPage> {
         return flow {
-            val projects = ArrayList<Project>()
             val filter = ReportFilter()
             val errorMessage: String? = null
 
             val projectsWithTasks = loadProjectsWithTasks(db)
-            populateProjects(projectsWithTasks, projects)
+            val projects = getProjects(projectsWithTasks)
 
             val page = ReportFormPage(filter, projects, errorMessage)
             emit(page)
@@ -189,25 +187,22 @@ class TimeTrackerLocalDataSource @Inject constructor(
             .filter { it.project.id != TikalEntity.ID_NONE }
     }
 
-    private fun populateProjects(
-        projectsWithTasks: List<ProjectWithTasks>,
-        projects: MutableCollection<Project>
-    ) {
-        projects.clear()
+    private fun getProjects(projectsWithTasks: List<ProjectWithTasks>): List<Project> {
+        val projects = mutableListOf<Project>()
 
         for (projectWithTasks in projectsWithTasks) {
             val project = projectWithTasks.project
             project.tasks = projectWithTasks.tasks
             projects.add(project)
         }
+
+        return projects.sortedBy { it.name }
     }
 
     override fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {
         return flow {
-            val projects = ArrayList<Project>()
-
             val projectsWithTasks = loadProjectsWithTasks(db)
-            populateProjects(projectsWithTasks, projects)
+            val projects = getProjects(projectsWithTasks)
 
             val records = loadReportRecords(db, filter, projects)
 
@@ -251,12 +246,11 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override fun timeListPage(date: Calendar, refresh: Boolean): Flow<TimeListPage> {
         return flow {
-            val projects = ArrayList<Project>()
             val record = TimeRecord.EMPTY
             val errorMessage: String? = null
 
             val projectsWithTasks = loadProjectsWithTasks(db)
-            populateProjects(projectsWithTasks, projects)
+            val projects = getProjects(projectsWithTasks)
 
             val records = loadRecords(db, date)
                 .map { entity ->
@@ -359,11 +353,10 @@ class TimeTrackerLocalDataSource @Inject constructor(
 
     override fun puncherPage(refresh: Boolean): Flow<PuncherPage> {
         return flow {
-            val projects = ArrayList<Project>()
             val record = preferences.getStartedRecord() ?: TimeRecord.EMPTY.copy()
 
             val projectsWithTasks = loadProjectsWithTasks(db)
-            populateProjects(projectsWithTasks, projects)
+            val projects = getProjects(projectsWithTasks)
 
             val page = PuncherPage(record, projects)
             emit(page)

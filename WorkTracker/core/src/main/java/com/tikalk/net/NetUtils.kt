@@ -32,6 +32,7 @@
 package com.tikalk.net
 
 import android.net.Uri
+import android.os.Build
 import android.os.Parcel
 import java.net.HttpCookie
 
@@ -49,18 +50,26 @@ fun HttpCookie.format(): String {
 
     sb.append(name).append("=\"").append(value).append('"')
     if (path != null) {
-        sb.append("; path=\"").append(path).append('"')
+        sb.append("; Path=\"").append(path).append('"')
     }
     if (domain != null) {
-        sb.append("; domain=\"").append(domain).append('"')
+        sb.append("; Domain=\"").append(domain).append('"')
     }
-    if (portlist != null) {
-        sb.append("; port=\"").append(portlist).append('"')
+    if (!portlist.isNullOrEmpty()) {
+        sb.append("; Port=\"").append(portlist).append('"')
     }
     if (hasExpired()) {
-        sb.append("; max-age=\"").append(0).append('"')
+        sb.append("; Max-Age=\"").append(0).append('"')
     } else {
-        sb.append("; max-age=\"").append(maxAge).append('"')
+        sb.append("; Max-Age=\"").append(maxAge).append('"')
+    }
+    if (secure) {
+        sb.append("; Secure")
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (isHttpOnly) {
+            sb.append("; HttpOnly")
+        }
     }
 
     return sb.toString()

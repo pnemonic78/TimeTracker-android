@@ -5,7 +5,6 @@ To-Do List
   * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * migrate binding to Jetpack Compose
   * navigation
-* "model" module
 * "domain" module
 * "ui-common" module
 

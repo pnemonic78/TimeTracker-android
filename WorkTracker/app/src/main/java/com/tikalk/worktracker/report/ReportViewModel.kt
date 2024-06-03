@@ -35,6 +35,7 @@ package com.tikalk.worktracker.report
 import com.tikalk.worktracker.app.TrackerServices
 import com.tikalk.worktracker.app.TrackerViewModel
 import com.tikalk.worktracker.model.TikalEntity
+import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -57,6 +58,11 @@ class ReportViewModel @Inject constructor(
 
     fun maybeEditRecord(scope: CoroutineScope, record: TimeRecord) {
         scope.launch(Dispatchers.IO) {
+            if (record.id != ID_NONE) {
+                _onEdit.emit(record)
+                return@launch
+            }
+
             notifyLoading(true)
 
             val projectName = record.project.name

@@ -32,26 +32,30 @@
 
 package com.tikalk.worktracker.data.remote
 
+import android.net.Uri
 import com.tikalk.html.findParentElement
+import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
 import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
+import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
 import com.tikalk.worktracker.model.time.MutableReportPage
 import com.tikalk.worktracker.model.time.ReportFilter
 import com.tikalk.worktracker.model.time.ReportPage
 import com.tikalk.worktracker.model.time.ReportTotals
 import com.tikalk.worktracker.model.time.TaskRecordStatus
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.net.TimeTrackerService
 import com.tikalk.worktracker.time.parseDuration
 import com.tikalk.worktracker.time.parseSystemDate
 import com.tikalk.worktracker.time.parseSystemTime
+import java.util.Calendar
+import kotlin.math.max
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import java.util.Calendar
-import kotlin.math.max
 
 class ReportPageParser(private val filter: ReportFilter) {
 
@@ -123,6 +127,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         var columnIndexNote = -1
         var columnIndexCost = -1
         var columnIndexLocation = -1
+        var columnIndexEdit = -1
 
         // The first row of the table is the header
         val table = findRecordsTable(doc)
@@ -151,6 +156,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             "Work from" -> columnIndexLocation = col
                         }
                     }
+                    columnIndexEdit = childrenSize - 1
 
                     val totalsBlankRowIndex = totalsRowIndex - 1
                     for (i in 1 until totalsBlankRowIndex) {
@@ -167,6 +173,7 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexNote,
                             columnIndexCost,
                             columnIndexLocation,
+                            columnIndexEdit,
                             projects
                         ) ?: continue
                         records.add(record)
@@ -206,6 +213,7 @@ class ReportPageParser(private val filter: ReportFilter) {
         columnIndexNote: Int,
         columnIndexCost: Int,
         columnIndexLocation: Int,
+        columnIndexEdit: Int,
         projects: MutableCollection<Project>
     ): TimeRecord? {
         val cols = row.getElementsByTag("td")
@@ -279,6 +287,13 @@ class ReportPageParser(private val filter: ReportFilter) {
             record.location = location
         }
 
+        if (columnIndexEdit >= 0) {
+            val tdEdit = cols[columnIndexEdit]
+            val editAnchor = tdEdit.selectFirst("a");
+            val id = parseEditId(editAnchor)
+            record.id = id
+        }
+
         return record
     }
 
@@ -316,12 +331,25 @@ class ReportPageParser(private val filter: ReportFilter) {
         return when (text) {
             "yes",
             "home" -> Location.HOME
+
             "no",
             "client" -> Location.CLIENT
+
             "other" -> Location.OTHER
             "tikal" -> Location.TIKAL
             else -> Location.EMPTY
         }
+    }
+
+    private fun parseEditId(anchor: Element?): Long {
+        if (anchor == null) return ID_NONE
+        val href = anchor.attr("href")
+        if (href.isNullOrEmpty()) return ID_NONE
+        val uri = Uri.parse(BuildConfig.API_URL + href)
+        val page = uri.lastPathSegment ?: return ID_NONE
+        if (page != TimeTrackerService.PHP_EDIT) return ID_NONE
+        val id = uri.getQueryParameter("id") ?: return ID_NONE
+        return id.toLong()
     }
 
     private fun populateTotals(records: List<TimeRecord>, page: MutableReportPage) {

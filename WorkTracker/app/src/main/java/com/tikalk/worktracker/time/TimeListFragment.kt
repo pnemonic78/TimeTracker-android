@@ -212,7 +212,7 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private suspend fun processPage(page: TimeListPage) {
-        viewModel.projects = page.projects.sortedBy { it.name }
+        viewModel.projects = page.projects
 
         _dateFlow.emit(page.date.copy())
 
