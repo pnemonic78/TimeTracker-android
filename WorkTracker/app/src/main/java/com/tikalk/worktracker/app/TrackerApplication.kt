@@ -50,7 +50,7 @@ import kotlin.math.max
 @HiltAndroidApp
 class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCallbacks {
 
-    private var active = 0
+    private var activeCount = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -76,8 +76,8 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
     override fun onActivityResumed(activity: Activity) = Unit
 
     override fun onActivityStarted(activity: Activity) {
-        active++
-        Timber.i("onActivityStarted $activity $active")
+        activeCount++
+        Timber.i("onActivityStarted $activity $activeCount")
         TimerWorker.hideNotification(this)
     }
 
@@ -86,9 +86,9 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
     override fun onActivitySaveInstanceState(activity: Activity, savedState: Bundle) = Unit
 
     override fun onActivityStopped(activity: Activity) {
-        active = max(0, active - 1)
-        Timber.i("onActivityStopped $activity $active isFinishing=${activity.isFinishing}")
-        if (active == 0) {
+        activeCount = max(0, activeCount - 1)
+        Timber.i("onActivityStopped $activity $activeCount isFinishing=${activity.isFinishing}")
+        if (activeCount == 0) {
             TimerWorker.maybeShowNotification(this)
         }
     }

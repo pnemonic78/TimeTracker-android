@@ -72,8 +72,7 @@ class TimeTrackerPrefs(context: Context) {
         projectName: String,
         taskId: Long,
         taskName: String,
-        startTime: Long,
-        remoteId: Long
+        startTime: Long
     ) {
         sharedPreferences.edit()
             .putLong(PROJECT_ID, projectId)
@@ -81,7 +80,6 @@ class TimeTrackerPrefs(context: Context) {
             .putLong(TASK_ID, taskId)
             .putString(TASK_NAME, taskName)
             .putLong(START_TIME, startTime)
-            .putLong(LOCATION, remoteId)
             .apply()
     }
 
@@ -91,8 +89,7 @@ class TimeTrackerPrefs(context: Context) {
             record.project.name,
             record.task.id,
             record.task.name,
-            record.startTime,
-            record.location.id
+            record.startTime
         )
     }
 
@@ -117,16 +114,12 @@ class TimeTrackerPrefs(context: Context) {
         project.addTask(task)
         val start = startTime.toCalendar()
 
-        val locationId = sharedPreferences.getLong(LOCATION, TikalEntity.ID_NONE)
-        val location = Location.valueOf(locationId)
-
         return TimeRecord(
             id = TikalEntity.ID_NONE,
             project = project,
             task = task,
             start = start,
-            date = start.copy(),
-            location = location
+            date = start.copy()
         )
     }
 
@@ -141,18 +134,17 @@ class TimeTrackerPrefs(context: Context) {
     }
 
     fun setFavorite(record: TimeRecord) {
-        setFavorite(record.project, record.task, record.location)
+        setFavorite(record.project, record.task)
     }
 
-    fun setFavorite(project: Project, task: ProjectTask, location: Location) {
-        setFavorite(project.id, task.id, location.id)
+    fun setFavorite(project: Project, task: ProjectTask) {
+        setFavorite(project.id, task.id)
     }
 
-    fun setFavorite(projectId: Long, taskId: Long, remoteId: Long = TikalEntity.ID_NONE) {
+    fun setFavorite(projectId: Long, taskId: Long) {
         sharedPreferences.edit()
             .putLong(PROJECT_FAVORITE, projectId)
             .putLong(TASK_FAVORITE, taskId)
-            .putLong(LOCATION_FAVORITE, remoteId)
             .apply()
     }
 
@@ -162,10 +154,6 @@ class TimeTrackerPrefs(context: Context) {
 
     fun getFavoriteTask(): Long {
         return sharedPreferences.getLong(TASK_FAVORITE, TikalEntity.ID_NONE)
-    }
-
-    fun getFavoriteLocation(): Long {
-        return sharedPreferences.getLong(LOCATION_FAVORITE, TikalEntity.ID_NONE)
     }
 
     private var _user: User? = null
@@ -246,8 +234,6 @@ class TimeTrackerPrefs(context: Context) {
         private const val PROJECT_ID = "project.id"
         private const val PROJECT_NAME = "project.name"
         private const val PROJECT_FAVORITE = "project.favorite"
-        private const val LOCATION = "location.id"
-        private const val LOCATION_FAVORITE = "location.favorite"
         private const val TASK_ID = "task.id"
         private const val TASK_NAME = "task.name"
         private const val TASK_FAVORITE = "task.favorite"

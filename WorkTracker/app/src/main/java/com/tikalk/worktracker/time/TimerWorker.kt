@@ -59,6 +59,7 @@ import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
+import com.tikalk.worktracker.model.time.TimeRecord.Companion.NEVER
 import com.tikalk.worktracker.preference.TimeTrackerPrefs
 import java.util.Calendar
 import timber.log.Timber
@@ -114,7 +115,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
             if (projectId <= 0L) throw IllegalArgumentException("invalid project id")
             if (taskId <= 0L) throw IllegalArgumentException("invalid task id")
-            if (startTime <= TimeRecord.NEVER) throw IllegalArgumentException("invalid start time")
+            if (startTime <= NEVER) throw IllegalArgumentException("invalid start time")
 
             editStartedRecord(record)
         }
@@ -166,8 +167,7 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             ACTION_STOP,
             record.project.id,
             record.task.id,
-            record.startTime,
-            record.location.id
+            record.startTime
         )
         val stopAction = NotificationCompat.Action(
             R.drawable.ic_notification_stop,
@@ -210,15 +210,13 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         action: String,
         projectId: Long,
         taskId: Long,
-        startTime: Long,
-        remoteId: Long
+        startTime: Long
     ): PendingIntent {
         val intent = Intent(context, TimeReceiver::class.java).apply {
             this.action = action
             putExtra(EXTRA_PROJECT_ID, projectId)
             putExtra(EXTRA_TASK_ID, taskId)
             putExtra(EXTRA_START_TIME, startTime)
-            putExtra(EXTRA_LOCATION, remoteId)
             putExtra(EXTRA_EDIT, true)
         }
         return PendingIntent.getBroadcast(
@@ -257,16 +255,15 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         val projectName = extras.getString(EXTRA_PROJECT_NAME)
         val taskId = extras.getLong(EXTRA_TASK_ID, TikalEntity.ID_NONE)
         val taskName = extras.getString(EXTRA_TASK_NAME)
-        val startTime = extras.getLong(EXTRA_START_TIME, TimeRecord.NEVER)
-        val finishTime = extras.getLong(EXTRA_FINISH_TIME, TimeRecord.NEVER)
-        val locationId = extras.getLong(EXTRA_LOCATION, TikalEntity.ID_NONE)
-        Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime,$locationId")
+        val startTime = extras.getLong(EXTRA_START_TIME, NEVER)
+        val finishTime = extras.getLong(EXTRA_FINISH_TIME, NEVER)
+        Timber.i("createRecord $projectId,$projectName,$taskId,$taskName,$startTime,$finishTime")
 
         if (projectId <= 0L) return null
         if (projectName.isNullOrEmpty()) return null
         if (taskId <= 0L) return null
         if (taskName.isNullOrEmpty()) return null
-        if (startTime <= TimeRecord.NEVER) return null
+        if (startTime <= NEVER) return null
 
         val project = Project(name = projectName)
         project.id = projectId
@@ -280,7 +277,6 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
         )
         record.startTime = startTime
         record.finishTime = finishTime
-        record.location = Location.valueOf(locationId)
         return record
     }
 
@@ -292,7 +288,6 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
 
         const val EXTRA_PROJECT_ID = BuildConfig.APPLICATION_ID + ".PROJECT_ID"
         const val EXTRA_PROJECT_NAME = BuildConfig.APPLICATION_ID + ".PROJECT_NAME"
-        const val EXTRA_LOCATION = BuildConfig.APPLICATION_ID + ".LOCATION"
         const val EXTRA_TASK_ID = BuildConfig.APPLICATION_ID + ".TASK_ID"
         const val EXTRA_TASK_NAME = BuildConfig.APPLICATION_ID + ".TASK_NAME"
         const val EXTRA_START_TIME = BuildConfig.APPLICATION_ID + ".START_TIME"
@@ -314,16 +309,22 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             val prefs = TimeTrackerPrefs(context)
             val record = prefs.getStartedRecord() ?: return
             Timber.i("maybeShowNotification record=$record")
-            if (!record.isEmpty()) {
-                showNotification(context)
+            if (record.project.isEmpty() || record.task.isEmpty() || record.startTime == NEVER || record.finishTime != NEVER) {
+                return
             }
+            showNotification(context, record)
         }
 
-        private fun showNotification(context: Context) {
-            Timber.i("showNotification")
+        private fun showNotification(context: Context, record: TimeRecord) {
+            Timber.i("showNotification record=$record")
             val inputData = BundleBuilder()
                 .putString(EXTRA_ACTION, ACTION_NOTIFY)
                 .putBoolean(EXTRA_NOTIFICATION, true)
+                .putLong(EXTRA_PROJECT_ID, record.project.id)
+                .putString(EXTRA_PROJECT_NAME, record.project.name)
+                .putLong(EXTRA_TASK_ID, record.task.id)
+                .putString(EXTRA_TASK_NAME, record.task.name)
+                .putLong(EXTRA_START_TIME, record.startTime)
                 .build()
 
             val worker = TimerWorker(context, inputData)
@@ -345,13 +346,12 @@ class TimerWorker(private val context: Context, private val workerParams: Bundle
             Timber.i("startTimer")
             val inputData = BundleBuilder()
                 .putString(EXTRA_ACTION, ACTION_START)
+                .putBoolean(EXTRA_NOTIFICATION, false)
                 .putLong(EXTRA_PROJECT_ID, record.project.id)
                 .putString(EXTRA_PROJECT_NAME, record.project.name)
                 .putLong(EXTRA_TASK_ID, record.task.id)
                 .putString(EXTRA_TASK_NAME, record.task.name)
                 .putLong(EXTRA_START_TIME, record.startTime)
-                .putLong(EXTRA_LOCATION, record.location.id)
-                .putBoolean(EXTRA_NOTIFICATION, false)
                 .build()
 
             val worker = TimerWorker(context, inputData)
