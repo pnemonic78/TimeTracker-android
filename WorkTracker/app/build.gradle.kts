@@ -1,19 +1,19 @@
 plugins {
-    id("com.android.application")
-    id("dagger.hilt.android.plugin")
-    kotlin("android")
-    kotlin("kapt")
-    kotlin("plugin.parcelize")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    aliasId(libs.plugins.androidApplication)
+    aliasId(libs.plugins.hilt)
+    aliasId(libs.plugins.kapt)
+    aliasId(libs.plugins.kotlinAndroid)
+    aliasId(libs.plugins.kotlinParcelize)
+    aliasId(libs.plugins.google.services)
+    aliasId(libs.plugins.crashlytics)
 }
 
 val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()
 val versionMinor = project.properties["APP_VERSION_MINOR"].toString().toInt()
 
 android {
-    compileSdk = Android.Version.compileSdk
     namespace = "com.tikalk.worktracker"
+    compileSdk = Android.Version.compileSdk
 
     defaultConfig {
         applicationId = "com.tikalk.worktracker"
@@ -82,66 +82,51 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":model"))
+    implementation(projects.core)
+    implementation(projects.model)
 
     // Jetpack
-    implementation(Android.Jetpack.appcompat)
-    implementation(Android.Jetpack.composeActivity)
-    implementation(Android.Jetpack.composeCompiler)
-    implementation(Android.Jetpack.composeConstraintLayout)
-    implementation(Android.Jetpack.composeIcons)
-    implementation(Android.Jetpack.composeMaterial3)
-    implementation(Android.Jetpack.composeRuntime)
-    implementation(Android.Jetpack.composeUi)
-    implementation(Android.Jetpack.composeUiTooling)
-    implementation(Android.Jetpack.composeUiToolingPreview)
-    implementation(Android.Jetpack.constraintLayout)
-    implementation(Android.Jetpack.core)
-    implementation(Android.Jetpack.material3)
-    implementation(Android.Jetpack.preference)
+    implementation(libs.jetpack.appcompat)
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.jetpack)
 
     // Database
-    implementation(Android.Database.roomKotlin)
-    kapt(Android.Database.roomCompiler)
+    implementation(libs.db.room.kotlin)
+    kapt(libs.db.room.compiler)
 
     // Rx
-    implementation(Kotlin.Reactive.coroutinesAndroid)
+    implementation(libs.coroutines.android)
 
     // Web
-    implementation(Android.Network.logging)
-    implementation(Android.Network.okhttp)
-    implementation(Android.Network.okhttp_url)
-    implementation(Android.Network.retrofit)
-    implementation(Android.Network.retrofit_scalars)
-    implementation(Java.Network.jsoup)
+    implementation(libs.bundles.net)
+    implementation(libs.html.jsoup)
 
     // Logging
-    implementation(Android.Logging.timber)
-    implementation(Android.Logging.crashlytics)
+    implementation(libs.bundles.logging)
 
     // Navigation
-    implementation(Android.Jetpack.navigationCompose)
-    implementation(Android.Jetpack.navigationFragment)
-    implementation(Android.Jetpack.navigationUI)
+    implementation(libs.navigation.compose)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
 
     // Export
-    implementation(Java.Document.opencsv) {
+    implementation(libs.doc.csv) {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation(Kotlin.Document.html)
-    implementation(Java.Document.odfJava) {
+    implementation(libs.kotlin.html)
+    implementation(libs.doc.odf) {
         exclude(group = "io.github.git-commit-id", module = "git-commit-id-maven-plugin")
     }
-    implementation(Java.Document.odfXML)
-    implementation(Java.Document.woodstox)
+    implementation(libs.doc.odfXML)
+    implementation(libs.doc.woodstox)
 
     // Dependency Injection
-    implementation(Android.Inject.hilt)
-    kapt(Android.Inject.hiltCompiler)
+    implementation(libs.di.hilt)
+    kapt(libs.di.hilt.compiler)
 
     // Testing
-    testImplementation(Android.Test.junit)
-    androidTestImplementation(Android.Test.junit_ext)
-    androidTestImplementation(Android.Test.espresso_core)
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.espresso)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.rules)
 }

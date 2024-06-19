@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.library")
-    kotlin("android")
+    aliasId(libs.plugins.androidLibrary)
+    aliasId(libs.plugins.kotlinAndroid)
 }
 
 android {
@@ -47,41 +47,27 @@ android {
 
 dependencies {
     // Jetpack
-    implementation(Android.Jetpack.appcompat)
-    implementation(Android.Jetpack.composeActivity)
-    implementation(Android.Jetpack.composeCompiler)
-    implementation(Android.Jetpack.composeIcons)
-    implementation(Android.Jetpack.composeMaterial3)
-    implementation(Android.Jetpack.composeRuntime)
-    implementation(Android.Jetpack.composeUi)
-    implementation(Android.Jetpack.composeUiTooling)
-    implementation(Android.Jetpack.composeUiToolingPreview)
-    implementation(Android.Jetpack.constraintLayout)
-    implementation(Android.Jetpack.core)
-    implementation(Android.Jetpack.preference)
+    implementation(libs.jetpack.appcompat)
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.jetpack)
 
     // Rx
-    implementation(Kotlin.Reactive.coroutinesAndroid)
+    implementation(libs.coroutines.android)
 
     // Web
-    implementation(Android.Network.logging)
-    implementation(Android.Network.okhttp)
-    implementation(Android.Network.okhttp_url)
-    implementation(Android.Network.retrofit)
-    implementation(Android.Network.retrofit_scalars)
-    implementation(Java.Network.jsoup)
+    implementation(libs.bundles.net)
+    implementation(libs.html.jsoup)
 
     // Logging
-    implementation(Android.Logging.timber)
-    implementation(Android.Logging.crashlytics)
+    implementation(libs.bundles.logging)
 
     // Navigation
-    implementation(Android.Jetpack.navigationCompose)
-    implementation(Android.Jetpack.navigationFragment)
-    implementation(Android.Jetpack.navigationUI)
+    implementation(libs.navigation.compose)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
 
     // Testing
-    testImplementation(Android.Test.junit)
-    androidTestImplementation(Android.Test.junit_ext)
-    androidTestImplementation(Android.Test.espresso_core)
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.rules)
 }
