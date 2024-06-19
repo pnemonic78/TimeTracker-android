@@ -64,6 +64,7 @@ open class TimeRecord(
     var note: String = "",
     var cost: Double = 0.0,
     var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
+    @Deprecated("location was removed")
     var location: Location = Location.EMPTY
 ) : TikalEntity(id) {
 
