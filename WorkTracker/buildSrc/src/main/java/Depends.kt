@@ -1,4 +1,7 @@
 import org.gradle.api.JavaVersion
+import org.gradle.api.provider.Provider
+import org.gradle.plugin.use.PluginDependenciesSpec
+import org.gradle.plugin.use.PluginDependency
 
 object Android {
     object Version {
@@ -7,10 +10,10 @@ object Android {
         const val targetSdk = 33
 
         const val compose = "1.5.4"
-        const val composeCompiler = "1.5.8"
+        const val composeCompiler = "1.5.14"
         const val composeMaterial = "1.5.3"
         const val composeMaterial3 = "1.2.0-rc01"
-        const val hilt = "2.48"
+        const val hilt = "2.51.1"
         const val navigation = "2.7.7"
         const val okhttp = "4.11.0"
         const val preference = "1.2.0"
@@ -126,3 +129,7 @@ object Kotlin {
             "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.coroutines}"
     }
 }
+
+// Alias with only its id, and without its version.
+fun PluginDependenciesSpec.aliasId(notation: Provider<PluginDependency>) =
+    id(notation.get().pluginId)

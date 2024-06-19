@@ -1,7 +1,6 @@
 To-Do List
 ====
 
-* migrate dependencies to toml
 * move logic from fragment to ViewModel
   * [MVVM](https://developer.android.com/topic/libraries/architecture/viewmodel.html)
 * migrate binding to Jetpack Compose

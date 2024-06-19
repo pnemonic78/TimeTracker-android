@@ -1,11 +1,11 @@
 plugins {
-    id("com.android.application")
-    id("dagger.hilt.android.plugin")
-    kotlin("android")
-    kotlin("kapt")
-    kotlin("plugin.parcelize")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    aliasId(libs.plugins.androidApplication)
+    aliasId(libs.plugins.hilt)
+    aliasId(libs.plugins.kotlinAndroid)
+    aliasId(libs.plugins.kapt)
+    aliasId(libs.plugins.kotlinParcelize)
+    aliasId(libs.plugins.google.services)
+    aliasId(libs.plugins.crashlytics)
 }
 
 val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
@@ -86,43 +86,42 @@ dependencies {
     implementation(project(":model"))
 
     // Jetpack
-    implementation(Android.Jetpack.appcompat)
-    implementation(Android.Jetpack.composeActivity)
-    implementation(Android.Jetpack.composeCompiler)
+    implementation(libs.jetpack.appcompat)
+    implementation(libs.compose.activity)
     implementation(Android.Jetpack.composeConstraintLayout)
     implementation(Android.Jetpack.composeIcons)
-    implementation(Android.Jetpack.composeMaterial3)
-    implementation(Android.Jetpack.composeRuntime)
-    implementation(Android.Jetpack.composeUi)
-    implementation(Android.Jetpack.composeUiTooling)
-    implementation(Android.Jetpack.composeUiToolingPreview)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.tooling)
+    implementation(libs.compose.preview)
     implementation(Android.Jetpack.constraintLayout)
-    implementation(Android.Jetpack.core)
+    implementation(libs.jetpack.core)
     implementation(Android.Jetpack.material3)
     implementation(Android.Jetpack.preference)
 
     // Database
-    implementation(Android.Database.roomKotlin)
-    kapt(Android.Database.roomCompiler)
+    implementation(libs.db.room.kotlin)
+    kapt(libs.db.room.compiler)
 
     // Rx
     implementation(Kotlin.Reactive.coroutinesAndroid)
 
     // Web
-    implementation(Android.Network.logging)
-    implementation(Android.Network.okhttp)
+    implementation(libs.net.okhttp)
+    implementation(libs.net.okhttp.logging)
     implementation(Android.Network.okhttp_url)
-    implementation(Android.Network.retrofit)
+    implementation(libs.net.retrofit)
     implementation(Android.Network.retrofit_scalars)
     implementation(Java.Network.jsoup)
 
     // Logging
-    implementation(Android.Logging.timber)
+    implementation(libs.logging.timber)
     implementation(Android.Logging.crashlytics)
 
     // Navigation
     implementation(Android.Jetpack.navigationCompose)
-    implementation(Android.Jetpack.navigationFragment)
+    implementation(libs.jetpack.navigationFragment)
     implementation(Android.Jetpack.navigationUI)
 
     // Export
@@ -137,11 +136,12 @@ dependencies {
     implementation(Java.Document.woodstox)
 
     // Dependency Injection
-    implementation(Android.Inject.hilt)
-    kapt(Android.Inject.hiltCompiler)
+    implementation(libs.di.hilt)
+    kapt(libs.di.hilt.compiler)
 
     // Testing
-    testImplementation(Android.Test.junit)
-    androidTestImplementation(Android.Test.junit_ext)
-    androidTestImplementation(Android.Test.espresso_core)
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.espresso)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.rules)
 }
