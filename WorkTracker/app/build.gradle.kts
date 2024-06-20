@@ -6,6 +6,7 @@ plugins {
     aliasId(libs.plugins.kotlinParcelize)
     aliasId(libs.plugins.google.services)
     aliasId(libs.plugins.crashlytics)
+    alias(libs.plugins.compose.compiler)
 }
 
 val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()
@@ -58,10 +59,6 @@ android {
     compileOptions {
         sourceCompatibility = Java.Version.jvm
         targetCompatibility = Java.Version.jvm
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = Android.Version.composeCompiler
     }
 
     kotlinOptions {

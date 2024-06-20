@@ -33,10 +33,6 @@ android {
         targetCompatibility = Java.Version.jvm
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = Android.Version.composeCompiler
-    }
-
     kotlinOptions {
         jvmTarget = Java.Version.jvm.toString()
     }

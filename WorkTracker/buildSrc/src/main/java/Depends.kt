@@ -7,9 +7,7 @@ object Android {
     object Version {
         const val compileSdk = 34
         const val minSdk = 23
-        const val targetSdk = 33
-
-        const val composeCompiler = "1.5.14"
+        const val targetSdk = 34
     }
 }
 
