@@ -1,19 +1,20 @@
 plugins {
     aliasId(libs.plugins.androidApplication)
     aliasId(libs.plugins.hilt)
-    aliasId(libs.plugins.kotlinAndroid)
     aliasId(libs.plugins.kapt)
+    aliasId(libs.plugins.kotlinAndroid)
     aliasId(libs.plugins.kotlinParcelize)
     aliasId(libs.plugins.google.services)
     aliasId(libs.plugins.crashlytics)
+    alias(libs.plugins.compose.compiler)
 }
 
-val versionMajor = (project.properties["APP_VERSION_MAJOR"] as String).toInt()
-val versionMinor = (project.properties["APP_VERSION_MINOR"] as String).toInt()
+val versionMajor = project.properties["APP_VERSION_MAJOR"].toString().toInt()
+val versionMinor = project.properties["APP_VERSION_MINOR"].toString().toInt()
 
 android {
-    compileSdk = Android.Version.compileSdk
     namespace = "com.tikalk.worktracker"
+    compileSdk = Android.Version.compileSdk
 
     defaultConfig {
         applicationId = "com.tikalk.worktracker"
@@ -31,9 +32,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("../release.keystore")
-            storePassword = project.properties["STORE_PASSWORD_RELEASE"] as String
+            storePassword = project.properties["STORE_PASSWORD_RELEASE"].toString()
             keyAlias = "release"
-            keyPassword = project.properties["KEY_PASSWORD_RELEASE"] as String
+            keyPassword = project.properties["KEY_PASSWORD_RELEASE"].toString()
         }
     }
 
@@ -60,10 +61,6 @@ android {
         targetCompatibility = Java.Version.jvm
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = Android.Version.composeCompiler
-    }
-
     kotlinOptions {
         jvmTarget = Java.Version.jvm.toString()
     }
@@ -82,58 +79,43 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":model"))
+    implementation(projects.core)
+    implementation(projects.model)
 
     // Jetpack
     implementation(libs.jetpack.appcompat)
-    implementation(libs.compose.activity)
-    implementation(Android.Jetpack.composeConstraintLayout)
-    implementation(Android.Jetpack.composeIcons)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.tooling)
-    implementation(libs.compose.preview)
-    implementation(Android.Jetpack.constraintLayout)
-    implementation(libs.jetpack.core)
-    implementation(Android.Jetpack.material3)
-    implementation(Android.Jetpack.preference)
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.jetpack)
 
     // Database
     implementation(libs.db.room.kotlin)
     kapt(libs.db.room.compiler)
 
     // Rx
-    implementation(Kotlin.Reactive.coroutinesAndroid)
+    implementation(libs.coroutines.android)
 
     // Web
-    implementation(libs.net.okhttp)
-    implementation(libs.net.okhttp.logging)
-    implementation(Android.Network.okhttp_url)
-    implementation(libs.net.retrofit)
-    implementation(Android.Network.retrofit_scalars)
-    implementation(Java.Network.jsoup)
+    implementation(libs.bundles.net)
+    implementation(libs.html.jsoup)
 
     // Logging
-    implementation(libs.logging.timber)
-    implementation(Android.Logging.crashlytics)
+    implementation(libs.bundles.logging)
 
     // Navigation
-    implementation(Android.Jetpack.navigationCompose)
-    implementation(libs.jetpack.navigationFragment)
-    implementation(Android.Jetpack.navigationUI)
+    implementation(libs.navigation.compose)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
 
     // Export
-    implementation(Java.Document.opencsv) {
+    implementation(libs.doc.csv) {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation(Kotlin.Document.html)
-    implementation(Java.Document.odfJava) {
+    implementation(libs.kotlin.html)
+    implementation(libs.doc.odf) {
         exclude(group = "io.github.git-commit-id", module = "git-commit-id-maven-plugin")
     }
-    implementation(Java.Document.odfXML)
-    implementation(Java.Document.woodstox)
+    implementation(libs.doc.odfXML)
+    implementation(libs.doc.woodstox)
 
     // Dependency Injection
     implementation(libs.di.hilt)

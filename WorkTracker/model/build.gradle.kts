@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    kotlin("kapt")
-    kotlin("plugin.parcelize")
+    aliasId(libs.plugins.androidLibrary)
+    aliasId(libs.plugins.kapt)
+    aliasId(libs.plugins.kotlinAndroid)
+    aliasId(libs.plugins.kotlinParcelize)
 }
 
 android {
@@ -33,34 +33,26 @@ android {
         targetCompatibility = Java.Version.jvm
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = Android.Version.composeCompiler
-    }
-
     kotlinOptions {
         jvmTarget = Java.Version.jvm.toString()
     }
 }
 
 dependencies {
-    implementation(project(":core"))
+    implementation(projects.core)
 
     // Jetpack
-    implementation(Android.Jetpack.core)
-
-    // Rx
-    implementation(Kotlin.Reactive.coroutinesAndroid)
+    implementation(libs.jetpack.core)
 
     // Logging
-    implementation(Android.Logging.timber)
-    implementation(Android.Logging.crashlytics)
+    implementation(libs.bundles.logging)
 
     // Database
-    implementation(Android.Database.roomKotlin)
-    kapt(Android.Database.roomCompiler)
+    implementation(libs.db.room.kotlin)
+    kapt(libs.db.room.compiler)
 
     // Testing
-    testImplementation(Android.Test.junit)
-    androidTestImplementation(Android.Test.junit_ext)
-    androidTestImplementation(Android.Test.espresso_core)
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.rules)
 }

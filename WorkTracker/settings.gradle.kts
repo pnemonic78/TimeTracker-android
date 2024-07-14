@@ -1,4 +1,20 @@
-rootProject.name = "Work Tracker"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+pluginManagement {
+    repositories {
+        google()
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "Work_Tracker"
 include(":app")
 include(":core")
 include(":model")

@@ -1,15 +1,15 @@
 package com.tikalk.worktracker
 
 import android.text.format.DateUtils
+import com.tikalk.time.copy
+import com.tikalk.time.dayOfMonth
+import com.tikalk.time.dayOfYear
+import com.tikalk.time.hourOfDay
+import com.tikalk.time.millis
+import com.tikalk.time.setToEndOfDay
+import com.tikalk.time.setToStartOfDay
 import com.tikalk.worktracker.model.time.TimeRecord
 import com.tikalk.worktracker.model.time.split
-import com.tikalk.worktracker.time.copy
-import com.tikalk.worktracker.time.dayOfMonth
-import com.tikalk.worktracker.time.dayOfYear
-import com.tikalk.worktracker.time.hourOfDay
-import com.tikalk.worktracker.time.millis
-import com.tikalk.worktracker.time.setToEndOfDay
-import com.tikalk.worktracker.time.setToStartOfDay
 import java.util.Calendar
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
