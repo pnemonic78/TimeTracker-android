@@ -37,7 +37,6 @@ import com.tikalk.html.findParentElement
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.db.ProjectWithTasks
 import com.tikalk.worktracker.db.TrackerDatabase
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity.Companion.ID_NONE
@@ -126,7 +125,6 @@ class ReportPageParser(private val filter: ReportFilter) {
         var columnIndexDuration = -1
         var columnIndexNote = -1
         var columnIndexCost = -1
-        var columnIndexLocation = -1
         var columnIndexEdit = -1
 
         // The first row of the table is the header
@@ -152,8 +150,6 @@ class ReportPageParser(private val filter: ReportFilter) {
                             "Duration" -> columnIndexDuration = col
                             "Note" -> columnIndexNote = col
                             "Cost" -> columnIndexCost = col
-                            "Remote",
-                            "Work from" -> columnIndexLocation = col
                         }
                     }
                     columnIndexEdit = childrenSize - 1
@@ -172,7 +168,6 @@ class ReportPageParser(private val filter: ReportFilter) {
                             columnIndexDuration,
                             columnIndexNote,
                             columnIndexCost,
-                            columnIndexLocation,
                             columnIndexEdit,
                             projects
                         ) ?: continue
@@ -212,7 +207,6 @@ class ReportPageParser(private val filter: ReportFilter) {
         columnIndexDuration: Int,
         columnIndexNote: Int,
         columnIndexCost: Int,
-        columnIndexLocation: Int,
         columnIndexEdit: Int,
         projects: MutableCollection<Project>
     ): TimeRecord? {
@@ -280,13 +274,6 @@ class ReportPageParser(private val filter: ReportFilter) {
             record.cost = cost
         }
 
-        if (columnIndexLocation >= 0) {
-            val tdLocation = cols[columnIndexLocation]
-            val locationText = tdLocation.ownText()
-            val location = parseLocation(locationText)
-            record.location = location
-        }
-
         if (columnIndexEdit >= 0) {
             val tdEdit = cols[columnIndexEdit]
             val editAnchor = tdEdit.selectFirst("a");
@@ -325,20 +312,6 @@ class ReportPageParser(private val filter: ReportFilter) {
 
     private fun parseCost(text: String): Double {
         return if (text.isBlank()) 0.00 else text.toDouble()
-    }
-
-    private fun parseLocation(text: String): Location {
-        return when (text) {
-            "yes",
-            "home" -> Location.HOME
-
-            "no",
-            "client" -> Location.CLIENT
-
-            "other" -> Location.OTHER
-            "tikal" -> Location.TIKAL
-            else -> Location.EMPTY
-        }
     }
 
     private fun parseEditId(anchor: Element?): Long {

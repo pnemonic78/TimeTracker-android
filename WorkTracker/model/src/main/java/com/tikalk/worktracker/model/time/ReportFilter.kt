@@ -38,7 +38,6 @@ import com.tikalk.time.dayOfWeek
 import com.tikalk.time.month
 import com.tikalk.time.setToEndOfDay
 import com.tikalk.time.setToStartOfDay
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.report.DefaultTimePeriod
@@ -77,7 +76,6 @@ class ReportFilter(
         finish: Calendar? = null,
         period: ReportTimePeriod = DefaultTimePeriod,
         favorite: String? = null,
-        location: Location = Location.EMPTY,
         isProjectFieldVisible: Boolean = true,
         isTaskFieldVisible: Boolean = true,
         isStartFieldVisible: Boolean = true,
@@ -100,7 +98,6 @@ class ReportFilter(
         this.task = task
         this.start = start
         this.finish = finish
-        this.location = location
     }
 
     fun toFields(): Map<String, String> {
@@ -111,7 +108,6 @@ class ReportFilter(
             put("period", period.toString())
             formatSystemDate(start)?.let { put("start_date", it) }
             formatSystemDate(finish)?.let { put("end_date", it) }
-            put("time_field_5", location.id.toString())
 
             // Always fetch these fields - just hide them in UI.
             put("chproject", "1")

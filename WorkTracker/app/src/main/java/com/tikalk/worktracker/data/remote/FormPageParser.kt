@@ -36,7 +36,6 @@ import com.tikalk.auth.AccessDeniedException
 import com.tikalk.html.selectByName
 import com.tikalk.html.textBr
 import com.tikalk.html.value
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.FormPage
@@ -104,20 +103,6 @@ open class FormPageParser<R : TimeRecord, P : FormPage<R>, MP : MutableFormPage<
             }
         }
         return ProjectTask.EMPTY
-    }
-
-    protected fun findSelectedLocation(locationInput: Element): Location {
-        for (option in locationInput.children()) {
-            if (option.hasAttr("selected")) {
-                val value = option.value()
-                if (value.isNotEmpty()) {
-                    val id = value.toLong()
-                    return Location.valueOf(id)
-                }
-                break
-            }
-        }
-        return Location.EMPTY
     }
 
     private fun parseProjects(select: Element): List<Project> {

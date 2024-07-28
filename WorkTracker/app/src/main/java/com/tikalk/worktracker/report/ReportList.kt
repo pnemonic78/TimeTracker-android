@@ -43,7 +43,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.tikalk.compose.TikalTheme
 import com.tikalk.widget.ContentPaddingList
 import com.tikalk.worktracker.EmptyListScreen
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.ReportFilter
@@ -115,7 +114,6 @@ private fun ThisPreview() {
         date = Calendar.getInstance(),
         duration = DateUtils.HOUR_IN_MILLIS,
         note = "Note",
-        location = Location.OTHER,
         cost = 1.23
     )
     val records = record * 10

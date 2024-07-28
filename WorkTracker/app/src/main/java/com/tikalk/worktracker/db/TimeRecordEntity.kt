@@ -40,7 +40,6 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.tikalk.worktracker.model.Converters
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -94,9 +93,7 @@ open class TimeRecordEntity(
     @ColumnInfo(name = "cost")
     var cost: Double = 0.0,
     @ColumnInfo(name = "status")
-    var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
-    @ColumnInfo(name = "location_id")
-    var locationId: Long = ID_NONE
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
 ) : TikalEntity(id), Parcelable
 
 open class TimeRecordConverters : Converters() {
@@ -105,12 +102,6 @@ open class TimeRecordConverters : Converters() {
 
     @TypeConverter
     fun toRecordStatus(value: Int): TaskRecordStatus = TaskRecordStatus.values()[value]
-
-    @TypeConverter
-    fun fromRecordLocation(value: Location): Long = value.id
-
-    @TypeConverter
-    fun toRecordLocation(value: Long): Location = Location.valueOf(value)
 }
 
 fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
@@ -124,8 +115,7 @@ fun TimeRecord.toTimeRecordEntity(): TimeRecordEntity =
         duration = this.duration,
         note = this.note,
         cost = this.cost,
-        status = this.status,
-        locationId = this.location.id
+        status = this.status
     )
 
 fun TimeRecordEntity.toTimeRecord(
@@ -156,7 +146,6 @@ fun TimeRecordEntity.toTimeRecord(
         duration = value.duration,
         note = value.note,
         cost = value.cost,
-        status = value.status,
-        location = Location.valueOf(value.locationId)
+        status = value.status
     )
 }

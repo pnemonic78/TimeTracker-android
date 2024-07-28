@@ -218,7 +218,6 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
             setRecordTask(record, task)
             record.start = recordStarted.start
-            record.location = recordStarted.location
         }
     }
 

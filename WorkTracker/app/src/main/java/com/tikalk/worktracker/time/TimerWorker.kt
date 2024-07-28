@@ -54,7 +54,6 @@ import com.tikalk.graphics.drawableToBitmap
 import com.tikalk.os.BundleBuilder
 import com.tikalk.worktracker.BuildConfig
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
