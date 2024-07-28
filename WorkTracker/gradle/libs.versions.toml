@@ -1,20 +1,19 @@
 [versions]
 agp = "8.4.2"
-androidx-activityCompose = "1.9.0"
+androidx-activityCompose = "1.9.1"
 compose = "1.6.8"
 compose-material3 = "1.2.1"
-coroutines = "1.8.0-RC2"
-crashlytics = "3.0.1"
+coroutines = "1.8.0"
 googleServices = "4.4.2"
 hilt = "2.51.1"
 kotlin = "2.0.0"
 okhttp = "4.12.0"
 navigation = "2.7.7"
-paging = "3.3.0"
+paging = "3.3.2"
 preference = "1.2.1"
 retrofit = "2.9.0"
 room = "2.6.1"
-test = "1.6.0-rc01"
+test = "1.6.1"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -43,7 +42,7 @@ doc-csv = { module = "com.opencsv:opencsv", version = "5.8" }
 doc-odf = { module = "org.odftoolkit:odfdom-java", version = "0.8.7" }
 doc-odfXML = { module = "xml-apis:xml-apis", version = "1.4.01" }
 doc-woodstox = { module = "com.fasterxml.woodstox:woodstox-core", version = "6.5.1" }
-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "19.0.1" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "19.0.3" }
 html-jsoup = { module = "org.jsoup:jsoup", version = "1.16.1" }
 jetpack-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 jetpack-constraintLayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.1.4" }
@@ -68,15 +67,15 @@ net-retrofit-scalars = { module = "com.squareup.retrofit2:converter-scalars", ve
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.0-RC" }
 
 # Logging
-firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "crashlytics" }
+firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version = "3.0.2" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 logging-timber = { module = "com.jakewharton.timber:timber", version = "5.0.1" }
 
 # Testing
 test-kotlin = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 test-junit = { module = "junit:junit", version = "4.13.2" }
-test-junitExt = { module = "androidx.test.ext:junit", version = "1.1.5" }
-test-espresso = { module = "androidx.test.espresso:espresso-core", version = "3.5.1" }
+test-junitExt = { module = "androidx.test.ext:junit", version = "1.2.1" }
+test-espresso = { module = "androidx.test.espresso:espresso-core", version = "3.6.1" }
 test-runner = { module = "androidx.test:runner", version.ref = "test" }
 test-rules = { module = "androidx.test:rules", version.ref = "test" }
 
