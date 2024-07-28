@@ -36,7 +36,6 @@ import androidx.preference.PreferenceManager
 import com.tikalk.time.copy
 import com.tikalk.time.toCalendar
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity

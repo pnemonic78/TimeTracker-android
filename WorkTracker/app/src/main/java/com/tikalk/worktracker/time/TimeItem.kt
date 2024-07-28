@@ -66,12 +66,10 @@ import com.tikalk.compose.TikalTheme
 import com.tikalk.compose.WrapText
 import com.tikalk.util.TikalFormatter
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.TimeRecord
-import com.tikalk.worktracker.report.toLocationItem
 import java.util.Calendar
 
 private const val FORMAT_DURATION = DateUtils.FORMAT_SHOW_TIME
@@ -89,7 +87,6 @@ fun TimeItem(
     isDurationFieldVisible: Boolean = true,
     isNoteFieldVisible: Boolean = true,
     isCostFieldVisible: Boolean = false,
-    isLocationFieldVisible: Boolean = false,
     onClick: RecordCallback
 ) {
     val context: Context = LocalContext.current
@@ -212,22 +209,6 @@ fun TimeItem(
                 }
             }
             Row {
-                if (isLocationFieldVisible) {
-                    Image(
-                        modifier = Modifier
-                            .size(iconSize)
-                            .align(Alignment.CenterVertically),
-                        painter = rememberVectorPainter(
-                            image = ImageVector.vectorResource(id = com.tikalk.core.R.drawable.ic_home_work)
-                        ),
-                        contentDescription = stringResource(id = R.string.location_label)
-                    )
-                    Text(
-                        modifier = Modifier.padding(start = 4.dp),
-                        text = record.location.toLocationItem(context).label,
-                        color = color
-                    )
-                }
                 if (isCostFieldVisible) {
                     Spacer(modifier = Modifier.weight(1f))
                     Image(
@@ -303,7 +284,6 @@ private fun ThisPreview() {
         date = Calendar.getInstance(),
         duration = DateUtils.HOUR_IN_MILLIS,
         note = "Note",
-        location = Location.OTHER,
         cost = 1.23
     )
     val onClick: OnTimeRecordClick = { println("record clicked: $it") }
