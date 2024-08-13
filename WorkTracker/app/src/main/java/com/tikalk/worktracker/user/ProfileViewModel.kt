@@ -284,8 +284,9 @@ class ProfileViewModel @Inject constructor(
         clearEvents()
     }
 
-    fun clearEvents() {
+    override fun clearEvents() {
         _onDialogConfirmClick.value = false
+        _profileUpdate.value = null
     }
 
     fun profilePage(refresh: Boolean): Flow<ProfilePage> {

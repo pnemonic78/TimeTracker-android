@@ -100,7 +100,10 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
 
         lifecycleScope.launch {
             viewModel.deleted.collect { data ->
-                if (data != null) onRecordDeleted(data.record)
+                if (data != null) {
+                    viewModel.clearEvents()
+                    onRecordDeleted(data.record)
+                }
             }
         }
     }

@@ -95,6 +95,7 @@ class TimeListActivity : TrackerActivity() {
         lifecycleScope.launch {
             profileViewModule.profileUpdate.collect { profile ->
                 if (profile != null) {
+                    profileViewModule.clearEvents()
                     if (profile.reason.isNullOrEmpty()) {
                         Timber.i("profile success")
                         hideProfile()

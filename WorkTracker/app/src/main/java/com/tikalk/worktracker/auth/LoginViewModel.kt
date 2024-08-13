@@ -140,7 +140,7 @@ class LoginViewModel @Inject constructor(
         clearEvents()
     }
 
-    fun clearEvents() {
+    override fun clearEvents() {
         _onDialogConfirmClick.value = false
         _onDialogDismiss.value = false
     }
