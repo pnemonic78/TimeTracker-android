@@ -74,7 +74,6 @@ import com.tikalk.compose.TikalTheme
 import com.tikalk.compose.UnitCallback
 import com.tikalk.util.isLocaleRTL
 import com.tikalk.worktracker.R
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -200,7 +199,6 @@ private fun ThisPreview() {
         date = Calendar.getInstance(),
         duration = DateUtils.HOUR_IN_MILLIS,
         note = "Note",
-        location = Location.OTHER,
         cost = 1.23
     )
     val records = listOf(record, record)

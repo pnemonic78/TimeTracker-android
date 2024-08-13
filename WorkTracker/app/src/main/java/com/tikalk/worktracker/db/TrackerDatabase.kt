@@ -51,7 +51,7 @@ import com.tikalk.worktracker.model.User
         TimeRecordEntity::class,
         User::class
     ],
-    version = 16,
+    version = 17,
     exportSchema = false
 )
 abstract class TrackerDatabase : RoomDatabase() {
@@ -67,21 +67,19 @@ abstract class TrackerDatabase : RoomDatabase() {
         private var instance: TrackerDatabase? = null
 
         fun getDatabase(context: Context): TrackerDatabase {
-            if (instance == null) {
-                synchronized(TrackerDatabase::class.java) {
-                    if (instance == null) {
-                        // Create database here
-                        instance = Room.databaseBuilder(
-                            context.applicationContext,
-                            TrackerDatabase::class.java,
-                            "tracker.db"
-                        )
-                            .fallbackToDestructiveMigration()
-                            .build()
-                    }
-                }
+            var db = instance
+            if (db == null) {
+                // Create database here
+                db = Room.databaseBuilder(
+                    context.applicationContext,
+                    TrackerDatabase::class.java,
+                    "tracker.db"
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+                instance = db
             }
-            return instance!!
+            return db
         }
     }
 }

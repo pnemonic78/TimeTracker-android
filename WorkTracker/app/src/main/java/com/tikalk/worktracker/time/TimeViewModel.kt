@@ -99,7 +99,7 @@ class TimeViewModel @Inject constructor(
     /**
      * The record was deleted.
      * @param record the record.
-     * @param responseHtml the response HTML.
+     * @param page the response page.
      */
     suspend fun onRecordEditDeleted(record: TimeRecord, page: TimeListPage? = null) {
         _deleted.emit(RecordDeletedData(record, page))
@@ -176,5 +176,12 @@ class TimeViewModel @Inject constructor(
 
     suspend fun savePage(page: TimeListPage) {
         services.dataSource.savePage(page)
+    }
+
+    override fun clearEvents() {
+        super.clearEvents()
+        _deleted.value = null
+        _edited.value = null
+        _editFailure.value = null
     }
 }

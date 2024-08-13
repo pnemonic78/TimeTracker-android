@@ -424,7 +424,7 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
     }
 
     private suspend fun processDeletePage(record: TimeRecord, page: FormPage<*>) {
-        Timber.i("processDeletePage")
+        Timber.i("processDeletePage $record $page")
         val errorMessage = page.errorMessage
         if (errorMessage.isNullOrEmpty() && (page is TimeListPage)) {
             onRecordDeleted(record, page)

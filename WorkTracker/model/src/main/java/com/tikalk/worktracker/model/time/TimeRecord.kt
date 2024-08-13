@@ -41,7 +41,6 @@ import com.tikalk.time.second
 import com.tikalk.time.setToEndOfDay
 import com.tikalk.time.setToStartOfDay
 import com.tikalk.time.toCalendar
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.TikalEntity
@@ -63,9 +62,7 @@ open class TimeRecord(
     duration: Long = 0,
     var note: String = "",
     var cost: Double = 0.0,
-    var status: TaskRecordStatus = TaskRecordStatus.DRAFT,
-    @Deprecated("location was removed")
-    var location: Location = Location.EMPTY
+    var status: TaskRecordStatus = TaskRecordStatus.DRAFT
 ) : TikalEntity(id) {
 
     init {
@@ -138,8 +135,7 @@ open class TimeRecord(
             duration = duration,
             note = note,
             cost = cost,
-            status = status,
-            location = location
+            status = status
         )
     }
 
@@ -158,8 +154,7 @@ open class TimeRecord(
             duration = duration,
             note = note,
             cost = cost,
-            status = status,
-            location = location
+            status = status
         )
     }
 
@@ -177,8 +172,7 @@ open class TimeRecord(
             duration = duration,
             note = note,
             cost = cost,
-            status = status,
-            location = location
+            status = status
         )
     }
 
@@ -188,7 +182,6 @@ open class TimeRecord(
                 && (this.cost == other.cost)
                 && (this.date == other.date)
                 && (this.duration == other.duration)
-                && (this.location == other.location)
                 && (this.note == other.note)
                 && (this.project == other.project)
                 && (this.startTime == other.startTime)
@@ -200,7 +193,7 @@ open class TimeRecord(
 
     override fun toString(): String {
         val dateStr = formatSystemDate(date)
-        return "{id: $id, project: $project, task: $task, location: $location, start: $startTime, finish: $finishTime, date: $dateStr, duration: $duration, version: $version, $status}"
+        return "{id: $id, project: $project, task: $task, start: $startTime, finish: $finishTime, date: $dateStr, duration: $duration, version: $version, $status}"
     }
 
     override fun hashCode(): Int {
@@ -255,11 +248,6 @@ open class TimeRecord(
         val t1 = this.task
         val t2 = that.task
         c = t1.compareTo(t2)
-        if (c != 0) return c
-
-        val l1 = this.location
-        val l2 = that.location
-        c = l1.compareTo(l2)
         if (c != 0) return c
 
         val c1 = this.cost

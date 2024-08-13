@@ -51,10 +51,19 @@ open class TrackerViewModel @Inject constructor(
         _onError.emit(error)
     }
 
-    private val _isLoading = MutableStateFlow<Boolean>(false)
+    private val _isLoading = MutableStateFlow(false)
     val isLoading: Flow<Boolean> = _isLoading
 
     protected suspend fun notifyLoading(isLoading: Boolean) {
         _isLoading.emit(isLoading)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearEvents()
+    }
+
+    open fun clearEvents() {
+        _onError.value = null
     }
 }

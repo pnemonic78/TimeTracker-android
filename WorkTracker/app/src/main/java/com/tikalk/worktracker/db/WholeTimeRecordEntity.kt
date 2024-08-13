@@ -33,7 +33,6 @@ package com.tikalk.worktracker.db
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.Project
 import com.tikalk.worktracker.model.ProjectTask
 import com.tikalk.worktracker.model.time.TimeRecord
@@ -73,7 +72,6 @@ fun WholeTimeRecordEntity.toTimeRecord(): TimeRecord {
         duration = value.duration,
         note = value.note,
         cost = value.cost,
-        status = value.status,
-        location = Location.valueOf(value.locationId)
+        status = value.status
     )
 }

@@ -85,8 +85,7 @@ class TimeEditPageSaver(
                 start = startValue,
                 finish = finishValue,
                 duration = durationValue,
-                note = record.note,
-                locationId = record.location.id
+                note = record.note
             )
         } else {
             service.editTime(
@@ -97,8 +96,7 @@ class TimeEditPageSaver(
                 start = startValue,
                 finish = finishValue,
                 duration = durationValue,
-                note = record.note,
-                locationId = record.location.id
+                note = record.note
             )
         }
 

@@ -95,13 +95,8 @@ class ReportViewModel @Inject constructor(
         }
     }
 
-    fun clearEvents() {
+    override fun clearEvents() {
         _onEdit.value = null
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        clearEvents()
     }
 
     fun reportPage(filter: ReportFilter, refresh: Boolean): Flow<ReportPage> {

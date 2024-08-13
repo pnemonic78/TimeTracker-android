@@ -94,7 +94,10 @@ class ReportFragment : InternetFragment() {
         }
         lifecycleScope.launch {
             timeViewModel.edited.collect { data ->
-                if (data != null) onRecordEditSubmitted(data.record)
+                if (data != null) {
+                    timeViewModel.clearEvents()
+                    onRecordEditSubmitted(data.record)
+                }
             }
         }
     }

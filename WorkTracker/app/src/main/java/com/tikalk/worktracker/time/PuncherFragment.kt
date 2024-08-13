@@ -100,7 +100,10 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
 
         lifecycleScope.launch {
             viewModel.deleted.collect { data ->
-                if (data != null) onRecordDeleted(data.record)
+                if (data != null) {
+                    viewModel.clearEvents()
+                    onRecordDeleted(data.record)
+                }
             }
         }
     }
@@ -218,7 +221,6 @@ class PuncherFragment : TimeFormFragment<TimeRecord>() {
             val task = tasks.find { it.id == recordStartedTaskId } ?: record.task
             setRecordTask(record, task)
             record.start = recordStarted.start
-            record.location = recordStarted.location
         }
     }
 

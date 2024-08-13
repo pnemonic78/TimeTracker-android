@@ -150,17 +150,26 @@ class TimeListFragment : TimeFormFragment<TimeRecord>() {
 
         lifecycleScope.launch {
             viewModel.deleted.collect { data ->
-                if (data != null) onRecordEditDeleted(data.record, data.page)
+                if (data != null) {
+                    viewModel.clearEvents()
+                    onRecordEditDeleted(data.record, data.page)
+                }
             }
         }
         lifecycleScope.launch {
             viewModel.edited.collect { data ->
-                if (data != null) onRecordEditSubmitted(data.record, data.isLast, data.page)
+                if (data != null) {
+                    viewModel.clearEvents()
+                    onRecordEditSubmitted(data.record, data.isLast, data.page)
+                }
             }
         }
         lifecycleScope.launch {
             viewModel.editFailure.collect { data ->
-                if (data != null) onRecordEditFailure(data.record, data.reason)
+                if (data != null) {
+                    viewModel.clearEvents()
+                    onRecordEditFailure(data.record, data.reason)
+                }
             }
         }
         lifecycleScope.launch {

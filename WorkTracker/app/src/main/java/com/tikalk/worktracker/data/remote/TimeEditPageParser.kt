@@ -34,7 +34,6 @@ package com.tikalk.worktracker.data.remote
 
 import com.tikalk.html.selectByName
 import com.tikalk.html.value
-import com.tikalk.worktracker.model.Location
 import com.tikalk.worktracker.model.TikalEntity
 import com.tikalk.worktracker.model.time.MutableTimeEditPage
 import com.tikalk.worktracker.model.time.TaskRecordStatus
@@ -79,7 +78,6 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
         record.finish = findFinishDate(page.date, form)
         record.duration = findDuration(form)
         record.note = findNote(form)
-        record.location = findLocation(form)
 
         record.status = if (record.id == TikalEntity.ID_NONE) {
             TaskRecordStatus.DRAFT
@@ -115,10 +113,5 @@ class TimeEditPageParser : FormPageParser<TimeRecord, TimeEditPage, MutableTimeE
     private fun findNote(form: FormElement): String {
         val inputNote = form.selectByName("note")
         return inputNote?.value().orEmpty()
-    }
-
-    private fun findLocation(form: FormElement): Location {
-        val inputLocation = form.selectByName("time_field_5") ?: return Location.EMPTY
-        return findSelectedLocation(inputLocation)
     }
 }
