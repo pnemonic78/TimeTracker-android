@@ -5,9 +5,9 @@ import org.gradle.plugin.use.PluginDependency
 
 object Android {
     object Version {
-        const val compileSdk = 34
+        const val compileSdk = 35
         const val minSdk = 23
-        const val targetSdk = 34
+        const val targetSdk = 35
     }
 }
 
