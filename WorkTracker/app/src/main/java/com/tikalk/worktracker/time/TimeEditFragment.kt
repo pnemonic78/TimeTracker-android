@@ -298,14 +298,14 @@ class TimeEditFragment : TimeFormFragment<TimeRecord>() {
             return false
         }
 
-        val records = recordsToSubmit
-        records.clear()
+        recordsToSubmit.clear()
         if (record.id == TikalEntity.ID_NONE) {
             val splits = record.split()
-            records.addAll(splits)
+            recordsToSubmit.addAll(splits)
         } else {
-            records.add(record)
+            recordsToSubmit.add(record)
         }
+        val records = recordsToSubmit.toList()
         submit(records)
 
         return true
