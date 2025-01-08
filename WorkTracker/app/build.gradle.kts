@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.plugin.extraProperties
+import java.util.Locale
+
 plugins {
     aliasId(libs.plugins.androidApplication)
     aliasId(libs.plugins.hilt)
@@ -27,6 +30,7 @@ android {
 
         buildConfigField("String", "API_URL", "\"https://time.infra.tikalk.dev/\"")
         buildConfigField("Boolean", "LOCATION", "false")
+        buildConfigField("Boolean", "GOOGLE_GCM", "false")
     }
 
     signingConfigs {
@@ -41,12 +45,15 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            extraProperties["useGoogleGcm"] = false
         }
         release {
             // disabled until fix proguard issues: minifyEnabled true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
             proguardFiles("proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
+            extraProperties["useGoogleGcm"] = true
+            buildConfigField("Boolean", "GOOGLE_GCM", "true")
         }
     }
 
@@ -126,4 +133,16 @@ dependencies {
     androidTestImplementation(libs.test.espresso)
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.test.rules)
+}
+
+// Disable Google Services plugin for some flavors.
+afterEvaluate {
+    android.buildTypes.forEach { buildType ->
+        val name = buildType.name.capitalize(Locale.ROOT)
+        tasks.matching { task ->
+            (task.name.endsWith("GoogleServices") || task.name.contains("Crashlytics")) && task.name.contains(name)
+        }.forEach { task ->
+            task.enabled = buildType.extraProperties["useGoogleGcm"] as Boolean
+        }
+    }
 }
