@@ -56,11 +56,8 @@ class TrackerApplication : TikalApplication(), Application.ActivityLifecycleCall
         super.onCreate()
 
         // Logging
-        if (BuildConfig.DEBUG) {
-            Timber.plant(LogTree(true))
-        } else {
-            Timber.plant(CrashlyticsTree(false))
-        }
+        val tree = if (BuildConfig.GOOGLE_GCM) CrashlyticsTree(BuildConfig.DEBUG) else LogTree(BuildConfig.DEBUG)
+        Timber.plant(tree)
 
         registerActivityLifecycleCallbacks(this)
     }
